@@ -8,10 +8,12 @@
 
 #include "SourceFile.h"
 
+using namespace std;
+
 namespace archetype {
-    SourceFile::SourceFile(std::string infile):
-    filename_(infile),
-    file_(infile.c_str()),
+    SourceFile::SourceFile(std::string source, std::istream& in):
+    filename_(source),
+    file_(in),
     fileLine_(0),
     linePos_(0),
     newlines_(false),
@@ -41,5 +43,14 @@ namespace archetype {
     
     void SourceFile::unreadChar(char ch) {
         lastChar_ = ch;
+    }
+    
+    void SourceFile::showPosition(std::ostream &out) {
+        out << "At " << filename_ << ", line " << fileLine_ << ", column " << (linePos_ + 1) << ":" << endl;
+        out << lineBuffer_; // has the newline built in, always
+        for (int i = 0; i < linePos_; ++i) {
+            out << ' ';
+        }
+        out << '^' << endl;
     }
 }

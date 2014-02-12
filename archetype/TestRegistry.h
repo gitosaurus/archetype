@@ -34,7 +34,7 @@ namespace archetype {
 #define ARCHETYPE_TEST_REGISTER(TNAME) \
 static class register_##TNAME { \
 public: register_##TNAME() { \
-TestRegistry::instance().registerSuite(new TNAME); \
+TestRegistry::instance().registerSuite(new TNAME(#TNAME)); \
 } \
 } stub_register_##TNAME
 

@@ -19,8 +19,6 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestIdIndex);
     
     void TestIdIndex::runTests_(ostream& out) {
-        out << "TestIdIndex" << endl;
-
         IdIndex<string> strindex;
         ARCHETYPE_TEST_EQUAL(strindex.has("First"), false);
         

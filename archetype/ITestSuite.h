@@ -14,6 +14,7 @@
 
 namespace archetype {
     class ITestSuite {
+        std::string name_;
         std::ostream* out_;
         int errorCount_;
     protected:
@@ -27,17 +28,19 @@ namespace archetype {
         }
         virtual void runTests_(std::ostream& out) = 0;
         
-        ITestSuite():
+        ITestSuite(std::string name):
+        name_(name),
         out_(nullptr),
         errorCount_(0)
         { }
 
     public:
+        std::string name() const { return name_; }
         bool runTests(std::ostream& out) {
             errorCount_ = 0;
             out_ = &out;
             runTests_(out);
-            return errorCount_ != 0;
+            return errorCount_ == 0;
         }
     };
 }

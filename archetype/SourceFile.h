@@ -10,13 +10,12 @@
 #define __archetype__SourceFile__
 
 #include <iostream>
-#include <fstream>
 #include <string>
 
 namespace archetype {
     class SourceFile {
         std::string filename_;
-        std::ifstream file_;
+        std::istream& file_;
         int fileLine_;
         std::string lineBuffer_;
         int linePos_;
@@ -24,9 +23,10 @@ namespace archetype {
         bool consumed_;
         char lastChar_;
     public:
-        SourceFile(std::string infile);
+        SourceFile(std::string source, std::istream& in);
         char readChar();
         void unreadChar(char ch);
+        void showPosition(std::ostream& out);
     };
 }
 

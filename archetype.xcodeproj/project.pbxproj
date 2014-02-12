@@ -17,6 +17,7 @@
 		45F7CF3318A9EE2200D39E12 /* SourceFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF3118A9EE2200D39E12 /* SourceFile.cpp */; };
 		45F7CF3718AA908600D39E12 /* TestIdIndex.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF3518AA908600D39E12 /* TestIdIndex.cpp */; };
 		45F7CF3B18AA932B00D39E12 /* TestRegistry.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF3918AA932B00D39E12 /* TestRegistry.cpp */; };
+		45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF3C18AB57C600D39E12 /* TestSourceFile.cpp */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -54,6 +55,8 @@
 		45F7CF3818AA912900D39E12 /* ITestSuite.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ITestSuite.h; sourceTree = "<group>"; };
 		45F7CF3918AA932B00D39E12 /* TestRegistry.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestRegistry.cpp; sourceTree = "<group>"; };
 		45F7CF3A18AA932B00D39E12 /* TestRegistry.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestRegistry.h; sourceTree = "<group>"; };
+		45F7CF3C18AB57C600D39E12 /* TestSourceFile.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSourceFile.cpp; sourceTree = "<group>"; };
+		45F7CF3D18AB57C600D39E12 /* TestSourceFile.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSourceFile.h; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -114,6 +117,8 @@
 				45F7CF3818AA912900D39E12 /* ITestSuite.h */,
 				45F7CF3918AA932B00D39E12 /* TestRegistry.cpp */,
 				45F7CF3A18AA932B00D39E12 /* TestRegistry.h */,
+				45F7CF3C18AB57C600D39E12 /* TestSourceFile.cpp */,
+				45F7CF3D18AB57C600D39E12 /* TestSourceFile.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -171,6 +176,7 @@
 			files = (
 				45F7CF2118A9E8A200D39E12 /* GameDefinition.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
+				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
 				45F7CF2D18A9EB6200D39E12 /* Statement.cpp in Sources */,
 				45F7CF3018A9EE1100D39E12 /* Token.cpp in Sources */,
 				45F7CF2418A9E9A000D39E12 /* Object.cpp in Sources */,

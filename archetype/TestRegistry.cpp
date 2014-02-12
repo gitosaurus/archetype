@@ -30,6 +30,7 @@ namespace archetype {
     bool TestRegistry::runAllTestSuites(std::ostream &out) {
         bool success = true;
         for (auto suite : suites_) {
+            out << "Running suite " << suite->name() << endl;
             if (not suite->runTests(out)) {
                 success = false;
             }
