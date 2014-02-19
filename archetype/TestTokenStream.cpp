@@ -30,17 +30,34 @@ namespace archetype {
         return out;
     }
     
-    void TestTokenStream::runTests_(std::ostream& out) {
-        string src_str = "3 + 4";
-        istringstream in(src_str);
-        SourceFile src("simpleplus", in);
-        TokenStream token_stream(src);
-        
-        deque<Token> expected = {{Token::NUMERIC, 3}, {Token::OPERATOR, Keywords::OP_PLUS}, {Token::NUMERIC, 4}};
+    inline deque<Token> tokenize(string src_str) {
         deque<Token> actual;
+        istringstream in(src_str);
+        SourceFile src("test", in);
+        TokenStream token_stream(src);
         while (token_stream.fetch()) {
             actual.push_back(token_stream.token());
         }
-        ARCHETYPE_TEST_EQUAL(actual, expected);
+        return actual;
+    }
+    
+    void TestTokenStream::runTests_(std::ostream& out) {
+        deque<Token> actual1 = tokenize("3 + 4");
+        deque<Token> expected1 = {{Token::NUMERIC, 3}, {Token::OPERATOR, Keywords::OP_PLUS}, {Token::NUMERIC, 4}};
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        
+        deque<Token> actual2 = tokenize("*:=:=*");
+        deque<Token> expected2 = {
+            {Token::OPERATOR, Keywords::OP_C_MULTIPLY},
+            {Token::OPERATOR, Keywords::OP_ASSIGN},
+            {Token::OPERATOR, Keywords::OP_MULTIPLY}};
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
+        
+        deque<Token> actual3 = tokenize("'START' -> main");
+        deque<Token> expected3 = {
+            {Token::MESSAGE, 0},
+            {Token::OPERATOR, Keywords::OP_SEND},
+            {Token::IDENTIFIER, 0}};
+        ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
 }
