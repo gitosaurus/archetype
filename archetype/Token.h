@@ -35,6 +35,9 @@ namespace archetype {
         Type_e type_;
         int number_;
     };
+    
+    bool operator==(const Token& t1, const Token& t2);
+    std::ostream& operator<<(std::ostream& out, const Token& t);
 }
 
 #endif /* defined(__archetype__Token__) */

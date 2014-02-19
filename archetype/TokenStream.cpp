@@ -52,7 +52,6 @@ namespace archetype {
             LITERAL, IDENTIFIER, NUMBER, OPERATOR};
 
         StateType_e state;
-        bool more_chars;
         char bracket;
         char next_ch;
         string s;
@@ -69,7 +68,6 @@ namespace archetype {
             }
         }
         
-        more_chars = true;
         state      = START;
         s          = "";
         
@@ -81,13 +79,12 @@ namespace archetype {
                     if ((next_ch = source_.readChar()))
                         state = DECIDE;
                     else {
-                        more_chars = false;
                         state = STOP;
                     }
                     break;
                     
                 case DECIDE:
-                    if (not more_chars)
+                    if (not next_ch)
                         state = STOP;
                     else if (TypeCheck.isWhite(next_ch))
                         state = WHITE;
@@ -126,10 +123,10 @@ namespace archetype {
                             state   = STOP;
                         }
                         else
-                            more_chars = (next_ch = source_.readChar());
+                            next_ch = source_.readChar();
                     }
                     if (state == WHITE) {
-                        if (more_chars) {         /* decide on new non-white character */
+                        if (next_ch) {         /* decide on new non-white character */
                             state = DECIDE;
                         } else {
                             state = STOP;
@@ -144,7 +141,7 @@ namespace archetype {
                         s += next_ch;
                     }
                     if (state == COMMENT) {
-                        if (more_chars)
+                        if (next_ch)
                             state = START;
                         else
                             state = STOP;
@@ -288,7 +285,7 @@ namespace archetype {
             } // switch
         } /* while - primary state machine loop */
         
-        return more_chars;
+        return next_ch != '\0';
     }
 
     void TokenStream::didNotConsume() {

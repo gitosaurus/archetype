@@ -19,4 +19,13 @@ namespace archetype {
     number_(number)
     { }
 
+    std::ostream& operator<<(std::ostream& out, const Token& t) {
+        out << "Token(" << t.type() << ", " << t.number() << ")";
+        return out;
+    }
+    
+    bool operator==(const Token& t1, const Token& t2) {
+        return t1.type() == t2.type() && t1.number() == t2.number();
+    }
+
 }

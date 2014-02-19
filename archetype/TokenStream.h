@@ -23,6 +23,7 @@ namespace archetype {
     public:
         TokenStream(SourceFile& source);
         bool fetch();
+        Token token() const { return token_; }
         void didNotConsume();
     };
 }
