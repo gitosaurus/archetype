@@ -20,6 +20,11 @@ namespace archetype {
         return *instance_;
     }
     
+    void TestRegistry::destroy() {
+        delete instance_;
+        instance_ = nullptr;
+    }
+    
     TestRegistry::TestRegistry() {
     }
     

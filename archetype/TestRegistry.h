@@ -17,17 +17,19 @@
 
 namespace archetype {
     class TestRegistry {
-        static TestRegistry* instance_;
         std::deque<std::shared_ptr<ITestSuite>> suites_;
+    public:
+        static TestRegistry& instance();
+        static void destroy();
         
+        void registerSuite(ITestSuite* suite);
+        bool runAllTestSuites(std::ostream& out);
+    private:
+        static TestRegistry* instance_;
         TestRegistry();
         // No copying
         TestRegistry(const TestRegistry&);
         TestRegistry& operator=(const TestRegistry);
-    public:
-        static TestRegistry& instance();
-        void registerSuite(ITestSuite* suite);
-        bool runAllTestSuites(std::ostream& out);
     };
 }
 

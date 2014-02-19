@@ -7,3 +7,21 @@
 //
 
 #include "GameDefinition.h"
+
+namespace archetype {
+    GameDefinition* GameDefinition::instance_ = nullptr;
+    GameDefinition& GameDefinition::instance() {
+        if (not instance_) {
+            instance_ = new GameDefinition();
+        }
+        return *instance_;
+    }
+    
+    void GameDefinition::destroy() {
+        delete instance_;
+        instance_ = nullptr;
+    }
+    
+    GameDefinition::GameDefinition() {
+    }
+}

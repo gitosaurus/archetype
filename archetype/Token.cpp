@@ -7,3 +7,16 @@
 //
 
 #include "Token.h"
+
+namespace archetype {
+    Token::Token():
+    type_(BAD_TOKEN),
+    number_(0)
+    { }
+    
+    Token::Token(Type_e type, int number):
+    type_(type),
+    number_(number)
+    { }
+
+}

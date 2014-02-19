@@ -7,8 +7,10 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4532326E18B1DEF0008B68E1 /* TokenStream.cpp */; };
 		45B2450118A34A0B006A5FA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45B2450018A34A0B006A5FA8 /* main.cpp */; };
 		45B2450318A34A0B006A5FA8 /* archetype.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 45B2450218A34A0B006A5FA8 /* archetype.1 */; };
+		45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45EDDB8718B42BC6008EAF22 /* Keywords.cpp */; };
 		45F7CF2118A9E8A200D39E12 /* GameDefinition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF1F18A9E8A200D39E12 /* GameDefinition.cpp */; };
 		45F7CF2418A9E9A000D39E12 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF2218A9E9A000D39E12 /* Object.cpp */; };
 		45F7CF2718A9EA3700D39E12 /* Expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF2518A9EA3700D39E12 /* Expression.cpp */; };
@@ -34,9 +36,14 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		4532326E18B1DEF0008B68E1 /* TokenStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TokenStream.cpp; sourceTree = "<group>"; };
+		4532326F18B1DEF0008B68E1 /* TokenStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TokenStream.h; sourceTree = "<group>"; };
 		45B244FD18A34A0B006A5FA8 /* archetype */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = archetype; sourceTree = BUILT_PRODUCTS_DIR; };
 		45B2450018A34A0B006A5FA8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		45B2450218A34A0B006A5FA8 /* archetype.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = archetype.1; sourceTree = "<group>"; };
+		45EDDB8718B42BC6008EAF22 /* Keywords.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Keywords.cpp; sourceTree = "<group>"; };
+		45EDDB8818B42BC6008EAF22 /* Keywords.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keywords.h; sourceTree = "<group>"; };
+		45EDDB8A18B42F9D008EAF22 /* StringIdIndex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringIdIndex.h; sourceTree = "<group>"; };
 		45F7CF1B18A9C09900D39E12 /* IdIndex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IdIndex.h; sourceTree = "<group>"; };
 		45F7CF1F18A9E8A200D39E12 /* GameDefinition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameDefinition.cpp; sourceTree = "<group>"; };
 		45F7CF2018A9E8A200D39E12 /* GameDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameDefinition.h; sourceTree = "<group>"; };
@@ -105,6 +112,11 @@
 				45F7CF2F18A9EE1100D39E12 /* Token.h */,
 				45F7CF3118A9EE2200D39E12 /* SourceFile.cpp */,
 				45F7CF3218A9EE2200D39E12 /* SourceFile.h */,
+				4532326E18B1DEF0008B68E1 /* TokenStream.cpp */,
+				4532326F18B1DEF0008B68E1 /* TokenStream.h */,
+				45EDDB8718B42BC6008EAF22 /* Keywords.cpp */,
+				45EDDB8818B42BC6008EAF22 /* Keywords.h */,
+				45EDDB8A18B42F9D008EAF22 /* StringIdIndex.h */,
 			);
 			path = archetype;
 			sourceTree = "<group>";
@@ -175,11 +187,13 @@
 			buildActionMask = 2147483647;
 			files = (
 				45F7CF2118A9E8A200D39E12 /* GameDefinition.cpp in Sources */,
+				45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
 				45F7CF2D18A9EB6200D39E12 /* Statement.cpp in Sources */,
 				45F7CF3018A9EE1100D39E12 /* Token.cpp in Sources */,
 				45F7CF2418A9E9A000D39E12 /* Object.cpp in Sources */,
+				4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */,
 				45F7CF3718AA908600D39E12 /* TestIdIndex.cpp in Sources */,
 				45F7CF2718A9EA3700D39E12 /* Expression.cpp in Sources */,
 				45F7CF3318A9EE2200D39E12 /* SourceFile.cpp in Sources */,

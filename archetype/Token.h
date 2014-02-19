@@ -13,12 +13,27 @@
 
 namespace archetype {
     class Token {
-        int type_;
-        int number_;
     public:
-        Token(int type, int number): type_(type), number_(number) { }
-        int type() const   { return type_; }
-        int number() const { return number_; }
+        enum Type_e {
+            RESERVED_WORD,
+            IDENTIFIER,
+            MESSAGE,
+            OPERATOR,
+            TEXT_LITERAL,
+            QUOTE_LITERAL,
+            NUMERIC,
+            PUNCTUATION,
+            BAD_TOKEN,
+            NEWLINE
+        };
+        
+        Token();
+        Token(Type_e type, int number);
+        Type_e type() const     { return type_; }
+        int number() const      { return number_; }
+    private:
+        Type_e type_;
+        int number_;
     };
 }
 

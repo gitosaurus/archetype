@@ -19,8 +19,6 @@ namespace archetype {
         int fileLine_;
         std::string lineBuffer_;
         int linePos_;
-        bool newlines_;
-        bool consumed_;
         char lastChar_;
     public:
         SourceFile(std::string source, std::istream& in);

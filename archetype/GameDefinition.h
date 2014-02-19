@@ -12,19 +12,29 @@
 #include <string>
 
 #include "IdIndex.h"
+#include "StringIdIndex.h"
 #include "Object.h"
 
 namespace archetype {
     
-    typedef IdIndex<std::string> StringIdIndex;
     typedef IdIndex<Object> ObjectIndex;
 
     class GameDefinition {
-        StringIdIndex messages_;
-        StringIdIndex textLiterals;
-        StringIdIndex identifiers_;
-        ObjectIndex types_;
-        ObjectIndex objects_;
+    public:
+        StringIdIndex Vocabulary;
+        StringIdIndex TextLiterals;
+        StringIdIndex Identifiers;
+        ObjectIndex   Types;
+        ObjectIndex   Objects;
+
+        static GameDefinition& instance();
+        static void destroy();
+    private:
+        static GameDefinition* instance_;
+        GameDefinition();
+        // No copying
+        GameDefinition(const GameDefinition&);
+        GameDefinition& operator=(const GameDefinition&);
     };
 }
 

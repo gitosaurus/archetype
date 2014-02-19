@@ -16,8 +16,6 @@ namespace archetype {
     file_(in),
     fileLine_(0),
     linePos_(0),
-    newlines_(false),
-    consumed_(true),
     lastChar_(0)
     { }
     
