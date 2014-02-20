@@ -59,5 +59,17 @@ namespace archetype {
             {Token::OPERATOR, Keywords::OP_SEND},
             {Token::IDENTIFIER, 0}};
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
+        
+        deque<Token> actual4 = tokenize("main.subj = main.dobj");
+        deque<Token> expected4 = {
+            {Token::IDENTIFIER, 0}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 1},
+            {Token::OPERATOR, Keywords::OP_EQ},
+            {Token::IDENTIFIER, 0}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 2}
+        };
+        ARCHETYPE_TEST_EQUAL(actual4, expected4);
+        
+        deque<Token> actual5 = tokenize("\n\n# Nothing but commentary.\n# Authorial indulgence\n\n");
+        deque<Token> expected5;
+        ARCHETYPE_TEST_EQUAL(actual5, expected5);
     }
 }
