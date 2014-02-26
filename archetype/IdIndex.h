@@ -27,6 +27,10 @@ namespace archetype {
             return where->second;
         }
         
+        T get(int obj_index) const {
+            return registry_.at(obj_index);
+        }
+        
         bool has(T obj) const {
             return index_.count(obj);
         }

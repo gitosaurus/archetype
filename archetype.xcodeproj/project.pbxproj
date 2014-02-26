@@ -10,6 +10,7 @@
 		4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4532326E18B1DEF0008B68E1 /* TokenStream.cpp */; };
 		45B2450118A34A0B006A5FA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45B2450018A34A0B006A5FA8 /* main.cpp */; };
 		45B2450318A34A0B006A5FA8 /* archetype.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 45B2450218A34A0B006A5FA8 /* archetype.1 */; };
+		45ECAF7D18BD04D800FA1924 /* TestExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45ECAF7B18BD04D800FA1924 /* TestExpression.cpp */; };
 		45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45EDDB8718B42BC6008EAF22 /* Keywords.cpp */; };
 		45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45EDDB8B18B55E5B008EAF22 /* TestTokenStream.cpp */; };
 		45F7CF2118A9E8A200D39E12 /* GameDefinition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF1F18A9E8A200D39E12 /* GameDefinition.cpp */; };
@@ -42,6 +43,8 @@
 		45B244FD18A34A0B006A5FA8 /* archetype */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = archetype; sourceTree = BUILT_PRODUCTS_DIR; };
 		45B2450018A34A0B006A5FA8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		45B2450218A34A0B006A5FA8 /* archetype.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = archetype.1; sourceTree = "<group>"; };
+		45ECAF7B18BD04D800FA1924 /* TestExpression.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestExpression.cpp; sourceTree = "<group>"; };
+		45ECAF7C18BD04D800FA1924 /* TestExpression.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestExpression.h; sourceTree = "<group>"; };
 		45EDDB8718B42BC6008EAF22 /* Keywords.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Keywords.cpp; sourceTree = "<group>"; };
 		45EDDB8818B42BC6008EAF22 /* Keywords.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Keywords.h; sourceTree = "<group>"; };
 		45EDDB8A18B42F9D008EAF22 /* StringIdIndex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringIdIndex.h; sourceTree = "<group>"; };
@@ -136,6 +139,8 @@
 				45F7CF3D18AB57C600D39E12 /* TestSourceFile.h */,
 				45EDDB8B18B55E5B008EAF22 /* TestTokenStream.cpp */,
 				45EDDB8C18B55E5B008EAF22 /* TestTokenStream.h */,
+				45ECAF7B18BD04D800FA1924 /* TestExpression.cpp */,
+				45ECAF7C18BD04D800FA1924 /* TestExpression.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -204,6 +209,7 @@
 				45F7CF2718A9EA3700D39E12 /* Expression.cpp in Sources */,
 				45F7CF3318A9EE2200D39E12 /* SourceFile.cpp in Sources */,
 				45F7CF3B18AA932B00D39E12 /* TestRegistry.cpp in Sources */,
+				45ECAF7D18BD04D800FA1924 /* TestExpression.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

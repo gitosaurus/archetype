@@ -100,13 +100,6 @@ namespace archetype {
         
         static Keywords& instance();
         
-        // TODO:  Next puzzle -- is something like IdIndex needed for these?
-        // TODO:  The problem is that they're pre-defined, pre-packed, pre-sorted
-        // TODO:  It's nice to use the contants in code.  Could just assert as they go in
-        // TODO:  Like a non-replacing, must-be-sorted index
-        // TODO:  Do they even need to be sorted?  No, the index does it.  I think that only
-        // TODO:  the non-unique is important
-        
     private:
         static Keywords* instance_;
         

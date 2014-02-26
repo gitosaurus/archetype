@@ -44,8 +44,30 @@ namespace archetype {
     TokenStream::TokenStream(SourceFile& source):
     source_(source),
     newlines_(false),
-    consumed_(true)
+    consumed_(true),
+    keepLooking_(true)
     { }
+    
+    void TokenStream::expectGeneral(std::string expected) {
+        if (keepLooking_) {
+            source_.showPosition(cout);
+            cout << "Expected ";
+            cout  << expected << "; found ";
+            cout << token_;
+            cout << endl;
+        }
+    }
+    
+    void TokenStream::errorMessage(std::string message) {
+        if (keepLooking_) {
+            source_.showPosition(cout);
+            cout << message << endl;
+        }
+    }
+    
+    void TokenStream::stopLooking() {
+        keepLooking_ = false;
+    }
     
     bool TokenStream::fetch() {
         enum StateType_e {START, STOP, DECIDE, WHITE, COMMENT, QUOTE,

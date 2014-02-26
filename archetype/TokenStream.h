@@ -20,11 +20,15 @@ namespace archetype {
         Token token_;
         bool newlines_;
         bool consumed_;
+        bool keepLooking_;
     public:
         TokenStream(SourceFile& source);
         bool fetch();
         Token token() const { return token_; }
         void didNotConsume();
+        void expectGeneral(std::string expected);
+        void errorMessage(std::string message);
+        void stopLooking();
     };
 }
 

@@ -26,6 +26,15 @@ namespace archetype {
                 errorCount_++;
             }
         }
+        
+        void checkCondition_(std::string filename, int lineno, std::string expr, bool success) {
+            if (not success) {
+                *out_ << filename << ":" << lineno << " ";
+                *out_ << "{" << expr << "} was not true" << std::endl;
+                errorCount_++;
+            }
+        }
+        
         virtual void runTests_(std::ostream& out) = 0;
         
         ITestSuite(std::string name):
@@ -46,5 +55,6 @@ namespace archetype {
 }
 
 #define ARCHETYPE_TEST_EQUAL(actual, expected) checkCondition_(__FILE__, __LINE__, #actual, (actual), expected)
+#define ARCHETYPE_TEST(expr) checkCondition_(__FILE__, __LINE__, #expr, (expr));
 
 #endif
