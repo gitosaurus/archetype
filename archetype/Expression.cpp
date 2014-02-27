@@ -210,9 +210,9 @@ namespace archetype {
         int index() const { return index_; }
     };
     
-    class NumericLiteral : public LiteralNode {
+    class NumericLiteralNode : public LiteralNode {
     public:
-        NumericLiteral(int number): LiteralNode(number) { }
+        NumericLiteralNode(int number): LiteralNode(number) { }
         virtual void prefixDisplay(ostream& out) const {
             out << index();
         }
@@ -251,10 +251,10 @@ namespace archetype {
         }
     };
     
-    class ReservedConstant : public ScalarNode {
+    class ReservedConstantNode : public ScalarNode {
         Keywords::Reserved_e word_;
     public:
-        ReservedConstant(Keywords::Reserved_e word): word_(word) { }
+        ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
         virtual void prefixDisplay(ostream& out) const {
             out << Keywords::instance().Reserved.get(word_);
         }
@@ -273,7 +273,7 @@ namespace archetype {
                 scalar.reset(new QuoteLiteralNode(t.token().number()));
                 break;
             case Token::NUMERIC:
-                scalar.reset(new NumericLiteral(t.token().number()));
+                scalar.reset(new NumericLiteralNode(t.token().number()));
                 break;
             case Token::IDENTIFIER:
                 scalar.reset(new IdentifierNode(t.token().number()));
@@ -288,7 +288,7 @@ namespace archetype {
                     case Keywords::RW_SELF: case Keywords::RW_SENDER: case Keywords::RW_MESSAGE:
                     case Keywords::RW_READ: case Keywords::RW_KEY:
                     case Keywords::RW_TRUE: case Keywords::RW_FALSE:
-                        scalar.reset(new ReservedConstant(word));
+                        scalar.reset(new ReservedConstantNode(word));
                         break;
                     default:
                         scalar.reset();
