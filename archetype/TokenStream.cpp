@@ -43,10 +43,11 @@ namespace archetype {
     
     TokenStream::TokenStream(SourceFile& source):
     source_(source),
-    newlines_(false),
     consumed_(true),
     keepLooking_(true)
-    { }
+    {
+        newlineIsToken_.push_front(false);
+    }
     
     void TokenStream::expectGeneral(std::string expected) {
         if (keepLooking_) {
@@ -85,7 +86,7 @@ namespace archetype {
         
         if (not consumed_) {
             consumed_ = true;
-            if (not ((token_.type() == Token::NEWLINE) and (not newlines_))) {
+            if (not ((token_.type() == Token::NEWLINE) and (not isNewlineSignificant()))) {
                 return true;
             }
         }
@@ -124,7 +125,7 @@ namespace archetype {
                                 state = COMMENT;
                                 break;
                             case ';':
-                                if (not newlines_)
+                                if (not isNewlineSignificant())
                                     state = START;
                                 else {
                                     token_ = Token(Token::NEWLINE, '\n');
@@ -140,7 +141,7 @@ namespace archetype {
                     
                 case WHITE:
                     while ((state == WHITE) and (TypeCheck.isWhite(next_ch))) {
-                        if ((next_ch == '\n') and newlines_) {
+                        if ((next_ch == '\n') and isNewlineSignificant()) {
                             token_ = Token(Token::NEWLINE, '\n');
                             state   = STOP;
                         }

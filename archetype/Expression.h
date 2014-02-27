@@ -43,6 +43,8 @@ namespace archetype {
     Expression get_operand(TokenStream& t);
     Expression form_expr(TokenStream& t, int stop_precedence = 0);
     Expression tighten(Expression expr);
+    
+    Expression make_expr(TokenStream& t);
 }
 
 #endif /* defined(__archetype__Expression__) */

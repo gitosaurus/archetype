@@ -390,22 +390,15 @@ namespace archetype {
         Expression expr = get_operand(t);
         if (expr != nullptr) {
             do {
-                if (not t.fetch())
+                if (not t.fetch()) {
                     done = true;
-                
-                /* Proceed only if the next token is a binary operator.
-                 If this token we have just taken is a right-hand parenthesis,
-                 only consume it if we're at level 0. */
-                
-                else if ((t.token().type() != Token::OPERATOR) or
+                } else if ((t.token().type() != Token::OPERATOR) or
                          (not is_binary(Keywords::Operators_e(t.token().number())))) {
                     if (not ((t.token().type() == Token::PUNCTUATION) and (t.token().number() == ')') and
                              (stop_precedence == 0)))
                         t.didNotConsume();
                     done = true;
-                }
-                
-                else {
+                } else {
                     Keywords::Operators_e the_operator = Keywords::Operators_e(t.token().number());
                     if (precedence(the_operator) < stop_precedence) {
                         t.didNotConsume();
@@ -429,6 +422,14 @@ namespace archetype {
     Expression tighten(Expression expr) {
         Expression t = expr->anyFewerNodeEquivalent();
         return t != nullptr ? t : expr;
+    }
+    
+    Expression make_expr(TokenStream& t) {
+        t.considerNewline();
+        Expression expr = tighten(form_expr(t));
+        t.restoreNewlineSignificance();
+        // TODO:  will also verify the expression
+        return expr;
     }
     
 } // archetype

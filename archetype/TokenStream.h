@@ -10,6 +10,7 @@
 #define __archetype__TokenStream__
 
 #include <iostream>
+#include <list>
 
 #include "Token.h"
 #include "SourceFile.h"
@@ -18,12 +19,17 @@ namespace archetype {
     class TokenStream {
         SourceFile& source_;
         Token token_;
-        bool newlines_;
+        std::list<bool> newlineIsToken_;
         bool consumed_;
         bool keepLooking_;
     public:
         TokenStream(SourceFile& source);
         bool fetch();
+
+        bool isNewlineSignificant() const { return newlineIsToken_.front(); }
+        void considerNewline() { newlineIsToken_.push_front(true); }
+        void restoreNewlineSignificance() { newlineIsToken_.pop_front(); }
+        
         Token token() const { return token_; }
         void didNotConsume();
         void expectGeneral(std::string expected);
