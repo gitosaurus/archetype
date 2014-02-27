@@ -131,6 +131,12 @@ namespace archetype {
         virtual Expression right() const     { return right_; }
         virtual void setRight(Expression r)  { right_ = r; };
         
+        virtual int nodeCount() const { return 1 + right_->nodeCount(); }
+        virtual Expression anyFewerNodeEquivalent() {
+            right_ = tighten(right_);
+            return op() != Keywords::OP_LPAREN ? nullptr : right();
+        }
+        
         virtual void prettyPrint(std::ostream& out, std::string indent) const {
             if (op() != Keywords::OP_LPAREN) {
                 out << indent << Keywords::instance().Operators.get(int(op())) << endl;
@@ -163,7 +169,16 @@ namespace archetype {
         
         virtual Expression left() const         { return left_; }
         virtual Expression right() const        { return right_; }
+        
         virtual void setRight(Expression right) { right_ = right; }
+        
+        virtual int nodeCount() const { return 1 + left_->nodeCount() + right_->nodeCount(); }
+        virtual Expression anyFewerNodeEquivalent() {
+            left_ = tighten(left_);
+            right_ = tighten(right_);
+            return nullptr;
+        }
+        
         virtual void prettyPrint(ostream& out, string indent) const {
             out << indent << Keywords::instance().Operators.get(int(op())) << endl;
             left()->prettyPrint(out, indent + " ");
@@ -410,5 +425,10 @@ namespace archetype {
         }
         return expr;
     } // form_expr
+    
+    Expression tighten(Expression expr) {
+        Expression t = expr->anyFewerNodeEquivalent();
+        return t != nullptr ? t : expr;
+    }
     
 } // archetype

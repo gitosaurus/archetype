@@ -27,7 +27,11 @@ namespace archetype {
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
         virtual Expression left() const  { return nullptr; }
         virtual Expression right() const { return nullptr; }
+        
         virtual void setRight(Expression rightSide) { throw std::logic_error("No right side to set"); }
+        virtual Expression anyFewerNodeEquivalent() { return nullptr; }
+        virtual int nodeCount() const { return 1; }
+        
         virtual void prettyPrint(std::ostream& out, std::string indent = "") const = 0;
         virtual void prefixDisplay(std::ostream& out) const = 0;
     };
@@ -38,6 +42,7 @@ namespace archetype {
     
     Expression get_operand(TokenStream& t);
     Expression form_expr(TokenStream& t, int stop_precedence = 0);
+    Expression tighten(Expression expr);
 }
 
 #endif /* defined(__archetype__Expression__) */

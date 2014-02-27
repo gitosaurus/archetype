@@ -32,6 +32,8 @@ namespace archetype {
         expr->prefixDisplay(out);
         return out.str();
     }
+
+#define SHOW(expr) cout << #expr << " == " << (expr) << endl;
     
     void TestExpression::runTests_(ostream& out) {
         Expression expr1 = expr_from_str("3 + 4 * 5");
@@ -39,6 +41,17 @@ namespace archetype {
         string expected1 = "(+ 3 (* 4 5))";
         string actual1 = as_prefix(expr1);
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        int node_count_1 = expr1->nodeCount();
+        Expression tight_expr1 = tighten(expr1);
+        string tight_actual1 = as_prefix(tighten(expr1));
+        ARCHETYPE_TEST_EQUAL(tight_actual1, expected1);
+        int node_count_2 = tight_expr1->nodeCount();
+        ARCHETYPE_TEST(node_count_1 > node_count_2);
+        SHOW(node_count_1);
+        SHOW(node_count_2);
+        int node_count_3 = tighten(tight_expr1)->nodeCount();
+        SHOW(node_count_3);
+        ARCHETYPE_TEST_EQUAL(node_count_2, node_count_3);
         
         Expression expr2 = expr_from_str("main.dobj.isARoom");
         ARCHETYPE_TEST(expr2 != nullptr);
