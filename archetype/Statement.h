@@ -28,7 +28,6 @@ namespace archetype {
     class CompoundStatement : public IStatement {
         std::list<Statement> statements_;
     public:
-        virtual ~CompoundStatement() { }
         virtual bool make(TokenStream& t);
         
         const std::list<Statement> statements() const { return statements_; }
@@ -37,7 +36,6 @@ namespace archetype {
     class ExpressionStatement : public IStatement {
         Expression expression_;
     public:
-        virtual ~ExpressionStatement() { }
         virtual bool make(TokenStream& t);
         
         Expression expression() const { return expression_; }
@@ -48,7 +46,6 @@ namespace archetype {
         Statement thenBranch_;
         Statement elseBranch_;
     public:
-        virtual ~IfStatement() { }
         virtual bool make(TokenStream& t);
     };
     
@@ -62,7 +59,6 @@ namespace archetype {
         Expression testExpression_;
         std::list<Case> cases_;
     public:
-        virtual ~CaseStatement() { }
         virtual bool make(TokenStream& t);
         
         Expression testExpression() const { return testExpression_; }
@@ -73,14 +69,12 @@ namespace archetype {
         int typeId_;
         Expression target_;
     public:
-        virtual ~CreateStatement() { }
         virtual bool make(TokenStream& t);
     };
     
     class DestroyStatement : public IStatement {
         Expression victim_;
     public:
-        virtual ~DestroyStatement() { }
         virtual bool make(TokenStream& t);
     };
     
@@ -88,7 +82,6 @@ namespace archetype {
         Expression selection_;
         Statement action_;
     public:
-        virtual ~ForStatement() { }
         virtual bool make(TokenStream& t);
     };
     
@@ -96,13 +89,11 @@ namespace archetype {
         Expression condition_;
         Statement action_;
     public:
-        virtual ~WhileStatement() { }
         virtual bool make(TokenStream& t);
     };
     
     class BreakStatement : public IStatement {
     public:
-        virtual ~BreakStatement() { }
         virtual bool make(TokenStream& t) { return true; }
     };
     
@@ -111,7 +102,6 @@ namespace archetype {
         std::list<Expression> expressions_;
     public:
         OutputStatement(Keywords::Reserved_e write_type): writeType_(write_type) { }
-        virtual ~OutputStatement() { }
         virtual bool make(TokenStream& t);
     };
     
