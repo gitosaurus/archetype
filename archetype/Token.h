@@ -37,6 +37,7 @@ namespace archetype {
     };
     
     bool operator==(const Token& t1, const Token& t2);
+    bool operator!=(const Token& t1, const Token& t2);
     std::ostream& operator<<(std::ostream& out, const Token& t);
 }
 

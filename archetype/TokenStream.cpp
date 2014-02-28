@@ -49,14 +49,48 @@ namespace archetype {
         newlineIsToken_.push_front(false);
     }
     
-    void TokenStream::expectGeneral(std::string expected) {
+    void TokenStream::hitEOF(Token required) {
+        if (keepLooking_) {
+            stopLooking();
+            cout << "Found end of file; expected " << required << endl;
+        }
+    }
+    
+    bool TokenStream::insistOn(Token required) {
+        if (not fetch()) {
+            hitEOF(required);
+            return false;
+        }
+        
+        if (required == token_) {
+            return true;
+        }
+
+        expected(required);
+        stopLooking();
+        return false;
+    }
+    
+    void TokenStream::expectGeneral(std::string required) {
         if (keepLooking_) {
             source_.showPosition(cout);
             cout << "Expected ";
-            cout  << expected << "; found ";
+            cout  << required << "; found ";
             cout << token_;
             cout << endl;
         }
+    }
+    
+    void TokenStream::expected(Token required) {
+        if (keepLooking_) {
+            source_.showPosition(cout);
+            cout << "Expected ";
+            cout << required;
+            cout << "; found ";
+            cout << token_;
+            cout << endl;
+        }
+
     }
     
     void TokenStream::errorMessage(std::string message) {

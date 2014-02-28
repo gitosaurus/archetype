@@ -18,18 +18,25 @@
 namespace archetype {
     
     class IStatement {
+    public:
+        virtual ~IStatement() { }
+        virtual bool make(TokenStream& t) = 0;
     };
     
     typedef std::shared_ptr<IStatement> Statement;
     
     class CompoundStatement : public IStatement {
         std::list<Statement> statements_;
+    public:
+        virtual ~CompoundStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class ExpressionStatement : public IStatement {
         Expression expression_;
     public:
-        ExpressionStatement(Expression expr): expression_(expr) { }
+        virtual ~ExpressionStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class IfStatement : public IStatement {
@@ -37,11 +44,8 @@ namespace archetype {
         Statement thenBranch_;
         Statement elseBranch_;
     public:
-        IfStatement(Expression condition, Statement then_branch, Statement else_branch):
-        condition_(condition),
-        thenBranch_(then_branch),
-        elseBranch_(else_branch)
-        { }
+        virtual ~IfStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class CaseStatement : public IStatement {
@@ -53,54 +57,56 @@ namespace archetype {
     private:
         Expression test_;
         std::list<Case> cases_;
+    public:
+        virtual ~CaseStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class CreateStatement : public IStatement {
         int typeId_;
         Expression target_;
     public:
-        CreateStatement(int type, Expression target): typeId_(type), target_(target) { }
+        virtual ~CreateStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class DestroyStatement : public IStatement {
         Expression victim_;
     public:
-        DestroyStatement(Expression victim): victim_(victim) { }
+        virtual ~DestroyStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class ForStatement : public IStatement {
         Expression selection_;
         Statement action_;
     public:
-        ForStatement(Expression selection, Statement action): selection_(selection), action_(action) { }
+        virtual ~ForStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     class WhileStatement : public IStatement {
         Expression condition_;
         Statement action_;
     public:
-        WhileStatement(Expression condition, Statement action): condition_(condition), action_(action) { }
+        virtual ~WhileStatement() { }
+        virtual bool make(TokenStream& t);
+    };
+    
+    class BreakStatement : public IStatement {
+    public:
+        virtual ~BreakStatement() { }
+        virtual bool make(TokenStream& t) { return true; }
     };
     
     class OutputStatement : public IStatement {
-    protected:
+        Keywords::Reserved_e writeType_;
         std::list<Expression> expressions_;
         OutputStatement(std::list<Expression> expressions): expressions_(expressions) { }
-    };
-    
-    class WriteStatement : public OutputStatement {
     public:
-        WriteStatement(std::list<Expression> expressions): OutputStatement(expressions) { }
-    };
-
-    class WritesStatement : public OutputStatement {
-    public:
-        WritesStatement(std::list<Expression> expressions): OutputStatement(expressions) { }
-    };
-    
-    class StopStatement : public OutputStatement {
-    public:
-        StopStatement(std::list<Expression> expressions): OutputStatement(expressions) { }
+        OutputStatement(Keywords::Reserved_e write_type): writeType_(write_type) { }
+        virtual ~OutputStatement() { }
+        virtual bool make(TokenStream& t);
     };
     
     Statement make_statement(TokenStream& t);

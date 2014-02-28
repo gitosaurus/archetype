@@ -33,6 +33,9 @@ namespace archetype {
         Token token() const { return token_; }
         void didNotConsume();
         void expectGeneral(std::string expected);
+        void expected(Token required);
+        void hitEOF(Token required);
+        bool insistOn(Token required);
         void errorMessage(std::string message);
         void stopLooking();
     };

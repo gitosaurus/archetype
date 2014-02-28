@@ -36,6 +36,24 @@ namespace archetype {
         virtual void prefixDisplay(std::ostream& out) const = 0;
     };
     
+    class ScalarNode : public IExpression {
+    public:
+        virtual void prettyPrint(std::ostream& out, std::string indent) const {
+            out << indent;
+            prefixDisplay(out);
+            out << std::endl;
+        }
+    };
+    
+    class ReservedConstantNode : public ScalarNode {
+        Keywords::Reserved_e word_;
+    public:
+        ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
+        virtual void prefixDisplay(std::ostream& out) const {
+            out << Keywords::instance().Reserved.get(word_);
+        }
+    };
+    
     bool is_binary(Keywords::Operators_e op);
     bool is_right_associative(Keywords::Operators_e op);
     int precedence(Keywords::Operators_e op);

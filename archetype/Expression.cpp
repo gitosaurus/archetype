@@ -193,15 +193,6 @@ namespace archetype {
         }
     };
     
-    class ScalarNode : public IExpression {
-    public:
-        virtual void prettyPrint(ostream& out, string indent) const {
-            out << indent;
-            prefixDisplay(out);
-            out << endl;
-        }
-    };
-    
     class LiteralNode : public ScalarNode {
         int index_;
     protected:
@@ -248,15 +239,6 @@ namespace archetype {
         IdentifierNode(int id): id_(id) { }
         virtual void prefixDisplay(ostream& out) const {
             out << GameDefinition::instance().Identifiers.get(id_);
-        }
-    };
-    
-    class ReservedConstantNode : public ScalarNode {
-        Keywords::Reserved_e word_;
-    public:
-        ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
-        virtual void prefixDisplay(ostream& out) const {
-            out << Keywords::instance().Reserved.get(word_);
         }
     };
     
