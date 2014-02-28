@@ -54,7 +54,7 @@ namespace archetype {
     bool CaseStatement::make(TokenStream& t) {
         /* BNF:  <case_stmt> := switch (<expr>) { (<expr> <statement>)+
          [default <statement>] } */
-        if (not (test_ = make_expr(t))) return false;
+        if (not (testExpression_ = make_expr(t))) return false;
         if (not (t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_OF)) and
                  t.insistOn(Token(Token::PUNCTUATION, '{')))) {
             return false;
@@ -112,6 +112,7 @@ namespace archetype {
             return false;
         }
 #ifdef NOTYET
+        // TODO: Does this really belong here?  In a two-pass situation, it doesn't.
         get_meaning(t.token().number(), the_type_id, typeId_);
         if (the_type_id != TYPE_ID) {
             t.errorMessage("Require name of defined type");

@@ -30,6 +30,8 @@ namespace archetype {
     public:
         virtual ~CompoundStatement() { }
         virtual bool make(TokenStream& t);
+        
+        const std::list<Statement> statements() const { return statements_; }
     };
     
     class ExpressionStatement : public IStatement {
@@ -37,6 +39,8 @@ namespace archetype {
     public:
         virtual ~ExpressionStatement() { }
         virtual bool make(TokenStream& t);
+        
+        Expression expression() const { return expression_; }
     };
     
     class IfStatement : public IStatement {
@@ -55,11 +59,14 @@ namespace archetype {
             Statement action;
         };
     private:
-        Expression test_;
+        Expression testExpression_;
         std::list<Case> cases_;
     public:
         virtual ~CaseStatement() { }
         virtual bool make(TokenStream& t);
+        
+        Expression testExpression() const { return testExpression_; }
+        const std::list<Case> cases() const { return cases_; }
     };
     
     class CreateStatement : public IStatement {
@@ -102,7 +109,6 @@ namespace archetype {
     class OutputStatement : public IStatement {
         Keywords::Reserved_e writeType_;
         std::list<Expression> expressions_;
-        OutputStatement(std::list<Expression> expressions): expressions_(expressions) { }
     public:
         OutputStatement(Keywords::Reserved_e write_type): writeType_(write_type) { }
         virtual ~OutputStatement() { }
