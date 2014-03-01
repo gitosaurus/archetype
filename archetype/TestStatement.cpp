@@ -40,7 +40,7 @@ namespace archetype {
         Expression expr = dstmt2->expression();
         ARCHETYPE_TEST_EQUAL(expr->nodeCount(), 7);
         
-        Statement stmt3 = make_stmt_from_str("if player.location = dungeon then \"Oops!\" else \"Nice.\"");
+        Statement stmt3 = make_stmt_from_str("if player.location = dungeon then stop \"Oops!\" else write \"Nice.\"");
         ARCHETYPE_TEST(stmt3 != nullptr);
         IfStatement* dstmt3 = dynamic_cast<IfStatement*>(stmt3.get());
         ARCHETYPE_TEST(dstmt3 != nullptr);

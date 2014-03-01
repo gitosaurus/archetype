@@ -286,7 +286,7 @@ namespace archetype {
     }
     
     Expression get_operand(TokenStream& t) {
-        auto_ptr<UnaryOperator> the_operand(new UnaryOperator(Keywords::OP_LPAREN));
+        unique_ptr<UnaryOperator> the_operand(new UnaryOperator(Keywords::OP_LPAREN));
         bool more = t.fetch();
         while (more and (t.token().type() == Token::NEWLINE))
             more = t.fetch();

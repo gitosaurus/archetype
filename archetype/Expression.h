@@ -24,7 +24,11 @@ namespace archetype {
     
     class IExpression {
     public:
+        IExpression() { }
+        IExpression(const IExpression&) = delete;
+        IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }
+        
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
         virtual Expression left() const  { return nullptr; }
         virtual Expression right() const { return nullptr; }

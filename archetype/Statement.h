@@ -19,7 +19,11 @@ namespace archetype {
     
     class IStatement {
     public:
+        IStatement() { }
+        IStatement(const IStatement&) = delete;
+        IStatement& operator=(const IStatement&) = delete;
         virtual ~IStatement() { }
+        
         virtual bool make(TokenStream& t) = 0;
     };
     
@@ -30,7 +34,7 @@ namespace archetype {
     public:
         virtual bool make(TokenStream& t);
         
-        const std::list<Statement> statements() const { return statements_; }
+        const std::list<Statement>& statements() const { return statements_; }
     };
     
     class ExpressionStatement : public IStatement {
