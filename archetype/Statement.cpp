@@ -22,7 +22,7 @@ namespace archetype {
                 t.didNotConsume();
                 Statement s = make_statement(t);
                 if (s) {
-                    statements_.push_back(s);
+                    statements_.push_back(move(s));
                 } else {
                     t.errorMessage("Unfinished compound statement");
                     t.stopLooking();

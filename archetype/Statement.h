@@ -27,7 +27,7 @@ namespace archetype {
         virtual bool make(TokenStream& t) = 0;
     };
     
-    typedef std::shared_ptr<IStatement> Statement;
+    typedef std::unique_ptr<IStatement> Statement;
     
     class CompoundStatement : public IStatement {
         std::list<Statement> statements_;
@@ -57,7 +57,7 @@ namespace archetype {
     public:
         struct Case {
             Expression value;
-            Statement action;
+            std::shared_ptr<IStatement> action;
         };
     private:
         Expression testExpression_;
@@ -66,7 +66,7 @@ namespace archetype {
         virtual bool make(TokenStream& t);
         
         Expression testExpression() const { return testExpression_; }
-        const std::list<Case> cases() const { return cases_; }
+        const std::list<Case>& cases() const { return cases_; }
     };
     
     class CreateStatement : public IStatement {
