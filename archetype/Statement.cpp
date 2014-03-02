@@ -59,7 +59,6 @@ namespace archetype {
                  t.insistOn(Token(Token::PUNCTUATION, '{')))) {
             return false;
         }
-        shared_ptr<Case> default_ptr;
         for (;;) {
             if (not t.fetch()) {
                 t.hitEOF(Token(Token::PUNCTUATION, '}'));
@@ -70,30 +69,24 @@ namespace archetype {
                 break;
             }
             
-            shared_ptr<Case> the_case_pair(new Case);
             if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT)) {
-                if (default_ptr.get() != nullptr) {
+                if (defaultCase_) {
                     t.errorMessage("There is already a default for this case");
                     return false;
                 } else {
-                    default_ptr = the_case_pair;
-                    default_ptr->value.reset(new ReservedConstantNode(Keywords::RW_DEFAULT));
+                    if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) return false;
+                    defaultCase_ = make_statement(t);
+                    if (not defaultCase_) return false;
                 }
             } else {
                 t.didNotConsume();
-                the_case_pair->value = make_expr(t);
+                cases_.push_back(Case());
+                cases_.back().value = make_expr(t);
+                if (not cases_.back().value) return false;
+                if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) return false;
+                cases_.back().action = make_statement(t);
+                if (not cases_.back().action) return false;
             }
-            if (not the_case_pair->value) return false;
-            if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) return false;
-            the_case_pair->action = make_statement(t);
-            if (not the_case_pair->action) return false;
-            if (default_ptr != the_case_pair) {
-                cases_.push_back(*the_case_pair);
-            }
-        }
-        
-        if (default_ptr != nullptr) {
-            cases_.push_back(*default_ptr);
         }
         return true;
     }

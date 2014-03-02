@@ -57,11 +57,12 @@ namespace archetype {
     public:
         struct Case {
             Expression value;
-            std::shared_ptr<IStatement> action;
+            Statement action;
         };
     private:
         Expression testExpression_;
         std::list<Case> cases_;
+        Statement defaultCase_;
     public:
         virtual bool make(TokenStream& t);
         
