@@ -44,5 +44,10 @@ namespace archetype {
         ARCHETYPE_TEST(stmt3 != nullptr);
         IfStatement* dstmt3 = dynamic_cast<IfStatement*>(stmt3.get());
         ARCHETYPE_TEST(dstmt3 != nullptr);
+        
+        Statement stmt4 = make_stmt_from_str("case timer +:= 1 of { 3 : write \"Careful\" 4 : stop \"Dead!\" default : treasure +:= 1 }");
+        ARCHETYPE_TEST(stmt4 != nullptr);
+        CaseStatement* dstmt4 = dynamic_cast<CaseStatement*>(stmt4.get());
+        ARCHETYPE_TEST(dstmt4 != nullptr);
     }
 }

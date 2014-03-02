@@ -83,11 +83,10 @@ namespace archetype {
                 t.didNotConsume();
                 the_case_pair->value = make_expr(t);
             }
-            if (not (the_case_pair->value and
-                     t.insistOn(Token(Token::PUNCTUATION, ':')) and
-                     not (the_case_pair->action = make_statement(t)))) {
-                return false;
-            }
+            if (not the_case_pair->value) return false;
+            if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) return false;
+            the_case_pair->action = make_statement(t);
+            if (not the_case_pair->action) return false;
             if (default_ptr != the_case_pair) {
                 cases_.push_back(*the_case_pair);
             }
