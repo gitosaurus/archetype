@@ -30,7 +30,6 @@ namespace archetype {
         virtual ~IExpression() { }
         
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
-        virtual Expression left() const  { return nullptr; }
         virtual Expression right() const { return nullptr; }
         
         virtual void setRight(Expression rightSide) { throw std::logic_error("No right side to set"); }

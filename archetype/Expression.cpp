@@ -167,7 +167,6 @@ namespace archetype {
             assert(is_binary(op));
         }
         
-        virtual Expression left() const         { return left_; }
         virtual Expression right() const        { return right_; }
         
         virtual void setRight(Expression right) { right_ = right; }
@@ -181,14 +180,14 @@ namespace archetype {
         
         virtual void prettyPrint(ostream& out, string indent) const {
             out << indent << Keywords::instance().Operators.get(int(op())) << endl;
-            left()->prettyPrint(out, indent + " ");
-            right()->prettyPrint(out, indent + " ");
+            left_->prettyPrint(out, indent + " ");
+            right_->prettyPrint(out, indent + " ");
         }
         virtual void prefixDisplay(ostream& out) const {
             out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';
-            left()->prefixDisplay(out);
+            left_->prefixDisplay(out);
             out << ' ';
-            right()->prefixDisplay(out);
+            right_->prefixDisplay(out);
             out << ')';
         }
     };
