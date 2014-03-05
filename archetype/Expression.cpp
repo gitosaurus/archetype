@@ -284,82 +284,80 @@ namespace archetype {
         return scalar;
     }
     
-    Expression get_operand(TokenStream& t) {
-        unique_ptr<UnaryOperator> the_operand(new UnaryOperator(Keywords::OP_LPAREN));
-        bool more = t.fetch();
-        while (more and (t.token().type() == Token::NEWLINE))
-            more = t.fetch();
-        if (not more) {
-            t.didNotConsume();
-            return Expression();
-        }
-        
+    Expression get_operand_node(TokenStream& t) {
         switch (t.token().type()) {
             case Token::PUNCTUATION:
                 switch (t.token().number()) {
                     case ')':
-                        t.didNotConsume();
-                        return Expression();
-                        break;
+                        return nullptr;
                     case '(':
-                        the_operand->setRight(form_expr(t));
-                        if (not the_operand->right()) {
-                            return Expression();
+                        if (Expression expr = form_expr(t)) {
+                            Expression result(new UnaryOperator(Keywords::OP_LPAREN));
+                            result->setRight(expr);
+                            return result;
+                        } else {
+                            return nullptr;
                         }
-                        break;
                     default:
-                        return Expression();
+                        return nullptr;
                 }  /* switch t.token().number() */
-                break; // PUNCTUATION
+                break;
             case Token::OPERATOR: {
                 Keywords::Operators_e op_name = Keywords::Operators_e(t.token().number());
+                Expression the_operand(new UnaryOperator(op_name));
                 switch (op_name) {
                     case Keywords::OP_PLUS:
                     case Keywords::OP_NUMERIC:
                     case Keywords::OP_CONCAT:
-                        the_operand->setOp(op_name);
+                        // Special cases, operators that can be unary in this context
                         break;
                     default:
-                        if (not is_binary(op_name))
-                            the_operand->setOp(op_name);
-                        else {
+                        if (is_binary(op_name)) {
                             t.expectGeneral("unary operator");
                             t.stopLooking();
-                            the_operand.reset();
+                            return nullptr;
                         }
                         break;
-                }  /* switch t.token().number() */
-                if (the_operand.get() != nullptr) {
-                    Expression r = form_expr(t, precedence(op_name));
-                    if (r != nullptr) {
-                        the_operand->setRight(r);
-                    }
+                }  /* switch op_name */
+                if (Expression r = form_expr(t, precedence(op_name))) {
+                    the_operand->setRight(r);
+                    return the_operand;
+                } else {
+                    return nullptr;
                 }
-                break;
             }
             default: { /* some constant or keyword */
-                Expression scalar = get_scalar(t);
-                if (scalar != nullptr) {
-                    the_operand->setRight(scalar);
+                if (Expression scalar = get_scalar(t)) {
+                    Expression result(new UnaryOperator(Keywords::OP_LPAREN));
+                    result->setRight(scalar);
+                    return result;
                 } else {
-                    the_operand.reset();
+                    return nullptr;
                 }
             }                              /* some constant */
                 break;
         }  /* switch t.token().type() */
-        
-        if (not the_operand.get()) {
-            t.didNotConsume();
+    }
+    
+    Expression get_operand(TokenStream& t) {
+        bool more = t.fetch();
+        while (more and (t.token().type() == Token::NEWLINE)) {
+            more = t.fetch();
         }
-        return Expression(the_operand.release());
+        if (more) {
+            if (Expression node = get_operand_node(t)) {
+                return node;
+            }
+        }
+        t.didNotConsume();
+        return nullptr;
     }
 
     Expression tie_on_rside(Expression existing,
                             Keywords::Operators_e op,
                             Expression new_rside) {
         if (existing->bindsBefore(op)) {
-            Expression new_oper(new BinaryOperator(existing, op, new_rside));
-            return new_oper;
+            return Expression(new BinaryOperator(existing, op, new_rside));
         } else {
             existing->setRight(tie_on_rside(existing->right(), op, new_rside));
             return existing;
@@ -367,35 +365,27 @@ namespace archetype {
     }  /* tie_on_rside */
 
     Expression form_expr(TokenStream& t, int stop_precedence) {
-        bool done = false;
         Expression expr = get_operand(t);
-        if (expr != nullptr) {
-            do {
-                if (not t.fetch()) {
-                    done = true;
-                } else if ((t.token().type() != Token::OPERATOR) or
-                         (not is_binary(Keywords::Operators_e(t.token().number())))) {
-                    if (not ((t.token().type() == Token::PUNCTUATION) and (t.token().number() == ')') and
-                             (stop_precedence == 0)))
-                        t.didNotConsume();
-                    done = true;
-                } else {
-                    Keywords::Operators_e the_operator = Keywords::Operators_e(t.token().number());
-                    if (precedence(the_operator) < stop_precedence) {
-                        t.didNotConsume();
-                        done = true;
-                    } else {
-                        Expression rside = get_operand(t);
-                        if (rside != nullptr)
-                            expr = tie_on_rside(expr, the_operator, rside);
-                        else {
-                            t.errorMessage("Empty expression or unbalanced parentheses");
-                            expr.reset();
-                            done = true;
-                        }
-                    }
+        if (not expr) return nullptr;
+        while (t.fetch()) {
+            if ((t.token().type() != Token::OPERATOR) or
+                (not is_binary(Keywords::Operators_e(t.token().number())))) {
+                if (t.token() != Token(Token::PUNCTUATION, ')') and stop_precedence == 0) {
+                    t.didNotConsume();
                 }
-            } while (not done);
+                break;
+            } else {
+                Keywords::Operators_e the_operator = Keywords::Operators_e(t.token().number());
+                if (precedence(the_operator) < stop_precedence) {
+                    t.didNotConsume();
+                    break;
+                } else if (Expression rside = get_operand(t)) {
+                    expr = tie_on_rside(expr, the_operator, rside);
+                } else {
+                    t.errorMessage("Empty expression or unbalanced parentheses");
+                    return nullptr;
+                }
+            }
         }
         return expr;
     } // form_expr
