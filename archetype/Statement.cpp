@@ -130,7 +130,7 @@ namespace archetype {
         t.didNotConsume();
         Expression the_expr = make_expr(t);
         if (not the_expr) return false;
-        expressions_.push_back(the_expr);
+        expressions_.push_back(move(the_expr));
         while (t.fetch()) {
             if (t.token() != Token(Token::PUNCTUATION, ',')) {
                 t.didNotConsume();
@@ -138,7 +138,7 @@ namespace archetype {
             }
             the_expr = make_expr(t);
             if (not the_expr) return false;
-            expressions_.push_back(the_expr);
+            expressions_.push_back(move(the_expr));
         }
         return true;
     }

@@ -20,19 +20,19 @@
 namespace archetype {
     
     class IExpression;
-    typedef std::shared_ptr<IExpression> Expression;
+    typedef std::unique_ptr<IExpression> Expression;
     
     class IExpression {
-    public:
+    protected:
         IExpression() { }
+    public:
         IExpression(const IExpression&) = delete;
         IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }
         
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
-        virtual Expression right() const { return nullptr; }
+        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) { }
         
-        virtual void setRight(Expression rightSide) { throw std::logic_error("No right side to set"); }
         virtual Expression anyFewerNodeEquivalent() { return nullptr; }
         virtual int nodeCount() const { return 1; }
         
@@ -65,6 +65,11 @@ namespace archetype {
     Expression get_operand(TokenStream& t);
     Expression form_expr(TokenStream& t, int stop_precedence = 0);
     Expression tighten(Expression expr);
+    
+    // TODO: seems wrong to expose this
+    Expression tie_on_rside(Expression existing,
+                            Keywords::Operators_e op,
+                            Expression new_rside);
     
     Expression make_expr(TokenStream& t);
 }

@@ -108,7 +108,6 @@ namespace archetype {
         Operator(Keywords::Operators_e op): op_(op) { }
     public:
         Keywords::Operators_e op() const     { return op_; }
-        void setOp(Keywords::Operators_e op) { op_ = op; }
         
         virtual bool bindsBefore(Keywords::Operators_e other) const {
             if (precedence(other) < precedence(op())) {
@@ -121,35 +120,41 @@ namespace archetype {
                 return true;
             }
         }
+        
     };
     
     class UnaryOperator : public Operator {
         Expression right_;
     public:
-        UnaryOperator(Keywords::Operators_e op): Operator(op) { assert(not is_binary(op)); }
- 
-        virtual Expression right() const     { return right_; }
-        virtual void setRight(Expression r)  { right_ = r; };
+        UnaryOperator(Keywords::Operators_e op, Expression right):
+        Operator(op),
+        right_(move(right)) {
+            assert(not is_binary(op));
+        }
         
+        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
+            right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
+        }
+ 
         virtual int nodeCount() const { return 1 + right_->nodeCount(); }
         virtual Expression anyFewerNodeEquivalent() {
-            right_ = tighten(right_);
-            return op() != Keywords::OP_LPAREN ? nullptr : right();
+            right_ = tighten(move(right_));
+            return op() != Keywords::OP_LPAREN ? nullptr : move(right_);
         }
         
         virtual void prettyPrint(std::ostream& out, std::string indent) const {
             if (op() != Keywords::OP_LPAREN) {
                 out << indent << Keywords::instance().Operators.get(int(op())) << endl;
             }
-            right()->prettyPrint(out, indent + " ");
+            right_->prettyPrint(out, indent + " ");
         }
         virtual void prefixDisplay(ostream& out) const {
             if (op() == Keywords::OP_LPAREN) {
-                right()->prefixDisplay(out);
+                right_->prefixDisplay(out);
             } else {
                 out << '(';
                 out << Keywords::instance().Operators.get(int(op())) << ' ';
-                right()->prefixDisplay(out);
+                right_->prefixDisplay(out);
                 out << ')';
             }
         }
@@ -161,20 +166,20 @@ namespace archetype {
     public:
         BinaryOperator(Expression left, Keywords::Operators_e op, Expression right):
         Operator(op),
-        left_(left),
-        right_(right)
+        left_(move(left)),
+        right_(move(right))
         {
             assert(is_binary(op));
         }
         
-        virtual Expression right() const        { return right_; }
-        
-        virtual void setRight(Expression right) { right_ = right; }
-        
+        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
+            right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
+        }
+
         virtual int nodeCount() const { return 1 + left_->nodeCount() + right_->nodeCount(); }
         virtual Expression anyFewerNodeEquivalent() {
-            left_ = tighten(left_);
-            right_ = tighten(right_);
+            left_ = move(tighten(move(left_)));
+            right_ = move(tighten(move(right_)));
             return nullptr;
         }
         
@@ -292,8 +297,7 @@ namespace archetype {
                         return nullptr;
                     case '(':
                         if (Expression expr = form_expr(t)) {
-                            Expression result(new UnaryOperator(Keywords::OP_LPAREN));
-                            result->setRight(expr);
+                            Expression result(new UnaryOperator(Keywords::OP_LPAREN, move(expr)));
                             return result;
                         } else {
                             return nullptr;
@@ -304,7 +308,6 @@ namespace archetype {
                 break;
             case Token::OPERATOR: {
                 Keywords::Operators_e op_name = Keywords::Operators_e(t.token().number());
-                Expression the_operand(new UnaryOperator(op_name));
                 switch (op_name) {
                     case Keywords::OP_PLUS:
                     case Keywords::OP_NUMERIC:
@@ -320,17 +323,14 @@ namespace archetype {
                         break;
                 }  /* switch op_name */
                 if (Expression r = form_expr(t, precedence(op_name))) {
-                    the_operand->setRight(r);
-                    return the_operand;
+                    return Expression(new UnaryOperator(op_name, move(r)));
                 } else {
                     return nullptr;
                 }
             }
             default: { /* some constant or keyword */
                 if (Expression scalar = get_scalar(t)) {
-                    Expression result(new UnaryOperator(Keywords::OP_LPAREN));
-                    result->setRight(scalar);
-                    return result;
+                    return Expression(new UnaryOperator(Keywords::OP_LPAREN, move(scalar)));
                 } else {
                     return nullptr;
                 }
@@ -357,9 +357,9 @@ namespace archetype {
                             Keywords::Operators_e op,
                             Expression new_rside) {
         if (existing->bindsBefore(op)) {
-            return Expression(new BinaryOperator(existing, op, new_rside));
+            return Expression(new BinaryOperator(move(existing), op, move(new_rside)));
         } else {
-            existing->setRight(tie_on_rside(existing->right(), op, new_rside));
+            existing->tieOnRightSide(op, move(new_rside));
             return existing;
         }
     }  /* tie_on_rside */
@@ -380,7 +380,7 @@ namespace archetype {
                     t.didNotConsume();
                     break;
                 } else if (Expression rside = get_operand(t)) {
-                    expr = tie_on_rside(expr, the_operator, rside);
+                    expr = tie_on_rside(move(expr), the_operator, move(rside));
                 } else {
                     t.errorMessage("Empty expression or unbalanced parentheses");
                     return nullptr;
@@ -392,7 +392,7 @@ namespace archetype {
     
     Expression tighten(Expression expr) {
         Expression t = expr->anyFewerNodeEquivalent();
-        return t != nullptr ? t : expr;
+        return move(t != nullptr ? t : expr);
     }
     
     Expression make_expr(TokenStream& t) {

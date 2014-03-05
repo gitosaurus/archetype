@@ -29,14 +29,14 @@ namespace archetype {
     }
     
     void TestRegistry::registerSuite(ITestSuite* suite) {
-        suites_.push_back(shared_ptr<ITestSuite>(suite));
+        suites_.push_back(unique_ptr<ITestSuite>(suite));
     }
     
     bool TestRegistry::runAllTestSuites(std::ostream &out) {
         bool success = true;
-        for (auto suite : suites_) {
-            out << "Running suite " << suite->name() << endl;
-            if (not suite->runTests(out)) {
+        for (auto suite = suites_.begin(); suite != suites_.end(); ++suite) {
+            out << "Running suite " << (*suite)->name() << endl;
+            if (not (*suite)->runTests(out)) {
                 success = false;
             }
         }

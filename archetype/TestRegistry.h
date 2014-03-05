@@ -17,7 +17,7 @@
 
 namespace archetype {
     class TestRegistry {
-        std::deque<std::shared_ptr<ITestSuite>> suites_;
+        std::deque<std::unique_ptr<ITestSuite>> suites_;
     public:
         static TestRegistry& instance();
         static void destroy();

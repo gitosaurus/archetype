@@ -37,7 +37,7 @@ namespace archetype {
         ARCHETYPE_TEST(stmt2 != nullptr);
         ExpressionStatement* dstmt2 = dynamic_cast<ExpressionStatement*>(stmt2.get());
         ARCHETYPE_TEST(dstmt2 != nullptr);
-        Expression expr = dstmt2->expression();
+        const Expression& expr = dstmt2->expression();
         ARCHETYPE_TEST_EQUAL(expr->nodeCount(), 7);
         
         Statement stmt3 = make_stmt_from_str("if player.location = dungeon then stop \"Oops!\" else write \"Nice.\"");

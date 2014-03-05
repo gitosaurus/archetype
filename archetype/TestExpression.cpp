@@ -35,7 +35,7 @@ namespace archetype {
         return expr;
     }
     
-    inline string as_prefix(Expression expr) {
+    inline string as_prefix(const Expression& expr) {
         ostringstream out;
         expr->prefixDisplay(out);
         return out.str();
@@ -51,14 +51,15 @@ namespace archetype {
         string actual1 = as_prefix(expr1);
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         int node_count_1 = expr1->nodeCount();
-        Expression tight_expr1 = tighten(expr1);
-        string tight_actual1 = as_prefix(tighten(expr1));
+        Expression tight_expr1 = move(tighten(move(expr1)));
+        string tight_actual1 = as_prefix(tight_expr1);
         ARCHETYPE_TEST_EQUAL(tight_actual1, expected1);
         int node_count_2 = tight_expr1->nodeCount();
         ARCHETYPE_TEST(node_count_1 > node_count_2);
         SHOW(node_count_1);
         SHOW(node_count_2);
-        int node_count_3 = tighten(tight_expr1)->nodeCount();
+        tight_expr1 = move(tighten(move(tight_expr1)));
+        int node_count_3 = tight_expr1->nodeCount();
         SHOW(node_count_3);
         ARCHETYPE_TEST_EQUAL(node_count_2, node_count_3);
         Expression mexpr1 = make_expr_from_str(expr_str_1);
