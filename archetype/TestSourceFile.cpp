@@ -19,7 +19,7 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSourceFile);
     
-    void TestSourceFile::runTests_(std::ostream& out) {
+    void TestSourceFile::runTests_() {
         string source = "Now is the time!";
         istringstream in(source);
         SourceFile f_in("test-src", in);

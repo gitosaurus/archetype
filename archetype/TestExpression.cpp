@@ -41,9 +41,9 @@ namespace archetype {
         return out.str();
     }
 
-#define SHOW(expr) cout << #expr << " == " << (expr) << endl;
+#define SHOW(expr) out() << #expr << " == " << (expr) << endl;
     
-    void TestExpression::runTests_(ostream& out) {
+    void TestExpression::testTranslation_() {
         string expr_str_1 = "3 + 4 * 5";
         Expression expr1 = form_expr_from_str(expr_str_1);
         ARCHETYPE_TEST(expr1 != nullptr);
@@ -96,5 +96,18 @@ namespace archetype {
         string actual6 = as_prefix(expr6);
         string expected6 = "(+ 3 5)";
         ARCHETYPE_TEST_EQUAL(actual6, expected6);
+    }
+    
+    void TestExpression::testEvaluation_() {
+        Expression expr1 = make_expr_from_str("\"Hello,\" & \" \" & \"world!\"");
+        string actual1 = expr1->evaluate()->toString();
+        string expected1 = "Hello, world!";
+        SHOW(expected1);
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+    }
+    
+    void TestExpression::runTests_() {
+        testTranslation_();
+        testEvaluation_();
     }
 }

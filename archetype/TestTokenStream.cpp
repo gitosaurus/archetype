@@ -41,7 +41,7 @@ namespace archetype {
         return actual;
     }
     
-    void TestTokenStream::runTests_(std::ostream& out) {
+    void TestTokenStream::runTests_() {
         deque<Token> actual1 = tokenize("3 + 4");
         deque<Token> expected1 = {{Token::NUMERIC, 3}, {Token::OPERATOR, Keywords::OP_PLUS}, {Token::NUMERIC, 4}};
         ARCHETYPE_TEST_EQUAL(actual1, expected1);

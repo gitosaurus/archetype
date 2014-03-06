@@ -16,6 +16,7 @@
 
 #include "Keywords.h"
 #include "TokenStream.h"
+#include "Value.h"
 
 namespace archetype {
     
@@ -38,6 +39,8 @@ namespace archetype {
         
         virtual void prettyPrint(std::ostream& out, std::string indent = "") const = 0;
         virtual void prefixDisplay(std::ostream& out) const = 0;
+        
+        virtual Value evaluate() const = 0;
     };
     
     class ScalarNode : public IExpression {
@@ -53,6 +56,7 @@ namespace archetype {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
+        virtual Value evaluate() const { return Value(new ReservedConstantValue(word_)); }
         virtual void prefixDisplay(std::ostream& out) const {
             out << Keywords::instance().Reserved.get(word_);
         }

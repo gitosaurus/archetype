@@ -15,8 +15,10 @@
 
 namespace archetype {
     class TestExpression : public ITestSuite {
+        void testTranslation_();
+        void testEvaluation_();
     protected:
-        virtual void runTests_(std::ostream& out);
+        virtual void runTests_();
     public:
         TestExpression(std::string name): ITestSuite(name) { }
     };

@@ -17,7 +17,7 @@
 namespace archetype {
     class TestIdIndex : public ITestSuite {
     protected:
-        virtual void runTests_(std::ostream& out);
+        virtual void runTests_();
     public:
         TestIdIndex(std::string name): ITestSuite(name) { }
     };

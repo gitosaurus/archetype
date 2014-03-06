@@ -25,8 +25,8 @@ namespace archetype {
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
-    
-    void TestStatement::runTests_(ostream& out) {
+        
+    void TestStatement::runTests_() {
         Statement stmt1 = make_stmt_from_str("{}");
         ARCHETYPE_TEST(stmt1 != nullptr);
         CompoundStatement* dstmt1 = dynamic_cast<CompoundStatement*>(stmt1.get());

@@ -18,7 +18,7 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestIdIndex);
     
-    void TestIdIndex::runTests_(ostream& out) {
+    void TestIdIndex::runTests_() {
         IdIndex<string> strindex;
         ARCHETYPE_TEST_EQUAL(strindex.has("First"), false);
         

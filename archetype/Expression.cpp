@@ -132,6 +132,11 @@ namespace archetype {
             assert(not is_binary(op));
         }
         
+        virtual Value evaluate() const {
+            throw logic_error("UnaryOperator::evaluate under construction");
+            return Value(new StringValue("<unknown>"));
+        }
+        
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
             right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
         }
@@ -172,6 +177,20 @@ namespace archetype {
             assert(is_binary(op));
         }
         
+        virtual Value evaluate() const {
+            Value l_value = left_->evaluate();
+            Value r_value = right_->evaluate();
+            switch (op()) {
+                case Keywords::OP_CONCAT:
+                    return Value(new StringValue(l_value->toString() + r_value->toString()));
+                default:
+                    throw logic_error("No binary operator evaluation written for " +
+                                      Keywords::instance().Operators.get(op()));
+            }
+            throw logic_error("BinaryOperator::evaluate under construction");
+            return Value(new StringValue("<unknown>"));
+        }
+        
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
             right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
         }
@@ -208,6 +227,7 @@ namespace archetype {
     class NumericLiteralNode : public LiteralNode {
     public:
         NumericLiteralNode(int number): LiteralNode(number) { }
+        virtual Value evaluate() const { return Value(new NumericValue(index())); }
         virtual void prefixDisplay(ostream& out) const {
             out << index();
         }
@@ -216,6 +236,7 @@ namespace archetype {
     class MessageNode : public LiteralNode {
     public:
         MessageNode(int index): LiteralNode(index) { }
+        virtual Value evaluate() const { return Value(new MessageValue(index())); }
         virtual void prefixDisplay(ostream& out) const {
             out << "'" << GameDefinition::instance().Vocabulary.get(index()) << "'";
         }
@@ -224,6 +245,9 @@ namespace archetype {
     class TextLiteralNode : public LiteralNode {
     public:
         TextLiteralNode(int index): LiteralNode(index) { }
+        virtual Value evaluate() const {
+            return Value(new StringValue(GameDefinition::instance().TextLiterals.get(index())));
+        }
         virtual void prefixDisplay(ostream& out) const {
             out << '"' << GameDefinition::instance().TextLiterals.get(index()) << '"';
         }
@@ -232,6 +256,9 @@ namespace archetype {
     class QuoteLiteralNode : public LiteralNode {
     public:
         QuoteLiteralNode(int index): LiteralNode(index) { }
+        virtual Value evaluate() const {
+            return Value(new StringValue(GameDefinition::instance().TextLiterals.get(index())));
+        }
         virtual void prefixDisplay(ostream& out) const {
             out << "<<" << GameDefinition::instance().TextLiterals.get(index()) << ">>";
         }
@@ -241,6 +268,7 @@ namespace archetype {
         int id_;
     public:
         IdentifierNode(int id): id_(id) { }
+        virtual Value evaluate() const { return Value(new IdentifierValue(id_)); }
         virtual void prefixDisplay(ostream& out) const {
             out << GameDefinition::instance().Identifiers.get(id_);
         }
