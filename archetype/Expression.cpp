@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include <cassert>
+#include <algorithm>
 
 #include "Expression.h"
 #include "Keywords.h"
@@ -188,6 +189,26 @@ namespace archetype {
                         return Value(new UndefinedValue);
                     } else {
                         return Value(new StringValue(l_value_s->getString() + r_value_s->getString()));
+                    }
+                }
+                case Keywords::OP_LEFTFROM: {
+                    Value l_value_s = l_value->stringConversion();
+                    Value r_value_n = r_value->numericConversion();
+                    if (l_value_s->isUndefined() or r_value_n->isUndefined()) {
+                        return Value(new UndefinedValue);
+                    } else {
+                        return Value(new StringValue(l_value_s->getString().substr(0, r_value_n->getNumber())));
+                    }
+                }
+                case Keywords::OP_RIGHTFROM: {
+                    Value l_value_s = l_value->stringConversion();
+                    Value r_value_n = r_value->numericConversion();
+                    if (l_value_s->isUndefined() or r_value_n->isUndefined()) {
+                        return Value(new UndefinedValue);
+                    } else {
+                        string s = l_value_s->getString();
+                        int n = min(int(s.size() + 1), max(0, r_value_n->getNumber()));
+                        return Value(new StringValue(s.substr(n - 1)));
                     }
                 }
                 case Keywords::OP_PLUS:
