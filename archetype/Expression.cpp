@@ -181,14 +181,36 @@ namespace archetype {
             Value l_value = left_->evaluate();
             Value r_value = right_->evaluate();
             switch (op()) {
-                case Keywords::OP_CONCAT:
-                    return Value(new StringValue(l_value->toString() + r_value->toString()));
+                case Keywords::OP_CONCAT: {
+                    Value l_value_s = l_value->stringConversion();
+                    Value r_value_s = r_value->stringConversion();
+                    if (l_value_s->isUndefined() or r_value_s->isUndefined()) {
+                        return Value(new UndefinedValue);
+                    } else {
+                        return Value(new StringValue(l_value_s->getString() + r_value_s->getString()));
+                    }
+                }
+                case Keywords::OP_MULTIPLY: {
+                    Value l_value_n = l_value->numericConversion();
+                    Value r_value_n = l_value->numericConversion();
+                    if (l_value_n->isUndefined() or r_value_n->isUndefined()) {
+                        return Value(new UndefinedValue);
+                    } else {
+                        int l_value_i = l_value_n->getNumber();
+                        int r_value_i = r_value_n->getNumber();
+                        return Value(new NumericValue(l_value_i * r_value_i));
+                    }
+                }
                 default:
-                    throw logic_error("No binary operator evaluation written for " +
-                                      Keywords::instance().Operators.get(op()));
+                    if (is_binary(op())) {
+                        throw logic_error("No binary operator evaluation written for " +
+                                          Keywords::instance().Operators.get(op()));
+                    } else {
+                        throw logic_error("Attempt to do BinaryOperator evaluation on unary operator " +
+                                          Keywords::instance().Operators.get(op()));
+                    }
             }
             throw logic_error("BinaryOperator::evaluate under construction");
-            return Value(new StringValue("<unknown>"));
         }
         
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {

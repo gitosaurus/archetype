@@ -100,7 +100,7 @@ namespace archetype {
     
     void TestExpression::testEvaluation_() {
         Expression expr1 = make_expr_from_str("\"Hello,\" & \" \" & \"world!\"");
-        string actual1 = expr1->evaluate()->toString();
+        string actual1 = expr1->evaluate()->stringConversion()->getString();
         string expected1 = "Hello, world!";
         SHOW(expected1);
         ARCHETYPE_TEST_EQUAL(actual1, expected1);

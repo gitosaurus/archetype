@@ -12,54 +12,78 @@
 #include <iostream>
 #include <string>
 #include <memory>
+#include <stdexcept>
 
 #include "Keywords.h"
 
 namespace archetype {
+
+    class IValue;
+    typedef std::unique_ptr<IValue> Value;
     
     class IValue {
     public:
         IValue() { }
         IValue(const IValue&) = delete;
         IValue& operator=(const IValue&) = delete;
-        virtual std::string toString() const = 0;
+    
+        virtual bool isUndefined() const      { return false; }
+        virtual std::string getString() const { throw std::logic_error("Value is not a string"); }
+        virtual int getNumber() const         { throw std::logic_error("Value is not a number"); }
+        
+        virtual Value stringConversion() const;
+        virtual Value numericConversion() const;
     };
     
-    typedef std::unique_ptr<IValue> Value;
+    class UndefinedValue : public IValue {
+    public:
+        UndefinedValue() { }
+        virtual bool isUndefined() const override { return true; }
+    };
     
     class MessageValue : public IValue {
         int message_;
     public:
         MessageValue(int message): message_(message) { }
-        virtual std::string toString() const;
+        virtual Value stringConversion() const override;
     };
     
     class NumericValue : public IValue {
         int value_;
     public:
         NumericValue(int value): value_(value) { }
-        virtual std::string toString() const;
+        
+        virtual int getNumber() const override;
+        
+        virtual Value stringConversion() const override;
+        virtual Value numericConversion() const override;
     };
     
     class ReservedConstantValue : public IValue {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantValue(Keywords::Reserved_e word): word_(word) { }
-        virtual std::string toString() const;
+        
+        virtual Value stringConversion() const override;
     };
     
     class StringValue : public IValue {
         std::string value_;
     public:
         StringValue(std::string value): value_(value) { }
-        virtual std::string toString() const;
+        
+        virtual std::string getString() const override;
+        
+        virtual Value stringConversion() const override;
+        virtual Value numericConversion() const override;
     };
     
     class IdentifierValue : public IValue {
         int id_;
     public:
         IdentifierValue(int id): id_(id) { }
-        virtual std::string toString() const;
+        
+        virtual Value stringConversion() const override;
     };
 
 }
