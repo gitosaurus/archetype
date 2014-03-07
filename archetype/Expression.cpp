@@ -190,15 +190,28 @@ namespace archetype {
                         return Value(new StringValue(l_value_s->getString() + r_value_s->getString()));
                     }
                 }
-                case Keywords::OP_MULTIPLY: {
+                case Keywords::OP_PLUS:
+                case Keywords::OP_MINUS:
+                case Keywords::OP_MULTIPLY:
+                case Keywords::OP_DIVIDE:
+                {
                     Value l_value_n = l_value->numericConversion();
-                    Value r_value_n = l_value->numericConversion();
+                    Value r_value_n = r_value->numericConversion();
                     if (l_value_n->isUndefined() or r_value_n->isUndefined()) {
                         return Value(new UndefinedValue);
                     } else {
                         int l_value_i = l_value_n->getNumber();
                         int r_value_i = r_value_n->getNumber();
-                        return Value(new NumericValue(l_value_i * r_value_i));
+                        int result;
+                        switch (op()) {
+                            case Keywords::OP_PLUS:     result = l_value_i + r_value_i; break;
+                            case Keywords::OP_MINUS:    result = l_value_i - r_value_i; break;
+                            case Keywords::OP_MULTIPLY: result = l_value_i * r_value_i; break;
+                            case Keywords::OP_DIVIDE:   result = l_value_i / r_value_i; break;
+                            default:
+                                throw logic_error("Attempt to do numeric math outside Big Four");
+                        }
+                        return Value(new NumericValue(result));
                     }
                 }
                 default:

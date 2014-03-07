@@ -104,6 +104,11 @@ namespace archetype {
         string expected1 = "Hello, world!";
         SHOW(expected1);
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        
+        Expression expr2 = make_expr_from_str("3 + 4 * 5");
+        int actual2 = expr2->evaluate()->numericConversion()->getNumber();
+        int expected2 = 23;
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
     
     void TestExpression::runTests_() {
