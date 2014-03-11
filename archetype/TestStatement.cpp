@@ -26,17 +26,7 @@ namespace archetype {
         return stmt;
     }
     
-    void TestStatement::testExecution_() {
-        Statement stmt1 = make_stmt_from_str("{ 3 + \"7\"; 12 + 34 }");
-        ARCHETYPE_TEST(stmt1 != nullptr);
-        Value val1 = stmt1->execute(out())->numericConversion();
-        ARCHETYPE_TEST(not val1->isUndefined());
-        int actual1 = val1->getNumber();
-        int expected1 = 46;
-        ARCHETYPE_TEST_EQUAL(actual1, expected1);
-    }
-
-    void TestStatement::runTests_() {
+    void TestStatement::testConstruction_() {
         Statement stmt1 = make_stmt_from_str("{}");
         ARCHETYPE_TEST(stmt1 != nullptr);
         CompoundStatement* dstmt1 = dynamic_cast<CompoundStatement*>(stmt1.get());
@@ -59,7 +49,20 @@ namespace archetype {
         ARCHETYPE_TEST(stmt4 != nullptr);
         CaseStatement* dstmt4 = dynamic_cast<CaseStatement*>(stmt4.get());
         ARCHETYPE_TEST(dstmt4 != nullptr);
-        
+    }
+    
+    void TestStatement::testExecution_() {
+        Statement stmt1 = make_stmt_from_str("{ 3 + \"7\"; 12 + 34 }");
+        ARCHETYPE_TEST(stmt1 != nullptr);
+        Value val1 = stmt1->execute(out())->numericConversion();
+        ARCHETYPE_TEST(not val1->isUndefined());
+        int actual1 = val1->getNumber();
+        int expected1 = 46;
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+    }
+
+    void TestStatement::runTests_() {
         testExecution_();
+        testConstruction_();
     }
 }
