@@ -13,6 +13,10 @@
 using namespace std;
 
 namespace archetype {
+    
+    Value IStatement::execute(std::ostream& out) const {
+        return Value(new UndefinedValue);
+    }
 
     bool CompoundStatement::make(TokenStream& t) {
         while (t.fetch()) {
@@ -33,9 +37,22 @@ namespace archetype {
         return false;
     }
     
+    Value CompoundStatement::execute(std::ostream& out) const {
+        Value result(new UndefinedValue);
+        for (const Statement& stmt : statements_) {
+            result = stmt->execute(out);
+        }
+        return result;
+    }
+
+    
     bool ExpressionStatement::make(TokenStream& t) {
         expression_ = make_expr(t);
         return expression_ != nullptr;
+    }
+    
+    Value ExpressionStatement::execute(std::ostream &out) const {
+        return expression_->evaluate();
     }
     
     bool IfStatement::make(TokenStream& t) {

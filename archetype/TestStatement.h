@@ -15,6 +15,7 @@
 
 namespace archetype {
     class TestStatement : public ITestSuite {
+        void testExecution_();
     protected:
         virtual void runTests_();
     public:

@@ -26,6 +26,7 @@ namespace archetype {
         virtual ~IStatement() { }
         
         virtual bool make(TokenStream& t) = 0;
+        virtual Value execute(std::ostream& out) const;
     };
     
     typedef std::unique_ptr<IStatement> Statement;
@@ -33,7 +34,8 @@ namespace archetype {
     class CompoundStatement : public IStatement {
         std::list<Statement> statements_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
+        virtual Value execute(std::ostream& out) const override;
         
         const std::list<Statement>& statements() const { return statements_; }
     };
@@ -41,8 +43,9 @@ namespace archetype {
     class ExpressionStatement : public IStatement {
         Expression expression_;
     public:
-        virtual bool make(TokenStream& t);
-        
+        virtual bool make(TokenStream& t) override;
+        virtual Value execute(std::ostream& out) const override;
+
         const Expression& expression() const { return expression_; }
     };
     
@@ -51,7 +54,7 @@ namespace archetype {
         Statement thenBranch_;
         Statement elseBranch_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
     };
     
     class CaseStatement : public IStatement {
@@ -65,7 +68,7 @@ namespace archetype {
         std::list<Case> cases_;
         Statement defaultCase_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
         
         const Expression& testExpression() const { return testExpression_; }
         const std::list<Case>& cases() const { return cases_; }
@@ -75,27 +78,27 @@ namespace archetype {
         int typeId_;
         Expression target_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
     };
     
     class DestroyStatement : public IStatement {
         Expression victim_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
     };
     
     class ForStatement : public IStatement {
         Expression selection_;
         Statement action_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
     };
     
     class WhileStatement : public IStatement {
         Expression condition_;
         Statement action_;
     public:
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
     };
     
     class BreakStatement : public IStatement {
@@ -108,7 +111,7 @@ namespace archetype {
         std::list<Expression> expressions_;
     public:
         OutputStatement(Keywords::Reserved_e write_type): writeType_(write_type) { }
-        virtual bool make(TokenStream& t);
+        virtual bool make(TokenStream& t) override;
     };
     
     Statement make_statement(TokenStream& t);
