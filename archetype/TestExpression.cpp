@@ -129,6 +129,26 @@ namespace archetype {
         string actual6 = expr6->evaluate()->stringConversion()->getString();
         string expected6 = "";
         ARCHETYPE_TEST_EQUAL(actual6, expected6);
+        
+        Expression expr7 = make_expr_from_str("5 = 6");
+        int actual7 = expr7->evaluate()->numericConversion()->getNumber();
+        int expected7 = 0;
+        ARCHETYPE_TEST_EQUAL(actual7, expected7);
+        
+        Expression expr8 = make_expr_from_str("\"Hello\" = \"World\"");
+        int actual8 = expr8->evaluate()->numericConversion()->getNumber();
+        int expected8 = 0;
+        ARCHETYPE_TEST_EQUAL(actual8, expected8);
+        
+        Expression expr9 = make_expr_from_str("5 + 7 = \"1\" & \"2\"");
+        int actual9 = expr9->evaluate()->numericConversion()->getNumber();
+        int expected9 = 1;
+        ARCHETYPE_TEST_EQUAL(actual9, expected9);
+        
+        Expression expr10 = make_expr_from_str("2 ~= 3");
+        int actual10 = expr10->evaluate()->numericConversion()->getNumber();
+        int expected10 = 1;
+        ARCHETYPE_TEST_EQUAL(actual10, expected10);
     }
     
     void TestExpression::runTests_() {

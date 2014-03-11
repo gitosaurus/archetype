@@ -165,7 +165,61 @@ namespace archetype {
             }
         }
     };
+
+    Value eval_ss(Keywords::Operators_e op, string lv_s, string rv_s) {
+        switch (op) {
+            case Keywords::OP_CONCAT:
+                return Value(new StringValue(lv_s + rv_s));
+            case Keywords::OP_WITHIN:
+                return Value(new BooleanValue(rv_s.find(lv_s) != string::npos));
+            default:
+                throw logic_error("string-op-string attempted on this operator");
+        }
+    }
     
+    Value eval_sn(Keywords::Operators_e op, string lv_s, int rv_n) {
+        switch (op) {
+            case Keywords::OP_LEFTFROM:
+                return Value(new StringValue(lv_s.substr(0, rv_n)));
+            case Keywords::OP_RIGHTFROM: {
+                int n = min(int(lv_s.size() + 1), max(0, rv_n));
+                return Value(new StringValue(lv_s.substr(n - 1)));
+            }
+            default:
+                throw logic_error("string-op-number attempted on this operator");
+        }
+    }
+    
+    Value eval_nn(Keywords::Operators_e op, int lv_n, int rv_n) {
+        int result;
+        switch (op) {
+            case Keywords::OP_PLUS:     result = lv_n + rv_n; break;
+            case Keywords::OP_MINUS:    result = lv_n - rv_n; break;
+            case Keywords::OP_MULTIPLY: result = lv_n * rv_n; break;
+            case Keywords::OP_DIVIDE:   result = lv_n / rv_n; break;
+            default:
+                throw logic_error("number-op-number attempted on this operator");
+        }
+        return Value(new NumericValue(result));
+    }
+    
+    bool eval_eq(const Value& lv, const Value& rv) {
+        if (lv->isSameValueAs(rv)) {
+            return true;
+        }
+        Value lv_n = lv->numericConversion();
+        Value rv_n = rv->numericConversion();
+        if ((not lv_n->isUndefined()) and (not rv_n->isUndefined())) {
+            return lv_n->getNumber() == rv_n->getNumber();
+        }
+        Value lv_s = lv->stringConversion();
+        Value rv_s = rv->stringConversion();
+        if ((not lv_s->isUndefined()) and (not rv_s->isUndefined())) {
+            return lv_s->getString() == rv_s->getString();
+        }
+        return false;
+    }
+
     class BinaryOperator : public Operator {
         Expression left_;
         Expression right_;
@@ -179,61 +233,49 @@ namespace archetype {
         }
         
         virtual Value evaluate() const {
-            Value l_value = left_->evaluate();
-            Value r_value = right_->evaluate();
+            Value lv = left_->evaluate();
+            Value rv = right_->evaluate();
+            // Sort evaluations by "signature"
             switch (op()) {
-                case Keywords::OP_CONCAT: {
-                    Value l_value_s = l_value->stringConversion();
-                    Value r_value_s = r_value->stringConversion();
-                    if (l_value_s->isUndefined() or r_value_s->isUndefined()) {
+                case Keywords::OP_CONCAT:
+                case Keywords::OP_WITHIN: {
+                    Value lv_s = lv->stringConversion();
+                    Value rv_s = rv->stringConversion();
+                    if (lv_s->isUndefined() or rv_s->isUndefined()) {
                         return Value(new UndefinedValue);
                     } else {
-                        return Value(new StringValue(l_value_s->getString() + r_value_s->getString()));
+                        return eval_ss(op(), lv_s->getString(), rv_s->getString());
                     }
                 }
-                case Keywords::OP_LEFTFROM: {
-                    Value l_value_s = l_value->stringConversion();
-                    Value r_value_n = r_value->numericConversion();
-                    if (l_value_s->isUndefined() or r_value_n->isUndefined()) {
-                        return Value(new UndefinedValue);
-                    } else {
-                        return Value(new StringValue(l_value_s->getString().substr(0, r_value_n->getNumber())));
-                    }
-                }
+                case Keywords::OP_LEFTFROM:
                 case Keywords::OP_RIGHTFROM: {
-                    Value l_value_s = l_value->stringConversion();
-                    Value r_value_n = r_value->numericConversion();
+                    Value l_value_s = lv->stringConversion();
+                    Value r_value_n = rv->numericConversion();
                     if (l_value_s->isUndefined() or r_value_n->isUndefined()) {
                         return Value(new UndefinedValue);
                     } else {
-                        string s = l_value_s->getString();
-                        int n = min(int(s.size() + 1), max(0, r_value_n->getNumber()));
-                        return Value(new StringValue(s.substr(n - 1)));
+                        return eval_sn(op(), l_value_s->getString(), r_value_n->getNumber());
                     }
                 }
                 case Keywords::OP_PLUS:
                 case Keywords::OP_MINUS:
                 case Keywords::OP_MULTIPLY:
-                case Keywords::OP_DIVIDE:
-                {
-                    Value l_value_n = l_value->numericConversion();
-                    Value r_value_n = r_value->numericConversion();
-                    if (l_value_n->isUndefined() or r_value_n->isUndefined()) {
+                case Keywords::OP_DIVIDE: {
+                    Value lv_n = lv->numericConversion();
+                    Value rv_n = rv->numericConversion();
+                    if (lv_n->isUndefined() or rv_n->isUndefined()) {
                         return Value(new UndefinedValue);
                     } else {
-                        int l_value_i = l_value_n->getNumber();
-                        int r_value_i = r_value_n->getNumber();
-                        int result;
-                        switch (op()) {
-                            case Keywords::OP_PLUS:     result = l_value_i + r_value_i; break;
-                            case Keywords::OP_MINUS:    result = l_value_i - r_value_i; break;
-                            case Keywords::OP_MULTIPLY: result = l_value_i * r_value_i; break;
-                            case Keywords::OP_DIVIDE:   result = l_value_i / r_value_i; break;
-                            default:
-                                throw logic_error("Attempt to do numeric math outside Big Four");
-                        }
-                        return Value(new NumericValue(result));
+                        return eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
                     }
+                }
+                case Keywords::OP_EQ:
+                case Keywords::OP_NE: {
+                    bool result = eval_eq(lv, rv);
+                    if (op() == Keywords::OP_NE) {
+                        result = not result;
+                    }
+                    return Value(new BooleanValue(result));
                 }
                 default:
                     if (is_binary(op())) {

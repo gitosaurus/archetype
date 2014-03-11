@@ -30,6 +30,7 @@ namespace archetype {
         virtual bool isUndefined() const      { return false; }
         virtual std::string getString() const { throw std::logic_error("Value is not a string"); }
         virtual int getNumber() const         { throw std::logic_error("Value is not a number"); }
+        virtual bool isSameValueAs(const Value& other) const = 0;
         
         virtual Value stringConversion() const;
         virtual Value numericConversion() const;
@@ -39,12 +40,24 @@ namespace archetype {
     public:
         UndefinedValue() { }
         virtual bool isUndefined() const override { return true; }
+        virtual bool isSameValueAs(const Value& other) const override;
+    };
+    
+    class BooleanValue : public IValue {
+        bool value_;
+    public:
+        BooleanValue(bool value): value_(value) { }
+        virtual bool isSameValueAs(const Value& other) const override;
+
+        virtual Value stringConversion() const;
+        virtual Value numericConversion() const;
     };
     
     class MessageValue : public IValue {
         int message_;
     public:
         MessageValue(int message): message_(message) { }
+        virtual bool isSameValueAs(const Value& other) const override;
         virtual Value stringConversion() const override;
     };
     
@@ -52,6 +65,7 @@ namespace archetype {
         int value_;
     public:
         NumericValue(int value): value_(value) { }
+        virtual bool isSameValueAs(const Value& other) const override;
         
         virtual int getNumber() const override;
         
@@ -63,6 +77,7 @@ namespace archetype {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantValue(Keywords::Reserved_e word): word_(word) { }
+        virtual bool isSameValueAs(const Value& other) const override;
         
         virtual Value stringConversion() const override;
     };
@@ -71,6 +86,7 @@ namespace archetype {
         std::string value_;
     public:
         StringValue(std::string value): value_(value) { }
+        virtual bool isSameValueAs(const Value& other) const override;
         
         virtual std::string getString() const override;
         
@@ -82,6 +98,7 @@ namespace archetype {
         int id_;
     public:
         IdentifierValue(int id): id_(id) { }
+        virtual bool isSameValueAs(const Value& other) const override;
         
         virtual Value stringConversion() const override;
     };

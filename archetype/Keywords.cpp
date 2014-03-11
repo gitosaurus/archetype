@@ -81,6 +81,7 @@ namespace archetype {
         OPERATOR(OP_LT, "<");
         OPERATOR(OP_LE, "<=");
         OPERATOR(OP_EQ, "=");
+        OPERATOR(OP_NE, "~=");
         OPERATOR(OP_GT, ">");
         OPERATOR(OP_GE, ">=");
         OPERATOR(OP_RANDOM, "?");
@@ -95,6 +96,5 @@ namespace archetype {
         OPERATOR(OP_RIGHTFROM, "rightfrom");
         OPERATOR(OP_STRING, "string");
         OPERATOR(OP_WITHIN, "within");
-        OPERATOR(OP_NE, "~=");
     }
 }

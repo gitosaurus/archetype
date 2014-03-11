@@ -73,6 +73,7 @@ namespace archetype {
             OP_LT,
             OP_LE,
             OP_EQ,
+            OP_NE,
             OP_GT,
             OP_GE,
             OP_RANDOM,
@@ -87,7 +88,6 @@ namespace archetype {
             OP_RIGHTFROM,
             OP_STRING,
             OP_WITHIN,
-            OP_NE,
             NumOperators,
             
             // Kept outside of the range of valid operators, but
