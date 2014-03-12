@@ -203,23 +203,6 @@ namespace archetype {
         return Value(new NumericValue(result));
     }
     
-    bool eval_eq(const Value& lv, const Value& rv) {
-        if (lv->isSameValueAs(rv)) {
-            return true;
-        }
-        Value lv_n = lv->numericConversion();
-        Value rv_n = rv->numericConversion();
-        if ((not lv_n->isUndefined()) and (not rv_n->isUndefined())) {
-            return lv_n->getNumber() == rv_n->getNumber();
-        }
-        Value lv_s = lv->stringConversion();
-        Value rv_s = rv->stringConversion();
-        if ((not lv_s->isUndefined()) and (not rv_s->isUndefined())) {
-            return lv_s->getString() == rv_s->getString();
-        }
-        return false;
-    }
-    
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
         Value lv_n = lv->numericConversion();
         Value rv_n = rv->numericConversion();
@@ -227,6 +210,8 @@ namespace archetype {
             int ln = lv_n->getNumber();
             int rn = rv_n->getNumber();
             switch (op) {
+                case Keywords::OP_EQ: return ln == rn;
+                case Keywords::OP_NE: return ln != rn;
                 case Keywords::OP_LT: return ln <  rn;
                 case Keywords::OP_LE: return ln <= rn;
                 case Keywords::OP_GE: return ln >= rn;
@@ -240,6 +225,8 @@ namespace archetype {
             string ls = lv_s->getString();
             string rs = rv_s->getString();
             switch (op) {
+                case Keywords::OP_EQ: return ls == rs;
+                case Keywords::OP_NE: return ls != rs;
                 case Keywords::OP_LT: return ls <  rs;
                 case Keywords::OP_LE: return ls <= rs;
                 case Keywords::OP_GE: return ls >= rs;
@@ -300,13 +287,9 @@ namespace archetype {
                     }
                 }
                 case Keywords::OP_EQ:
-                case Keywords::OP_NE: {
-                    bool result = eval_eq(lv, rv);
-                    if (op() == Keywords::OP_NE) {
-                        result = not result;
-                    }
-                    return Value(new BooleanValue(result));
-                }
+                    if (lv->isSameValueAs(rv)) return Value(new BooleanValue(true));
+                    // Otherwise, intentional fall-through
+                case Keywords::OP_NE:
                 case Keywords::OP_LT:
                 case Keywords::OP_LE:
                 case Keywords::OP_GE:

@@ -67,6 +67,14 @@ namespace archetype {
         string actual2 = val2->getString();
         string expected2 = "Sakes alive";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
+        
+        Statement stmt3 = make_stmt_from_str("if \"something\" ~= UNDEFINED then 314 else 999");
+        ARCHETYPE_TEST(stmt3 != nullptr);
+        Value val3 = stmt3->execute(out())->numericConversion();
+        ARCHETYPE_TEST(not val3->isUndefined());
+        int actual3 = val3->getNumber();
+        int expected3 = 314;
+        ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
 
     void TestStatement::runTests_() {

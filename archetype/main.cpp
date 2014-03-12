@@ -47,7 +47,8 @@ int main(int argc, const char* argv[]) {
     }
     if (opts.count("test")) {
         bool success = TestRegistry::instance().runAllTestSuites(cout);
-        return success ? 0 : 1;
+        int exit_code = success ? 0 : 1;
+        return exit_code;
     }
 }
 

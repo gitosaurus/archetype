@@ -8,6 +8,7 @@
 
 #include <string>
 #include <sstream>
+#include <cctype>
 
 #include "Value.h"
 #include "GameDefinition.h"
@@ -85,14 +86,15 @@ namespace archetype {
     }
     
     Value StringValue::numericConversion() const {
-        istringstream in(value_);
         int number = 0;
-        in >> number;
-        if (in.good()) {
-            return Value(new NumericValue(number));
-        } else {
-            return Value(new UndefinedValue);
+        for (char ch : value_) {
+            if (not isdigit(ch)) {
+                return Value(new UndefinedValue);
+            }
+            number *= 10;
+            number += (ch - '0');
         }
+        return Value(new NumericValue(number));
     }
     
     Value ReservedConstantValue::stringConversion() const {

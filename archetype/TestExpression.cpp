@@ -149,6 +149,17 @@ namespace archetype {
         int actual10 = expr10->evaluate()->numericConversion()->getNumber();
         int expected10 = 1;
         ARCHETYPE_TEST_EQUAL(actual10, expected10);
+        
+        Expression expr11 = make_expr_from_str("\"35\" = \" 35 \"");
+        int actual11 = expr11->evaluate()->numericConversion()->getNumber();
+        int expected11 = 0;
+        ARCHETYPE_TEST_EQUAL(actual11, expected11);
+        
+        // But there are limits
+        Expression expr12 = make_expr_from_str("\"35\" = \"35X\"");
+        int actual12 = expr12->evaluate()->numericConversion()->getNumber();
+        int expected12 = 0;
+        ARCHETYPE_TEST_EQUAL(actual12, expected12);
     }
     
     void TestExpression::runTests_() {

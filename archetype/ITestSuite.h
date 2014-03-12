@@ -48,10 +48,13 @@ namespace archetype {
         std::ostream& out() { return *out_; }
 
         std::string name() const { return name_; }
-        bool runTests(std::ostream& out) {
+        bool runTests(std::ostream& output_for_suite) {
             errorCount_ = 0;
-            out_ = &out;
+            out_ = &output_for_suite;
             runTests_();
+            if (errorCount_) {
+                out() << "Errors encountered during " << name_ << ": " << errorCount_ << std::endl;
+            }
             return errorCount_ == 0;
         }
     };

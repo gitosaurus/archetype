@@ -34,13 +34,19 @@ namespace archetype {
     
     bool TestRegistry::runAllTestSuites(std::ostream &out) {
         bool success = true;
+        int failed_suites = 0;
         for (auto suite = suites_.begin(); suite != suites_.end(); ++suite) {
             out << "Running suite " << (*suite)->name() << endl;
             if (not (*suite)->runTests(out)) {
+                out << (*suite)->name() << " FAILED" << endl;
+                failed_suites++;
                 success = false;
+            } else {
+                out << (*suite)->name() << " succeeded." << endl;
             }
         }
         out << "Test suites executed: " << suites_.size() << endl;
+        out << "Test suites failed:   " << failed_suites << endl;
         return success;
     }
 }
