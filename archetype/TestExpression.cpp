@@ -157,8 +157,8 @@ namespace archetype {
         
         // But there are limits
         Expression expr12 = make_expr_from_str("\"35\" = \"35X\"");
-        int actual12 = expr12->evaluate()->numericConversion()->getNumber();
-        int expected12 = 0;
+        string actual12 = expr12->evaluate()->stringConversion()->getString();
+        string expected12 = "FALSE";
         ARCHETYPE_TEST_EQUAL(actual12, expected12);
     }
     
