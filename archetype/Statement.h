@@ -55,6 +55,7 @@ namespace archetype {
         Statement elseBranch_;
     public:
         virtual bool make(TokenStream& t) override;
+        virtual Value execute(std::ostream& out) const override;
     };
     
     class CaseStatement : public IStatement {

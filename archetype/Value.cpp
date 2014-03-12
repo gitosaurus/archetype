@@ -99,6 +99,17 @@ namespace archetype {
         return Value(new StringValue(Keywords::instance().Reserved.get(word_)));
     }
     
+    bool ReservedConstantValue::isTrueEnough() const {
+        // TODO: How often does this happen that FALSE and UNDEFINED get to here?
+        if (word_ == Keywords::RW_UNDEFINED ||
+            word_ == Keywords::RW_FALSE ||
+            word_ == Keywords::RW_ABSENT) {
+            return false;
+        } else {
+            return true;
+        }
+    }
+    
     bool ReservedConstantValue::isSameValueAs(const Value &other) const {
         const ReservedConstantValue* other_p = dynamic_cast<ReservedConstantValue*>(other.get());
         return other_p and other_p->word_ == word_;

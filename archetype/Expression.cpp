@@ -219,6 +219,36 @@ namespace archetype {
         }
         return false;
     }
+    
+    bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
+        Value lv_n = lv->numericConversion();
+        Value rv_n = rv->numericConversion();
+        if ((not lv_n->isUndefined()) and (not rv_n->isUndefined())) {
+            int ln = lv_n->getNumber();
+            int rn = rv_n->getNumber();
+            switch (op) {
+                case Keywords::OP_LT: return ln <  rn;
+                case Keywords::OP_LE: return ln <= rn;
+                case Keywords::OP_GE: return ln >= rn;
+                case Keywords::OP_GT: return ln >  rn;
+                default: throw logic_error("Unexpected numeric eval_compare case");
+            }
+        }
+        Value lv_s = lv->stringConversion();
+        Value rv_s = rv->stringConversion();
+        if ((not lv_s->isUndefined()) and (not rv_s->isUndefined())) {
+            string ls = lv_s->getString();
+            string rs = rv_s->getString();
+            switch (op) {
+                case Keywords::OP_LT: return ls <  rs;
+                case Keywords::OP_LE: return ls <= rs;
+                case Keywords::OP_GE: return ls >= rs;
+                case Keywords::OP_GT: return ls >  rs;
+                default: throw logic_error("Unexpected numeric eval_compare case");
+            }
+        }
+        return false;
+    }
 
     class BinaryOperator : public Operator {
         Expression left_;
@@ -277,6 +307,11 @@ namespace archetype {
                     }
                     return Value(new BooleanValue(result));
                 }
+                case Keywords::OP_LT:
+                case Keywords::OP_LE:
+                case Keywords::OP_GE:
+                case Keywords::OP_GT:
+                    return Value(new BooleanValue(eval_compare(op(), lv, rv)));
                 default:
                     if (is_binary(op())) {
                         throw logic_error("No binary operator evaluation written for " +

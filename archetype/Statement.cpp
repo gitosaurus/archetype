@@ -68,6 +68,15 @@ namespace archetype {
         return true;
     }
     
+    Value IfStatement::execute(std::ostream &out) const {
+        Value conditionValue = condition_->evaluate();
+        if (conditionValue->isTrueEnough()) {
+            return thenBranch_->execute(out);
+        } else {
+            return elseBranch_->execute(out);
+        }
+    }
+    
     bool CaseStatement::make(TokenStream& t) {
         /* BNF:  <case_stmt> := switch (<expr>) { (<expr> <statement>)+
          [default <statement>] } */

@@ -59,6 +59,14 @@ namespace archetype {
         int actual1 = val1->getNumber();
         int expected1 = 46;
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        
+        Statement stmt2 = make_stmt_from_str("if 2 < 3 then \"Sakes alive\" else 95");
+        ARCHETYPE_TEST(stmt2 != nullptr);
+        Value val2 = stmt2->execute(out())->stringConversion();
+        ARCHETYPE_TEST(not val2->isUndefined());
+        string actual2 = val2->getString();
+        string expected2 = "Sakes alive";
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
 
     void TestStatement::runTests_() {
