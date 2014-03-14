@@ -169,6 +169,24 @@ namespace archetype {
         return true;
     }
     
+    Value OutputStatement::execute(std::ostream &out) const {
+        Value last_value(new UndefinedValue);
+        for (const Expression& expr : expressions_) {
+            last_value = expr->evaluate();
+            Value v_s = last_value->stringConversion();
+            if (not v_s->isUndefined()) {
+                out << v_s->getString();
+            }
+        }
+        if (writeType_ == Keywords::RW_WRITE) {
+            out << endl;
+        } else if (writeType_ == Keywords::RW_STOP) {
+            // TODO: Need something gentler than this!
+            terminate();
+        }
+        return last_value;
+    }
+    
     bool ForStatement::make(TokenStream& t) {
         if (not (selection_ = make_expr(t))) return false;
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;

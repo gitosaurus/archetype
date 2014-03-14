@@ -113,6 +113,7 @@ namespace archetype {
     public:
         OutputStatement(Keywords::Reserved_e write_type): writeType_(write_type) { }
         virtual bool make(TokenStream& t) override;
+        virtual Value execute(std::ostream& out) const override;
     };
     
     Statement make_statement(TokenStream& t);

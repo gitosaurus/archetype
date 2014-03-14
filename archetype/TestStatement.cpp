@@ -75,6 +75,18 @@ namespace archetype {
         int actual3 = val3->getNumber();
         int expected3 = 314;
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
+        
+        Statement stmt4 = make_stmt_from_str("write \"Hello, \", \"world!\"");
+        ARCHETYPE_TEST(stmt4 != nullptr);
+        ostringstream sout;
+        Value val4 = stmt4->execute(sout)->stringConversion();
+        ARCHETYPE_TEST(not val4->isUndefined());
+        string actual4_1 = val4->getString();
+        string expected4_1 = "world!";
+        ARCHETYPE_TEST_EQUAL(actual4_1, expected4_1);
+        string actual_4_2 = sout.str();
+        string expected_4_2 = "Hello, world!\n";
+        ARCHETYPE_TEST_EQUAL(actual_4_2, expected_4_2);
     }
 
     void TestStatement::runTests_() {
