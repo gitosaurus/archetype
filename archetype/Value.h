@@ -27,7 +27,7 @@ namespace archetype {
         IValue(const IValue&) = delete;
         IValue& operator=(const IValue&) = delete;
     
-        virtual bool isUndefined() const      { return false; }
+        virtual bool isDefined() const        { return true; }
         virtual bool isTrueEnough() const     { return true; }
         virtual std::string getString() const { throw std::logic_error("Value is not a string"); }
         virtual int getNumber() const         { throw std::logic_error("Value is not a number"); }
@@ -40,7 +40,7 @@ namespace archetype {
     class UndefinedValue : public IValue {
     public:
         UndefinedValue() { }
-        virtual bool isUndefined() const override { return true; }
+        virtual bool isDefined()   const override { return false; }
         virtual bool isTrueEnough() const override { return false; }
         virtual bool isSameValueAs(const Value& other) const override;
     };

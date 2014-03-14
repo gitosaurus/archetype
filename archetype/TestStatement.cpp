@@ -55,7 +55,7 @@ namespace archetype {
         Statement stmt1 = make_stmt_from_str("{ 3 + \"7\"; 12 + 34 }");
         ARCHETYPE_TEST(stmt1 != nullptr);
         Value val1 = stmt1->execute(out())->numericConversion();
-        ARCHETYPE_TEST(not val1->isUndefined());
+        ARCHETYPE_TEST(val1->isDefined());
         int actual1 = val1->getNumber();
         int expected1 = 46;
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
@@ -63,7 +63,7 @@ namespace archetype {
         Statement stmt2 = make_stmt_from_str("if 2 < 3 then \"Sakes alive\" else 95");
         ARCHETYPE_TEST(stmt2 != nullptr);
         Value val2 = stmt2->execute(out())->stringConversion();
-        ARCHETYPE_TEST(not val2->isUndefined());
+        ARCHETYPE_TEST(val2->isDefined());
         string actual2 = val2->getString();
         string expected2 = "Sakes alive";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
@@ -71,7 +71,7 @@ namespace archetype {
         Statement stmt3 = make_stmt_from_str("if \"something\" ~= UNDEFINED then 314 else 999");
         ARCHETYPE_TEST(stmt3 != nullptr);
         Value val3 = stmt3->execute(out())->numericConversion();
-        ARCHETYPE_TEST(not val3->isUndefined());
+        ARCHETYPE_TEST(val3->isDefined());
         int actual3 = val3->getNumber();
         int expected3 = 314;
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
@@ -80,7 +80,7 @@ namespace archetype {
         ARCHETYPE_TEST(stmt4 != nullptr);
         ostringstream sout;
         Value val4 = stmt4->execute(sout)->stringConversion();
-        ARCHETYPE_TEST(not val4->isUndefined());
+        ARCHETYPE_TEST(val4->isDefined());
         string actual4_1 = val4->getString();
         string expected4_1 = "world!";
         ARCHETYPE_TEST_EQUAL(actual4_1, expected4_1);

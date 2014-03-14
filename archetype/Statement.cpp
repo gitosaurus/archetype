@@ -174,7 +174,7 @@ namespace archetype {
         for (const Expression& expr : expressions_) {
             last_value = expr->evaluate();
             Value v_s = last_value->stringConversion();
-            if (not v_s->isUndefined()) {
+            if (v_s->isDefined()) {
                 out << v_s->getString();
             }
         }

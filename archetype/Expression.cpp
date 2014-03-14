@@ -206,7 +206,7 @@ namespace archetype {
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
         Value lv_n = lv->numericConversion();
         Value rv_n = rv->numericConversion();
-        if ((not lv_n->isUndefined()) and (not rv_n->isUndefined())) {
+        if (lv_n->isDefined() and rv_n->isDefined()) {
             int ln = lv_n->getNumber();
             int rn = rv_n->getNumber();
             switch (op) {
@@ -221,7 +221,7 @@ namespace archetype {
         }
         Value lv_s = lv->stringConversion();
         Value rv_s = rv->stringConversion();
-        if ((not lv_s->isUndefined()) and (not rv_s->isUndefined())) {
+        if (lv_s->isDefined() and rv_s->isDefined()) {
             string ls = lv_s->getString();
             string rs = rv_s->getString();
             switch (op) {
@@ -258,20 +258,20 @@ namespace archetype {
                 case Keywords::OP_WITHIN: {
                     Value lv_s = lv->stringConversion();
                     Value rv_s = rv->stringConversion();
-                    if (lv_s->isUndefined() or rv_s->isUndefined()) {
-                        return Value(new UndefinedValue);
-                    } else {
+                    if (lv_s->isDefined() and rv_s->isDefined()) {
                         return eval_ss(op(), lv_s->getString(), rv_s->getString());
+                    } else {
+                        return Value(new UndefinedValue);
                     }
                 }
                 case Keywords::OP_LEFTFROM:
                 case Keywords::OP_RIGHTFROM: {
-                    Value l_value_s = lv->stringConversion();
-                    Value r_value_n = rv->numericConversion();
-                    if (l_value_s->isUndefined() or r_value_n->isUndefined()) {
-                        return Value(new UndefinedValue);
+                    Value lv_s = lv->stringConversion();
+                    Value rv_n = rv->numericConversion();
+                    if (lv_s->isDefined() and rv_n->isDefined()) {
+                        return eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
-                        return eval_sn(op(), l_value_s->getString(), r_value_n->getNumber());
+                        return Value(new UndefinedValue);
                     }
                 }
                 case Keywords::OP_PLUS:
@@ -280,10 +280,10 @@ namespace archetype {
                 case Keywords::OP_DIVIDE: {
                     Value lv_n = lv->numericConversion();
                     Value rv_n = rv->numericConversion();
-                    if (lv_n->isUndefined() or rv_n->isUndefined()) {
-                        return Value(new UndefinedValue);
-                    } else {
+                    if (lv_n->isDefined() and rv_n->isDefined()) {
                         return eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
+                    } else {
+                        return Value(new UndefinedValue);
                     }
                 }
                 case Keywords::OP_EQ:
