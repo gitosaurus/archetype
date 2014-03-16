@@ -28,13 +28,19 @@ namespace archetype {
         IValue& operator=(const IValue&) = delete;
     
         virtual bool isDefined() const        { return true; }
+
+        virtual bool isSameValueAs(const Value& other) const = 0;
+
         virtual bool isTrueEnough() const     { return true; }
         virtual std::string getString() const { throw std::logic_error("Value is not a string"); }
         virtual int getNumber() const         { throw std::logic_error("Value is not a number"); }
-        virtual bool isSameValueAs(const Value& other) const = 0;
+        virtual int getObject() const         { throw std::logic_error("Value is not an object reference"); }
+        virtual int getIdentifier() const     { throw std::logic_error("Value does not have an identifier"); }
         
         virtual Value stringConversion() const;
         virtual Value numericConversion() const;
+        virtual Value objectConversion() const;
+        virtual Value identifierConversion() const;
     };
     
     class UndefinedValue : public IValue {
@@ -61,6 +67,7 @@ namespace archetype {
     public:
         MessageValue(int message): message_(message) { }
         virtual bool isSameValueAs(const Value& other) const override;
+        
         virtual Value stringConversion() const override;
     };
     
@@ -104,7 +111,40 @@ namespace archetype {
         IdentifierValue(int id): id_(id) { }
         virtual bool isSameValueAs(const Value& other) const override;
         
+        virtual int getIdentifier() const override;
+        
         virtual Value stringConversion() const override;
+        virtual Value objectConversion() const override;
+        virtual Value identifierConversion() const override;
+    };
+    
+    class ObjectValue : public IValue {
+        int objectId_;
+    public:
+        ObjectValue(int object_id): objectId_(object_id) { }
+        virtual bool isSameValueAs(const Value& other) const override;
+        
+        virtual int getObject() const override;
+        
+        virtual Value objectConversion() const override;
+    };
+    
+    class AttributeValue : public IValue {
+        int objectId_;
+        int attributeId_;
+    public:
+        AttributeValue(int object_id, int attribute_id): objectId_(object_id), attributeId_(attribute_id) { }
+        virtual bool isSameValueAs(const Value& other) const override;
+        
+        virtual int getIdentifier() const override;
+        
+        Value evaluate() const;
+
+        virtual bool isTrueEnough() const override;
+        virtual Value stringConversion() const override;
+        virtual Value numericConversion() const override;
+        virtual Value objectConversion() const override;
+        virtual Value identifierConversion() const override;
     };
 
 }

@@ -24,4 +24,17 @@ namespace archetype {
     
     GameDefinition::GameDefinition() {
     }
+    
+    ObjectPtr GameDefinition::defineNewObject(int parent_id) {
+        ObjectPtr obj(new Object(parent_id));
+        int object_id = Objects.index(std::move(obj));
+        obj->setId(object_id);
+        return Objects.get(object_id);
+    }
+    
+    void GameDefinition::assignObjectIdentifier(const ObjectPtr& object, std::string name) {
+        int object_id = object->id();
+        int identifier_id_for_object = Identifiers.index(name);
+        ObjectIdentifiers.insert(std::make_pair(identifier_id_for_object, object_id));
+    }
 }

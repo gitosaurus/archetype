@@ -295,6 +295,27 @@ namespace archetype {
                 case Keywords::OP_GE:
                 case Keywords::OP_GT:
                     return Value(new BooleanValue(eval_compare(op(), lv, rv)));
+
+                case Keywords::OP_ASSIGN: {
+                    // Value lv_a = lv->attributeConversion();
+                    // TODO: perform the assignment
+                    // TODO: This either requires a dynamic_cast, or for Value to accept assignment
+                    // return lv_a;
+                    break;
+                }
+                    
+                case Keywords::OP_DOT: {
+                    Value lv_o = lv->objectConversion();
+                    Value rv_a = rv->identifierConversion();
+                    if (lv_o->isDefined() and rv_a->isDefined()) {
+                        int object_id = lv_o->getObject();
+                        int attribute_id = rv_a->getIdentifier();
+                        return Value(new AttributeValue(object_id, attribute_id));
+                    } else {
+                        return Value(new UndefinedValue);
+                    }
+                }
+                    
                 default:
                     if (is_binary(op())) {
                         throw logic_error("No binary operator evaluation written for " +

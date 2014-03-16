@@ -10,6 +10,7 @@
 #include "TestRegistry.h"
 #include "TokenStream.h"
 #include "Expression.h"
+#include "GameDefinition.h"
 
 #include <string>
 #include <sstream>
@@ -155,15 +156,28 @@ namespace archetype {
         int expected11 = 0;
         ARCHETYPE_TEST_EQUAL(actual11, expected11);
         
-        // But there are limits
         Expression expr12 = make_expr_from_str("\"35\" = \"35X\"");
         string actual12 = expr12->evaluate()->stringConversion()->getString();
         string expected12 = "FALSE";
         ARCHETYPE_TEST_EQUAL(actual12, expected12);
     }
     
+    void TestExpression::testObjects_() {
+        ObjectPtr test = GameDefinition::instance().defineNewObject();
+        GameDefinition::instance().assignObjectIdentifier(test, "test");
+        int attribute_id = GameDefinition::instance().Identifiers.index("attr");
+        test->setAttribute(attribute_id, make_expr_from_str("3 + 4"));
+        Expression expr1 = make_expr_from_str("test.attr + 5");
+        Value val1 = expr1->evaluate()->numericConversion();
+        ARCHETYPE_TEST(val1->isDefined());
+        int actual1 = val1->getNumber();
+        int expected1 = 12;
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+    }
+    
     void TestExpression::runTests_() {
         testTranslation_();
         testEvaluation_();
+        testObjects_();
     }
 }
