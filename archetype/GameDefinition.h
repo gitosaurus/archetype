@@ -35,6 +35,8 @@ namespace archetype {
         ObjectIndex   Types;
         ObjectIndex   Objects;
         
+        ObjectPtr     CurrentObject;
+        
         ObjectPtr defineNewObject(int parent_id = 0);
         void assignObjectIdentifier(const ObjectPtr& object, std::string name);
 

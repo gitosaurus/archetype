@@ -26,11 +26,15 @@ namespace archetype {
         return Value(new UndefinedValue);
     }
     
+    Value IValue::identifierConversion() const {
+        return Value(new UndefinedValue);
+    }
+    
     Value IValue::objectConversion() const {
         return Value(new UndefinedValue);
     }
     
-    Value IValue::identifierConversion() const {
+    Value IValue::attributeConversion() const {
         return Value(new UndefinedValue);
     }
     
@@ -134,6 +138,10 @@ namespace archetype {
         return Value(new StringValue(GameDefinition::instance().Identifiers.get(id_)));
     }
     
+    Value IdentifierValue::identifierConversion() const {
+        return Value(new IdentifierValue(id_));
+    }
+    
     Value IdentifierValue::objectConversion() const {
         auto id_obj_p = GameDefinition::instance().ObjectIdentifiers.find(id_);
         if (id_obj_p == GameDefinition::instance().ObjectIdentifiers.end()) {
@@ -142,8 +150,13 @@ namespace archetype {
         return Value(new ObjectValue(id_obj_p->second));
     }
     
-    Value IdentifierValue::identifierConversion() const {
-        return Value(new IdentifierValue(id_));
+    Value IdentifierValue::attributeConversion() const {
+        ObjectPtr current = GameDefinition::instance().CurrentObject;
+        if (current and current->hasAttribute(id_)) {
+            return Value(new AttributeValue(current->id(), id_));
+        } else {
+            return Value(new UndefinedValue);
+        }
     }
     
     bool IdentifierValue::isSameValueAs(const Value &other) const {
@@ -194,12 +207,16 @@ namespace archetype {
         return evaluate()->numericConversion();
     }
     
+    Value AttributeValue::identifierConversion() const {
+        return Value(new IdentifierValue(attributeId_));
+    }
+    
     Value AttributeValue::objectConversion() const {
         return evaluate()->objectConversion();
     }
     
-    Value AttributeValue::identifierConversion() const {
-        return Value(new IdentifierValue(attributeId_));
+    Value AttributeValue::attributeConversion() const {
+        return Value(new AttributeValue(objectId_, attributeId_));
     }
     
 }

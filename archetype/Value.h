@@ -39,8 +39,9 @@ namespace archetype {
         
         virtual Value stringConversion() const;
         virtual Value numericConversion() const;
-        virtual Value objectConversion() const;
         virtual Value identifierConversion() const;
+        virtual Value objectConversion() const;
+        virtual Value attributeConversion() const;
     };
     
     class UndefinedValue : public IValue {
@@ -114,8 +115,9 @@ namespace archetype {
         virtual int getIdentifier() const override;
         
         virtual Value stringConversion() const override;
-        virtual Value objectConversion() const override;
         virtual Value identifierConversion() const override;
+        virtual Value objectConversion() const override;
+        virtual Value attributeConversion() const override;
     };
     
     class ObjectValue : public IValue {
@@ -125,7 +127,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         
         virtual int getObject() const override;
-        
+
         virtual Value objectConversion() const override;
     };
     
@@ -143,8 +145,9 @@ namespace archetype {
         virtual bool isTrueEnough() const override;
         virtual Value stringConversion() const override;
         virtual Value numericConversion() const override;
-        virtual Value objectConversion() const override;
         virtual Value identifierConversion() const override;
+        virtual Value objectConversion() const override;
+        virtual Value attributeConversion() const override;
     };
 
 }

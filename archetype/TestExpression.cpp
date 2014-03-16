@@ -165,14 +165,25 @@ namespace archetype {
     void TestExpression::testObjects_() {
         ObjectPtr test = GameDefinition::instance().defineNewObject();
         GameDefinition::instance().assignObjectIdentifier(test, "test");
-        int attribute_id = GameDefinition::instance().Identifiers.index("attr");
-        test->setAttribute(attribute_id, make_expr_from_str("3 + 4"));
-        Expression expr1 = make_expr_from_str("test.attr + 5");
+        int seven_id = GameDefinition::instance().Identifiers.index("seven");
+        test->setAttribute(seven_id, make_expr_from_str("3 + 4"));
+        Expression expr1 = make_expr_from_str("test.seven + 5");
         Value val1 = expr1->evaluate()->numericConversion();
         ARCHETYPE_TEST(val1->isDefined());
         int actual1 = val1->getNumber();
         int expected1 = 12;
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        
+        ObjectPtr test2 = GameDefinition::instance().defineNewObject();
+        GameDefinition::instance().assignObjectIdentifier(test2, "test2");
+        int another_id = GameDefinition::instance().Identifiers.index("another");
+        test->setAttribute(another_id, make_expr_from_str("test2"));
+        Expression expr2 = make_expr_from_str("test.another");
+        Value val2 = expr2->evaluate()->objectConversion();
+        ARCHETYPE_TEST(val2->isDefined());
+        int actual2 = val2->getObject();
+        int expected2 = test2->id();
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
     
     void TestExpression::runTests_() {
