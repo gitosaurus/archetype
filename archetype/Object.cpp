@@ -21,7 +21,7 @@ namespace archetype {
     }
     
     void Object::setAttribute(int attribute_id, Expression expr) {
-        attributes_.insert(make_pair(attribute_id, std::move(expr)));
+        attributes_[attribute_id] = std::move(expr);
     }
     
     bool Object::hasMethod(int message_id) const {

@@ -297,11 +297,8 @@ namespace archetype {
                     return Value(new BooleanValue(eval_compare(op(), lv, rv)));
 
                 case Keywords::OP_ASSIGN: {
-                    // Value lv_a = lv->attributeConversion();
-                    // TODO: perform the assignment
-                    // TODO: This either requires a dynamic_cast, or for Value to accept assignment
-                    // return lv_a;
-                    break;
+                    Value lv_a = lv->attributeConversion();
+                    return lv_a->assign(std::move(rv));
                 }
                     
                 case Keywords::OP_DOT: {

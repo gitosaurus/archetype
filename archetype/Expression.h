@@ -45,20 +45,31 @@ namespace archetype {
     
     class ScalarNode : public IExpression {
     public:
-        virtual void prettyPrint(std::ostream& out, std::string indent) const {
+        virtual void prettyPrint(std::ostream& out, std::string indent) const override {
             out << indent;
             prefixDisplay(out);
             out << std::endl;
         }
     };
     
+    // TODO: could use a ValueExpression of ReservedConstantValue
     class ReservedConstantNode : public ScalarNode {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
-        virtual Value evaluate() const { return Value(new ReservedConstantValue(word_)); }
-        virtual void prefixDisplay(std::ostream& out) const {
+        virtual Value evaluate() const override { return Value(new ReservedConstantValue(word_)); }
+        virtual void prefixDisplay(std::ostream& out) const override {
             out << Keywords::instance().Reserved.get(word_);
+        }
+    };
+    
+    class ValueExpression : public ScalarNode {
+        Value value_;
+    public:
+        ValueExpression(Value value): value_(std::move(value)) { }
+        virtual Value evaluate() const override { return value_->clone(); }
+        virtual void prefixDisplay(std::ostream& out) const override {
+            out << "<dynamic value>";
         }
     };
     

@@ -35,6 +35,6 @@ namespace archetype {
     void GameDefinition::assignObjectIdentifier(const ObjectPtr& object, std::string name) {
         int object_id = object->id();
         int identifier_id_for_object = Identifiers.index(name);
-        ObjectIdentifiers.insert(std::make_pair(identifier_id_for_object, object_id));
+        ObjectIdentifiers[identifier_id_for_object] = object_id;
     }
 }

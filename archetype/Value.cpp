@@ -38,6 +38,10 @@ namespace archetype {
         return Value(new UndefinedValue);
     }
     
+    Value IValue::assign(Value new_value) {
+        return Value(new UndefinedValue);
+    }
+    
     bool UndefinedValue::isSameValueAs(const Value &other) const {
         const UndefinedValue* other_p = dynamic_cast<const UndefinedValue*>(other.get());
         return other_p != nullptr;
@@ -217,6 +221,13 @@ namespace archetype {
     
     Value AttributeValue::attributeConversion() const {
         return Value(new AttributeValue(objectId_, attributeId_));
+    }
+    
+    Value AttributeValue::assign(Value new_value) {
+        assert(GameDefinition::instance().Objects.hasIndex(objectId_));
+        ObjectPtr obj = GameDefinition::instance().Objects.get(objectId_);
+        obj->setAttribute(attributeId_, Expression(new ValueExpression(std::move(new_value))));
+        return clone();
     }
     
 }

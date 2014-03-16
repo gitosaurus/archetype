@@ -30,6 +30,7 @@ namespace archetype {
         virtual bool isDefined() const        { return true; }
 
         virtual bool isSameValueAs(const Value& other) const = 0;
+        virtual Value clone() const = 0;
 
         virtual bool isTrueEnough() const     { return true; }
         virtual std::string getString() const { throw std::logic_error("Value is not a string"); }
@@ -42,23 +43,28 @@ namespace archetype {
         virtual Value identifierConversion() const;
         virtual Value objectConversion() const;
         virtual Value attributeConversion() const;
+        
+        virtual Value assign(Value new_value);
     };
     
     class UndefinedValue : public IValue {
     public:
         UndefinedValue() { }
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new UndefinedValue); }
         virtual bool isDefined()   const override { return false; }
         virtual bool isTrueEnough() const override { return false; }
-        virtual bool isSameValueAs(const Value& other) const override;
     };
     
     class BooleanValue : public IValue {
         bool value_;
     public:
         BooleanValue(bool value): value_(value) { }
-        virtual bool isTrueEnough() const override { return value_; }
-        virtual bool isSameValueAs(const Value& other) const override;
 
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new BooleanValue(value_)); }
+
+        virtual bool isTrueEnough() const override { return value_; }
         virtual Value stringConversion() const;
         virtual Value numericConversion() const;
     };
@@ -67,7 +73,9 @@ namespace archetype {
         int message_;
     public:
         MessageValue(int message): message_(message) { }
+        
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new MessageValue(message_)); }
         
         virtual Value stringConversion() const override;
     };
@@ -76,7 +84,9 @@ namespace archetype {
         int value_;
     public:
         NumericValue(int value): value_(value) { }
+        
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new NumericValue(value_)); }
         
         virtual int getNumber() const override;
         
@@ -88,9 +98,11 @@ namespace archetype {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantValue(Keywords::Reserved_e word): word_(word) { }
-        virtual bool isTrueEnough() const override;
+
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new ReservedConstantValue(word_)); }
         
+        virtual bool isTrueEnough() const override;
         virtual Value stringConversion() const override;
     };
     
@@ -98,7 +110,9 @@ namespace archetype {
         std::string value_;
     public:
         StringValue(std::string value): value_(value) { }
+        
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new StringValue(value_)); }
         
         virtual std::string getString() const override;
         
@@ -110,7 +124,9 @@ namespace archetype {
         int id_;
     public:
         IdentifierValue(int id): id_(id) { }
+        
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new IdentifierValue(id_)); }
         
         virtual int getIdentifier() const override;
         
@@ -124,7 +140,9 @@ namespace archetype {
         int objectId_;
     public:
         ObjectValue(int object_id): objectId_(object_id) { }
+        
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new ObjectValue(objectId_)); }
         
         virtual int getObject() const override;
 
@@ -136,7 +154,9 @@ namespace archetype {
         int attributeId_;
     public:
         AttributeValue(int object_id, int attribute_id): objectId_(object_id), attributeId_(attribute_id) { }
+        
         virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new AttributeValue(objectId_, attributeId_)); }
         
         virtual int getIdentifier() const override;
         
@@ -148,6 +168,8 @@ namespace archetype {
         virtual Value identifierConversion() const override;
         virtual Value objectConversion() const override;
         virtual Value attributeConversion() const override;
+        
+        virtual Value assign(Value new_value) override;
     };
 
 }

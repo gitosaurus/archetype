@@ -184,6 +184,29 @@ namespace archetype {
         int actual2 = val2->getObject();
         int expected2 = test2->id();
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
+        
+        Expression expr3 = make_expr_from_str("test.seven := 77");
+        // How is an expression like a statement?  When it's an assignment
+        expr3->evaluate();
+        // The 3-node expression should have been flattened to 1
+        int actual3 = test->attribute(seven_id)->nodeCount();
+        int expected3 = 1;
+        ARCHETYPE_TEST_EQUAL(actual3, expected3);
+        Expression expr4 = make_expr_from_str("test.seven");
+        Value val4 = expr4->evaluate()->numericConversion();
+        ARCHETYPE_TEST(val4->isDefined());
+        int actual4 = val4->getNumber();
+        int expected4 = 77;
+        ARCHETYPE_TEST_EQUAL(actual4, expected4);
+        
+        Expression expr5 = make_expr_from_str("test.someone := test2");
+        expr5->evaluate();
+        int someone_id = GameDefinition::instance().Identifiers.index("someone");
+        Value val5 = test->attribute(someone_id)->evaluate()->objectConversion();
+        ARCHETYPE_TEST(val5->isDefined());
+        int actual5 = val5->getObject();
+        int expected5 = test2->id();
+        ARCHETYPE_TEST_EQUAL(actual5, expected5);
     }
     
     void TestExpression::runTests_() {
