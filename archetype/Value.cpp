@@ -196,7 +196,7 @@ namespace archetype {
         if (not obj->hasAttribute(attributeId_)) {
             return Value(new UndefinedValue);
         }
-        return obj->attribute(attributeId_)->evaluate();
+        return obj->getAttributeValue(attributeId_);
     }
     
     bool AttributeValue::isTrueEnough() const {

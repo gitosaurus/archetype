@@ -188,10 +188,6 @@ namespace archetype {
         Expression expr3 = make_expr_from_str("test.seven := 77");
         // How is an expression like a statement?  When it's an assignment
         expr3->evaluate();
-        // The 3-node expression should have been flattened to 1
-        int actual3 = test->attribute(seven_id)->nodeCount();
-        int expected3 = 1;
-        ARCHETYPE_TEST_EQUAL(actual3, expected3);
         Expression expr4 = make_expr_from_str("test.seven");
         Value val4 = expr4->evaluate()->numericConversion();
         ARCHETYPE_TEST(val4->isDefined());
@@ -202,16 +198,48 @@ namespace archetype {
         Expression expr5 = make_expr_from_str("test.someone := test2");
         expr5->evaluate();
         int someone_id = GameDefinition::instance().Identifiers.index("someone");
-        Value val5 = test->attribute(someone_id)->evaluate()->objectConversion();
+        Value val5 = test->getAttributeValue(someone_id)->objectConversion();
         ARCHETYPE_TEST(val5->isDefined());
         int actual5 = val5->getObject();
         int expected5 = test2->id();
         ARCHETYPE_TEST_EQUAL(actual5, expected5);
     }
     
+    void TestExpression::testInheritance_() {
+        ObjectPtr room_type = GameDefinition::instance().defineNewType();
+        GameDefinition::instance().assignTypeIdentifier(room_type, "room");
+        int desc_id = GameDefinition::instance().Identifiers.index("desc");
+        room_type->setAttribute(desc_id, Value(new StringValue("room")));
+        Expression expr = make_expr_from_str("\"an unremarkable \" & desc");
+        int full_id = GameDefinition::instance().Identifiers.index("full");
+        room_type->setAttribute(full_id, std::move(expr));
+        
+        ObjectPtr basement = GameDefinition::instance().defineNewObject(room_type->id());
+        GameDefinition::instance().assignObjectIdentifier(basement, "basement");
+        basement->setAttribute(desc_id, Value(new StringValue("dank cellar of a room")));
+        
+        ObjectPtr courtyard = GameDefinition::instance().defineNewObject(room_type->id());
+        GameDefinition::instance().assignObjectIdentifier(courtyard, "courtyard");
+        
+        Expression expr_b_1 = make_expr_from_str("courtyard.desc");
+        Value val_b_1 = expr_b_1->evaluate()->stringConversion();
+        ARCHETYPE_TEST(val_b_1->isDefined());
+        string actual1 = val_b_1->getString();
+        string expected1 = "room";
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        
+        Expression expr_c_1 = make_expr_from_str("basement.desc");
+        Value val_c_1 = expr_c_1->evaluate()->stringConversion();
+        ARCHETYPE_TEST(val_c_1->isDefined());
+        string actual2 = val_c_1->getString();
+        string expected2 = "dank cellar of a room";
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
+    }
+    
     void TestExpression::runTests_() {
         testTranslation_();
         testEvaluation_();
         testObjects_();
+        testInheritance_();
     }
 }

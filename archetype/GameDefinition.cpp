@@ -37,4 +37,25 @@ namespace archetype {
         int identifier_id_for_object = Identifiers.index(name);
         ObjectIdentifiers[identifier_id_for_object] = object_id;
     }
+    
+    ObjectPtr GameDefinition::defineNewType(int parent_id) {
+        ObjectPtr type_obj(new Object(parent_id));
+        int type_object_id = Types.index(std::move(type_obj));
+        type_obj->setId(type_object_id);
+        return Types.get(type_object_id);
+    }
+    
+    void GameDefinition::assignTypeIdentifier(const ObjectPtr &type_object, std::string name) {
+        int type_object_id = type_object->id();
+        int identifier_id_for_type = Identifiers.index(name);
+        TypeIdentifiers[identifier_id_for_type] = type_object_id;
+    }
+    
+    ObjectPtr GameDefinition::getType(int type_object_id) const {
+        if (Types.hasIndex(type_object_id)) {
+            return Types.get(type_object_id);
+        } else {
+            return nullptr;
+        }
+    }
 }

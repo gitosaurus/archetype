@@ -7,31 +7,50 @@
 //
 
 #include "Object.h"
+#include "GameDefinition.h"
 
 namespace archetype {
     
-    bool Object::hasAttribute(int attribute_id) const {
-        // TODO: must search up parent tree
-        return attributes_.count(attribute_id) > 0;
+    ObjectPtr Object::parent() const {
+        return GameDefinition::instance().getType(parentId_);
     }
     
-    const Expression& Object::attribute(int attribute_id) const {
-        // TODO: must search up parent tree
-        return attributes_.find(attribute_id)->second;
+    bool Object::hasAttribute(int attribute_id) const {
+        ObjectPtr p = parent();
+        return attributes_.count(attribute_id) > 0 or (p and p->hasAttribute(attribute_id));
+    }
+    
+    Value Object::getAttributeValue(int attribute_id) const {
+        ObjectPtr p = parent();
+        auto where = attributes_.find(attribute_id);
+        if (where != attributes_.end()) {
+            return where->second->evaluate();
+        } else if (p and p->hasAttribute(attribute_id)) {
+            return p->getAttributeValue(attribute_id);
+        } else {
+            return Value(new UndefinedValue);
+        }
     }
     
     void Object::setAttribute(int attribute_id, Expression expr) {
         attributes_[attribute_id] = std::move(expr);
     }
     
-    bool Object::hasMethod(int message_id) const {
-        // TODO: must search up parent tree
-        return methods_.count(message_id) > 0;
+    void Object::setAttribute(int attribute_id, Value val) {
+        attributes_[attribute_id] = Expression(new ValueExpression(std::move(val)));
     }
     
-    const Statement& Object::method(int message_id) const {
-        // TODO: must search up parent tree
-        return methods_.find(message_id)->second;
+    bool Object::hasMethod(int message_id) const {
+        ObjectPtr p = parent();
+        return methods_.count(message_id) > 0 or (p and p->hasMethod(message_id));
+    }
+    
+    void Object::setMethod(int message_id, Statement stmt) {
+        methods_[message_id] = std::move(stmt);
+    }
+    
+    Value Object::send(int message_id) {
+        return Value(new UndefinedValue);
     }
     
 }

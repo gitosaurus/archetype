@@ -14,8 +14,13 @@
 
 #include "Expression.h"
 #include "Statement.h"
+#include "Value.h"
 
 namespace archetype {
+
+    class Object;
+    typedef std::shared_ptr<Object> ObjectPtr;
+
     class Object {
         int parentId_;
         int id_;
@@ -23,19 +28,28 @@ namespace archetype {
         std::map<int, Statement> methods_;
     public:
         Object(int parent_id = 0): parentId_(parent_id), id_(0) { }
+        Object(const Object& obj) = delete;
+        Object& operator=(const Object& obj) = delete;
         
         int id() const { return id_; }
         void setId(int id) { id_ = id; }
         
+        int parentId() const { return parentId_; }
+        void setParentId(int parent_id) { parentId_ = parent_id; }
+        
+        ObjectPtr parent() const;
+        
         bool hasAttribute(int attribute_id) const;
-        const Expression& attribute(int attribute_id) const;
+        Value getAttributeValue(int attribute_id) const;
         void setAttribute(int attribute_id, Expression expr);
+        void setAttribute(int attribute_id, Value val);
         
         bool hasMethod(int message_id) const;
-        const Statement& method(int message_id) const;
+        void setMethod(int message_id, Statement stmt);
+        
+        Value send(int message_id);
     };
     
-    typedef std::shared_ptr<Object> ObjectPtr;
 }
 
 #endif /* defined(__archetype__Object__) */

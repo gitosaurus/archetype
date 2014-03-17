@@ -313,6 +313,42 @@ namespace archetype {
                     }
                 }
                     
+                case Keywords::OP_SEND: {
+                    // TODO: There's a shortcut here, if the LHS is a literal message already and the RHS is a non-system object (or one w/a 'default')
+                    // So there are three distinct cases:
+                    // (1) Defined object with no default, even in its hierarchy.  Could check for message literal
+                    // (2) Defined object with default somewhere.  Must leave the message to the implementation.
+                    // (3) System object.  Takes anything.
+                    Value rv_o = rv->objectConversion();
+                    if (rv_o->isDefined()) {
+                        // TODO:  If system, just send it
+                        Value lv_s = lv->stringConversion();
+                        if (lv_s) {
+                            string message = lv_s->getString();
+                            if (GameDefinition::instance().Vocabulary.has(message)) {
+                                int message_id = GameDefinition::instance().Vocabulary.index(message);
+                                ObjectPtr recipient = GameDefinition::instance().Objects.get(rv_o->getObject());
+                                if (recipient->hasMethod(message_id)) {
+                                    return recipient->send(message_id);
+                                } else {
+                                    return Value(new ReservedConstantValue(Keywords::RW_ABSENT));
+                                }
+                            }
+                        } else {
+                            // Message is not convertible to string
+                            // TODO:  Can still send if recipient has 'default' method
+                        }
+                    } else {
+                        return Value(new UndefinedValue);
+                    }
+                }
+                    
+                case Keywords::OP_PASS: {
+                    // Like OP_SEND but doesn't push the new object's context
+                    // Also, in this case, the RHS can be a type and not an instance
+                    return Value(new UndefinedValue);
+                }
+                    
                 default:
                     if (is_binary(op())) {
                         throw logic_error("No binary operator evaluation written for " +

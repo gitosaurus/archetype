@@ -39,6 +39,10 @@ namespace archetype {
         
         ObjectPtr defineNewObject(int parent_id = 0);
         void assignObjectIdentifier(const ObjectPtr& object, std::string name);
+        
+        ObjectPtr getType(int type_object_id) const;
+        ObjectPtr defineNewType(int parent_id = 0);
+        void assignTypeIdentifier(const ObjectPtr& type_object, std::string name);
 
         static GameDefinition& instance();
         static void destroy();
