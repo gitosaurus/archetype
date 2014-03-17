@@ -234,6 +234,13 @@ namespace archetype {
         string actual2 = val_c_1->getString();
         string expected2 = "dank cellar of a room";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
+        
+        Expression expr_b_2 = make_expr_from_str("basement.full");
+        Value val_b_2 = expr_b_2->evaluate()->stringConversion();
+        ARCHETYPE_TEST(val_b_2->isDefined());
+        string expected3 = "an unremarkable dank cellar of a room";
+        string actual3 = val_b_2->getString();
+        ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
     
     void TestExpression::runTests_() {

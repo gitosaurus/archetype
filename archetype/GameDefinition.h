@@ -12,6 +12,7 @@
 #include <string>
 #include <map>
 #include <memory>
+#include <stack>
 
 #include "IdIndex.h"
 #include "StringIdIndex.h"
@@ -25,6 +26,13 @@ namespace archetype {
     // TODO: Better name?  I like "Game" or "Universe", maybe
     class GameDefinition {
     public:
+        
+        struct Context {
+            ObjectPtr selfObject;
+            ObjectPtr senderObject;
+            int messageId;
+        };
+
         StringIdIndex Vocabulary;
         StringIdIndex TextLiterals;
         StringIdIndex Identifiers;
@@ -35,7 +43,9 @@ namespace archetype {
         ObjectIndex   Types;
         ObjectIndex   Objects;
         
-        ObjectPtr     CurrentObject;
+        Context& currentContext() { return context_.top(); }
+        void pushContext(const Context& context) { context_.push(context); }
+        void popContext() { context_.pop(); }
         
         ObjectPtr defineNewObject(int parent_id = 0);
         void assignObjectIdentifier(const ObjectPtr& object, std::string name);
@@ -46,12 +56,23 @@ namespace archetype {
 
         static GameDefinition& instance();
         static void destroy();
+        
     private:
+        std::stack<Context> context_;
+        
         static GameDefinition* instance_;
         GameDefinition();
         // No copying
         GameDefinition(const GameDefinition&);
         GameDefinition& operator=(const GameDefinition&);
+    };
+    
+    class SelfScope {
+    public:
+        SelfScope(ObjectPtr new_self_obj);
+        SelfScope(const SelfScope& other) = delete;
+        SelfScope& operator=(const SelfScope&) = delete;
+        ~SelfScope();
     };
 }
 

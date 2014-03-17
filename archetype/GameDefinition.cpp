@@ -23,6 +23,14 @@ namespace archetype {
     }
     
     GameDefinition::GameDefinition() {
+        // TODO: better sentinel?  This feels fishy.
+        // TODO: What if the original context is self:undefined, sender:undefined, message:undefined?
+        // TODO: for most programs, self:main, sender:system, message:'START' (good, but maybe not the bottom)
+        Context context;
+        context.selfObject = ObjectPtr(new Object);
+        context.senderObject = ObjectPtr(new Object);
+        context.messageId = 0;
+        context_.push(context);
     }
     
     ObjectPtr GameDefinition::defineNewObject(int parent_id) {
@@ -57,5 +65,14 @@ namespace archetype {
         } else {
             return nullptr;
         }
+    }
+    
+    SelfScope::SelfScope(ObjectPtr new_self_obj) {
+        GameDefinition::instance().pushContext(GameDefinition::instance().currentContext());
+        GameDefinition::instance().currentContext().selfObject = new_self_obj;
+    }
+    
+    SelfScope::~SelfScope() {
+        GameDefinition::instance().popContext();
     }
 }

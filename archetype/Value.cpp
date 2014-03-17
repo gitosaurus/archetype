@@ -137,9 +137,13 @@ namespace archetype {
     int IdentifierValue::getIdentifier() const {
         return id_;
     }
-        
+    
     Value IdentifierValue::stringConversion() const {
-        return Value(new StringValue(GameDefinition::instance().Identifiers.get(id_)));
+        return attributeConversion()->stringConversion();
+    }
+    
+    Value IdentifierValue::numericConversion() const {
+        return attributeConversion()->numericConversion();
     }
     
     Value IdentifierValue::identifierConversion() const {
@@ -155,9 +159,9 @@ namespace archetype {
     }
     
     Value IdentifierValue::attributeConversion() const {
-        ObjectPtr current = GameDefinition::instance().CurrentObject;
-        if (current and current->hasAttribute(id_)) {
-            return Value(new AttributeValue(current->id(), id_));
+        ObjectPtr selfObject = GameDefinition::instance().currentContext().selfObject;
+        if (selfObject and selfObject->hasAttribute(id_)) {
+            return Value(new AttributeValue(selfObject->id(), id_));
         } else {
             return Value(new UndefinedValue);
         }
@@ -196,6 +200,7 @@ namespace archetype {
         if (not obj->hasAttribute(attributeId_)) {
             return Value(new UndefinedValue);
         }
+        SelfScope s(GameDefinition::instance().Objects.get(objectId_));
         return obj->getAttributeValue(attributeId_);
     }
     
