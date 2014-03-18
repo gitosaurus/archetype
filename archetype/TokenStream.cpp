@@ -11,7 +11,7 @@
 #include <sstream>
 
 #include "TokenStream.h"
-#include "GameDefinition.h"
+#include "Universe.h"
 #include "Keywords.h"
 
 using namespace std;
@@ -206,7 +206,7 @@ namespace archetype {
                     else {                        /* quoted literal */
                         source_.unreadChar(next_ch);           /* leave \n for the next guy */
                         token_ = Token(Token::QUOTE_LITERAL,
-                                       GameDefinition::instance().TextLiterals.index(s));
+                                       Universe::instance().TextLiterals.index(s));
                         state      = STOP;
                     }
                     break;
@@ -243,11 +243,11 @@ namespace archetype {
                         switch (bracket) {
                             case '"':
                                 token_ = Token(Token::TEXT_LITERAL,
-                                               GameDefinition::instance().TextLiterals.index(s));
+                                               Universe::instance().TextLiterals.index(s));
                                 break;
                             case '\'':
                                 token_ = Token(Token::MESSAGE,
-                                               GameDefinition::instance().Vocabulary.index(s));
+                                               Universe::instance().Vocabulary.index(s));
                                 break;
                             default:
                                 cout << "Programmer error: unknown literal type" << endl;
@@ -277,7 +277,7 @@ namespace archetype {
                         token_ = Token(Token::OPERATOR,
                                        Keywords::instance().Operators.index(s));
                     } else {
-                        int tnum = GameDefinition::instance().Identifiers.index(s);
+                        int tnum = Universe::instance().Identifiers.index(s);
                         token_ = Token(Token::IDENTIFIER, tnum);
                     }
                     state = STOP;

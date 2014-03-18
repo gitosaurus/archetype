@@ -1,13 +1,13 @@
 //
-//  GameDefinition.h
+//  Universe.h
 //  archetype
 //
 //  Created by Derek Jones on 2/10/14.
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef __archetype__GameDefinition__
-#define __archetype__GameDefinition__
+#ifndef __archetype__Universe__
+#define __archetype__Universe__
 
 #include <string>
 #include <map>
@@ -23,8 +23,7 @@ namespace archetype {
     typedef IdIndex<ObjectPtr> ObjectIndex;
     typedef std::map<int, int> IdentifierMap;
 
-    // TODO: Better name?  I like "Game" or "Universe", maybe
-    class GameDefinition {
+    class Universe {
     public:
         
         struct Context {
@@ -54,17 +53,17 @@ namespace archetype {
         ObjectPtr defineNewType(int parent_id = 0);
         void assignTypeIdentifier(const ObjectPtr& type_object, std::string name);
 
-        static GameDefinition& instance();
+        static Universe& instance();
         static void destroy();
         
     private:
         std::stack<Context> context_;
         
-        static GameDefinition* instance_;
-        GameDefinition();
+        static Universe* instance_;
+        Universe();
         // No copying
-        GameDefinition(const GameDefinition&);
-        GameDefinition& operator=(const GameDefinition&);
+        Universe(const Universe&);
+        Universe& operator=(const Universe&);
     };
     
     class SelfScope {
@@ -76,4 +75,4 @@ namespace archetype {
     };
 }
 
-#endif /* defined(__archetype__GameDefinition__) */
+#endif /* defined(__archetype__Universe__) */

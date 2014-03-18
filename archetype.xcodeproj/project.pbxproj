@@ -16,7 +16,7 @@
 		45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45EDDB8718B42BC6008EAF22 /* Keywords.cpp */; };
 		45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45EDDB8B18B55E5B008EAF22 /* TestTokenStream.cpp */; };
 		45F0610A18C0FAC2000FB4C3 /* TestStatement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F0610818C0FAC2000FB4C3 /* TestStatement.cpp */; };
-		45F7CF2118A9E8A200D39E12 /* GameDefinition.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF1F18A9E8A200D39E12 /* GameDefinition.cpp */; };
+		45F7CF2118A9E8A200D39E12 /* Universe.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF1F18A9E8A200D39E12 /* Universe.cpp */; };
 		45F7CF2418A9E9A000D39E12 /* Object.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF2218A9E9A000D39E12 /* Object.cpp */; };
 		45F7CF2718A9EA3700D39E12 /* Expression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF2518A9EA3700D39E12 /* Expression.cpp */; };
 		45F7CF2D18A9EB6200D39E12 /* Statement.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF2B18A9EB6200D39E12 /* Statement.cpp */; };
@@ -60,8 +60,8 @@
 		45F0610818C0FAC2000FB4C3 /* TestStatement.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestStatement.cpp; sourceTree = "<group>"; };
 		45F0610918C0FAC2000FB4C3 /* TestStatement.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestStatement.h; sourceTree = "<group>"; };
 		45F7CF1B18A9C09900D39E12 /* IdIndex.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = IdIndex.h; sourceTree = "<group>"; };
-		45F7CF1F18A9E8A200D39E12 /* GameDefinition.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = GameDefinition.cpp; sourceTree = "<group>"; };
-		45F7CF2018A9E8A200D39E12 /* GameDefinition.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = GameDefinition.h; sourceTree = "<group>"; };
+		45F7CF1F18A9E8A200D39E12 /* Universe.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Universe.cpp; sourceTree = "<group>"; };
+		45F7CF2018A9E8A200D39E12 /* Universe.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Universe.h; sourceTree = "<group>"; };
 		45F7CF2218A9E9A000D39E12 /* Object.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Object.cpp; sourceTree = "<group>"; };
 		45F7CF2318A9E9A000D39E12 /* Object.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Object.h; sourceTree = "<group>"; };
 		45F7CF2518A9EA3700D39E12 /* Expression.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Expression.cpp; sourceTree = "<group>"; };
@@ -115,8 +115,8 @@
 				45B2450018A34A0B006A5FA8 /* main.cpp */,
 				45B2450218A34A0B006A5FA8 /* archetype.1 */,
 				45F7CF1B18A9C09900D39E12 /* IdIndex.h */,
-				45F7CF1F18A9E8A200D39E12 /* GameDefinition.cpp */,
-				45F7CF2018A9E8A200D39E12 /* GameDefinition.h */,
+				45F7CF1F18A9E8A200D39E12 /* Universe.cpp */,
+				45F7CF2018A9E8A200D39E12 /* Universe.h */,
 				45F7CF2218A9E9A000D39E12 /* Object.cpp */,
 				45F7CF2318A9E9A000D39E12 /* Object.h */,
 				45F7CF2518A9EA3700D39E12 /* Expression.cpp */,
@@ -211,7 +211,7 @@
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
-				45F7CF2118A9E8A200D39E12 /* GameDefinition.cpp in Sources */,
+				45F7CF2118A9E8A200D39E12 /* Universe.cpp in Sources */,
 				45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */,
 				45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,

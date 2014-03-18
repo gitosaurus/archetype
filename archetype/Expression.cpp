@@ -12,7 +12,7 @@
 
 #include "Expression.h"
 #include "Keywords.h"
-#include "GameDefinition.h"
+#include "Universe.h"
 
 using namespace std;
 
@@ -325,9 +325,9 @@ namespace archetype {
                         Value lv_s = lv->stringConversion();
                         if (lv_s) {
                             string message = lv_s->getString();
-                            if (GameDefinition::instance().Vocabulary.has(message)) {
-                                int message_id = GameDefinition::instance().Vocabulary.index(message);
-                                ObjectPtr recipient = GameDefinition::instance().Objects.get(rv_o->getObject());
+                            if (Universe::instance().Vocabulary.has(message)) {
+                                int message_id = Universe::instance().Vocabulary.index(message);
+                                ObjectPtr recipient = Universe::instance().Objects.get(rv_o->getObject());
                                 if (recipient->hasMethod(message_id)) {
                                     return recipient->send(message_id);
                                 } else {
@@ -408,7 +408,7 @@ namespace archetype {
         MessageNode(int index): LiteralNode(index) { }
         virtual Value evaluate() const { return Value(new MessageValue(index())); }
         virtual void prefixDisplay(ostream& out) const {
-            out << "'" << GameDefinition::instance().Vocabulary.get(index()) << "'";
+            out << "'" << Universe::instance().Vocabulary.get(index()) << "'";
         }
     };
     
@@ -416,10 +416,10 @@ namespace archetype {
     public:
         TextLiteralNode(int index): LiteralNode(index) { }
         virtual Value evaluate() const {
-            return Value(new StringValue(GameDefinition::instance().TextLiterals.get(index())));
+            return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
         }
         virtual void prefixDisplay(ostream& out) const {
-            out << '"' << GameDefinition::instance().TextLiterals.get(index()) << '"';
+            out << '"' << Universe::instance().TextLiterals.get(index()) << '"';
         }
     };
     
@@ -427,10 +427,10 @@ namespace archetype {
     public:
         QuoteLiteralNode(int index): LiteralNode(index) { }
         virtual Value evaluate() const {
-            return Value(new StringValue(GameDefinition::instance().TextLiterals.get(index())));
+            return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
         }
         virtual void prefixDisplay(ostream& out) const {
-            out << "<<" << GameDefinition::instance().TextLiterals.get(index()) << ">>";
+            out << "<<" << Universe::instance().TextLiterals.get(index()) << ">>";
         }
     };
     
@@ -440,7 +440,7 @@ namespace archetype {
         IdentifierNode(int id): id_(id) { }
         virtual Value evaluate() const { return Value(new IdentifierValue(id_)); }
         virtual void prefixDisplay(ostream& out) const {
-            out << GameDefinition::instance().Identifiers.get(id_);
+            out << Universe::instance().Identifiers.get(id_);
         }
     };
     

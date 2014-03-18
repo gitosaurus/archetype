@@ -12,7 +12,7 @@
 #include <cassert>
 
 #include "Value.h"
-#include "GameDefinition.h"
+#include "Universe.h"
 
 using namespace std;
 
@@ -61,7 +61,7 @@ namespace archetype {
     }
     
     Value MessageValue::stringConversion() const {
-        string conversion = GameDefinition::instance().Vocabulary.get(message_);
+        string conversion = Universe::instance().Vocabulary.get(message_);
         return Value(new StringValue(conversion));
     }
     
@@ -151,15 +151,15 @@ namespace archetype {
     }
     
     Value IdentifierValue::objectConversion() const {
-        auto id_obj_p = GameDefinition::instance().ObjectIdentifiers.find(id_);
-        if (id_obj_p == GameDefinition::instance().ObjectIdentifiers.end()) {
+        auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
+        if (id_obj_p == Universe::instance().ObjectIdentifiers.end()) {
             return Value(new UndefinedValue);
         }
         return Value(new ObjectValue(id_obj_p->second));
     }
     
     Value IdentifierValue::attributeConversion() const {
-        ObjectPtr selfObject = GameDefinition::instance().currentContext().selfObject;
+        ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
         if (selfObject and selfObject->hasAttribute(id_)) {
             return Value(new AttributeValue(selfObject->id(), id_));
         } else {
@@ -195,12 +195,12 @@ namespace archetype {
     }
     
     Value AttributeValue::evaluate() const {
-        assert(GameDefinition::instance().Objects.hasIndex(objectId_));
-        ObjectPtr obj = GameDefinition::instance().Objects.get(objectId_);
+        assert(Universe::instance().Objects.hasIndex(objectId_));
+        ObjectPtr obj = Universe::instance().Objects.get(objectId_);
         if (not obj->hasAttribute(attributeId_)) {
             return Value(new UndefinedValue);
         }
-        SelfScope s(GameDefinition::instance().Objects.get(objectId_));
+        SelfScope s(Universe::instance().Objects.get(objectId_));
         return obj->getAttributeValue(attributeId_);
     }
     
@@ -229,8 +229,8 @@ namespace archetype {
     }
     
     Value AttributeValue::assign(Value new_value) {
-        assert(GameDefinition::instance().Objects.hasIndex(objectId_));
-        ObjectPtr obj = GameDefinition::instance().Objects.get(objectId_);
+        assert(Universe::instance().Objects.hasIndex(objectId_));
+        ObjectPtr obj = Universe::instance().Objects.get(objectId_);
         obj->setAttribute(attributeId_, Expression(new ValueExpression(std::move(new_value))));
         return clone();
     }

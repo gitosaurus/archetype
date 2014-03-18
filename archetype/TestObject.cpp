@@ -11,7 +11,7 @@
 
 #include "TestObject.h"
 #include "TestRegistry.h"
-#include "GameDefinition.h"
+#include "Universe.h"
 #include "Expression.h"
 #include "TokenStream.h"
 #include "Expression.h"
@@ -35,9 +35,9 @@ namespace archetype {
     }
     
     void TestObject::testObjects_() {
-        ObjectPtr test = GameDefinition::instance().defineNewObject();
-        GameDefinition::instance().assignObjectIdentifier(test, "test");
-        int seven_id = GameDefinition::instance().Identifiers.index("seven");
+        ObjectPtr test = Universe::instance().defineNewObject();
+        Universe::instance().assignObjectIdentifier(test, "test");
+        int seven_id = Universe::instance().Identifiers.index("seven");
         test->setAttribute(seven_id, make_expr_from_str("3 + 4"));
         Expression expr1 = make_expr_from_str("test.seven + 5");
         Value val1 = expr1->evaluate()->numericConversion();
@@ -46,9 +46,9 @@ namespace archetype {
         int expected1 = 12;
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
-        ObjectPtr test2 = GameDefinition::instance().defineNewObject();
-        GameDefinition::instance().assignObjectIdentifier(test2, "test2");
-        int another_id = GameDefinition::instance().Identifiers.index("another");
+        ObjectPtr test2 = Universe::instance().defineNewObject();
+        Universe::instance().assignObjectIdentifier(test2, "test2");
+        int another_id = Universe::instance().Identifiers.index("another");
         test->setAttribute(another_id, make_expr_from_str("test2"));
         Expression expr2 = make_expr_from_str("test.another");
         Value val2 = expr2->evaluate()->objectConversion();
@@ -69,7 +69,7 @@ namespace archetype {
         
         Expression expr5 = make_expr_from_str("test.someone := test2");
         expr5->evaluate();
-        int someone_id = GameDefinition::instance().Identifiers.index("someone");
+        int someone_id = Universe::instance().Identifiers.index("someone");
         Value val5 = test->getAttributeValue(someone_id)->objectConversion();
         ARCHETYPE_TEST(val5->isDefined());
         int actual5 = val5->getObject();
@@ -78,20 +78,20 @@ namespace archetype {
     }
     
     void TestObject::testInheritance_() {
-        ObjectPtr room_type = GameDefinition::instance().defineNewType();
-        GameDefinition::instance().assignTypeIdentifier(room_type, "room");
-        int desc_id = GameDefinition::instance().Identifiers.index("desc");
+        ObjectPtr room_type = Universe::instance().defineNewType();
+        Universe::instance().assignTypeIdentifier(room_type, "room");
+        int desc_id = Universe::instance().Identifiers.index("desc");
         room_type->setAttribute(desc_id, Value(new StringValue("room")));
         Expression expr = make_expr_from_str("\"an unremarkable \" & desc");
-        int full_id = GameDefinition::instance().Identifiers.index("full");
+        int full_id = Universe::instance().Identifiers.index("full");
         room_type->setAttribute(full_id, std::move(expr));
         
-        ObjectPtr basement = GameDefinition::instance().defineNewObject(room_type->id());
-        GameDefinition::instance().assignObjectIdentifier(basement, "basement");
+        ObjectPtr basement = Universe::instance().defineNewObject(room_type->id());
+        Universe::instance().assignObjectIdentifier(basement, "basement");
         basement->setAttribute(desc_id, Value(new StringValue("dank cellar of a room")));
         
-        ObjectPtr courtyard = GameDefinition::instance().defineNewObject(room_type->id());
-        GameDefinition::instance().assignObjectIdentifier(courtyard, "courtyard");
+        ObjectPtr courtyard = Universe::instance().defineNewObject(room_type->id());
+        Universe::instance().assignObjectIdentifier(courtyard, "courtyard");
         
         Expression expr_b_1 = make_expr_from_str("courtyard.desc");
         Value val_b_1 = expr_b_1->evaluate()->stringConversion();

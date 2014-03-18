@@ -7,12 +7,12 @@
 //
 
 #include "Object.h"
-#include "GameDefinition.h"
+#include "Universe.h"
 
 namespace archetype {
     
     ObjectPtr Object::parent() const {
-        return GameDefinition::instance().getType(parentId_);
+        return Universe::instance().getType(parentId_);
     }
     
     bool Object::hasAttribute(int attribute_id) const {
