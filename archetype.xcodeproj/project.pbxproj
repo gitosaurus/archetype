@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451BA00C18D7C3AF0043C274 /* TestObject.cpp */; };
 		4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4532326E18B1DEF0008B68E1 /* TokenStream.cpp */; };
 		45B2450118A34A0B006A5FA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45B2450018A34A0B006A5FA8 /* main.cpp */; };
 		45B2450318A34A0B006A5FA8 /* archetype.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 45B2450218A34A0B006A5FA8 /* archetype.1 */; };
@@ -40,6 +41,8 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		451BA00C18D7C3AF0043C274 /* TestObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestObject.cpp; sourceTree = "<group>"; };
+		451BA00D18D7C3AF0043C274 /* TestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestObject.h; sourceTree = "<group>"; };
 		4532326E18B1DEF0008B68E1 /* TokenStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TokenStream.cpp; sourceTree = "<group>"; };
 		4532326F18B1DEF0008B68E1 /* TokenStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TokenStream.h; sourceTree = "<group>"; };
 		45B244FD18A34A0B006A5FA8 /* archetype */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = archetype; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -151,6 +154,8 @@
 				45ECAF7C18BD04D800FA1924 /* TestExpression.h */,
 				45F0610818C0FAC2000FB4C3 /* TestStatement.cpp */,
 				45F0610918C0FAC2000FB4C3 /* TestStatement.h */,
+				451BA00C18D7C3AF0043C274 /* TestObject.cpp */,
+				451BA00D18D7C3AF0043C274 /* TestObject.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -211,6 +216,7 @@
 				45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
+				451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */,
 				45F0610A18C0FAC2000FB4C3 /* TestStatement.cpp in Sources */,
 				45F7CF2D18A9EB6200D39E12 /* Statement.cpp in Sources */,
 				45D89F3718C81644009CCF30 /* Value.cpp in Sources */,
