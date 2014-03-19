@@ -11,6 +11,7 @@
 
 #include <map>
 #include <memory>
+#include <iostream>
 
 #include "Expression.h"
 #include "Statement.h"
@@ -27,7 +28,7 @@ namespace archetype {
         std::map<int, Expression> attributes_;
         std::map<int, Statement> methods_;
     public:
-        Object(int parent_id = 0): parentId_(parent_id), id_(0) { }
+        Object(int parent_id = -1): parentId_{parent_id}, id_{0} { }
         Object(const Object& obj) = delete;
         Object& operator=(const Object& obj) = delete;
         
@@ -45,9 +46,10 @@ namespace archetype {
         void setAttribute(int attribute_id, Value val);
         
         bool hasMethod(int message_id) const;
+        Value executeMethod(int message_id, std::ostream& out) const;
         void setMethod(int message_id, Statement stmt);
         
-        Value send(int message_id);
+        Value send(Value message, std::ostream& out);
     };
     
 }

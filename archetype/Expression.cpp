@@ -314,29 +314,15 @@ namespace archetype {
                 }
                     
                 case Keywords::OP_SEND: {
-                    // TODO: There's a shortcut here, if the LHS is a literal message already and the RHS is a non-system object (or one w/a 'default')
-                    // So there are three distinct cases:
-                    // (1) Defined object with no default, even in its hierarchy.  Could check for message literal
-                    // (2) Defined object with default somewhere.  Must leave the message to the implementation.
-                    // (3) System object.  Takes anything.
                     Value rv_o = rv->objectConversion();
                     if (rv_o->isDefined()) {
-                        // TODO:  If system, just send it
-                        Value lv_s = lv->stringConversion();
-                        if (lv_s) {
-                            string message = lv_s->getString();
-                            if (Universe::instance().Vocabulary.has(message)) {
-                                int message_id = Universe::instance().Vocabulary.index(message);
-                                ObjectPtr recipient = Universe::instance().Objects.get(rv_o->getObject());
-                                if (recipient->hasMethod(message_id)) {
-                                    return recipient->send(message_id);
-                                } else {
-                                    return Value(new ReservedConstantValue(Keywords::RW_ABSENT));
-                                }
-                            }
+                        ObjectPtr recipient = Universe::instance().Objects.get(rv_o->getObject());
+                        if (not recipient) {
+                            return Value(new UndefinedValue);
                         } else {
-                            // Message is not convertible to string
-                            // TODO:  Can still send if recipient has 'default' method
+                            SelfScope s(recipient);
+                            // TODO:  Need evaluate() to go to an ostream!
+                            return recipient->send(std::move(lv), std::cout);
                         }
                     } else {
                         return Value(new UndefinedValue);
@@ -414,7 +400,7 @@ namespace archetype {
     
     class TextLiteralNode : public LiteralNode {
     public:
-        TextLiteralNode(int index): LiteralNode(index) { }
+        TextLiteralNode(int index): LiteralNode{index} { }
         virtual Value evaluate() const {
             return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
         }
@@ -425,7 +411,7 @@ namespace archetype {
     
     class QuoteLiteralNode : public LiteralNode {
     public:
-        QuoteLiteralNode(int index): LiteralNode(index) { }
+        QuoteLiteralNode(int index): LiteralNode{index} { }
         virtual Value evaluate() const {
             return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
         }
@@ -437,8 +423,15 @@ namespace archetype {
     class IdentifierNode : public ScalarNode {
         int id_;
     public:
-        IdentifierNode(int id): id_(id) { }
-        virtual Value evaluate() const { return Value(new IdentifierValue(id_)); }
+        IdentifierNode(int id): id_{id} { }
+        virtual Value evaluate() const {
+            ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
+            if (selfObject and selfObject->hasAttribute(id_)) {
+                return Value(new AttributeValue(selfObject->id(), id_));
+            } else {
+                return Value(new IdentifierValue(id_));
+            }
+        }
         virtual void prefixDisplay(ostream& out) const {
             out << Universe::instance().Identifiers.get(id_);
         }

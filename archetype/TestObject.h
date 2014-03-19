@@ -17,6 +17,7 @@ namespace archetype {
     class TestObject : public ITestSuite {
         void testObjects_();
         void testInheritance_();
+        void testMethods_();
     protected:
         virtual void runTests_();
     public:

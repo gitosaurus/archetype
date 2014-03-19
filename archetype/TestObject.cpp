@@ -13,6 +13,7 @@
 #include "TestRegistry.h"
 #include "Universe.h"
 #include "Expression.h"
+#include "Statement.h"
 #include "TokenStream.h"
 #include "Expression.h"
 
@@ -29,9 +30,12 @@ namespace archetype {
         return expr;
     }
     
-    void TestObject::runTests_() {
-        testObjects_();
-        testInheritance_();
+    inline Statement make_stmt_from_str(string src_str) {
+        istringstream in(src_str);
+        SourceFile src("test", in);
+        TokenStream token_stream(src);
+        Statement stmt = make_statement(token_stream);
+        return stmt;
     }
     
     void TestObject::testObjects_() {
@@ -113,5 +117,30 @@ namespace archetype {
         string expected3 = "an unremarkable dank cellar of a room";
         string actual3 = val_b_2->getString();
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
+    }
+    
+    void TestObject::testMethods_() {
+        ObjectPtr monster = Universe::instance().defineNewObject();
+        int health_id = Universe::instance().Identifiers.index("health");
+        monster->setAttribute(health_id, Value(new NumericValue(10)));
+        Universe::instance().assignObjectIdentifier(monster, "monster");
+        Statement kill_stmt = make_stmt_from_str("{\n"
+                                                 "health := health - 1\n"
+                                                 "write \"The monster is down to \", health, \".\"\n"
+                                                 "health }\n");
+        int kill_message_id = Universe::instance().Vocabulary.index("kill");
+        monster->setMethod(kill_message_id, std::move(kill_stmt));
+        Expression expr1 = make_expr_from_str("'kill' -> monster");
+        Value val1 = expr1->evaluate()->numericConversion();
+        ARCHETYPE_TEST(val1->isDefined());
+        int expected1 = 9;
+        int actual1 = val1->getNumber();
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+    }
+    
+    void TestObject::runTests_() {
+        testObjects_();
+        testInheritance_();
+        testMethods_();
     }
 }

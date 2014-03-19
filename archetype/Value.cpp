@@ -18,6 +18,10 @@ using namespace std;
 
 namespace archetype {
     
+    Value IValue::messageConversion() const {
+        return Value(new UndefinedValue);
+    }
+    
     Value IValue::stringConversion() const {
         return Value(new UndefinedValue);
     }
@@ -60,6 +64,10 @@ namespace archetype {
         return Value(new StringValue(value_ ? "TRUE" : "FALSE"));
     }
     
+    int MessageValue::getMessage() const {
+        return message_;
+    }
+    
     Value MessageValue::stringConversion() const {
         string conversion = Universe::instance().Vocabulary.get(message_);
         return Value(new StringValue(conversion));
@@ -85,10 +93,6 @@ namespace archetype {
         return Value(new StringValue(out.str()));
     }
     
-    Value NumericValue::numericConversion() const {
-        return Value(new NumericValue(value_));
-    }
-    
     bool StringValue::isSameValueAs(const Value &other) const {
         const StringValue* other_p = dynamic_cast<const StringValue*>(other.get());
         return other_p and other_p->value_ == value_;
@@ -98,8 +102,12 @@ namespace archetype {
         return value_;
     }
     
-    Value StringValue::stringConversion() const {
-        return Value(new StringValue(value_));
+    Value StringValue::messageConversion() const {
+        if (Universe::instance().Vocabulary.has(value_)) {
+            return Value(new MessageValue(Universe::instance().Vocabulary.index(value_)));
+        } else {
+            return Value(new UndefinedValue);
+        }
     }
     
     Value StringValue::numericConversion() const {
@@ -146,10 +154,6 @@ namespace archetype {
         return attributeConversion()->numericConversion();
     }
     
-    Value IdentifierValue::identifierConversion() const {
-        return Value(new IdentifierValue(id_));
-    }
-    
     Value IdentifierValue::objectConversion() const {
         auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
         if (id_obj_p == Universe::instance().ObjectIdentifiers.end()) {
@@ -179,10 +183,6 @@ namespace archetype {
     
     int ObjectValue::getObject() const {
         return objectId_;
-    }
-    
-    Value ObjectValue::objectConversion() const {
-        return Value(new ObjectValue(objectId_));
     }
     
     bool AttributeValue::isSameValueAs(const Value &other) const {
@@ -222,10 +222,6 @@ namespace archetype {
     
     Value AttributeValue::objectConversion() const {
         return evaluate()->objectConversion();
-    }
-    
-    Value AttributeValue::attributeConversion() const {
-        return Value(new AttributeValue(objectId_, attributeId_));
     }
     
     Value AttributeValue::assign(Value new_value) {

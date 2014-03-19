@@ -33,11 +33,13 @@ namespace archetype {
         virtual Value clone() const = 0;
 
         virtual bool isTrueEnough() const     { return true; }
+        virtual int getMessage() const        { throw std::logic_error("Value is not a defined message"); }
         virtual std::string getString() const { throw std::logic_error("Value is not a string"); }
         virtual int getNumber() const         { throw std::logic_error("Value is not a number"); }
         virtual int getObject() const         { throw std::logic_error("Value is not an object reference"); }
         virtual int getIdentifier() const     { throw std::logic_error("Value does not have an identifier"); }
         
+        virtual Value messageConversion() const;
         virtual Value stringConversion() const;
         virtual Value numericConversion() const;
         virtual Value identifierConversion() const;
@@ -77,6 +79,9 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new MessageValue(message_)); }
         
+        virtual int getMessage() const override;
+        
+        virtual Value messageConversion() const override { return clone(); }
         virtual Value stringConversion() const override;
     };
     
@@ -91,7 +96,7 @@ namespace archetype {
         virtual int getNumber() const override;
         
         virtual Value stringConversion() const override;
-        virtual Value numericConversion() const override;
+        virtual Value numericConversion() const override { return clone(); }
     };
     
     class ReservedConstantValue : public IValue {
@@ -116,7 +121,8 @@ namespace archetype {
         
         virtual std::string getString() const override;
         
-        virtual Value stringConversion() const override;
+        virtual Value messageConversion() const override;
+        virtual Value stringConversion() const override { return clone(); }
         virtual Value numericConversion() const override;
     };
     
@@ -132,7 +138,7 @@ namespace archetype {
         
         virtual Value stringConversion() const override;
         virtual Value numericConversion() const override;
-        virtual Value identifierConversion() const override;
+        virtual Value identifierConversion() const override { return clone(); }
         virtual Value objectConversion() const override;
         virtual Value attributeConversion() const override;
     };
@@ -147,7 +153,7 @@ namespace archetype {
         
         virtual int getObject() const override;
 
-        virtual Value objectConversion() const override;
+        virtual Value objectConversion() const override { return clone(); }
     };
     
     class AttributeValue : public IValue {
@@ -168,7 +174,7 @@ namespace archetype {
         virtual Value numericConversion() const override;
         virtual Value identifierConversion() const override;
         virtual Value objectConversion() const override;
-        virtual Value attributeConversion() const override;
+        virtual Value attributeConversion() const override { return clone(); }
         
         virtual Value assign(Value new_value) override;
     };
