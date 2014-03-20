@@ -17,7 +17,8 @@ namespace archetype {
         if (parentId_ < 0) {
             return nullptr;
         } else {
-            return Universe::instance().getType(parentId_);
+            ObjectPtr obj = Universe::instance().getObject(parentId_);
+            return (obj and obj->isPrototype()) ? obj : nullptr;
         }
     }
     

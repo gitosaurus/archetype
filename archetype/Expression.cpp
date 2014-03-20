@@ -106,7 +106,7 @@ namespace archetype {
     class Operator : public IExpression {
         Keywords::Operators_e op_;
     protected:
-        Operator(Keywords::Operators_e op): op_(op) { }
+        Operator(Keywords::Operators_e op): op_{op} { }
     public:
         Keywords::Operators_e op() const     { return op_; }
         
@@ -128,8 +128,8 @@ namespace archetype {
         Expression right_;
     public:
         UnaryOperator(Keywords::Operators_e op, Expression right):
-        Operator(op),
-        right_(move(right)) {
+        Operator{op},
+        right_{move(right)} {
             assert(not is_binary(op));
         }
         
@@ -242,9 +242,9 @@ namespace archetype {
         Expression right_;
     public:
         BinaryOperator(Expression left, Keywords::Operators_e op, Expression right):
-        Operator(op),
-        left_(move(left)),
-        right_(move(right))
+        Operator{op},
+        left_{move(left)},
+        right_{move(right)}
         {
             assert(is_binary(op));
         }
@@ -313,26 +313,28 @@ namespace archetype {
                     }
                 }
                     
-                case Keywords::OP_SEND: {
+                case Keywords::OP_SEND:
+                case Keywords::OP_PASS: {
+                    // TODO:  A 'super' reserved word is a really good idea.
                     Value rv_o = rv->objectConversion();
-                    if (rv_o->isDefined()) {
-                        ObjectPtr recipient = Universe::instance().Objects.get(rv_o->getObject());
-                        if (not recipient) {
-                            return Value(new UndefinedValue);
-                        } else {
-                            SelfScope s(recipient);
-                            // TODO:  Need evaluate() to go to an ostream!
-                            return recipient->send(std::move(lv), std::cout);
-                        }
-                    } else {
+                    if (not rv_o->isDefined()) {
                         return Value(new UndefinedValue);
                     }
-                }
-                    
-                case Keywords::OP_PASS: {
-                    // Like OP_SEND but doesn't push the new object's context
-                    // Also, in this case, the RHS can be a type and not an instance
-                    return Value(new UndefinedValue);
+                    ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
+                    if (not recipient) {
+                        return Value(new UndefinedValue);
+                    } else if (recipient->isPrototype()) {
+                        // TODO:  Need evaluate() to go to an ostream!
+                        return recipient->send(std::move(lv), std::cout);
+                    } else {
+                        // TODO:  Catch this probable error of SENDing to an instance
+                        if (op() == Keywords::OP_PASS) {
+                            cerr << "!!! Passing a message to an instance" << endl;
+                        }
+                        SelfScope s(recipient);
+                        // TODO:  Need evaluate() to go to an ostream!
+                        return recipient->send(std::move(lv), std::cout);
+                    }
                 }
                     
                 default:
@@ -375,14 +377,14 @@ namespace archetype {
     class LiteralNode : public ScalarNode {
         int index_;
     protected:
-        LiteralNode(int index): index_(index) { }
+        LiteralNode(int index): index_{index} { }
     public:
         int index() const { return index_; }
     };
     
     class NumericLiteralNode : public LiteralNode {
     public:
-        NumericLiteralNode(int number): LiteralNode(number) { }
+        NumericLiteralNode(int number): LiteralNode{number} { }
         virtual Value evaluate() const { return Value(new NumericValue(index())); }
         virtual void prefixDisplay(ostream& out) const {
             out << index();
@@ -391,7 +393,7 @@ namespace archetype {
     
     class MessageNode : public LiteralNode {
     public:
-        MessageNode(int index): LiteralNode(index) { }
+        MessageNode(int index): LiteralNode{index} { }
         virtual Value evaluate() const { return Value(new MessageValue(index())); }
         virtual void prefixDisplay(ostream& out) const {
             out << "'" << Universe::instance().Vocabulary.get(index()) << "'";

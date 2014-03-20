@@ -6,6 +6,10 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <cassert>
+
+using namespace std;
+
 #include "Universe.h"
 
 namespace archetype {
@@ -33,38 +37,26 @@ namespace archetype {
         context_.push(context);
     }
     
+    ObjectPtr Universe::getObject(int object_id) const {
+        // TODO:  I hate this lookup-and-find pattern.  How about a nice find() for IdIndex?
+        if (objects_.hasIndex(object_id)) {
+            return objects_.get(object_id);
+        } else {
+            return nullptr;
+        }
+    }
+    
     ObjectPtr Universe::defineNewObject(int parent_id) {
         ObjectPtr obj(new Object(parent_id));
-        int object_id = Objects.index(std::move(obj));
+        int object_id = objects_.index(std::move(obj));
         obj->setId(object_id);
-        return Objects.get(object_id);
+        return objects_.get(object_id);
     }
     
     void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string name) {
         int object_id = object->id();
         int identifier_id_for_object = Identifiers.index(name);
         ObjectIdentifiers[identifier_id_for_object] = object_id;
-    }
-    
-    ObjectPtr Universe::defineNewType(int parent_id) {
-        ObjectPtr type_obj(new Object(parent_id));
-        int type_object_id = Types.index(std::move(type_obj));
-        type_obj->setId(type_object_id);
-        return Types.get(type_object_id);
-    }
-    
-    void Universe::assignTypeIdentifier(const ObjectPtr &type_object, std::string name) {
-        int type_object_id = type_object->id();
-        int identifier_id_for_type = Identifiers.index(name);
-        TypeIdentifiers[identifier_id_for_type] = type_object_id;
-    }
-    
-    ObjectPtr Universe::getType(int type_object_id) const {
-        if (Types.hasIndex(type_object_id)) {
-            return Types.get(type_object_id);
-        } else {
-            return nullptr;
-        }
     }
     
     SelfScope::SelfScope(ObjectPtr new_self_obj) {

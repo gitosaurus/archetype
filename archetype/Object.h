@@ -25,10 +25,16 @@ namespace archetype {
     class Object {
         int parentId_;
         int id_;
+        bool prototype_;
         std::map<int, Expression> attributes_;
         std::map<int, Statement> methods_;
     public:
-        Object(int parent_id = -1): parentId_{parent_id}, id_{0} { }
+        Object(int parent_id = -1):
+        parentId_{parent_id},
+        id_{0},
+        prototype_{false}
+        { }
+
         Object(const Object& obj) = delete;
         Object& operator=(const Object& obj) = delete;
         
@@ -37,6 +43,9 @@ namespace archetype {
         
         int parentId() const { return parentId_; }
         void setParentId(int parent_id) { parentId_ = parent_id; }
+        
+        bool isPrototype() const { return prototype_; }
+        void setPrototype(bool prototype) { prototype_ = prototype; }
         
         ObjectPtr parent() const;
         

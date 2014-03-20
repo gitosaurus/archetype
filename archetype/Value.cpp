@@ -195,13 +195,13 @@ namespace archetype {
     }
     
     Value AttributeValue::evaluate() const {
-        assert(Universe::instance().Objects.hasIndex(objectId_));
-        ObjectPtr obj = Universe::instance().Objects.get(objectId_);
-        if (not obj->hasAttribute(attributeId_)) {
+        ObjectPtr obj = Universe::instance().getObject(objectId_);
+        if (obj and obj->hasAttribute(attributeId_)) {
+            SelfScope s(obj);
+            return obj->getAttributeValue(attributeId_);
+        } else {
             return Value(new UndefinedValue);
         }
-        SelfScope s(Universe::instance().Objects.get(objectId_));
-        return obj->getAttributeValue(attributeId_);
     }
     
     bool AttributeValue::isTrueEnough() const {
@@ -225,10 +225,13 @@ namespace archetype {
     }
     
     Value AttributeValue::assign(Value new_value) {
-        assert(Universe::instance().Objects.hasIndex(objectId_));
-        ObjectPtr obj = Universe::instance().Objects.get(objectId_);
-        obj->setAttribute(attributeId_, Expression(new ValueExpression(std::move(new_value))));
-        return clone();
+        ObjectPtr obj = Universe::instance().getObject(objectId_);
+        if (not obj) {
+            return Value(new UndefinedValue);
+        } else {
+            obj->setAttribute(attributeId_, Expression(new ValueExpression(std::move(new_value))));
+            return clone();
+        }
     }
     
 }

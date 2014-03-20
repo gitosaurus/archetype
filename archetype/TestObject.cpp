@@ -82,8 +82,9 @@ namespace archetype {
     }
     
     void TestObject::testInheritance_() {
-        ObjectPtr room_type = Universe::instance().defineNewType();
-        Universe::instance().assignTypeIdentifier(room_type, "room");
+        ObjectPtr room_type = Universe::instance().defineNewObject();
+        room_type->setPrototype(true);
+        Universe::instance().assignObjectIdentifier(room_type, "room");
         int desc_id = Universe::instance().Identifiers.index("desc");
         room_type->setAttribute(desc_id, Value(new StringValue("room")));
         Expression expr = make_expr_from_str("\"an unremarkable \" & desc");
