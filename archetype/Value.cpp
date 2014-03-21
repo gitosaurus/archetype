@@ -142,6 +142,15 @@ namespace archetype {
         return other_p and other_p->word_ == word_;
     }
     
+    Value ReservedConstantValue::messageConversion() const {
+        if (word_ == Keywords::RW_MESSAGE) {
+            int message_id = Universe::instance().currentContext().messageId;
+            return Value(new MessageValue(message_id));
+        } else {
+            return Value(new UndefinedValue);
+        }
+    }
+    
     int IdentifierValue::getIdentifier() const {
         return id_;
     }

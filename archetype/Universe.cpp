@@ -78,4 +78,13 @@ namespace archetype {
     SelfScope::~SelfScope() {
         Universe::instance().popContext();
     }
+    
+    MessageScope::MessageScope(int message_id) {
+        Universe::instance().pushContext(Universe::instance().currentContext());
+        Universe::instance().currentContext().messageId = message_id;
+    }
+    
+    MessageScope::~MessageScope() {
+        Universe::instance().popContext();
+    }
 }

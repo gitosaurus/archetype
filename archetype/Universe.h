@@ -67,9 +67,17 @@ namespace archetype {
     class SelfScope {
     public:
         SelfScope(ObjectPtr new_self_obj);
-        SelfScope(const SelfScope& other) = delete;
+        SelfScope(const SelfScope&) = delete;
         SelfScope& operator=(const SelfScope&) = delete;
         ~SelfScope();
+    };
+    
+    class MessageScope {
+    public:
+        MessageScope(int message_id);
+        MessageScope(const MessageScope&) = delete;
+        MessageScope& operator=(const MessageScope&) = delete;
+        ~MessageScope();
     };
 }
 

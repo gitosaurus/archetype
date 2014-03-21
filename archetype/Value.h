@@ -108,6 +108,8 @@ namespace archetype {
         virtual Value clone() const override { return Value(new ReservedConstantValue(word_)); }
         
         virtual bool isTrueEnough() const override;
+        
+        virtual Value messageConversion() const override;
         virtual Value stringConversion() const override;
     };
     

@@ -53,7 +53,6 @@ namespace archetype {
     }
     
     Value Object::executeMethod(int message_id) const {
-        // TODO:  Need to use the Universe's standard-out
         ObjectPtr p = parent();
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
@@ -71,9 +70,11 @@ namespace archetype {
     
     Value Object::send(Value message) {
         // TODO: If this is the system object, dispatch to system
+        // TODO: Will need some better message-scope for non-literal messages
         Value defined_message = message->messageConversion();
         if (defined_message->isDefined()) {
             int message_id = defined_message->getMessage();
+            MessageScope m(message_id);
             return executeMethod(message_id);
         } else {
             return Value(new UndefinedValue);

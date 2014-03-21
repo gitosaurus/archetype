@@ -156,7 +156,7 @@ namespace archetype {
         ObjectPtr cat = Universe::instance().defineNewObject(animal_type->id());
         Universe::instance().assignObjectIdentifier(cat, "cat");
         cat->setAttribute(desc_id, Value(new StringValue("cat")));
-        Statement meow_stmt = make_stmt_from_str("{ 'growl' --> animal; write \"The cat does a double-take.\"}");
+        Statement meow_stmt = make_stmt_from_str("{ message --> animal; write \"The cat does a double-take.\"}");
         cat->setMethod(growl_message_id, std::move(meow_stmt));
         
         Statement stmt1 = make_stmt_from_str("{ 'growl' -> dog; 'growl' -> cat }");
