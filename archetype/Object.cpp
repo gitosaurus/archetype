@@ -52,13 +52,14 @@ namespace archetype {
         return methods_.count(message_id) > 0 or (p and p->hasMethod(message_id));
     }
     
-    Value Object::executeMethod(int message_id, std::ostream& out) const {
+    Value Object::executeMethod(int message_id) const {
+        // TODO:  Need to use the Universe's standard-out
         ObjectPtr p = parent();
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
-            return where->second->execute(out);
+            return where->second->execute(std::cout);
         } else if (p->hasMethod(message_id)) {
-            return p->executeMethod(message_id, out);
+            return p->executeMethod(message_id);
         } else {
             return Value(new ReservedConstantValue(Keywords::RW_ABSENT));
         }
@@ -68,12 +69,12 @@ namespace archetype {
         methods_[message_id] = std::move(stmt);
     }
     
-    Value Object::send(Value message, std::ostream& out) {
+    Value Object::send(Value message) {
         // TODO: If this is the system object, dispatch to system
         Value defined_message = message->messageConversion();
         if (defined_message->isDefined()) {
             int message_id = defined_message->getMessage();
-            return executeMethod(message_id, out);
+            return executeMethod(message_id);
         } else {
             return Value(new UndefinedValue);
         }

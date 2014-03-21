@@ -18,6 +18,7 @@ namespace archetype {
         void testObjects_();
         void testInheritance_();
         void testMethods_();
+        void testMessagePassing_();
     protected:
         virtual void runTests_();
     public:

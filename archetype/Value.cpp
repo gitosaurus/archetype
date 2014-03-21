@@ -194,7 +194,7 @@ namespace archetype {
         return attributeId_;
     }
     
-    Value AttributeValue::evaluate() const {
+    Value AttributeValue::dereference_() const {
         ObjectPtr obj = Universe::instance().getObject(objectId_);
         if (obj and obj->hasAttribute(attributeId_)) {
             SelfScope s(obj);
@@ -205,15 +205,15 @@ namespace archetype {
     }
     
     bool AttributeValue::isTrueEnough() const {
-        return evaluate()->isTrueEnough();
+        return dereference_()->isTrueEnough();
     }
     
     Value AttributeValue::stringConversion() const {
-        return evaluate()->stringConversion();
+        return dereference_()->stringConversion();
     }
     
     Value AttributeValue::numericConversion() const {
-        return evaluate()->numericConversion();
+        return dereference_()->numericConversion();
     }
     
     Value AttributeValue::identifierConversion() const {
@@ -221,7 +221,7 @@ namespace archetype {
     }
     
     Value AttributeValue::objectConversion() const {
-        return evaluate()->objectConversion();
+        return dereference_()->objectConversion();
     }
     
     Value AttributeValue::assign(Value new_value) {

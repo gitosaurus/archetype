@@ -55,10 +55,10 @@ namespace archetype {
         void setAttribute(int attribute_id, Value val);
         
         bool hasMethod(int message_id) const;
-        Value executeMethod(int message_id, std::ostream& out) const;
+        Value executeMethod(int message_id) const;
         void setMethod(int message_id, Statement stmt);
         
-        Value send(Value message, std::ostream& out);
+        Value send(Value message);
     };
     
 }

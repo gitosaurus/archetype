@@ -159,6 +159,8 @@ namespace archetype {
     class AttributeValue : public IValue {
         int objectId_;
         int attributeId_;
+
+        Value dereference_() const;
     public:
         AttributeValue(int object_id, int attribute_id): objectId_(object_id), attributeId_(attribute_id) { }
         
@@ -167,8 +169,6 @@ namespace archetype {
         
         virtual int getIdentifier() const override;
         
-        Value evaluate() const;
-
         virtual bool isTrueEnough() const override;
         virtual Value stringConversion() const override;
         virtual Value numericConversion() const override;

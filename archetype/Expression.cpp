@@ -324,16 +324,14 @@ namespace archetype {
                     if (not recipient) {
                         return Value(new UndefinedValue);
                     } else if (recipient->isPrototype()) {
-                        // TODO:  Need evaluate() to go to an ostream!
-                        return recipient->send(std::move(lv), std::cout);
+                        return recipient->send(std::move(lv));
                     } else {
                         // TODO:  Catch this probable error of SENDing to an instance
                         if (op() == Keywords::OP_PASS) {
                             cerr << "!!! Passing a message to an instance" << endl;
                         }
                         SelfScope s(recipient);
-                        // TODO:  Need evaluate() to go to an ostream!
-                        return recipient->send(std::move(lv), std::cout);
+                        return recipient->send(std::move(lv));
                     }
                 }
                     
@@ -385,7 +383,7 @@ namespace archetype {
     class NumericLiteralNode : public LiteralNode {
     public:
         NumericLiteralNode(int number): LiteralNode{number} { }
-        virtual Value evaluate() const { return Value(new NumericValue(index())); }
+        virtual Value evaluate() const override { return Value(new NumericValue(index())); }
         virtual void prefixDisplay(ostream& out) const {
             out << index();
         }
@@ -394,8 +392,8 @@ namespace archetype {
     class MessageNode : public LiteralNode {
     public:
         MessageNode(int index): LiteralNode{index} { }
-        virtual Value evaluate() const { return Value(new MessageValue(index())); }
-        virtual void prefixDisplay(ostream& out) const {
+        virtual Value evaluate() const override { return Value(new MessageValue(index())); }
+        virtual void prefixDisplay(ostream& out) const override {
             out << "'" << Universe::instance().Vocabulary.get(index()) << "'";
         }
     };
@@ -403,10 +401,10 @@ namespace archetype {
     class TextLiteralNode : public LiteralNode {
     public:
         TextLiteralNode(int index): LiteralNode{index} { }
-        virtual Value evaluate() const {
+        virtual Value evaluate() const override {
             return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
         }
-        virtual void prefixDisplay(ostream& out) const {
+        virtual void prefixDisplay(ostream& out) const override {
             out << '"' << Universe::instance().TextLiterals.get(index()) << '"';
         }
     };
@@ -414,10 +412,10 @@ namespace archetype {
     class QuoteLiteralNode : public LiteralNode {
     public:
         QuoteLiteralNode(int index): LiteralNode{index} { }
-        virtual Value evaluate() const {
+        virtual Value evaluate() const override {
             return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
         }
-        virtual void prefixDisplay(ostream& out) const {
+        virtual void prefixDisplay(ostream& out) const override {
             out << "<<" << Universe::instance().TextLiterals.get(index()) << ">>";
         }
     };
@@ -426,7 +424,7 @@ namespace archetype {
         int id_;
     public:
         IdentifierNode(int id): id_{id} { }
-        virtual Value evaluate() const {
+        virtual Value evaluate() const override {
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
             if (selfObject and selfObject->hasAttribute(id_)) {
                 return Value(new AttributeValue(selfObject->id(), id_));
@@ -434,7 +432,7 @@ namespace archetype {
                 return Value(new IdentifierValue(id_));
             }
         }
-        virtual void prefixDisplay(ostream& out) const {
+        virtual void prefixDisplay(ostream& out) const override {
             out << Universe::instance().Identifiers.get(id_);
         }
     };
