@@ -160,11 +160,25 @@ namespace archetype {
         cat->setMethod(growl_message_id, std::move(meow_stmt));
         
         Statement stmt1 = make_stmt_from_str("{ 'growl' -> dog; 'growl' -> cat }");
-        ostringstream sout;
-        Value val1 = stmt1->execute(sout);
+        ostringstream sout1;
+        Value val1 = stmt1->execute(sout1);
         string expected1 = "The dog growls.\nThe cat growls.\nThe cat does a double-take.\n";
-        string actual1 = sout.str();
+        string actual1 = sout1.str();
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        
+        // Test that the single arrow works as a pass with types
+        ObjectPtr goat = Universe::instance().defineNewObject(animal_type->id());
+        Universe::instance().assignObjectIdentifier(goat, "goat");
+        goat->setAttribute(desc_id, Value(new StringValue("goat")));
+        Statement baa_stmt = make_stmt_from_str("{ message -> animal; write \"The goat coughs, embarrassed.\" }");
+        goat->setMethod(growl_message_id, std::move(baa_stmt));
+        
+        Statement stmt2 = make_stmt_from_str("'growl' -> goat");
+        ostringstream sout2;
+        string expected2 = "The goat growls.\nThe goat coughs, embarrassed.\n";
+        stmt2->execute(sout2);
+        string actual2 = sout2.str();
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
     
     void TestObject::runTests_() {
