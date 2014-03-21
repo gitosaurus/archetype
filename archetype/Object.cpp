@@ -57,7 +57,7 @@ namespace archetype {
         ObjectPtr p = parent();
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
-            return where->second->execute(std::cout);
+            return where->second->execute(Universe::instance().output());
         } else if (p->hasMethod(message_id)) {
             return p->executeMethod(message_id);
         } else {

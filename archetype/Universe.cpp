@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <iostream>
 #include <cassert>
 
 using namespace std;
@@ -35,6 +36,16 @@ namespace archetype {
         context.senderObject = ObjectPtr(new Object);
         context.messageId = 0;
         context_.push(context);
+        
+        output_ = &std::cout;
+    }
+    
+    std::ostream& Universe::output() {
+        return *output_;
+    }
+    
+    void Universe::setOutput(std::ostream &out) {
+        output_ = &out;
     }
     
     ObjectPtr Universe::getObject(int object_id) const {

@@ -42,6 +42,9 @@ namespace archetype {
         void pushContext(const Context& context) { context_.push(context); }
         void popContext() { context_.pop(); }
         
+        std::ostream& output();
+        void setOutput(std::ostream& out);
+        
         ObjectPtr getObject(int object_id) const;
         ObjectPtr defineNewObject(int parent_id = 0);
         void assignObjectIdentifier(const ObjectPtr& object, std::string name);
@@ -52,6 +55,7 @@ namespace archetype {
     private:
         ObjectIndex   objects_;
         std::stack<Context> context_;
+        std::ostream* output_;
         
         static Universe* instance_;
         Universe();

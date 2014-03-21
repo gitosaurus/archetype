@@ -164,8 +164,7 @@ namespace archetype {
         Value val1 = stmt1->execute(sout);
         string expected1 = "The dog growls.\nThe cat growls.\nThe cat does a double-take.\n";
         string actual1 = sout.str();
-        // Waiting on this test till the output problem can be solved.
-        // ARCHETYPE_TEST_EQUAL(actual1, expected1);
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
     }
     
     void TestObject::runTests_() {

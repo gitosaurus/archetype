@@ -9,6 +9,7 @@
 #include <memory>
 
 #include "Statement.h"
+#include "Universe.h"
 
 using namespace std;
 
@@ -52,6 +53,7 @@ namespace archetype {
     }
     
     Value ExpressionStatement::execute(std::ostream &out) const {
+        Universe::instance().setOutput(out);
         return expression_->evaluate();
     }
     
