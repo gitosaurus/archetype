@@ -18,7 +18,7 @@ namespace archetype {
         void testTranslation_();
         void testEvaluation_();
     protected:
-        virtual void runTests_();
+        virtual void runTests_() override;
     public:
         TestExpression(std::string name): ITestSuite(name) { }
     };

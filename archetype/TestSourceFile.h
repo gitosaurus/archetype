@@ -17,7 +17,7 @@
 namespace archetype {
     class TestSourceFile : public ITestSuite {
     protected:
-        virtual void runTests_();
+        virtual void runTests_() override;
     public:
         TestSourceFile(std::string name): ITestSuite(name) { }
     };

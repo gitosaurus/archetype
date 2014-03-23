@@ -16,7 +16,7 @@
 namespace archetype {
     class TestTokenStream : public ITestSuite {
     protected:
-        virtual void runTests_();
+        virtual void runTests_() override;
     public:
         TestTokenStream(std::string name): ITestSuite(name) { }
     };

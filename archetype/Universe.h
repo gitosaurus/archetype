@@ -17,6 +17,7 @@
 #include "IdIndex.h"
 #include "StringIdIndex.h"
 #include "Object.h"
+#include "TokenStream.h"
 
 namespace archetype {
     
@@ -48,6 +49,8 @@ namespace archetype {
         ObjectPtr getObject(int object_id) const;
         ObjectPtr defineNewObject(int parent_id = 0);
         void assignObjectIdentifier(const ObjectPtr& object, std::string name);
+        
+        bool make(TokenStream& t);
         
         static Universe& instance();
         static void destroy();

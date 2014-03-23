@@ -18,7 +18,7 @@ namespace archetype {
         void testConstruction_();
         void testExecution_();
     protected:
-        virtual void runTests_();
+        virtual void runTests_() override;
     public:
         TestStatement(std::string name): ITestSuite(name) { }
     };

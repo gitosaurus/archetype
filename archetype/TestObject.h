@@ -20,7 +20,7 @@ namespace archetype {
         void testMethods_();
         void testMessagePassing_();
     protected:
-        virtual void runTests_();
+        virtual void runTests_() override;
     public:
         TestObject(std::string name): ITestSuite(name) { }
     };
