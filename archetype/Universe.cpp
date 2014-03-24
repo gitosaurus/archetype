@@ -65,22 +65,16 @@ namespace archetype {
     }
     
     void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string name) {
-        int object_id = object->id();
         int identifier_id_for_object = Identifiers.index(name);
-        ObjectIdentifiers[identifier_id_for_object] = object_id;
+        assignObjectIdentifier(object, identifier_id_for_object);
     }
     
-    static ObjectPtr instantiate(TokenStream& t, ObjectPtr parent = nullptr) {
-        if (not t.fetch() or t.token().type() != Token::IDENTIFIER) {
-            t.expectGeneral("name of new object");
-            return nullptr;
-        }
-        ObjectPtr obj = Universe::instance().defineNewObject();
-        string obj_name = Universe::instance().Identifiers.get(t.token().number());
-        Universe::instance().assignObjectIdentifier(obj, obj_name);
-        if (parent) {
-            obj->setParentId(parent->id());
-        }
+    void Universe::assignObjectIdentifier(const ObjectPtr& object, int identifier_id) {
+        int object_id = object->id();
+        ObjectIdentifiers[identifier_id] = object_id;
+    }
+    
+    static ObjectPtr declare_object(TokenStream& t, ObjectPtr obj) {
         while (t.fetch()) {
             if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
                 return obj;
@@ -122,25 +116,69 @@ namespace archetype {
         return nullptr;
     }
     
+    static ObjectPtr instantiate(TokenStream& t, ObjectPtr parent = nullptr) {
+        if (not t.fetch() or t.token().type() != Token::IDENTIFIER) {
+            t.expectGeneral("name of new object");
+            return nullptr;
+        }
+        ObjectPtr obj = Universe::instance().defineNewObject();
+        Universe::instance().assignObjectIdentifier(obj, t.token().number());
+        if (parent) {
+            obj->setParentId(parent->id());
+        }
+        return declare_object(t, obj);
+    }
+    
+    static ObjectPtr define_type(TokenStream& t) {
+        if (not (t.fetch() and t.token().type() == Token::IDENTIFIER)) {
+            t.expectGeneral("name of new type");
+            return nullptr;
+        }
+        ObjectPtr obj = Universe::instance().defineNewObject();
+        obj->setPrototype(true);
+        Universe::instance().assignObjectIdentifier(obj, t.token().number());
+        t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_BASED));
+        t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_ON));
+        if (not t.fetch()) {
+            t.expectGeneral("name of a previously defined type");
+            return nullptr;
+        }
+        if (t.token().type() == Token::IDENTIFIER) {
+            auto parent_id_p = Universe::instance().ObjectIdentifiers.find(t.token().number());
+            if (parent_id_p == Universe::instance().ObjectIdentifiers.end()) {
+                t.expectGeneral("name of a previously defined type");
+                return nullptr;
+            }
+            ObjectPtr parent = Universe::instance().getObject(parent_id_p->second);
+            if (not parent->isPrototype()) {
+                t.expectGeneral("name of a previously defined type, not the name of an instance");
+                return nullptr;
+            }
+            obj->setParentId(parent->id());
+        } else if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_NULL)) {
+            t.expectGeneral("name of a previously defined type");
+            return nullptr;
+        }
+        return declare_object(t, obj);
+    }
+    
     bool Universe::make(TokenStream& t) {
         while (t.fetch()) {
             if (t.token().type() == Token::RESERVED_WORD) {
                 switch (Keywords::Reserved_e(t.token().number())) {
                     case Keywords::RW_TYPE:
-                    case Keywords::RW_CLASS: {
-                        // TODO: fetch and check for identifier
-                        t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_BASED));
-                        t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_ON));
-                        // TODO: fetch and check base type
-                        ObjectPtr obj = instantiate(t);
-                        if (not obj) {
+                    case Keywords::RW_CLASS:
+                        if (not define_type(t)) {
                             return false;
+                        } else {
+                            break;
                         }
-                        obj->setPrototype(true);
-                        break;
-                    }
                     case Keywords::RW_NULL:
-                        return instantiate(t) != nullptr;
+                        if (not instantiate(t)) {
+                            return false;
+                        } else {
+                            break;
+                        }
                     case Keywords::RW_KEYWORD:
                         // TODO: ???
                         break;
@@ -151,23 +189,21 @@ namespace archetype {
             } else if (t.token().type() == Token::IDENTIFIER) {
                 int id_number = t.token().number();
                 auto which = Universe::instance().ObjectIdentifiers.find(id_number);
-                if (which != Universe::instance().ObjectIdentifiers.end()) {
+                if (which == Universe::instance().ObjectIdentifiers.end()) {
+                    t.errorMessage("Require name of defined type");
+                    return false;
+                } else {
                     ObjectPtr type_object = Universe::instance().getObject(which->second);
                     if (type_object and type_object->isPrototype()) {
-                        return instantiate(t, type_object) != nullptr;
+                        if (not instantiate(t, type_object)) {
+                            return false;
+                        }
                     }
                 }
-                t.errorMessage("Require name of defined type");
-                return false;
             } else {
                 t.expectGeneral("Need a type declaration or object instantiation");
                 return false;
             }
-            // We got through this, so the object pointer must simply be filled out
-            // get the next token
-            // is it 'end'? you're done
-            // is it 'methods'? we're now collecting message : method
-            // otherwise, we're collecting attribute_id : expr
         }
         return true;
     }

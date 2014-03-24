@@ -49,6 +49,7 @@ namespace archetype {
         ObjectPtr getObject(int object_id) const;
         ObjectPtr defineNewObject(int parent_id = 0);
         void assignObjectIdentifier(const ObjectPtr& object, std::string name);
+        void assignObjectIdentifier(const ObjectPtr& object, int identifier_id);
         
         bool make(TokenStream& t);
         
