@@ -68,5 +68,11 @@ namespace archetype {
         string actual2 = out2.str();
         string expected2 = "You gobble down the cracker.\n";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
+        ostringstream out3;
+        Statement stmt3 = make_stmt_from_str("'eat' -> granola_bar");
+        stmt3->execute(out3);
+        string actual3 = out3.str();
+        string expected3 = "You gobble down the snack.\n";
+        ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
 }
