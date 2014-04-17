@@ -47,6 +47,7 @@ namespace archetype {
     }
     
     void TestUniverse::runTests_() {
+        Universe::destroy();
         istringstream in1(program1);
         SourceFile src1("program1", in1);
         TokenStream t1(src1);

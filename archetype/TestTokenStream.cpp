@@ -16,6 +16,7 @@
 #include "TokenStream.h"
 #include "SourceFile.h"
 #include "Keywords.h"
+#include "Universe.h"
 
 using namespace std;
 
@@ -42,6 +43,8 @@ namespace archetype {
     }
     
     void TestTokenStream::runTests_() {
+        Universe::destroy();
+
         deque<Token> actual1 = tokenize("3 + 4");
         deque<Token> expected1 = {{Token::NUMERIC, 3}, {Token::OPERATOR, Keywords::OP_PLUS}, {Token::NUMERIC, 4}};
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
