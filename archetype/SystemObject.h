@@ -10,10 +10,11 @@
 #define __archetype__SystemObject__
 
 #include <iostream>
-#include <string>
-#include <set>
+#include <memory>
 
 #include "Value.h"
+#include "SystemSorter.h"
+#include "SystemParser.h"
 
 namespace archetype {
     class SystemObject {
@@ -38,8 +39,10 @@ namespace archetype {
     private:
         State_e state_;
         std::map<int, State_e> stateByMessage_;
-        std::set<std::string> sortedStrings_;
         
+        std::unique_ptr<SystemSorter> sorter_;
+        std::unique_ptr<SystemParser> parser_;
+
         bool figureState_(const Value& message);
     };
 }

@@ -30,7 +30,9 @@ namespace archetype {
     };
     
     SystemObject::SystemObject():
-    state_(IDLING) {
+    state_(IDLING),
+    sorter_(new SystemSorter),
+    parser_(new SystemParser) {
         // Build up the known messages to which we respond
         int state_counter = 0;
         for (auto message_name : SystemMessageNames) {
@@ -53,20 +55,26 @@ namespace archetype {
     
     Value SystemObject::send(Value message) {
         switch (state_) {
-            case IDLING: {
+            case IDLING:
                 if (figureState_(message)) {
                     switch (state_) {
                         case INIT_SORTER:
+                            sorter_.reset(new SystemSorter);
                             state_ = OPEN_SORTER;
-                            sortedStrings_.clear();
+                            break;
+                        case OPEN_SORTER:
+                            // Remain
                             break;
                         case NEXT_SORTED:
                             state_ = IDLING;
-                            if (not sortedStrings_.empty()) {
-                                string result = *sortedStrings_.begin();
-                                sortedStrings_.erase(sortedStrings_.begin());
-                                return Value(new StringValue(result));
-                            }
+                            return sorter_->nextSorted();
+                            
+                        case INIT_PARSER:
+                            parser_.reset(new SystemParser);
+                            state_ = OPEN_PARSER;
+                            break;
+                        case OPEN_PARSER:
+                            // Remain
                             break;
                     }
                 }
@@ -76,20 +84,38 @@ namespace archetype {
                     if (state_ == CLOSE_SORTER) {
                         state_ = IDLING;
                     } else {
+                        // Ignore and remain in this state
                         state_ = OPEN_SORTER;
                     }
                 } else {
                     Value message_string = message->stringConversion();
                     if (message_string->isDefined()) {
-                        sortedStrings_.insert(message_string->getString());
+                        sorter_->add(message_string->getString());
                         return message_string;
                     }
                 }
                 break;
-            case CLOSE_SORTER:
-                state_ = IDLING;
+                
+            case OPEN_PARSER:
+                if (figureState_(message)) {
+                    if (state_ == CLOSE_PARSER) {
+                        state_ = IDLING;
+                    } else if (state_ == VERB_LIST) {
+                        parser_->setMode(SystemParser::VERBS);
+                        state_ = OPEN_PARSER;
+                    } else if (state_ == NOUN_LIST) {
+                        parser_->setMode(SystemParser::NOUNS);
+                        state_ = OPEN_PARSER;
+                    } else {
+                        // Ignore and remain in this state
+                        state_ = OPEN_PARSER;
+                    }
+                } else {
+                    
+                    // TODO: add the sender to the parser, with attached synonyms
+                }
                 break;
-            }
+                
         }
         return Value(new UndefinedValue);
     }
