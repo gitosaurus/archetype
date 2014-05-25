@@ -1,12 +1,12 @@
 //
-//  TestParser.cpp
+//  TestSystemParser.cpp
 //  archetype
 //
 //  Created by Derek Jones on 5/25/14.
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#include "TestParser.h"
+#include "TestSystemParser.h"
 #include "TestRegistry.h"
 #include "SystemParser.h"
 #include "Object.h"
@@ -17,9 +17,9 @@
 using namespace std;
 
 namespace archetype {
-    ARCHETYPE_TEST_REGISTER(TestParser);
+    ARCHETYPE_TEST_REGISTER(TestSystemParser);
 
-    void TestParser::testNormalization_() {
+    void TestSystemParser::testNormalization_() {
         unique_ptr<SystemParser> parser(new SystemParser);
         parser->close();
         parser->parse("The quick Brown Fox     jumped over   the lazy    dogs");
@@ -27,7 +27,7 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(n1_str, string(" the quick brown fox jumped over the lazy dogs "));
     }
     
-    void TestParser::testBasicParsing_() {
+    void TestSystemParser::testBasicParsing_() {
         unique_ptr<SystemParser> parser(new SystemParser);
 
         parser->setMode(SystemParser::VERBS);
@@ -56,7 +56,7 @@ namespace archetype {
         }
     }
     
-    void TestParser::runTests_() {
+    void TestSystemParser::runTests_() {
         testNormalization_();
         testBasicParsing_();
     }

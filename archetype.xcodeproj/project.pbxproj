@@ -12,7 +12,7 @@
 		45447AA718DE505900839C15 /* TestUniverse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45447AA518DE505900839C15 /* TestUniverse.cpp */; };
 		45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A28190CAAB9002224D4 /* SystemSorter.cpp */; };
 		45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A2B190CAAC5002224D4 /* SystemParser.cpp */; };
-		459010DF19326E19007B14C0 /* TestParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 459010DD19326E19007B14C0 /* TestParser.cpp */; };
+		459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 459010DD19326E19007B14C0 /* TestSystemParser.cpp */; };
 		45B2450118A34A0B006A5FA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45B2450018A34A0B006A5FA8 /* main.cpp */; };
 		45B2450318A34A0B006A5FA8 /* archetype.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 45B2450218A34A0B006A5FA8 /* archetype.1 */; };
 		45D89F3718C81644009CCF30 /* Value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45D89F3518C81644009CCF30 /* Value.cpp */; };
@@ -57,8 +57,8 @@
 		45817A29190CAAB9002224D4 /* SystemSorter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemSorter.h; sourceTree = "<group>"; };
 		45817A2B190CAAC5002224D4 /* SystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemParser.cpp; sourceTree = "<group>"; };
 		45817A2C190CAAC5002224D4 /* SystemParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemParser.h; sourceTree = "<group>"; };
-		459010DD19326E19007B14C0 /* TestParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestParser.cpp; sourceTree = "<group>"; };
-		459010DE19326E19007B14C0 /* TestParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestParser.h; sourceTree = "<group>"; };
+		459010DD19326E19007B14C0 /* TestSystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSystemParser.cpp; sourceTree = "<group>"; };
+		459010DE19326E19007B14C0 /* TestSystemParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSystemParser.h; sourceTree = "<group>"; };
 		45B244FD18A34A0B006A5FA8 /* archetype */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = archetype; sourceTree = BUILT_PRODUCTS_DIR; };
 		45B2450018A34A0B006A5FA8 /* main.cpp */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = main.cpp; sourceTree = "<group>"; };
 		45B2450218A34A0B006A5FA8 /* archetype.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = archetype.1; sourceTree = "<group>"; };
@@ -184,8 +184,8 @@
 				45447AA618DE505900839C15 /* TestUniverse.h */,
 				45FBD4E518FE180300E6B2D1 /* TestSystemObject.cpp */,
 				45FBD4E618FE180300E6B2D1 /* TestSystemObject.h */,
-				459010DD19326E19007B14C0 /* TestParser.cpp */,
-				459010DE19326E19007B14C0 /* TestParser.h */,
+				459010DD19326E19007B14C0 /* TestSystemParser.cpp */,
+				459010DE19326E19007B14C0 /* TestSystemParser.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -249,7 +249,7 @@
 				45DE416D18F6EBC1007A9EB6 /* SystemObject.cpp in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
 				451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */,
-				459010DF19326E19007B14C0 /* TestParser.cpp in Sources */,
+				459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */,
 				45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */,
 				45F0610A18C0FAC2000FB4C3 /* TestStatement.cpp in Sources */,
 				45F7CF2D18A9EB6200D39E12 /* Statement.cpp in Sources */,

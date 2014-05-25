@@ -14,13 +14,13 @@
 #include "ITestSuite.h"
 
 namespace archetype {
-    class TestParser : public ITestSuite {
+    class TestSystemParser : public ITestSuite {
         void testNormalization_();
         void testBasicParsing_();
     protected:
         virtual void runTests_() override;
     public:
-        TestParser(std::string name): ITestSuite(name) { }
+        TestSystemParser(std::string name): ITestSuite(name) { }
     };
 }
 
