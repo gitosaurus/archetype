@@ -32,13 +32,13 @@ namespace archetype {
 
         parser->setMode(SystemParser::VERBS);
         int jump_id = 101;
-        ObjectPtr jump(new Object());
+        ObjectPtr jump(new Object);
         jump->setId(jump_id);
         parser->addParseable(jump, "jump|jump over");
 
         parser->setMode(SystemParser::NOUNS);
         int dogs_id = 353;
-        ObjectPtr dogs(new Object());
+        ObjectPtr dogs(new Object);
         dogs->setId(dogs_id);
         parser->addParseable(dogs, "lazy dogs|dogs");
         
@@ -56,8 +56,63 @@ namespace archetype {
         }
     }
     
+    void TestSystemParser::testPartialParsing_() {
+        unique_ptr<SystemParser> parser(new SystemParser);
+        
+        parser->setMode(SystemParser::VERBS);
+        int examine_id = 50;
+        ObjectPtr examine(new Object);
+        examine->setId(examine_id);
+        parser->addParseable(examine, "examine|look|x");
+        
+        parser->setMode(SystemParser::NOUNS);
+        int button_id = 51;
+        ObjectPtr button(new Object);
+        button->setId(button_id);
+        parser->addParseable(button, "button");
+        
+        parser->close();
+        
+        parser->parse("examine the paper");
+        Value v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value examine_obj = v->objectConversion();
+        ARCHETYPE_TEST(examine_obj->isDefined());
+        ARCHETYPE_TEST_EQUAL(examine_obj->getObject(), examine_id);
+        
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value paper_obj = v->objectConversion();
+        ARCHETYPE_TEST(!paper_obj->isDefined());
+        Value paper_str = v->stringConversion();
+        ARCHETYPE_TEST(paper_str->isDefined());
+        ARCHETYPE_TEST_EQUAL(paper_str->getString(), string("paper"));
+        
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+
+        parser->parse("press button");
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value press_obj = v->objectConversion();
+        ARCHETYPE_TEST(!press_obj->isDefined());
+        Value press_str = v->stringConversion();
+        ARCHETYPE_TEST(press_str->isDefined());
+        ARCHETYPE_TEST_EQUAL(press_str->getString(), string("press"));
+        
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value button_obj = v->objectConversion();
+        ARCHETYPE_TEST(button_obj->isDefined());
+        ARCHETYPE_TEST_EQUAL(button_obj->getObject(), button_id);
+        
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+    }
+    
     void TestSystemParser::runTests_() {
         testNormalization_();
         testBasicParsing_();
+        testPartialParsing_();
     }
 }

@@ -17,6 +17,7 @@ namespace archetype {
     class TestSystemParser : public ITestSuite {
         void testNormalization_();
         void testBasicParsing_();
+        void testPartialParsing_();
     protected:
         virtual void runTests_() override;
     public:
