@@ -56,8 +56,8 @@ namespace archetype {
         Value nextObject();
         
         // Given a name or phrase, returns the object matching it after the last parse.
-        // Looks for nouns first, then verbs.  Returns nullptr if no match.
-        ObjectPtr whichObject(std::string phrase);
+        // Looks for nouns first, then verbs.  Returns undefined if no match.
+        Value whichObject(std::string phrase);
         
     private:
         Mode_e mode_;
@@ -72,6 +72,9 @@ namespace archetype {
         std::string playerCommand_;
         std::string normalized_;
         std::list<Value> parsedValues_;
+        
+        void matchVerbs_(std::list<Value>& wordValues);
+        void matchNouns_(std::list<Value>& wordValues);
         
         SystemParser(const SystemParser&) = delete;
     };

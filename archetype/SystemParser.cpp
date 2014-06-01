@@ -81,39 +81,29 @@ namespace archetype {
         return (sv1->isDefined() && sv2->isDefined() && sv1->getString() == sv2->getString());
     }
     
-    void SystemParser::parse(std::string command_line) {
-        playerCommand_ = command_line;
-        normalized_.clear();
-        istringstream in(command_line);
-        list<string> words;
-        transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), lowercase);
-
-        ostringstream out;
-        out << ' ';
-        copy(begin(words), end(words), ostream_iterator<string>(out, " "));
-        normalized_ = out.str();
-        
-        parsedValues_.clear();
-        transform(begin(words), end(words), back_inserter(parsedValues_), make_string_value);
-        
+    inline void remove_fillers(list<Value>& wordValues) {
         auto fillers = {"a", "an", "the"};
-        parsedValues_.erase(remove_if(begin(parsedValues_), end(parsedValues_),
-                                      [fillers](const Value& v) { return find(begin(fillers), end(fillers), v->getString()) != end(fillers); }),
-                            end(parsedValues_));
-        
+        wordValues.erase(remove_if(begin(wordValues), end(wordValues),
+                                   [fillers](const Value& v) { return find(begin(fillers), end(fillers), v->getString()) != end(fillers); }),
+                         end(wordValues));
+    }
+    
+    void SystemParser::matchVerbs_(std::list<Value>& wordValues) {
         for (auto vp = begin(verbMatches_); vp != end(verbMatches_); ++vp) {
-            auto match = search(begin(parsedValues_), end(parsedValues_), begin(vp->first), end(vp->first), equal_string_values);
-            if (match != end(parsedValues_)) {
+            auto match = search(begin(wordValues), end(wordValues), begin(vp->first), end(vp->first), equal_string_values);
+            if (match != end(wordValues)) {
                 auto match_end = match;
                 advance(match_end, vp->first.size());
-                parsedValues_.erase(match, match_end);
-                parsedValues_.insert(match_end, Value(new ObjectValue(vp->second->id())));
+                wordValues.erase(match, match_end);
+                wordValues.insert(match_end, Value(new ObjectValue(vp->second->id())));
             }
         }
-        
+    }
+    
+    void SystemParser::matchNouns_(std::list<Value>& wordValues) {
         for (auto np = begin(nounMatches_); np != end(nounMatches_); ++np) {
-            auto match = search(begin(parsedValues_), end(parsedValues_), begin(np->first), end(np->first), equal_string_values);
-            if (match != end(parsedValues_)) {
+            auto match = search(begin(wordValues), end(wordValues), begin(np->first), end(np->first), equal_string_values);
+            if (match != end(wordValues)) {
                 size_t phrase_size = np->first.size();
                 auto match_end = match;
                 advance(match_end, phrase_size);
@@ -131,10 +121,30 @@ namespace archetype {
                         }
                     }
                 }
-                parsedValues_.erase(match, match_end);
-                parsedValues_.insert(match_end, Value(new ObjectValue(matched_obj_id)));
+                wordValues.erase(match, match_end);
+                wordValues.insert(match_end, Value(new ObjectValue(matched_obj_id)));
             }
         }
+    }
+    
+    void SystemParser::parse(std::string command_line) {
+        playerCommand_ = command_line;
+        normalized_.clear();
+        istringstream in(command_line);
+        list<string> words;
+        transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), lowercase);
+
+        ostringstream out;
+        out << ' ';
+        copy(begin(words), end(words), ostream_iterator<string>(out, " "));
+        normalized_ = out.str();
+        
+        parsedValues_.clear();
+        transform(begin(words), end(words), back_inserter(parsedValues_), make_string_value);
+        
+        remove_fillers(parsedValues_);
+        matchVerbs_(parsedValues_);
+        matchNouns_(parsedValues_);
     }
     
     string SystemParser::normalized() const {
@@ -159,9 +169,18 @@ namespace archetype {
         }
     }
     
-    ObjectPtr SystemParser::whichObject(std::string phrase) {
-        // TODO:  Not done yet
-        // Search nouns first, then verbs.
-        return nullptr;
+    Value SystemParser::whichObject(std::string phrase) {
+        istringstream in(phrase);
+        list<Value> words;
+        transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), [](string s) { return make_string_value(lowercase(s)); });
+        remove_fillers(words);
+        matchNouns_(words);
+        matchVerbs_(words);
+        // We expect a single object.  Anything else and the result is null.
+        if (words.size() == 1) {
+            return words.front()->objectConversion();
+        } else {
+            return Value(new UndefinedValue);
+        }
     }
 }

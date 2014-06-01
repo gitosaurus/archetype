@@ -115,9 +115,9 @@ namespace archetype {
 
         parser->setMode(SystemParser::VERBS);
         int press_id = 50;
-        ObjectPtr examine(new Object);
-        examine->setId(press_id);
-        parser->addParseable(examine, "press|push");
+        ObjectPtr press_verb(new Object);
+        press_verb->setId(press_id);
+        parser->addParseable(press_verb, "press|push");
         
         parser->setMode(SystemParser::NOUNS);
         
@@ -192,6 +192,14 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(noun_obj_3->getObject(), red_button_id);
         v = parser->nextObject();
         ARCHETYPE_TEST(!v->isDefined());
+        
+        // Double-check the results with whichObject
+        ARCHETYPE_TEST_EQUAL(parser->whichObject("the red button")->objectConversion()->getObject(), red_button_id);
+        ARCHETYPE_TEST_EQUAL(parser->whichObject("green button")->objectConversion()->getObject(), green_button_id);
+        ARCHETYPE_TEST_EQUAL(parser->whichObject("a blue button")->objectConversion()->getObject(), blue_button_id);
+        ARCHETYPE_TEST_EQUAL(parser->whichObject("button")->objectConversion()->getObject(), red_button_id);
+        ARCHETYPE_TEST_EQUAL(parser->whichObject("push")->objectConversion()->getObject(), press_id);
+        ARCHETYPE_TEST(!parser->whichObject("dog")->isDefined());
     }
     
     void TestSystemParser::runTests_() {
