@@ -112,7 +112,7 @@ namespace archetype {
     
     void TestSystemParser::testProximity_() {
         unique_ptr<SystemParser> parser(new SystemParser);
-\
+
         parser->setMode(SystemParser::VERBS);
         int press_id = 50;
         ObjectPtr examine(new Object);
