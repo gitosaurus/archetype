@@ -56,12 +56,12 @@ namespace archetype {
         Value nextObject();
         
         // Given a name or phrase, returns the object matching it after the last parse.
-        // Looks for nouns first, then verbs.
-        ObjectPtr whichObject(std::string);
+        // Looks for nouns first, then verbs.  Returns nullptr if no match.
+        ObjectPtr whichObject(std::string phrase);
         
     private:
         Mode_e mode_;
-        std::set<ObjectPtr> proximate_;
+        std::set<int> proximate_;
         
         std::list<Parseable> verbs_;
         std::list<Parseable> nouns_;

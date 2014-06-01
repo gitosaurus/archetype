@@ -18,6 +18,7 @@ namespace archetype {
         void testNormalization_();
         void testBasicParsing_();
         void testPartialParsing_();
+        void testProximity_();
     protected:
         virtual void runTests_() override;
     public:

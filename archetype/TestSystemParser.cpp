@@ -110,9 +110,87 @@ namespace archetype {
         ARCHETYPE_TEST(!v->isDefined());
     }
     
+    void TestSystemParser::testProximity_() {
+        unique_ptr<SystemParser> parser(new SystemParser);
+\
+        parser->setMode(SystemParser::VERBS);
+        int press_id = 50;
+        ObjectPtr examine(new Object);
+        examine->setId(press_id);
+        parser->addParseable(examine, "press|push");
+        
+        parser->setMode(SystemParser::NOUNS);
+        int red_button_id = 60;
+        ObjectPtr red_button(new Object);
+        red_button->setId(red_button_id);
+        parser->addParseable(red_button, "red button|button");
+        
+        int blue_button_id = 70;
+        ObjectPtr blue_button(new Object);
+        blue_button->setId(blue_button_id);
+        parser->addParseable(blue_button, "blue button|button");
+        
+        parser->close();
+        
+        parser->rollCall();
+        parser->announcePresence(blue_button);
+        
+        // This should choose the red one even though it's not nearby
+        parser->parse("press the red button");
+        Value v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value press_obj = v->objectConversion();
+        ARCHETYPE_TEST(press_obj->isDefined());
+        ARCHETYPE_TEST_EQUAL(press_obj->getObject(), press_id);
+        
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value noun_obj_1 = v->objectConversion();
+        ARCHETYPE_TEST(noun_obj_1->isDefined());
+        ARCHETYPE_TEST_EQUAL(noun_obj_1->getObject(), red_button_id);
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+        
+        // But just 'button' by itself should choose blue.
+        parser->parse("press button");
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        press_obj = v->objectConversion();
+        ARCHETYPE_TEST(press_obj->isDefined());
+        ARCHETYPE_TEST_EQUAL(press_obj->getObject(), press_id);
+        
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value noun_obj_2 = v->objectConversion();
+        ARCHETYPE_TEST(noun_obj_2->isDefined());
+        ARCHETYPE_TEST_EQUAL(noun_obj_2->getObject(), blue_button_id);
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+        
+        // New roll call:  now the red is near, the same phrase should match red instead.
+        parser->rollCall();
+        parser->announcePresence(red_button);
+        
+        parser->parse("press button");
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        press_obj = v->objectConversion();
+        ARCHETYPE_TEST(press_obj->isDefined());
+        ARCHETYPE_TEST_EQUAL(press_obj->getObject(), press_id);
+
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value noun_obj_3 = v->objectConversion();
+        ARCHETYPE_TEST(noun_obj_3->isDefined());
+        ARCHETYPE_TEST_EQUAL(noun_obj_3->getObject(), red_button_id);
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+    }
+    
     void TestSystemParser::runTests_() {
         testNormalization_();
         testBasicParsing_();
         testPartialParsing_();
+        testProximity_();
     }
 }

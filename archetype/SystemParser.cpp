@@ -111,19 +111,29 @@ namespace archetype {
             }
         }
         
-        // Similar, but we want to find the best match when there are
-        // several same-named candidates.  Original Archetype kept a 'near-match'
-        // and a 'far-match'.  At the end it used the near match if it existed.
-        //
-        // TODO:  how to implement?
         for (auto np = begin(nounMatches_); np != end(nounMatches_); ++np) {
             auto match = search(begin(parsedValues_), end(parsedValues_), begin(np->first), end(np->first), equal_string_values);
             if (match != end(parsedValues_)) {
+                size_t phrase_size = np->first.size();
                 auto match_end = match;
-                advance(match_end, np->first.size());
+                advance(match_end, phrase_size);
+                int matched_obj_id = np->second->id();
+                // At this point we have at least one match.  If it's proximate, we're completely
+                // done.  But if it isn't, then we want to check all remaining matches at this
+                // place, of this size, for a better match that is proximate.
+                if (!proximate_.count(matched_obj_id)) {
+                    auto next_np = np;
+                    ++next_np;
+                    while (next_np != end(nounMatches_) && next_np->first.size() == phrase_size) {
+                        if (equal(match, match_end, begin(next_np->first), equal_string_values) && proximate_.count(next_np->second->id())) {
+                            // This is a nearer version of the same match phrase
+                            matched_obj_id = next_np->second->id();
+                            break;
+                        }
+                    }
+                }
                 parsedValues_.erase(match, match_end);
-                parsedValues_.insert(match_end, Value(new ObjectValue(np->second->id())));
-                // TODO:  check proximity.  But we can puzzle this out after testing what we have
+                parsedValues_.insert(match_end, Value(new ObjectValue(matched_obj_id)));
             }
         }
     }
@@ -137,7 +147,7 @@ namespace archetype {
     }
     
     void SystemParser::announcePresence(ObjectPtr sender) {
-        proximate_.insert(sender);
+        proximate_.insert(sender->id());
     }
     
     Value SystemParser::nextObject() {
@@ -148,5 +158,11 @@ namespace archetype {
             parsedValues_.pop_front();
             return result;
         }
+    }
+    
+    ObjectPtr SystemParser::whichObject(std::string phrase) {
+        // TODO:  Not done yet
+        // Search nouns first, then verbs.
+        return nullptr;
     }
 }
