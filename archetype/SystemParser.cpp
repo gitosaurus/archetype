@@ -123,8 +123,7 @@ namespace archetype {
                 // place, of this size, for a better match that is proximate.
                 if (!proximate_.count(matched_obj_id)) {
                     auto next_np = np;
-                    ++next_np;
-                    while (next_np != end(nounMatches_) && next_np->first.size() == phrase_size) {
+                    while (++next_np != end(nounMatches_) && next_np->first.size() == phrase_size) {
                         if (equal(match, match_end, begin(next_np->first), equal_string_values) && proximate_.count(next_np->second->id())) {
                             // This is a nearer version of the same match phrase
                             matched_obj_id = next_np->second->id();

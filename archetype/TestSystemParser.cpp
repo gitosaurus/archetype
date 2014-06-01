@@ -120,6 +120,13 @@ namespace archetype {
         parser->addParseable(examine, "press|push");
         
         parser->setMode(SystemParser::NOUNS);
+        
+        // Put in a "green herring"
+        int green_button_id = 80;
+        ObjectPtr green_button(new Object);
+        green_button->setId(green_button_id);
+        parser->addParseable(green_button, "green button|button");
+        
         int red_button_id = 60;
         ObjectPtr red_button(new Object);
         red_button->setId(red_button_id);
