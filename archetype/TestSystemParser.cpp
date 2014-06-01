@@ -9,7 +9,6 @@
 #include "TestSystemParser.h"
 #include "TestRegistry.h"
 #include "SystemParser.h"
-#include "Object.h"
 
 #include <memory>
 #include <iostream>
@@ -32,15 +31,11 @@ namespace archetype {
 
         parser->setMode(SystemParser::VERBS);
         int jump_id = 101;
-        ObjectPtr jump(new Object);
-        jump->setId(jump_id);
-        parser->addParseable(jump, "jump|jump over");
+        parser->addParseable(jump_id, "jump|jump over");
 
         parser->setMode(SystemParser::NOUNS);
         int dogs_id = 353;
-        ObjectPtr dogs(new Object);
-        dogs->setId(dogs_id);
-        parser->addParseable(dogs, "lazy dogs|dogs");
+        parser->addParseable(dogs_id, "lazy dogs|dogs");
         
         parser->close();
         
@@ -61,15 +56,11 @@ namespace archetype {
         
         parser->setMode(SystemParser::VERBS);
         int examine_id = 50;
-        ObjectPtr examine(new Object);
-        examine->setId(examine_id);
-        parser->addParseable(examine, "examine|look|x");
+        parser->addParseable(examine_id, "examine|look|x");
         
         parser->setMode(SystemParser::NOUNS);
         int button_id = 51;
-        ObjectPtr button(new Object);
-        button->setId(button_id);
-        parser->addParseable(button, "button");
+        parser->addParseable(button_id, "button");
         
         parser->close();
         
@@ -115,32 +106,24 @@ namespace archetype {
 
         parser->setMode(SystemParser::VERBS);
         int press_id = 50;
-        ObjectPtr press_verb(new Object);
-        press_verb->setId(press_id);
-        parser->addParseable(press_verb, "press|push");
+        parser->addParseable(press_id, "press|push");
         
         parser->setMode(SystemParser::NOUNS);
         
         // Put in a "green herring"
         int green_button_id = 80;
-        ObjectPtr green_button(new Object);
-        green_button->setId(green_button_id);
-        parser->addParseable(green_button, "green button|button");
+        parser->addParseable(green_button_id, "green button|button");
         
         int red_button_id = 60;
-        ObjectPtr red_button(new Object);
-        red_button->setId(red_button_id);
-        parser->addParseable(red_button, "red button|button");
+        parser->addParseable(red_button_id, "red button|button");
         
         int blue_button_id = 70;
-        ObjectPtr blue_button(new Object);
-        blue_button->setId(blue_button_id);
-        parser->addParseable(blue_button, "blue button|button");
+        parser->addParseable(blue_button_id, "blue button|button");
         
         parser->close();
         
         parser->rollCall();
-        parser->announcePresence(blue_button);
+        parser->announcePresence(blue_button_id);
         
         // This should choose the red one even though it's not nearby
         parser->parse("press the red button");
@@ -176,7 +159,7 @@ namespace archetype {
         
         // New roll call:  now the red is near, the same phrase should match red instead.
         parser->rollCall();
-        parser->announcePresence(red_button);
+        parser->announcePresence(red_button_id);
         
         parser->parse("press button");
         v = parser->nextObject();

@@ -34,7 +34,7 @@ namespace archetype {
     mode_(SystemParser::VERBS)
     { }
     
-    void SystemParser::addParseable(ObjectPtr sender, std::string names) {
+    void SystemParser::addParseable(int sender, std::string names) {
         list<string> name_list;
         istringstream in(names);
         string word;
@@ -95,7 +95,7 @@ namespace archetype {
                 auto match_end = match;
                 advance(match_end, vp->first.size());
                 wordValues.erase(match, match_end);
-                wordValues.insert(match_end, Value(new ObjectValue(vp->second->id())));
+                wordValues.insert(match_end, Value(new ObjectValue(vp->second)));
             }
         }
     }
@@ -107,16 +107,16 @@ namespace archetype {
                 size_t phrase_size = np->first.size();
                 auto match_end = match;
                 advance(match_end, phrase_size);
-                int matched_obj_id = np->second->id();
+                int matched_obj_id = np->second;
                 // At this point we have at least one match.  If it's proximate, we're completely
                 // done.  But if it isn't, then we want to check all remaining matches at this
                 // place, of this size, for a better match that is proximate.
                 if (!proximate_.count(matched_obj_id)) {
                     auto next_np = np;
                     while (++next_np != end(nounMatches_) && next_np->first.size() == phrase_size) {
-                        if (equal(match, match_end, begin(next_np->first), equal_string_values) && proximate_.count(next_np->second->id())) {
+                        if (equal(match, match_end, begin(next_np->first), equal_string_values) && proximate_.count(next_np->second)) {
                             // This is a nearer version of the same match phrase
-                            matched_obj_id = next_np->second->id();
+                            matched_obj_id = next_np->second;
                             break;
                         }
                     }
@@ -155,8 +155,8 @@ namespace archetype {
         proximate_.clear();
     }
     
-    void SystemParser::announcePresence(ObjectPtr sender) {
-        proximate_.insert(sender->id());
+    void SystemParser::announcePresence(int sender) {
+        proximate_.insert(sender);
     }
     
     Value SystemParser::nextObject() {
@@ -176,7 +176,6 @@ namespace archetype {
         remove_fillers(words);
         matchNouns_(words);
         matchVerbs_(words);
-        // We expect a single object.  Anything else and the result is null.
         if (words.size() == 1) {
             return words.front()->objectConversion();
         } else {
