@@ -8,6 +8,8 @@
 
 #include <vector>
 #include <string>
+#include <cassert>
+#include <iostream>
 
 #include "SystemObject.h"
 #include "Universe.h"
@@ -19,13 +21,12 @@ namespace archetype {
     static vector<string> SystemMessageNames = {
         "IDLING",
         "INIT SORTER", "OPEN SORTER", "CLOSE SORTER", "NEXT SORTED",
-        "PLAYER CMD", "NORMALIZE", "ABBR",
+        "PLAYER CMD", "NORMALIZE",
         "OPEN PARSER", "VERB LIST", "NOUN LIST", "CLOSE PARSER",
         "INIT PARSER", "WHICH OBJECT",
         "ROLL CALL", "PRESENT", "PARSE", "NEXT OBJECT",
         "DEBUG MESSAGES", "DEBUG EXPRESSIONS",
         "DEBUG STATEMENTS",
-        "DEBUG MEMORY", "FREE MEMORY",
         "SAVE STATE", "LOAD STATE"
     };
     
@@ -53,7 +54,7 @@ namespace archetype {
         return false;
     }
     
-    Value SystemObject::send(Value message) {
+    Value SystemObject::send(int sender, Value message) {
         switch (state_) {
             case IDLING:
                 if (figureState_(message)) {
@@ -63,7 +64,7 @@ namespace archetype {
                             state_ = OPEN_SORTER;
                             break;
                         case OPEN_SORTER:
-                            // Remain
+                            // Nothing new; remain in this state
                             break;
                         case NEXT_SORTED:
                             state_ = IDLING;
@@ -74,11 +75,50 @@ namespace archetype {
                             state_ = OPEN_PARSER;
                             break;
                         case OPEN_PARSER:
-                            // Remain
+                            // Nothing new; remain in this state
+                            break;
+                            
+                        case PLAYER_CMD:
+                            // Nothing new; remain in this state
+                            break;
+                            
+                        case ROLL_CALL:
+                            parser_->rollCall();
+                            state_ = IDLING;
+                            break;
+                        case PRESENT:
+                            parser_->announcePresence(sender);
+                            state_ = IDLING;
+                            break;
+                        case PARSE:
+                            // TODO:  I don't think this has ever made much sense.  Remove.
+                            state_ = IDLING;
+                            break;
+                        case NORMALIZE:
+                            state_ = IDLING;
+                            return Value(new StringValue(parser_->normalized()));
+                            break;
+                        case NEXT_OBJECT:
+                            state_ = IDLING;
+                            return parser_->nextObject();
+                        case WHICH_OBJECT:
+                            // Nothing new; remain in this state
+                            break;
+                            
+                        case IDLING:
+                            break;
+                            
+                        case CLOSE_SORTER:
+                        case CLOSE_PARSER:
+                        case VERB_LIST:
+                        case NOUN_LIST:
+                            cerr << __FILE__ << ":" << __LINE__ << ":" << "Cannot go to state " << state_ << " from IDLING; returning to idle" << endl;
+                            state_ = IDLING;
                             break;
                     }
                 }
                 break;
+                
             case OPEN_SORTER:
                 if (figureState_(message)) {
                     if (state_ == CLOSE_SORTER) {
@@ -95,7 +135,12 @@ namespace archetype {
                     }
                 }
                 break;
-                
+            case INIT_SORTER:
+            case NEXT_SORTED:
+            case CLOSE_SORTER:
+                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found sorting instruction " << state_ << " at top of loop; idling" << endl;
+                state_ = IDLING;
+            
             case OPEN_PARSER:
                 if (figureState_(message)) {
                     if (state_ == CLOSE_PARSER) {
@@ -111,9 +156,50 @@ namespace archetype {
                         state_ = OPEN_PARSER;
                     }
                 } else {
-                    
-                    // TODO: add the sender to the parser, with attached synonyms
+                    Value message_str = message->stringConversion();
+                    if (message_str->isDefined()) {
+                        parser_->addParseable(sender, message_str->getString());
+                    }
                 }
+                break;
+            case INIT_PARSER:
+            case VERB_LIST:
+            case NOUN_LIST:
+            case CLOSE_PARSER:
+                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found parsing instruction " << state_ << " at top of loop; idling" << endl;
+                state_ = IDLING;
+                break;
+
+            // Interpreter states
+            case PLAYER_CMD: {
+                state_ = IDLING;
+                Value message_str = message->stringConversion();
+                if (message_str->isDefined()) {
+                    parser_->parse(message_str->getString());
+                }
+                break;
+            }
+            case WHICH_OBJECT: {
+                state_ = IDLING;
+                Value message_str = message->stringConversion();
+                if (message_str->isDefined()) {
+                    return parser_->whichObject(message_str->getString());
+                }
+                break;
+            }
+                
+            case NORMALIZE:
+            case PARSE:
+            case ROLL_CALL:
+            case PRESENT:
+            case NEXT_OBJECT:
+                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found interpreter instruction " << state_ << " at top of loop; idling" << endl;
+                state_ = IDLING;
+                break;
+                
+            default:
+                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found UNHANDLED state " << state_ << " at top of loop; idling" << endl;
+                state_ = IDLING;
                 break;
                 
         }

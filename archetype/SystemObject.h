@@ -23,19 +23,18 @@ namespace archetype {
         enum State_e {
             IDLING,
             INIT_SORTER, OPEN_SORTER, CLOSE_SORTER, NEXT_SORTED,
-            PLAYER_CMD, NORMALIZE, ABBR,
+            PLAYER_CMD, NORMALIZE,
             OPEN_PARSER, VERB_LIST, NOUN_LIST, CLOSE_PARSER,
             INIT_PARSER, WHICH_OBJECT,
             ROLL_CALL, PRESENT, PARSE, NEXT_OBJECT,
             DEBUG_MESSAGES, DEBUG_EXPRESSIONS,
             DEBUG_STATEMENTS,
-            DEBUG_MEMORY, FREE_MEMORY,
             SAVE_STATE, LOAD_STATE
         };
         
 
         SystemObject();
-        Value send(Value message);
+        Value send(int sender, Value message);
     private:
         State_e state_;
         std::map<int, State_e> stateByMessage_;
