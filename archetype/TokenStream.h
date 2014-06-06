@@ -17,13 +17,13 @@
 
 namespace archetype {
     class TokenStream {
-        SourceFile& source_;
+        SourceFilePtr source_;
         Token token_;
         std::list<bool> newlineIsToken_;
         bool consumed_;
         bool keepLooking_;
     public:
-        TokenStream(SourceFile& source);
+        TokenStream(SourceFilePtr source);
         bool fetch();
 
         bool isNewlineSignificant() const { return newlineIsToken_.front(); }

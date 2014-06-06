@@ -6,18 +6,40 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <string>
 #include <sstream>
+#include <memory>
 
 #include "TestUniverse.h"
 #include "TestRegistry.h"
 #include "Universe.h"
 #include "SourceFile.h"
 #include "TokenStream.h"
+#include "Wellspring.h"
 
 using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestUniverse);
+    
+    class StringSource : public SourceFile {
+        unique_ptr<string> contents_;
+        unique_ptr<istringstream> in_;
+    public:
+        virtual ~StringSource() { }
+
+        static SourceFilePtr create(string name, string contents) {
+            unique_ptr<string> contents_ptr(new string(contents));
+            unique_ptr<istringstream>in_ptr(new istringstream(*contents_ptr));
+            return SourceFilePtr(new StringSource(name, contents_ptr, in_ptr));
+        }
+    private:
+        StringSource(string name, unique_ptr<string>& contents, unique_ptr<istringstream>& stream):
+        SourceFile(name, *stream),
+        contents_(move(contents)),
+        in_(move(stream))
+        { }
+    };
     
     static char program1[] =
         "null vase\n"
@@ -38,18 +60,28 @@ namespace archetype {
         "edible granola_bar end\n"
     ;
     
+    static char program3[] =
+        "include \"snack.ach\"\n"
+        "null conservatory\n"
+        "  desc: \"A nicely appointed room overlooking the garden.\"\n"
+        "  contents: cracker\n"
+        "methods\n"
+        "  'look' : write \"A \", contents.desc, \" is here.\"\n"
+        "end\n"
+    ;
+    
     inline Statement make_stmt_from_str(string src_str) {
         istringstream in(src_str);
-        SourceFile src("test", in);
+        SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
     
-    void TestUniverse::runTests_() {
+    void TestUniverse::testBasicObjects_() {
         Universe::destroy();
         istringstream in1(program1);
-        SourceFile src1("program1", in1);
+        SourceFilePtr src1(new SourceFile("program1", in1));
         TokenStream t1(src1);
         ARCHETYPE_TEST(Universe::instance().make(t1));
         ostringstream out1;
@@ -60,7 +92,7 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
         istringstream in2(program2);
-        SourceFile src2("program2", in2);
+        SourceFilePtr src2(new SourceFile("program2", in2));
         TokenStream t2(src2);
         ARCHETYPE_TEST(Universe::instance().make(t2));
         ostringstream out2;
@@ -75,5 +107,28 @@ namespace archetype {
         string actual3 = out3.str();
         string expected3 = "You gobble down the snack.\n";
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
+    }
+    
+    void TestUniverse::testInclusion_() {
+        Universe::destroy();
+        
+        // TODO:  Uh oh.  Why so infinite-loopy?
+
+        Wellspring::instance().put("snack.ach", StringSource::create("snack.ach", program2));
+        istringstream in3(program3);
+        SourceFilePtr src3(new SourceFile("program3", in3));
+        TokenStream t3(src3);
+        ARCHETYPE_TEST(Universe::instance().make(t3));
+        ostringstream out;
+        Statement stmt = make_stmt_from_str("'look' -> conservatory");
+        stmt->execute(out);
+        string actual = out.str();
+        string expected = "A cracker is here.\n";
+        ARCHETYPE_TEST_EQUAL(actual, expected);
+    }
+    
+    void TestUniverse::runTests_() {
+        testBasicObjects_();
+        testInclusion_();
     }
 }

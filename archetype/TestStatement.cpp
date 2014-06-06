@@ -20,7 +20,7 @@ namespace archetype {
     
     inline Statement make_stmt_from_str(string src_str) {
         istringstream in(src_str);
-        SourceFile src("test", in);
+        SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         Statement stmt = make_statement(token_stream);
         return stmt;

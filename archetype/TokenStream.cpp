@@ -41,7 +41,7 @@ namespace archetype {
         }
     }
     
-    TokenStream::TokenStream(SourceFile& source):
+    TokenStream::TokenStream(SourceFilePtr source):
     source_(source),
     consumed_(true),
     keepLooking_(true)
@@ -73,7 +73,7 @@ namespace archetype {
     
     void TokenStream::expectGeneral(std::string required) {
         if (keepLooking_) {
-            source_.showPosition(cout);
+            source_->showPosition(cout);
             cout << "Expected ";
             cout  << required << "; found ";
             cout << token_;
@@ -83,7 +83,7 @@ namespace archetype {
     
     void TokenStream::expected(Token required) {
         if (keepLooking_) {
-            source_.showPosition(cout);
+            source_->showPosition(cout);
             cout << "Expected ";
             cout << required;
             cout << "; found ";
@@ -95,7 +95,7 @@ namespace archetype {
     
     void TokenStream::errorMessage(std::string message) {
         if (keepLooking_) {
-            source_.showPosition(cout);
+            source_->showPosition(cout);
             cout << message << endl;
         }
     }
@@ -133,7 +133,7 @@ namespace archetype {
             switch (state) {
                     
                 case START:
-                    if ((next_ch = source_.readChar()))
+                    if ((next_ch = source_->readChar()))
                         state = DECIDE;
                     else {
                         state = STOP;
@@ -180,7 +180,7 @@ namespace archetype {
                             state   = STOP;
                         }
                         else
-                            next_ch = source_.readChar();
+                            next_ch = source_->readChar();
                     }
                     if (state == WHITE) {
                         if (next_ch) {         /* decide on new non-white character */
@@ -194,7 +194,7 @@ namespace archetype {
                 case COMMENT:
                 case QUOTE:
                     s = "";
-                    while ((next_ch = source_.readChar()) and (next_ch != '\n')) {
+                    while ((next_ch = source_->readChar()) and (next_ch != '\n')) {
                         s += next_ch;
                     }
                     if (state == COMMENT) {
@@ -204,7 +204,7 @@ namespace archetype {
                             state = STOP;
                     }
                     else {                        /* quoted literal */
-                        source_.unreadChar(next_ch);           /* leave \n for the next guy */
+                        source_->unreadChar(next_ch);           /* leave \n for the next guy */
                         token_ = Token(Token::QUOTE_LITERAL,
                                        Universe::instance().TextLiterals.index(s));
                         state      = STOP;
@@ -215,10 +215,10 @@ namespace archetype {
                     
                     bracket = next_ch;
                     s = "";
-                    while ((next_ch = source_.readChar()) and
+                    while ((next_ch = source_->readChar()) and
                            (next_ch != '\n') and (next_ch != bracket)) {
                         if (next_ch == '\\') {
-                            next_ch = source_.readChar();
+                            next_ch = source_->readChar();
                             switch (next_ch) {
                                 case 't' : next_ch = '\t'; break;
                                 case 'b' : next_ch = '\b'; break;
@@ -234,7 +234,7 @@ namespace archetype {
                     };  /* while */
                     
                     if (next_ch != bracket) {
-                        source_.showPosition(cout);
+                        source_->showPosition(cout);
                         cout << "Unterminated literal" << endl;
                         terminate();
                     }
@@ -265,10 +265,10 @@ namespace archetype {
                     s = "";
                     while (TypeCheck.isIDChar(next_ch)) {
                         s += next_ch;
-                        next_ch = source_.readChar();
+                        next_ch = source_->readChar();
                     }
                     if (not (TypeCheck.isIDChar(next_ch)))
-                        source_.unreadChar(next_ch);
+                        source_->unreadChar(next_ch);
                     /* Check for reserved words or operators */
                     if (Keywords::instance().Reserved.has(s)) {
                         token_ = Token(Token::RESERVED_WORD,
@@ -289,10 +289,10 @@ namespace archetype {
                     s = "";
                     while (next_ch and (TypeCheck.isDigit(next_ch))) {
                         s += next_ch;
-                        next_ch = source_.readChar();
+                        next_ch = source_->readChar();
                     }
                     if (not (TypeCheck.isDigit(next_ch)))
-                        source_.unreadChar(next_ch);
+                        source_->unreadChar(next_ch);
                     int tnum;
                     istringstream in(s);
                     in >> tnum;
@@ -309,15 +309,15 @@ namespace archetype {
                            (s != ">>")                 /* have to stop short with >> */
                            ) {
                         s += next_ch;
-                        next_ch = source_.readChar();
+                        next_ch = source_->readChar();
                     }
                     if (s == ">>") {
-                        source_.unreadChar(next_ch);
+                        source_->unreadChar(next_ch);
                         state = QUOTE;
                     }
                     else {
                         if (not (TypeCheck.isOperator(next_ch)))
-                            source_.unreadChar(next_ch);
+                            source_->unreadChar(next_ch);
                         else
                             s += next_ch;
                         state = STOP;
@@ -325,7 +325,7 @@ namespace archetype {
                             token_ = Token(Token::PUNCTUATION, ':');
                         }
                         else if (not Keywords::instance().Operators.has(s)) {
-                            source_.showPosition(cout);
+                            source_->showPosition(cout);
                             cout << "Unknown operator: " << s << endl;
                             terminate();
                         }

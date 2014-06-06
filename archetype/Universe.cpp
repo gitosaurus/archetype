@@ -7,11 +7,13 @@
 //
 
 #include <iostream>
+#include <fstream>
 #include <cassert>
 
 using namespace std;
 
 #include "Universe.h"
+#include "Wellspring.h"
 
 namespace archetype {
     Universe* Universe::instance_ = nullptr;
@@ -28,12 +30,13 @@ namespace archetype {
     }
     
     Universe::Universe() {
-        // TODO: better sentinel?  This feels fishy.
-        // TODO: What if the original context is self:undefined, sender:undefined, message:undefined?
-        // TODO: for most programs, self:main, sender:system, message:'START' (good, but maybe not the bottom)
+        ObjectPtr nullObject = defineNewObject();
+        assignObjectIdentifier(nullObject, "null");
+        ObjectPtr systemObject = defineNewObject();
+        assignObjectIdentifier(systemObject, "system");
         Context context;
-        context.selfObject = ObjectPtr(new Object);
-        context.senderObject = ObjectPtr(new Object);
+        context.selfObject = nullObject;
+        context.senderObject = nullObject;
         context.messageId = 0;
         context_.push(context);
         
@@ -99,7 +102,7 @@ namespace archetype {
                 if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
                     return obj;
                 }
-                // TODO: Need to handle 'default' too
+                // TODO: Need to handle 'default' method too
                 if (t.token().type() != Token::MESSAGE) {
                     t.expectGeneral("message literal");
                     return nullptr;
@@ -180,8 +183,29 @@ namespace archetype {
                             break;
                         }
                     case Keywords::RW_KEYWORD:
-                        // TODO: ???
+                        // TODO:  Return here to complete 'keyword' feature
+                        // TODO:  Allows users to catch spelling errors
                         break;
+                    case Keywords::RW_INCLUDE: {
+                        if (not t.fetch() or  t.token().type() != Token::TEXT_LITERAL) {
+                            t.errorMessage("Must follow \"include\" with string file name");
+                            return false;
+                        }
+                        string source_file = TextLiterals.get(t.token().number());
+                        if (Wellspring::instance().hasNeverBeenOpened(source_file)) {
+                            SourceFilePtr source = Wellspring::instance().open(source_file);
+                            if (not source) {
+                                t.errorMessage("Cannot open source file \"" + source_file + "\"");
+                                return false;
+                            }
+                            TokenStream included_tokens(source);
+                            if (not make(included_tokens)) {
+                                return false;
+                            }
+                            Wellspring::instance().close(source_file);
+                        }
+                        break;
+                    }
                     default:
                         t.expected(Token(Token::RESERVED_WORD, Keywords::RW_TYPE));
                         return false;

@@ -10,6 +10,7 @@
 		451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451BA00C18D7C3AF0043C274 /* TestObject.cpp */; };
 		4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4532326E18B1DEF0008B68E1 /* TokenStream.cpp */; };
 		45447AA718DE505900839C15 /* TestUniverse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45447AA518DE505900839C15 /* TestUniverse.cpp */; };
+		4571ECCB193F6BF5006D85A9 /* Wellspring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */; };
 		45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A28190CAAB9002224D4 /* SystemSorter.cpp */; };
 		45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A2B190CAAC5002224D4 /* SystemParser.cpp */; };
 		459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 459010DD19326E19007B14C0 /* TestSystemParser.cpp */; };
@@ -53,6 +54,8 @@
 		4532326F18B1DEF0008B68E1 /* TokenStream.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TokenStream.h; sourceTree = "<group>"; };
 		45447AA518DE505900839C15 /* TestUniverse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestUniverse.cpp; sourceTree = "<group>"; };
 		45447AA618DE505900839C15 /* TestUniverse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestUniverse.h; sourceTree = "<group>"; };
+		4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Wellspring.cpp; sourceTree = "<group>"; };
+		4571ECCA193F6BF5006D85A9 /* Wellspring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Wellspring.h; sourceTree = "<group>"; };
 		45817A28190CAAB9002224D4 /* SystemSorter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemSorter.cpp; sourceTree = "<group>"; };
 		45817A29190CAAB9002224D4 /* SystemSorter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemSorter.h; sourceTree = "<group>"; };
 		45817A2B190CAAC5002224D4 /* SystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemParser.cpp; sourceTree = "<group>"; };
@@ -157,6 +160,8 @@
 				45817A29190CAAB9002224D4 /* SystemSorter.h */,
 				45817A2B190CAAC5002224D4 /* SystemParser.cpp */,
 				45817A2C190CAAC5002224D4 /* SystemParser.h */,
+				4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */,
+				4571ECCA193F6BF5006D85A9 /* Wellspring.h */,
 				45F7CF3418AA904900D39E12 /* Testing */,
 			);
 			path = archetype;
@@ -247,6 +252,7 @@
 				45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
 				45DE416D18F6EBC1007A9EB6 /* SystemObject.cpp in Sources */,
+				4571ECCB193F6BF5006D85A9 /* Wellspring.cpp in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
 				451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */,
 				459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */,

@@ -34,7 +34,7 @@ namespace archetype {
     inline deque<Token> tokenize(string src_str) {
         deque<Token> actual;
         istringstream in(src_str);
-        SourceFile src("test", in);
+        SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         while (token_stream.fetch()) {
             actual.push_back(token_stream.token());
@@ -60,14 +60,14 @@ namespace archetype {
         deque<Token> expected3 = {
             {Token::MESSAGE, 0},
             {Token::OPERATOR, Keywords::OP_SEND},
-            {Token::IDENTIFIER, 0}};
+            {Token::IDENTIFIER, 2}};
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
         
         deque<Token> actual4 = tokenize("main.subj = main.dobj");
         deque<Token> expected4 = {
-            {Token::IDENTIFIER, 0}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 1},
+            {Token::IDENTIFIER, 2}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 3},
             {Token::OPERATOR, Keywords::OP_EQ},
-            {Token::IDENTIFIER, 0}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 2}
+            {Token::IDENTIFIER, 2}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 4}
         };
         ARCHETYPE_TEST_EQUAL(actual4, expected4);
         
