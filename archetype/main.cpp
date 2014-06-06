@@ -23,6 +23,7 @@ void usage() {
         << "Usage: " << endl
         << endl
         << " --help    Print this message and exit." << endl
+        << " --test    Run all test suites." << endl
     ;
 }
 
