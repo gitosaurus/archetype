@@ -22,24 +22,10 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestUniverse);
     
-    class StringSource : public SourceFile {
-        unique_ptr<string> contents_;
-        unique_ptr<istringstream> in_;
-    public:
-        virtual ~StringSource() { }
-
-        static SourceFilePtr create(string name, string contents) {
-            unique_ptr<string> contents_ptr(new string(contents));
-            unique_ptr<istringstream>in_ptr(new istringstream(*contents_ptr));
-            return SourceFilePtr(new StringSource(name, contents_ptr, in_ptr));
-        }
-    private:
-        StringSource(string name, unique_ptr<string>& contents, unique_ptr<istringstream>& stream):
-        SourceFile(name, *stream),
-        contents_(move(contents)),
-        in_(move(stream))
-        { }
-    };
+    inline SourceFilePtr make_string_source(string name, string contents) {
+        unique_ptr<istream> in_ptr(new istringstream(contents));
+        return SourceFilePtr(new SourceFile(name, in_ptr));
+    }
     
     static char program1[] =
         "null vase\n"
@@ -71,7 +57,7 @@ namespace archetype {
     ;
     
     inline Statement make_stmt_from_str(string src_str) {
-        istringstream in(src_str);
+        stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         Statement stmt = make_statement(token_stream);
@@ -80,7 +66,7 @@ namespace archetype {
     
     void TestUniverse::testBasicObjects_() {
         Universe::destroy();
-        istringstream in1(program1);
+        stream_ptr in1(new istringstream(program1));
         SourceFilePtr src1(new SourceFile("program1", in1));
         TokenStream t1(src1);
         ARCHETYPE_TEST(Universe::instance().make(t1));
@@ -91,7 +77,7 @@ namespace archetype {
         string expected1 = "The vase has a weight of 1.\n";
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
-        istringstream in2(program2);
+        stream_ptr in2(new istringstream(program2));
         SourceFilePtr src2(new SourceFile("program2", in2));
         TokenStream t2(src2);
         ARCHETYPE_TEST(Universe::instance().make(t2));
@@ -114,8 +100,8 @@ namespace archetype {
         
         // TODO:  Uh oh.  Why so infinite-loopy?
 
-        Wellspring::instance().put("snack.ach", StringSource::create("snack.ach", program2));
-        istringstream in3(program3);
+        Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program2));
+        stream_ptr in3(new istringstream(program3));
         SourceFilePtr src3(new SourceFile("program3", in3));
         TokenStream t3(src3);
         ARCHETYPE_TEST(Universe::instance().make(t3));

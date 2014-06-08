@@ -20,7 +20,7 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestExpression);
     
     inline Expression form_expr_from_str(string src_str) {
-        istringstream in(src_str);
+        stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         Expression expr = form_expr(token_stream);
@@ -28,7 +28,7 @@ namespace archetype {
     }
     
     inline Expression make_expr_from_str(string src_str) {
-        istringstream in(src_str);
+        stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         Expression expr = make_expr(token_stream);

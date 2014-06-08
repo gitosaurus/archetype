@@ -20,8 +20,7 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSourceFile);
     
     void TestSourceFile::runTests_() {
-        string source = "Now is the time!";
-        istringstream in(source);
+        stream_ptr in(new istringstream("Now is the time!"));
         SourceFile f_in("test-src", in);
         
         ARCHETYPE_TEST_EQUAL(f_in.readChar(), 'N');

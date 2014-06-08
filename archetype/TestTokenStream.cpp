@@ -33,7 +33,7 @@ namespace archetype {
     
     inline deque<Token> tokenize(string src_str) {
         deque<Token> actual;
-        istringstream in(src_str);
+        stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         while (token_stream.fetch()) {

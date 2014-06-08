@@ -14,15 +14,16 @@
 #include <memory>
 
 namespace archetype {
+    typedef std::unique_ptr<std::istream> stream_ptr;
     class SourceFile {
         std::string filename_;
-        std::istream& file_;
+        stream_ptr file_;
         int fileLine_;
         std::string lineBuffer_;
         int linePos_;
         char lastChar_;
     public:
-        SourceFile(std::string source, std::istream& in);
+        SourceFile(std::string source, stream_ptr& in);
         virtual ~SourceFile() { }
         char readChar();
         void unreadChar(char ch);

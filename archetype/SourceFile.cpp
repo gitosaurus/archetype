@@ -11,9 +11,9 @@
 using namespace std;
 
 namespace archetype {
-    SourceFile::SourceFile(std::string source, std::istream& in):
+    SourceFile::SourceFile(std::string source, stream_ptr& in):
     filename_(source),
-    file_(in),
+    file_(move(in)),
     fileLine_(0),
     linePos_(0),
     lastChar_(0)
@@ -27,10 +27,10 @@ namespace archetype {
         } else {
             linePos_++;
             while (linePos_ >= lineBuffer_.size()) {
-                if (file_.eof()) {
+                if (file_->eof()) {
                     return 0;
                 }
-                getline(file_, lineBuffer_);
+                getline(*file_, lineBuffer_);
                 lineBuffer_ += '\n';
                 fileLine_++;
                 linePos_ = 0;
