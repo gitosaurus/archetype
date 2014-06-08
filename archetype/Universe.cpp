@@ -32,8 +32,10 @@ namespace archetype {
     Universe::Universe() {
         ObjectPtr nullObject = defineNewObject();
         assignObjectIdentifier(nullObject, "null");
+        assert(nullObject->id() == NullObjectId);
         ObjectPtr systemObject = defineNewObject();
         assignObjectIdentifier(systemObject, "system");
+        assert(systemObject->id() == SystemObjectId);
         Context context;
         context.selfObject = nullObject;
         context.senderObject = nullObject;

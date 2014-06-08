@@ -26,6 +26,8 @@ namespace archetype {
 
     class Universe {
     public:
+        static const int NullObjectId = 0;
+        static const int SystemObjectId = 1;
         
         struct Context {
             ObjectPtr selfObject;
