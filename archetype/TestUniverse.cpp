@@ -97,8 +97,6 @@ namespace archetype {
     
     void TestUniverse::testInclusion_() {
         Universe::destroy();
-        
-        // TODO:  Uh oh.  Why so infinite-loopy?
 
         Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program2));
         stream_ptr in3(new istringstream(program3));

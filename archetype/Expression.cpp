@@ -315,7 +315,6 @@ namespace archetype {
                     
                 case Keywords::OP_SEND:
                 case Keywords::OP_PASS: {
-                    // TODO:  A 'super' reserved word is a really good idea.
                     Value rv_o = rv->objectConversion();
                     if (not rv_o->isDefined()) {
                         return Value(new UndefinedValue);

@@ -69,7 +69,6 @@ namespace archetype {
     }
     
     Value Object::send(Value message) {
-        // TODO: If this is the system object, dispatch to system
         // TODO: Will need some better message-scope for non-literal messages
         Value defined_message = message->messageConversion();
         if (defined_message->isDefined()) {

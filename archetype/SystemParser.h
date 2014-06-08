@@ -33,7 +33,6 @@ namespace archetype {
         
         // Closes the parser, organizing the vocabulary received so far to
         // prepare for a call to parse()
-        // TODO:  Odd name.  'makeReady' or 'prepare' or something else
         void close();
         
         // Clears the presence of all objects

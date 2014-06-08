@@ -31,9 +31,9 @@ namespace archetype {
     };
     
     SystemObject::SystemObject():
-    state_(IDLING),
-    sorter_(new SystemSorter),
-    parser_(new SystemParser) {
+    state_{IDLING},
+    sorter_{new SystemSorter},
+    parser_{new SystemParser} {
         // Build up the known messages to which we respond
         int state_counter = 0;
         for (auto message_name : SystemMessageNames) {
@@ -91,7 +91,8 @@ namespace archetype {
                             state_ = IDLING;
                             break;
                         case PARSE:
-                            // TODO:  I don't think this has ever made much sense.  Remove.
+                            // In this implementation, PARSE is a no-op, since the parsing happened during
+                            // the PLAYER_CMD message.
                             state_ = IDLING;
                             break;
                         case NORMALIZE:
