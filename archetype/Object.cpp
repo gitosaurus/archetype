@@ -79,6 +79,7 @@ namespace archetype {
     }
     
     Value Object::executeDefaultMethod() const {
+        assert(not methods_.empty());
         auto defaultMethod = methods_.rbegin();
         assert(defaultMethod->first == DefaultMethod);
         return defaultMethod->second->execute(Universe::instance().output());
@@ -94,10 +95,21 @@ namespace archetype {
             int message_id = defined_message->getMessage();
             MessageScope m(std::move(defined_message));
             return executeMethod(message_id);
-        } else {
-            // TODO: Will need some better message-scope for non-literal messages
-            return Value(new UndefinedValue);
         }
+
+        // If the message isn't defined, then the only place to which it can be delivered
+        // is the default method, if one exists.
+        if (hasDefaultMethod()) {
+            MessageScope m(std::move(message));
+            return executeDefaultMethod();
+        }
+        ObjectPtr p = parent();
+        if (p and p->hasDefaultMethod()) {
+            MessageScope m(std::move(message));
+            return p->executeDefaultMethod();
+        }
+        
+        return Value(new UndefinedValue);
     }
     
 }

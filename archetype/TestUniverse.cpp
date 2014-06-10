@@ -73,10 +73,17 @@ namespace archetype {
     ;
     
     static char program5[] =
+        "type echo_type based on null\n"
+        "methods\n"
+        "  default: message\n"
+        "end\n"
+        "\n"
         "null echo\n"
         "methods\n"
         "  default: message\n"
         "end\n"
+        "\n"
+        "echo_type me_too end\n"
     ;
     
     inline SourceFilePtr make_source_from_str(string name, string src_str) {
@@ -171,8 +178,18 @@ namespace archetype {
         
         Statement stmt2 = make_stmt_from_str("\"Random string\" -> echo");
         Value actual2 = stmt2->execute(out)->stringConversion();
-        // ARCHETYPE_TEST(actual2->isDefined());
-        // ARCHETYPE_TEST_EQUAL(actual2->getString(), string("Random string"));
+        ARCHETYPE_TEST(actual2->isDefined());
+        ARCHETYPE_TEST_EQUAL(actual2->getString(), string("Random string"));
+        
+        Statement stmt3 = make_stmt_from_str("42 -> echo");
+        Value actual3 = stmt3->execute(out)->numericConversion();
+        ARCHETYPE_TEST(actual3->isDefined());
+        ARCHETYPE_TEST_EQUAL(actual3->getNumber(), 42);
+        
+        Statement stmt4 = make_stmt_from_str("42 -> me_too");
+        Value actual4 = stmt4->execute(out)->numericConversion();
+        ARCHETYPE_TEST(actual4->isDefined());
+        ARCHETYPE_TEST_EQUAL(actual4->getNumber(), 42);
     }
     
     void TestUniverse::runTests_() {
