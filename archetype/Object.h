@@ -56,6 +56,10 @@ namespace archetype {
         
         bool hasMethod(int message_id) const;
         Value executeMethod(int message_id) const;
+
+        bool hasDefaultMethod() const;
+        Value executeDefaultMethod() const;
+        
         void setMethod(int message_id, Statement stmt);
         
         Value send(Value message);

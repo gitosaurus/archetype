@@ -56,19 +56,44 @@ namespace archetype {
         "end\n"
     ;
     
-    inline Statement make_stmt_from_str(string src_str) {
+    static char program4[] =
+        "type something based on null\n"
+        "methods\n"
+        "  'foo' : \"bar\"\n"
+        "   default : \"nothing from something\"\n"
+        "end\n"
+        "\n"
+        "something thing\n"
+        "methods\n"
+        "  'fizzle' : \"bazzle\"\n"
+        "  default: \"something has everything\"\n"
+        "end\n"
+        "\n"
+        "something nothing methods 'sizzle' : \"gristle\" end\n"
+    ;
+    
+    static char program5[] =
+        "null echo\n"
+        "methods\n"
+        "  default: message\n"
+        "end\n"
+    ;
+    
+    inline SourceFilePtr make_source_from_str(string name, string src_str) {
         stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
-        TokenStream token_stream(src);
+        return SourceFilePtr(new SourceFile(name, in));
+    }
+    
+    inline Statement make_stmt_from_str(string src_str) {
+        TokenStream token_stream(make_source_from_str("test", src_str));
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
     
     void TestUniverse::testBasicObjects_() {
         Universe::destroy();
-        stream_ptr in1(new istringstream(program1));
-        SourceFilePtr src1(new SourceFile("program1", in1));
-        TokenStream t1(src1);
+
+        TokenStream t1(make_source_from_str("program1", program1));
         ARCHETYPE_TEST(Universe::instance().make(t1));
         ostringstream out1;
         Statement stmt1 = make_stmt_from_str("'heft' -> vase");
@@ -77,9 +102,7 @@ namespace archetype {
         string expected1 = "The vase has a weight of 1.\n";
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
-        stream_ptr in2(new istringstream(program2));
-        SourceFilePtr src2(new SourceFile("program2", in2));
-        TokenStream t2(src2);
+        TokenStream t2(make_source_from_str("program2", program2));
         ARCHETYPE_TEST(Universe::instance().make(t2));
         ostringstream out2;
         Statement stmt2 = make_stmt_from_str("'eat' -> cracker");
@@ -99,9 +122,7 @@ namespace archetype {
         Universe::destroy();
 
         Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program2));
-        stream_ptr in3(new istringstream(program3));
-        SourceFilePtr src3(new SourceFile("program3", in3));
-        TokenStream t3(src3);
+        TokenStream t3(make_source_from_str("program3", program3));
         ARCHETYPE_TEST(Universe::instance().make(t3));
         ostringstream out;
         Statement stmt = make_stmt_from_str("'look' -> conservatory");
@@ -111,8 +132,53 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual, expected);
     }
     
+    void TestUniverse::testDefaultMethods_() {
+        Universe::destroy();
+        
+        TokenStream t4(make_source_from_str("program4", program4));
+        ARCHETYPE_TEST(Universe::instance().make(t4));
+        
+        list<pair<string, string>> test_pairs = {
+            { "'foo' -> thing", "bar" },
+            { "'fee' -> nothing", "nothing from something" },
+            { "'fizzle' -> nothing", "nothing from something" },
+            { "'sizzle' -> nothing", "gristle" },
+            { "'fee' -> thing", "something has everything" },
+            { "'fizzle' -> thing", "bazzle" },
+        };
+        for (auto t : test_pairs) {
+            cout << "TESTING: {" << t.first << "}" << endl;
+            ostringstream out;
+            Statement stmt = make_stmt_from_str(t.first);
+            Value actual = stmt->execute(out)->stringConversion();
+            ARCHETYPE_TEST(actual->isDefined());
+            ARCHETYPE_TEST_EQUAL(actual->getString(), t.second);
+        }
+    }
+    
+    void TestUniverse::testMessagingKeywords_() {
+        Universe::destroy();
+        
+        TokenStream t5(make_source_from_str("program5", program5));
+        ARCHETYPE_TEST(Universe::instance().make(t5));
+
+        ostringstream out;
+        Statement stmt1 = make_stmt_from_str("'some message' -> echo");
+        Value actual1 = stmt1->execute(out)->stringConversion();
+        ARCHETYPE_TEST(actual1->isDefined());
+        string expected1 = "some message";
+        ARCHETYPE_TEST_EQUAL(actual1->getString(), expected1);
+        
+        Statement stmt2 = make_stmt_from_str("\"Random string\" -> echo");
+        Value actual2 = stmt2->execute(out)->stringConversion();
+        ARCHETYPE_TEST(actual2->isDefined());
+        ARCHETYPE_TEST_EQUAL(actual2->getString(), string("Random string"));
+    }
+    
     void TestUniverse::runTests_() {
         testBasicObjects_();
         testInclusion_();
+        testDefaultMethods_();
+        // testMessagingKeywords_();
     }
 }

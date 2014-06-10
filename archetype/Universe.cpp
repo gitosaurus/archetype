@@ -9,6 +9,7 @@
 #include <iostream>
 #include <fstream>
 #include <cassert>
+#include <limits>
 
 using namespace std;
 
@@ -126,12 +127,12 @@ namespace archetype {
                 if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
                     return obj;
                 }
-                // TODO: Need to handle 'default' method too
-                if (t.token().type() != Token::MESSAGE) {
-                    t.expectGeneral("message literal");
+                if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT) &&
+                    t.token().type() != Token::MESSAGE) {
+                    t.expectGeneral("message literal or 'default'");
                     return nullptr;
                 }
-                int message_id = t.token().number();
+                int message_id = (t.token().type() == Token::MESSAGE) ? t.token().number() : numeric_limits<int>::max();
                 t.insistOn(Token(Token::PUNCTUATION, ':'));
                 Statement stmt = make_statement(t);
                 if (not stmt) {

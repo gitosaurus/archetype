@@ -17,6 +17,8 @@ namespace archetype {
     class TestUniverse : public ITestSuite {
         void testBasicObjects_();
         void testInclusion_();
+        void testDefaultMethods_();
+        void testMessagingKeywords_();
     protected:
         virtual void runTests_() override;
     public:
