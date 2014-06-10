@@ -325,7 +325,7 @@ namespace archetype {
                     } else if (recipient->isPrototype()) {
                         return recipient->send(std::move(lv));
                     } else {
-                        // TODO:  Catch this probable error of SENDing to an instance
+                        // TODO:  What did original Archetype do when PASSing to an instance?
                         if (op() == Keywords::OP_PASS) {
                             cerr << "!!! Passing a message to an instance" << endl;
                         }
@@ -435,6 +435,19 @@ namespace archetype {
             out << Universe::instance().Identifiers.get(id_);
         }
     };
+    
+    Value ReservedConstantNode::evaluate() const {
+        switch (word_) {
+            case Keywords::RW_SELF:
+                return Value(new ObjectValue(Universe::instance().currentContext().selfObject->id()));
+            case Keywords::RW_SENDER:
+                return Value(new ObjectValue(Universe::instance().currentContext().senderObject->id()));
+            case Keywords::RW_MESSAGE:
+                return Universe::instance().currentContext().messageValue->clone();
+            default:
+                return Value(new ReservedConstantValue(word_));
+        }
+    }
     
     Expression get_scalar(TokenStream& t) {
         Expression scalar;

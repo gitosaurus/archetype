@@ -52,12 +52,11 @@ namespace archetype {
         }
     };
     
-    // TODO: could use a ValueExpression of ReservedConstantValue
     class ReservedConstantNode : public ScalarNode {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
-        virtual Value evaluate() const override { return Value(new ReservedConstantValue(word_)); }
+        virtual Value evaluate() const override;
         virtual void prefixDisplay(std::ostream& out) const override {
             out << Keywords::instance().Reserved.get(word_);
         }
