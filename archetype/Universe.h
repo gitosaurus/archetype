@@ -17,6 +17,7 @@
 #include "IdIndex.h"
 #include "StringIdIndex.h"
 #include "Object.h"
+#include "Value.h"
 #include "TokenStream.h"
 
 namespace archetype {
@@ -32,7 +33,12 @@ namespace archetype {
         struct Context {
             ObjectPtr selfObject;
             ObjectPtr senderObject;
-            int messageId;
+            Value messageValue;
+            
+            Context();
+            Context(const Context& c);
+            Context& operator=(const Context& c);
+            ~Context();
         };
 
         StringIdIndex Vocabulary;
@@ -80,7 +86,7 @@ namespace archetype {
     
     class MessageScope {
     public:
-        MessageScope(int message_id);
+        MessageScope(Value message);
         MessageScope(const MessageScope&) = delete;
         MessageScope& operator=(const MessageScope&) = delete;
         ~MessageScope();

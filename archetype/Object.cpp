@@ -69,13 +69,13 @@ namespace archetype {
     }
     
     Value Object::send(Value message) {
-        // TODO: Will need some better message-scope for non-literal messages
         Value defined_message = message->messageConversion();
         if (defined_message->isDefined()) {
             int message_id = defined_message->getMessage();
-            MessageScope m(message_id);
+            MessageScope m(std::move(defined_message));
             return executeMethod(message_id);
         } else {
+            // TODO: Will need some better message-scope for non-literal messages
             return Value(new UndefinedValue);
         }
     }

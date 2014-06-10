@@ -144,8 +144,7 @@ namespace archetype {
     
     Value ReservedConstantValue::messageConversion() const {
         if (word_ == Keywords::RW_MESSAGE) {
-            int message_id = Universe::instance().currentContext().messageId;
-            return Value(new MessageValue(message_id));
+            return Universe::instance().currentContext().messageValue->clone();
         } else {
             return Value(new UndefinedValue);
         }

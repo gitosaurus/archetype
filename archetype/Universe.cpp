@@ -29,6 +29,28 @@ namespace archetype {
         instance_ = nullptr;
     }
     
+    Universe::Context::Context():
+    selfObject(nullptr),
+    senderObject(nullptr),
+    messageValue(new UndefinedValue)
+    { }
+    
+    Universe::Context::Context(const Context& c):
+    selfObject(c.selfObject),
+    senderObject(c.senderObject),
+    messageValue(c.messageValue->clone())
+    { }
+    
+    Universe::Context& Universe::Context::operator=(const Universe::Context& c) {
+        selfObject = c.selfObject;
+        senderObject = c.senderObject;
+        messageValue = c.messageValue->clone();
+        return *this;
+    }
+    
+    Universe::Context::~Context()
+    { }
+    
     Universe::Universe() {
         ObjectPtr nullObject = defineNewObject();
         assignObjectIdentifier(nullObject, "null");
@@ -39,7 +61,7 @@ namespace archetype {
         Context context;
         context.selfObject = nullObject;
         context.senderObject = nullObject;
-        context.messageId = 0;
+        context.messageValue = Value(new UndefinedValue);
         context_.push(context);
         
         output_ = &std::cout;
@@ -243,9 +265,9 @@ namespace archetype {
         Universe::instance().popContext();
     }
     
-    MessageScope::MessageScope(int message_id) {
+    MessageScope::MessageScope(Value message) {
         Universe::instance().pushContext(Universe::instance().currentContext());
-        Universe::instance().currentContext().messageId = message_id;
+        Universe::instance().currentContext().messageValue = std::move(message);
     }
     
     MessageScope::~MessageScope() {
