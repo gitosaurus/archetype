@@ -62,7 +62,7 @@ namespace archetype {
         
         void setMethod(int message_id, Statement stmt);
         
-        Value send(Value message);
+        Value dispatch(Value message);
     };
     
 }

@@ -76,21 +76,17 @@ namespace archetype {
         Universe& operator=(const Universe&);
     };
     
-    class SelfScope {
+    class ContextScope {
     public:
-        SelfScope(ObjectPtr new_self_obj);
-        SelfScope(const SelfScope&) = delete;
-        SelfScope& operator=(const SelfScope&) = delete;
-        ~SelfScope();
+        ContextScope();
+        ContextScope(const ContextScope&) = delete;
+        ContextScope& operator=(const ContextScope&) = delete;
+        ~ContextScope();
+        
+        Universe::Context* operator->()
+        { return &(Universe::instance().currentContext()); }
     };
     
-    class MessageScope {
-    public:
-        MessageScope(Value message);
-        MessageScope(const MessageScope&) = delete;
-        MessageScope& operator=(const MessageScope&) = delete;
-        ~MessageScope();
-    };
 }
 
 #endif /* defined(__archetype__Universe__) */

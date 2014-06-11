@@ -322,15 +322,13 @@ namespace archetype {
                     ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
                     if (not recipient) {
                         return Value(new UndefinedValue);
-                    } else if (recipient->isPrototype()) {
-                        return recipient->send(std::move(lv));
+                    } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
+                        return recipient->dispatch(std::move(lv));
                     } else {
-                        // TODO:  What did original Archetype do when PASSing to an instance?
-                        if (op() == Keywords::OP_PASS) {
-                            cerr << "!!! Passing a message to an instance" << endl;
-                        }
-                        SelfScope s(recipient);
-                        return recipient->send(std::move(lv));
+                        ContextScope c;
+                        c->senderObject = c->selfObject;
+                        c->selfObject = recipient;
+                        return recipient->dispatch(std::move(lv));
                     }
                 }
                     

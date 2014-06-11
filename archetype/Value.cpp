@@ -205,7 +205,8 @@ namespace archetype {
     Value AttributeValue::dereference_() const {
         ObjectPtr obj = Universe::instance().getObject(objectId_);
         if (obj and obj->hasAttribute(attributeId_)) {
-            SelfScope s(obj);
+            ContextScope c;
+            c->selfObject = obj;
             return obj->getAttributeValue(attributeId_);
         } else {
             return Value(new UndefinedValue);

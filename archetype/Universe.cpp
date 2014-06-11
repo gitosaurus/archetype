@@ -257,21 +257,12 @@ namespace archetype {
         return true;
     }
     
-    SelfScope::SelfScope(ObjectPtr new_self_obj) {
+    ContextScope::ContextScope() {
         Universe::instance().pushContext(Universe::instance().currentContext());
-        Universe::instance().currentContext().selfObject = new_self_obj;
     }
     
-    SelfScope::~SelfScope() {
+    ContextScope::~ContextScope() {
         Universe::instance().popContext();
     }
     
-    MessageScope::MessageScope(Value message) {
-        Universe::instance().pushContext(Universe::instance().currentContext());
-        Universe::instance().currentContext().messageValue = std::move(message);
-    }
-    
-    MessageScope::~MessageScope() {
-        Universe::instance().popContext();
-    }
 }

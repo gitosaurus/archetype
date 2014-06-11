@@ -89,23 +89,26 @@ namespace archetype {
         methods_[message_id] = std::move(stmt);
     }
     
-    Value Object::send(Value message) {
+    Value Object::dispatch(Value message) {
         Value defined_message = message->messageConversion();
         if (defined_message->isDefined()) {
             int message_id = defined_message->getMessage();
-            MessageScope m(std::move(defined_message));
+            ContextScope c;
+            c->messageValue = std::move(defined_message);
             return executeMethod(message_id);
         }
 
         // If the message isn't defined, then the only place to which it can be delivered
         // is the default method, if one exists.
         if (hasDefaultMethod()) {
-            MessageScope m(std::move(message));
+            ContextScope c;
+            c->messageValue = std::move(message);
             return executeDefaultMethod();
         }
         ObjectPtr p = parent();
         if (p and p->hasDefaultMethod()) {
-            MessageScope m(std::move(message));
+            ContextScope c;
+            c->messageValue = std::move(message);
             return p->executeDefaultMethod();
         }
         
