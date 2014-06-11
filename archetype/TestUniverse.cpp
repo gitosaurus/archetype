@@ -74,16 +74,32 @@ namespace archetype {
     
     static char program5[] =
         "type echo_type based on null\n"
+        "  desc: \"Echo Type!\"\n"
         "methods\n"
+        "  'hiya' : 'hello' --> echo\n"
         "  default: message\n"
         "end\n"
         "\n"
         "null echo\n"
         "methods\n"
+        "  'hello': \"Hello, \" & sender.desc\n"
+        "  'goodbye' : \"Goodbye from \" & desc\n"
         "  default: message\n"
         "end\n"
         "\n"
-        "echo_type me_too end\n"
+        "echo_type me_too\n"
+        "  desc: \"me too\"\n"
+        "methods\n"
+        "  'greet' : 'hello' -> echo\n"
+        "end\n"
+        "\n"
+        "null another\n"
+        "  desc: \"another\"\n"
+        "methods\n"
+        "  'chirp' : 'hiya' -> me_too\n"
+        "  'cheep' : 'chirp' -> self\n"
+        "  'goodbye' : message --> echo\n"
+        "end\n"
     ;
     
     inline SourceFilePtr make_source_from_str(string name, string src_str) {
@@ -190,6 +206,27 @@ namespace archetype {
         Value actual4 = stmt4->execute(out)->numericConversion();
         ARCHETYPE_TEST(actual4->isDefined());
         ARCHETYPE_TEST_EQUAL(actual4->getNumber(), 42);
+        
+        Statement stmt5 = make_stmt_from_str("'yelp' -> another");
+        Value actual5 = stmt5->execute(out);
+        ARCHETYPE_TEST(actual5->isDefined());
+        Value expected5 = Value(new ReservedConstantValue(Keywords::RW_ABSENT));
+        ARCHETYPE_TEST(actual5->isSameValueAs(expected5));
+
+        list<pair<string, string>> test_pairs = {
+            { "'greet' -> me_too", "Hello, me too" },
+            { "'chirp' -> another", "Hello, another" },
+            { "'cheep' -> another", "Hello, another" },
+            { "'goodbye' -> another", "Goodbye from another" },
+        };
+        for (auto t : test_pairs) {
+            cout << "TESTING: {" << t.first << "}" << endl;
+            ostringstream out;
+            Statement stmt = make_stmt_from_str(t.first);
+            Value actual = stmt->execute(out)->stringConversion();
+            ARCHETYPE_TEST(actual->isDefined());
+            ARCHETYPE_TEST_EQUAL(actual->getString(), t.second);
+        }
     }
     
     void TestUniverse::runTests_() {
