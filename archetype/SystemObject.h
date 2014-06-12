@@ -13,11 +13,12 @@
 #include <memory>
 
 #include "Value.h"
+#include "Object.h"
 #include "SystemSorter.h"
 #include "SystemParser.h"
 
 namespace archetype {
-    class SystemObject {
+    class SystemObject : public Object {
     public:
 
         enum State_e {
@@ -34,7 +35,17 @@ namespace archetype {
         
 
         SystemObject();
-        Value send(int sender, Value message);
+        
+        virtual ~SystemObject() { }
+        
+        virtual bool hasMethod(int message_id) const;
+        virtual Value executeMethod(int message_id);
+        
+        virtual bool hasDefaultMethod() const;
+        virtual Value executeDefaultMethod();
+        
+        virtual Value dispatch(Value message);
+
     private:
         State_e state_;
         std::map<int, State_e> stateByMessage_;

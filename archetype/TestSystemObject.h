@@ -16,6 +16,7 @@
 namespace archetype {
     class TestSystemObject : public ITestSuite {
         void testSorting_();
+        void testParsing_();
     protected:
         virtual void runTests_() override;
     public:

@@ -15,6 +15,7 @@ using namespace std;
 
 #include "Universe.h"
 #include "Wellspring.h"
+#include "SystemObject.h"
 
 namespace archetype {
     Universe* Universe::instance_ = nullptr;
@@ -56,9 +57,13 @@ namespace archetype {
         ObjectPtr nullObject = defineNewObject();
         assignObjectIdentifier(nullObject, "null");
         assert(nullObject->id() == NullObjectId);
-        ObjectPtr systemObject = defineNewObject();
-        assignObjectIdentifier(systemObject, "system");
-        assert(systemObject->id() == SystemObjectId);
+        
+        ObjectPtr system_obj(new SystemObject);
+        int system_id = objects_.index(std::move(system_obj));
+        system_obj->setId(system_id);
+        assert(system_id == SystemObjectId);
+        assignObjectIdentifier(system_obj, "system");
+        
         Context context;
         context.selfObject = nullObject;
         context.senderObject = nullObject;

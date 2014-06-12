@@ -34,15 +34,19 @@ namespace archetype {
     state_{IDLING},
     sorter_{new SystemSorter},
     parser_{new SystemParser} {
-        // Build up the known messages to which we respond
-        int state_counter = 0;
-        for (auto message_name : SystemMessageNames) {
-            int message_id = Universe::instance().Vocabulary.index(message_name);
-            stateByMessage_[message_id] = State_e(state_counter++);
-        }
     }
     
     bool SystemObject::figureState_(const Value& message) {
+        if (stateByMessage_.empty()) {
+            // This is done lazily and not in the constructor, because
+            // the Universe constructs a SystemObject, and would result
+            // in an infinite loop.
+            int state_counter = 0;
+            for (auto message_name : SystemMessageNames) {
+                int message_id = Universe::instance().Vocabulary.index(message_name);
+                stateByMessage_[message_id] = State_e(state_counter++);
+            }
+        }
         Value message_literal = message->messageConversion();
         if (message_literal->isDefined()) {
             auto where = stateByMessage_.find(message_literal->getMessage());
@@ -54,7 +58,26 @@ namespace archetype {
         return false;
     }
     
-    Value SystemObject::send(int sender, Value message) {
+    bool SystemObject::hasMethod(int message_id) const {
+        return false;
+    }
+    
+    Value SystemObject::executeMethod(int message_id) {
+        return Value(new UndefinedValue);
+    }
+    
+    bool SystemObject::hasDefaultMethod() const {
+        return true;
+    }
+    
+    Value SystemObject::dispatch(Value message) {
+        ContextScope c;
+        c->messageValue = move(message);
+        return executeDefaultMethod();
+    }
+
+    Value SystemObject::executeDefaultMethod() {
+        Value message = Universe::instance().currentContext().messageValue->clone();
         switch (state_) {
             case IDLING:
                 if (figureState_(message)) {
@@ -87,7 +110,7 @@ namespace archetype {
                             state_ = IDLING;
                             break;
                         case PRESENT:
-                            parser_->announcePresence(sender);
+                            parser_->announcePresence(Universe::instance().currentContext().selfObject->id());
                             state_ = IDLING;
                             break;
                         case PARSE:
@@ -159,6 +182,7 @@ namespace archetype {
                 } else {
                     Value message_str = message->stringConversion();
                     if (message_str->isDefined()) {
+                        int sender = Universe::instance().currentContext().selfObject->id();
                         parser_->addParseable(sender, message_str->getString());
                     }
                 }

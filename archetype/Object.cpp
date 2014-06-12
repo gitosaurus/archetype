@@ -58,7 +58,7 @@ namespace archetype {
         return methods_.count(message_id) > 0 or (p and p->hasMethod(message_id));
     }
     
-    Value Object::executeMethod(int message_id) const {
+    Value Object::executeMethod(int message_id) {
         ObjectPtr p = parent();
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
@@ -78,7 +78,7 @@ namespace archetype {
         return methods_.size() > 0  and  methods_.rbegin()->first == DefaultMethod;
     }
     
-    Value Object::executeDefaultMethod() const {
+    Value Object::executeDefaultMethod() {
         assert(not methods_.empty());
         auto defaultMethod = methods_.rbegin();
         assert(defaultMethod->first == DefaultMethod);

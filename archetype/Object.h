@@ -38,6 +38,8 @@ namespace archetype {
         Object(const Object& obj) = delete;
         Object& operator=(const Object& obj) = delete;
         
+        virtual ~Object() { }
+        
         int id() const { return id_; }
         void setId(int id) { id_ = id; }
         
@@ -54,15 +56,15 @@ namespace archetype {
         void setAttribute(int attribute_id, Expression expr);
         void setAttribute(int attribute_id, Value val);
         
-        bool hasMethod(int message_id) const;
-        Value executeMethod(int message_id) const;
-
-        bool hasDefaultMethod() const;
-        Value executeDefaultMethod() const;
-        
         void setMethod(int message_id, Statement stmt);
+
+        virtual bool hasMethod(int message_id) const;
+        virtual Value executeMethod(int message_id);
+
+        virtual bool hasDefaultMethod() const;
+        virtual Value executeDefaultMethod();
         
-        Value dispatch(Value message);
+        virtual Value dispatch(Value message);
     };
     
 }
