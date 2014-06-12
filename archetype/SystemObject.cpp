@@ -168,6 +168,7 @@ namespace archetype {
             case OPEN_PARSER:
                 if (figureState_(message)) {
                     if (state_ == CLOSE_PARSER) {
+                        parser_->close();
                         state_ = IDLING;
                     } else if (state_ == VERB_LIST) {
                         parser_->setMode(SystemParser::VERBS);
@@ -182,7 +183,7 @@ namespace archetype {
                 } else {
                     Value message_str = message->stringConversion();
                     if (message_str->isDefined()) {
-                        int sender = Universe::instance().currentContext().selfObject->id();
+                        int sender = Universe::instance().currentContext().senderObject->id();
                         parser_->addParseable(sender, message_str->getString());
                     }
                 }

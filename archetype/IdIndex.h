@@ -19,6 +19,7 @@ namespace archetype {
         std::map<T, int> index_;
         std::deque<T> registry_;
     public:
+        static const int npos = -1;
         int index(const T& obj) {
             auto where = index_.find(obj);
             if (where == index_.end()) {
@@ -26,6 +27,15 @@ namespace archetype {
                 registry_.push_back(obj);
             }
             return where->second;
+        }
+        
+        int find(const T& obj) const {
+            auto where = index_.find(obj);
+            if (where == index_.end()) {
+                return npos;
+            } else {
+                return where->second;
+            }
         }
         
         const T& get(int obj_index) const {

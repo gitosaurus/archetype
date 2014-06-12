@@ -71,10 +71,51 @@ namespace archetype {
         ARCHETYPE_TEST(not no_more->isDefined());
     }
     
+    static char program1[] =
+    "type lexable based on null\n"
+    "methods\n"
+    "  'BUILD' : name -> system\n"
+    "end\n"
+    "\n"
+    "lexable take name : 'take|get|grab' end\n"
+    "lexable money name : 'money|cash|bag of coins'\n"
+    ;
+    
     void TestSystemObject::testParsing_() {
         Universe::destroy();
         
+        TokenStream t1(make_source_from_str("program1", program1));
+        Universe::instance().make(t1);
+        string build_vocab =
+            "{'OPEN PARSER' -> system;"
+            "'BUILD' -> take;"
+            "'BUILD' -> money;"
+            "'CLOSE PARSER' -> system;"
+            "'PLAYER CMD' -> system;"
+            "\"grab all the cash\" -> system;"
+            "'PARSE' -> system}"
+        ;
+        Statement stmt = make_stmt_from_str(build_vocab);
+        ostringstream out;
+        stmt->execute(out);
         
+        stmt = make_stmt_from_str("'NEXT OBJECT' -> system");
+        Value val = stmt->execute(out);
+        list<Value> parsed;
+        while (val->isDefined()) {
+            parsed.push_back(move(val));
+            val = stmt->execute(out);
+        }
+        ARCHETYPE_TEST_EQUAL(parsed.size(), size_t(3));
+        list<Value> expected;
+        int take_obj_id = Universe::instance().getObject("take")->id();
+        int money_obj_id = Universe::instance().getObject("money")->id();
+        expected.push_back(Value(new ObjectValue(take_obj_id)));
+        expected.push_back(Value(new StringValue("all")));
+        expected.push_back(Value(new ObjectValue(money_obj_id)));
+        bool are_equal = equal(parsed.begin(), parsed.end(), expected.begin(),
+                               [](const Value& x, const Value& y){ return x->isSameValueAs(y);} );
+        ARCHETYPE_TEST(are_equal);
     }
     
     void TestSystemObject::runTests_() {

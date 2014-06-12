@@ -82,12 +82,23 @@ namespace archetype {
     }
     
     ObjectPtr Universe::getObject(int object_id) const {
-        // TODO:  I hate this lookup-and-find pattern.  How about a nice find() for IdIndex?
         if (objects_.hasIndex(object_id)) {
             return objects_.get(object_id);
         } else {
             return nullptr;
         }
+    }
+    
+    ObjectPtr Universe::getObject(std::string identifier) const {
+        int name_id = Identifiers.find(identifier);
+        if (name_id != StringIdIndex::npos) {
+            auto which = ObjectIdentifiers.find(name_id);
+            if (which != ObjectIdentifiers.end()) {
+                int object_id = which->second;
+                return getObject(object_id);
+            }
+        }
+        return nullptr;
     }
     
     ObjectPtr Universe::defineNewObject(int parent_id) {
@@ -97,8 +108,8 @@ namespace archetype {
         return objects_.get(object_id);
     }
     
-    void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string name) {
-        int identifier_id_for_object = Identifiers.index(name);
+    void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string identifier) {
+        int identifier_id_for_object = Identifiers.index(identifier);
         assignObjectIdentifier(object, identifier_id_for_object);
     }
     

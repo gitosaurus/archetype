@@ -27,81 +27,6 @@ namespace archetype {
         return SourceFilePtr(new SourceFile(name, in_ptr));
     }
     
-    static char program1[] =
-        "null vase\n"
-        "  desc: \"vase\"\n"
-        "  weight: 1\n"
-        "methods\n"
-        "  'heft': write \"The \", desc, \" has a weight of \", weight, \".\"\n"
-        "end\n"
-    ;
-    
-    static char program2[] =
-        "type edible based on null\n"
-        "  desc: \"snack\"\n"
-        "methods\n"
-        "  'eat': write \"You gobble down the \", desc, \".\"\n"
-        "end\n"
-        "edible cracker desc : \"cracker\" end\n"
-        "edible granola_bar end\n"
-    ;
-    
-    static char program3[] =
-        "include \"snack.ach\"\n"
-        "null conservatory\n"
-        "  desc: \"A nicely appointed room overlooking the garden.\"\n"
-        "  contents: cracker\n"
-        "methods\n"
-        "  'look' : write \"A \", contents.desc, \" is here.\"\n"
-        "end\n"
-    ;
-    
-    static char program4[] =
-        "type something based on null\n"
-        "methods\n"
-        "  'foo' : \"bar\"\n"
-        "   default : \"nothing from something\"\n"
-        "end\n"
-        "\n"
-        "something thing\n"
-        "methods\n"
-        "  'fizzle' : \"bazzle\"\n"
-        "  default: \"something has everything\"\n"
-        "end\n"
-        "\n"
-        "something nothing methods 'sizzle' : \"gristle\" end\n"
-    ;
-    
-    static char program5[] =
-        "type echo_type based on null\n"
-        "  desc: \"Echo Type!\"\n"
-        "methods\n"
-        "  'hiya' : 'hello' --> echo\n"
-        "  default: message\n"
-        "end\n"
-        "\n"
-        "null echo\n"
-        "methods\n"
-        "  'hello': \"Hello, \" & sender.desc\n"
-        "  'goodbye' : \"Goodbye from \" & desc\n"
-        "  default: message\n"
-        "end\n"
-        "\n"
-        "echo_type me_too\n"
-        "  desc: \"me too\"\n"
-        "methods\n"
-        "  'greet' : 'hello' -> echo\n"
-        "end\n"
-        "\n"
-        "null another\n"
-        "  desc: \"another\"\n"
-        "methods\n"
-        "  'chirp' : 'hiya' -> me_too\n"
-        "  'cheep' : 'chirp' -> self\n"
-        "  'goodbye' : message --> echo\n"
-        "end\n"
-    ;
-    
     inline SourceFilePtr make_source_from_str(string name, string src_str) {
         stream_ptr in(new istringstream(src_str));
         return SourceFilePtr(new SourceFile(name, in));
@@ -112,6 +37,25 @@ namespace archetype {
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
+    
+    static char program1[] =
+    "null vase\n"
+    "  desc: \"vase\"\n"
+    "  weight: 1\n"
+    "methods\n"
+    "  'heft': write \"The \", desc, \" has a weight of \", weight, \".\"\n"
+    "end\n"
+    ;
+    
+    static char program2[] =
+    "type edible based on null\n"
+    "  desc: \"snack\"\n"
+    "methods\n"
+    "  'eat': write \"You gobble down the \", desc, \".\"\n"
+    "end\n"
+    "edible cracker desc : \"cracker\" end\n"
+    "edible granola_bar end\n"
+    ;
     
     void TestUniverse::testBasicObjects_() {
         Universe::destroy();
@@ -141,6 +85,16 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
     
+    static char program3[] =
+    "include \"snack.ach\"\n"
+    "null conservatory\n"
+    "  desc: \"A nicely appointed room overlooking the garden.\"\n"
+    "  contents: cracker\n"
+    "methods\n"
+    "  'look' : write \"A \", contents.desc, \" is here.\"\n"
+    "end\n"
+    ;
+    
     void TestUniverse::testInclusion_() {
         Universe::destroy();
 
@@ -154,6 +108,22 @@ namespace archetype {
         string expected = "A cracker is here.\n";
         ARCHETYPE_TEST_EQUAL(actual, expected);
     }
+    
+    static char program4[] =
+    "type something based on null\n"
+    "methods\n"
+    "  'foo' : \"bar\"\n"
+    "   default : \"nothing from something\"\n"
+    "end\n"
+    "\n"
+    "something thing\n"
+    "methods\n"
+    "  'fizzle' : \"bazzle\"\n"
+    "  default: \"something has everything\"\n"
+    "end\n"
+    "\n"
+    "something nothing methods 'sizzle' : \"gristle\" end\n"
+    ;
     
     void TestUniverse::testDefaultMethods_() {
         Universe::destroy();
@@ -178,6 +148,36 @@ namespace archetype {
             ARCHETYPE_TEST_EQUAL(actual->getString(), t.second);
         }
     }
+    
+    static char program5[] =
+    "type echo_type based on null\n"
+    "  desc: \"Echo Type!\"\n"
+    "methods\n"
+    "  'hiya' : 'hello' --> echo\n"
+    "  default: message\n"
+    "end\n"
+    "\n"
+    "null echo\n"
+    "methods\n"
+    "  'hello': \"Hello, \" & sender.desc\n"
+    "  'goodbye' : \"Goodbye from \" & desc\n"
+    "  default: message\n"
+    "end\n"
+    "\n"
+    "echo_type me_too\n"
+    "  desc: \"me too\"\n"
+    "methods\n"
+    "  'greet' : 'hello' -> echo\n"
+    "end\n"
+    "\n"
+    "null another\n"
+    "  desc: \"another\"\n"
+    "methods\n"
+    "  'chirp' : 'hiya' -> me_too\n"
+    "  'cheep' : 'chirp' -> self\n"
+    "  'goodbye' : message --> echo\n"
+    "end\n"
+    ;
     
     void TestUniverse::testMessagingKeywords_() {
         Universe::destroy();
