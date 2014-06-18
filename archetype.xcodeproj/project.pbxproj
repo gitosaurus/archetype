@@ -13,10 +13,12 @@
 		4571ECCB193F6BF5006D85A9 /* Wellspring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */; };
 		45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A28190CAAB9002224D4 /* SystemSorter.cpp */; };
 		45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A2B190CAAC5002224D4 /* SystemParser.cpp */; };
+		458776A319511F9E000D8C46 /* TestSerialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 458776A119511F9E000D8C46 /* TestSerialization.cpp */; };
 		459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 459010DD19326E19007B14C0 /* TestSystemParser.cpp */; };
 		45B2450118A34A0B006A5FA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45B2450018A34A0B006A5FA8 /* main.cpp */; };
 		45B2450318A34A0B006A5FA8 /* archetype.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 45B2450218A34A0B006A5FA8 /* archetype.1 */; };
 		45D89F3718C81644009CCF30 /* Value.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45D89F3518C81644009CCF30 /* Value.cpp */; };
+		45DDAD12194E8D0500B282F7 /* Serialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45DDAD10194E8D0500B282F7 /* Serialization.cpp */; };
 		45DE416D18F6EBC1007A9EB6 /* SystemObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45DE416B18F6EBC1007A9EB6 /* SystemObject.cpp */; };
 		45ECAF7D18BD04D800FA1924 /* TestExpression.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45ECAF7B18BD04D800FA1924 /* TestExpression.cpp */; };
 		45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45EDDB8718B42BC6008EAF22 /* Keywords.cpp */; };
@@ -60,6 +62,8 @@
 		45817A29190CAAB9002224D4 /* SystemSorter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemSorter.h; sourceTree = "<group>"; };
 		45817A2B190CAAC5002224D4 /* SystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemParser.cpp; sourceTree = "<group>"; };
 		45817A2C190CAAC5002224D4 /* SystemParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemParser.h; sourceTree = "<group>"; };
+		458776A119511F9E000D8C46 /* TestSerialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSerialization.cpp; sourceTree = "<group>"; };
+		458776A219511F9E000D8C46 /* TestSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSerialization.h; sourceTree = "<group>"; };
 		459010DD19326E19007B14C0 /* TestSystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSystemParser.cpp; sourceTree = "<group>"; };
 		459010DE19326E19007B14C0 /* TestSystemParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSystemParser.h; sourceTree = "<group>"; };
 		45B244FD18A34A0B006A5FA8 /* archetype */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = archetype; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -67,6 +71,8 @@
 		45B2450218A34A0B006A5FA8 /* archetype.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = archetype.1; sourceTree = "<group>"; };
 		45D89F3518C81644009CCF30 /* Value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Value.cpp; sourceTree = "<group>"; };
 		45D89F3618C81644009CCF30 /* Value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Value.h; sourceTree = "<group>"; };
+		45DDAD10194E8D0500B282F7 /* Serialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Serialization.cpp; path = ../Serialization.cpp; sourceTree = "<group>"; };
+		45DDAD11194E8D0500B282F7 /* Serialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Serialization.h; path = ../Serialization.h; sourceTree = "<group>"; };
 		45DE416B18F6EBC1007A9EB6 /* SystemObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemObject.cpp; sourceTree = "<group>"; };
 		45DE416C18F6EBC1007A9EB6 /* SystemObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemObject.h; sourceTree = "<group>"; };
 		45ECAF7B18BD04D800FA1924 /* TestExpression.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestExpression.cpp; sourceTree = "<group>"; };
@@ -135,6 +141,8 @@
 				45B2450018A34A0B006A5FA8 /* main.cpp */,
 				45B2450218A34A0B006A5FA8 /* archetype.1 */,
 				45F7CF1B18A9C09900D39E12 /* IdIndex.h */,
+				45DDAD10194E8D0500B282F7 /* Serialization.cpp */,
+				45DDAD11194E8D0500B282F7 /* Serialization.h */,
 				45F7CF1F18A9E8A200D39E12 /* Universe.cpp */,
 				45F7CF2018A9E8A200D39E12 /* Universe.h */,
 				45F7CF2218A9E9A000D39E12 /* Object.cpp */,
@@ -191,6 +199,8 @@
 				45FBD4E618FE180300E6B2D1 /* TestSystemObject.h */,
 				459010DD19326E19007B14C0 /* TestSystemParser.cpp */,
 				459010DE19326E19007B14C0 /* TestSystemParser.h */,
+				458776A119511F9E000D8C46 /* TestSerialization.cpp */,
+				458776A219511F9E000D8C46 /* TestSerialization.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -253,6 +263,7 @@
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
 				45DE416D18F6EBC1007A9EB6 /* SystemObject.cpp in Sources */,
 				4571ECCB193F6BF5006D85A9 /* Wellspring.cpp in Sources */,
+				45DDAD12194E8D0500B282F7 /* Serialization.cpp in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
 				451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */,
 				459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */,
@@ -269,6 +280,7 @@
 				45F7CF3318A9EE2200D39E12 /* SourceFile.cpp in Sources */,
 				45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */,
 				45F7CF3B18AA932B00D39E12 /* TestRegistry.cpp in Sources */,
+				458776A319511F9E000D8C46 /* TestSerialization.cpp in Sources */,
 				45ECAF7D18BD04D800FA1924 /* TestExpression.cpp in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
