@@ -71,10 +71,10 @@ namespace archetype {
         std::ostream* output_;
         
         static Universe* instance_;
+
         Universe();
-        // No copying
-        Universe(const Universe&);
-        Universe& operator=(const Universe&);
+        Universe(const Universe&) = delete;
+        Universe& operator=(const Universe&) = delete;
     };
     
     class ContextScope {
