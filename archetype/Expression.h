@@ -17,6 +17,7 @@
 #include "Keywords.h"
 #include "TokenStream.h"
 #include "Value.h"
+#include "Serialization.h"
 
 namespace archetype {
     
@@ -27,9 +28,18 @@ namespace archetype {
     protected:
         IExpression() { }
     public:
+        enum NodeType_e {
+            RESERVED,
+            UNARY,
+            BINARY,
+            IDENTIFIER,
+            VALUE
+        };
         IExpression(const IExpression&) = delete;
         IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }
+        
+        virtual NodeType_e nodeType() const = 0;
         
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) { }
@@ -56,6 +66,7 @@ namespace archetype {
         Keywords::Reserved_e word_;
     public:
         ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
+        virtual NodeType_e nodeType() const { return RESERVED; }
         virtual Value evaluate() const override;
         virtual void prefixDisplay(std::ostream& out) const override {
             out << Keywords::instance().Reserved.get(word_);
@@ -68,8 +79,10 @@ namespace archetype {
         ValueExpression(Value value): value_(std::move(value)) { }
         virtual Value evaluate() const override { return value_->clone(); }
         virtual void prefixDisplay(std::ostream& out) const override {
-            out << "<dynamic value>";
+            out << value_;
         }
+        
+        virtual NodeType_e nodeType() const { return VALUE; }
     };
     
     bool is_binary(Keywords::Operators_e op);
@@ -80,12 +93,10 @@ namespace archetype {
     Expression form_expr(TokenStream& t, int stop_precedence = 0);
     Expression tighten(Expression expr);
     
-    // TODO: seems wrong to expose this
-    Expression tie_on_rside(Expression existing,
-                            Keywords::Operators_e op,
-                            Expression new_rside);
-    
     Expression make_expr(TokenStream& t);
+    
+    Storage& operator<<(Storage& out, const Expression& expr);
+    Storage& operator>>(Storage& in, Expression& expr);
 }
 
 #endif /* defined(__archetype__Expression__) */

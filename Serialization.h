@@ -26,6 +26,12 @@ namespace archetype {
         void writeInteger(int value);
     };
     
+    Storage& operator<<(Storage& out, int value);
+    Storage& operator>>(Storage& in, int& value);
+    
+    Storage& operator<<(Storage& out, std::string value);
+    Storage& operator>>(Storage& in, std::string& value);
+    
     class MemoryStorage : public Storage {
         size_t seekIndex_;
         std::vector<Byte> bytes_;

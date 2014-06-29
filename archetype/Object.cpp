@@ -115,4 +115,53 @@ namespace archetype {
         return Value(new UndefinedValue);
     }
     
+    void Object::write(Storage &out) {
+        out << parentId_ << id_ << static_cast<int>(prototype_);
+        out << static_cast<int>(attributes_.size());
+        for (auto a_p = attributes_.begin(); a_p != attributes_.end(); ++a_p) {
+            out << a_p->first << a_p->second;
+        }
+        out << static_cast<int>(methods_.size());
+        for (auto m_p = methods_.begin(); m_p != methods_.end(); ++m_p) {
+            out << m_p->first << m_p->second;
+        }
+    }
+    
+    void Object::read(Storage &in) {
+        int is_prototype;
+        in >> parentId_ >> id_ >> is_prototype;
+        prototype_ = static_cast<bool>(is_prototype);
+        
+        int attribute_entries;
+        in >> attribute_entries;
+        attributes_.clear();
+        for (int i = 0; i < attribute_entries; ++i) {
+            int attribute_id;
+            Expression expr;
+            in >> attribute_id >> expr;
+            attributes_[attribute_id] = move(expr);
+        }
+        
+        int method_entries;
+        in >> method_entries;
+        methods_.clear();
+        for (int i = 0; i < method_entries; ++i) {
+            int message_id;
+            Statement stmt;
+            in >> message_id >> stmt;
+            methods_[message_id] = move(stmt);
+        }
+    }
+    
+    Storage& operator<<(Storage& out, const ObjectPtr& p) {
+        p->write(out);
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, ObjectPtr& p) {
+        p.reset(new Object);
+        p->read(in);
+        return in;
+    }
+    
 }

@@ -242,12 +242,13 @@ namespace archetype {
                         
                         switch (bracket) {
                             case '"':
+                                // TODO:  difference between message and text literal vanishing
                                 token_ = Token(Token::TEXT_LITERAL,
                                                Universe::instance().TextLiterals.index(s));
                                 break;
                             case '\'':
                                 token_ = Token(Token::MESSAGE,
-                                               Universe::instance().Vocabulary.index(s));
+                                               Universe::instance().TextLiterals.index(s));
                                 break;
                             default:
                                 cout << "Programmer error: unknown literal type" << endl;

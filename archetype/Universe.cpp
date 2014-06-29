@@ -281,4 +281,42 @@ namespace archetype {
         Universe::instance().popContext();
     }
     
+    Storage& operator<<(Storage& out, const IdentifierMap& m) {
+        int entries = static_cast<int>(m.size());
+        out << entries;
+        for (auto p = m.begin(); p != m.end(); ++p) {
+            out << p->first << p->second;
+        }
+        return out;
+    }
+    
+    Storage& operator>>(Storage&in, IdentifierMap& m) {
+        m.clear();
+        int entries;
+        in >> entries;
+        for (int i = 0; i < entries; ++i) {
+            int first, second;
+            in >> first >> second;
+            m[first] = second;
+        }
+        return in;
+    }
+    
+    Storage& operator<<(Storage& out, const Universe& u) {
+        out << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
+        /*
+         TODO:  finish
+         ObjectIndex   objects_;
+         std::stack<Context> context_;
+         std::ostream* output_;
+         */
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, Universe& u) {
+        in >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
+        // TODO: finish
+        return in;
+    }
+    
 }

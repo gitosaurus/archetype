@@ -15,11 +15,14 @@
 #include <stdexcept>
 
 #include "Keywords.h"
+#include "Serialization.h"
 
 namespace archetype {
 
     class IValue;
     typedef std::unique_ptr<IValue> Value;
+    
+    std::ostream& operator<<(std::ostream& out, const Value& value);
     
     class IValue {
     public:
@@ -31,6 +34,7 @@ namespace archetype {
 
         virtual bool isSameValueAs(const Value& other) const = 0;
         virtual Value clone() const = 0;
+        virtual void display(std::ostream& out) const = 0;
 
         virtual bool isTrueEnough() const     { return true; }
         virtual int getMessage() const        { throw std::logic_error("Value is not a defined message"); }
@@ -54,10 +58,13 @@ namespace archetype {
         UndefinedValue() { }
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new UndefinedValue); }
+        virtual void display(std::ostream& out) const override;
+
         virtual bool isDefined()   const override { return false; }
         virtual bool isTrueEnough() const override { return false; }
     };
     
+    // TODO:  can/should this simply be a type of ReservedConstantValue?
     class BooleanValue : public IValue {
         bool value_;
     public:
@@ -65,6 +72,7 @@ namespace archetype {
 
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new BooleanValue(value_)); }
+        virtual void display(std::ostream& out) const override;
 
         virtual bool isTrueEnough() const override { return value_; }
         virtual Value stringConversion() const;
@@ -78,6 +86,7 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new MessageValue(message_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual int getMessage() const override;
         
@@ -92,6 +101,7 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new NumericValue(value_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual int getNumber() const override;
         
@@ -106,6 +116,7 @@ namespace archetype {
 
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new ReservedConstantValue(word_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual bool isTrueEnough() const override;
         
@@ -120,6 +131,7 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new StringValue(value_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual std::string getString() const override;
         
@@ -135,6 +147,7 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new IdentifierValue(id_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual int getIdentifier() const override;
         
@@ -152,6 +165,7 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new ObjectValue(objectId_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual int getObject() const override;
 
@@ -168,6 +182,7 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new AttributeValue(objectId_, attributeId_)); }
+        virtual void display(std::ostream& out) const override;
         
         virtual int getIdentifier() const override;
         
@@ -180,6 +195,9 @@ namespace archetype {
         
         virtual Value assign(Value new_value) override;
     };
+    
+    Storage& operator<<(Storage& out, const Value& v);
+    Storage& operator>>(Storage& in, Value& v);
 
 }
 

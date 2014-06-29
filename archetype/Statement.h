@@ -14,6 +14,7 @@
 
 #include "TokenStream.h"
 #include "Expression.h"
+#include "Serialization.h"
 
 namespace archetype {
     
@@ -117,6 +118,9 @@ namespace archetype {
     };
     
     Statement make_statement(TokenStream& t);
+    
+    Storage& operator<<(Storage& out, const Statement& stmt);
+    Storage& operator>>(Storage& in, Statement& stmt);
 }
 
 #endif /* defined(__archetype__Statement__) */

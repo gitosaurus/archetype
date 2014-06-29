@@ -278,4 +278,15 @@ namespace archetype {
             return nullptr;
         
     }  /* make_statement */
+    
+    Storage& operator<<(Storage& out, const Statement& stmt) {
+        // TODO:  finish
+        return out;
+    }
+
+    Storage& operator>>(Storage& in, Statement& stmt) {
+        // TODO:  finish
+        return in;
+    }
+
 }

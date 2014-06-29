@@ -43,7 +43,7 @@ namespace archetype {
             // in an infinite loop.
             int state_counter = 0;
             for (auto message_name : SystemMessageNames) {
-                int message_id = Universe::instance().Vocabulary.index(message_name);
+                int message_id = Universe::instance().TextLiterals.index(message_name);
                 stateByMessage_[message_id] = State_e(state_counter++);
             }
         }

@@ -19,6 +19,7 @@
 #include "Object.h"
 #include "Value.h"
 #include "TokenStream.h"
+#include "Serialization.h"
 
 namespace archetype {
     
@@ -41,7 +42,6 @@ namespace archetype {
             ~Context();
         };
 
-        StringIdIndex Vocabulary;
         StringIdIndex TextLiterals;
         StringIdIndex Identifiers;
 
@@ -87,6 +87,12 @@ namespace archetype {
         Universe::Context* operator->()
         { return &(Universe::instance().currentContext()); }
     };
+    
+    Storage& operator<<(Storage& out, const IdentifierMap& m);
+    Storage& operator>>(Storage&in, IdentifierMap& m);
+    
+    Storage& operator<<(Storage& out, const Universe& u);
+    Storage& operator>>(Storage& in, Universe& u);
     
 }
 

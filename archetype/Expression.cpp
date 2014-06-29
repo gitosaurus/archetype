@@ -103,6 +103,10 @@ namespace archetype {
         }
     }
     
+    Expression tie_on_rside(Expression existing,
+                            Keywords::Operators_e op,
+                            Expression new_rside);
+    
     class Operator : public IExpression {
         Keywords::Operators_e op_;
     protected:
@@ -132,6 +136,8 @@ namespace archetype {
         right_{move(right)} {
             assert(not is_binary(op));
         }
+        
+        virtual NodeType_e nodeType() const { return BINARY; }
         
         virtual Value evaluate() const {
             throw logic_error("UnaryOperator::evaluate under construction");
@@ -248,6 +254,8 @@ namespace archetype {
         {
             assert(is_binary(op));
         }
+        
+        virtual NodeType_e nodeType() const { return BINARY; }
         
         virtual Value evaluate() const {
             Value lv = left_->evaluate();
@@ -375,15 +383,7 @@ namespace archetype {
         LiteralNode(int index): index_{index} { }
     public:
         int index() const { return index_; }
-    };
-    
-    class NumericLiteralNode : public LiteralNode {
-    public:
-        NumericLiteralNode(int number): LiteralNode{number} { }
-        virtual Value evaluate() const override { return Value(new NumericValue(index())); }
-        virtual void prefixDisplay(ostream& out) const {
-            out << index();
-        }
+        
     };
     
     class MessageNode : public LiteralNode {
@@ -391,29 +391,7 @@ namespace archetype {
         MessageNode(int index): LiteralNode{index} { }
         virtual Value evaluate() const override { return Value(new MessageValue(index())); }
         virtual void prefixDisplay(ostream& out) const override {
-            out << "'" << Universe::instance().Vocabulary.get(index()) << "'";
-        }
-    };
-    
-    class TextLiteralNode : public LiteralNode {
-    public:
-        TextLiteralNode(int index): LiteralNode{index} { }
-        virtual Value evaluate() const override {
-            return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
-        }
-        virtual void prefixDisplay(ostream& out) const override {
-            out << '"' << Universe::instance().TextLiterals.get(index()) << '"';
-        }
-    };
-    
-    class QuoteLiteralNode : public LiteralNode {
-    public:
-        QuoteLiteralNode(int index): LiteralNode{index} { }
-        virtual Value evaluate() const override {
-            return Value(new StringValue(Universe::instance().TextLiterals.get(index())));
-        }
-        virtual void prefixDisplay(ostream& out) const override {
-            out << "<<" << Universe::instance().TextLiterals.get(index()) << ">>";
+            out << "'" << Universe::instance().TextLiterals.get(index()) << "'";
         }
     };
     
@@ -421,6 +399,7 @@ namespace archetype {
         int id_;
     public:
         IdentifierNode(int id): id_{id} { }
+        virtual NodeType_e nodeType() const { return IDENTIFIER; }
         virtual Value evaluate() const override {
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
             if (selfObject and selfObject->hasAttribute(id_)) {
@@ -429,6 +408,7 @@ namespace archetype {
                 return Value(new IdentifierValue(id_));
             }
         }
+
         virtual void prefixDisplay(ostream& out) const override {
             out << Universe::instance().Identifiers.get(id_);
         }
@@ -442,6 +422,7 @@ namespace archetype {
                 return Value(new ObjectValue(Universe::instance().currentContext().senderObject->id()));
             case Keywords::RW_MESSAGE:
                 return Universe::instance().currentContext().messageValue->clone();
+                // TODO:  other things to handle:  each, maybe?
             default:
                 return Value(new ReservedConstantValue(word_));
         }
@@ -450,31 +431,32 @@ namespace archetype {
     Expression get_scalar(TokenStream& t) {
         Expression scalar;
         switch (t.token().type()) {
-            case Token::MESSAGE:
-                scalar.reset(new MessageNode(t.token().number()));
-                break;
             case Token::TEXT_LITERAL:
-                scalar.reset(new TextLiteralNode(t.token().number()));
-                break;
             case Token::QUOTE_LITERAL:
-                scalar.reset(new QuoteLiteralNode(t.token().number()));
+            case Token::MESSAGE:
+                // TODO:  Harmonize by not calling this 'MessageValue'.  It's an interred string
+                scalar.reset(new ValueExpression(Value(new MessageValue(t.token().number()))));
                 break;
             case Token::NUMERIC:
-                scalar.reset(new NumericLiteralNode(t.token().number()));
+                scalar.reset(new ValueExpression(Value(new NumericValue(t.token().number()))));
                 break;
             case Token::IDENTIFIER:
                 scalar.reset(new IdentifierNode(t.token().number()));
                 break;
             case Token::RESERVED_WORD: {
+                // Some reserved words are like zero-argument functions, others are constant values
+                // TODO:  Looks nice, but ironically this will cause the values to take an extra byte to serialize
                 Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());
                 switch (word) {
                     case Keywords::RW_NULL:
                     case Keywords::RW_UNDEFINED:
                     case Keywords::RW_ABSENT:
+                    case Keywords::RW_TRUE: case Keywords::RW_FALSE:
+                        scalar.reset(new ValueExpression(Value(new ReservedConstantValue(word))));
+                        break;
+                    case Keywords::RW_READ: case Keywords::RW_KEY:
                     case Keywords::RW_EACH:
                     case Keywords::RW_SELF: case Keywords::RW_SENDER: case Keywords::RW_MESSAGE:
-                    case Keywords::RW_READ: case Keywords::RW_KEY:
-                    case Keywords::RW_TRUE: case Keywords::RW_FALSE:
                         scalar.reset(new ReservedConstantNode(word));
                         break;
                     default:
@@ -563,7 +545,7 @@ namespace archetype {
             existing->tieOnRightSide(op, move(new_rside));
             return existing;
         }
-    }  /* tie_on_rside */
+    }
 
     Expression form_expr(TokenStream& t, int stop_precedence) {
         Expression expr = get_operand(t);
@@ -602,6 +584,65 @@ namespace archetype {
         t.restoreNewlineSignificance();
         // TODO:  will also verify the expression
         return expr;
+    }
+    
+    Storage& operator<<(Storage& out, const Expression& expr) {
+        int node_type_as_int = static_cast<int>(expr->nodeType());
+        out << node_type_as_int;
+        switch (expr->nodeType()) {
+                // TODO:  implement.  Now I'm obliged to dynamic_cast??  Nah, use polymorphic write
+                // TODO:  or else I'll have to allow default ctors
+        }
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, Expression& expr) {
+        // TODO:  Some asymmetry here, as this is obliged to function as a factory
+        // TODO:  The lack of default constructors prevents virtual read
+        int node_type_as_int;
+        in >> node_type_as_int;
+        IExpression::NodeType_e node_type = static_cast<IExpression::NodeType_e>(node_type_as_int);
+        switch (node_type) {
+            case IExpression::RESERVED: {
+                int word_as_int;
+                in >> word_as_int;
+                Keywords::Reserved_e word = static_cast<Keywords::Reserved_e>(word_as_int);
+                expr.reset(new ReservedConstantNode(word));
+                break;
+            }
+            case IExpression::UNARY: {
+                int op_as_int;
+                in >> op_as_int;
+                Keywords::Operators_e op = static_cast<Keywords::Operators_e>(op_as_int);
+                Expression right_side;
+                in >> right_side;
+                expr.reset(new UnaryOperator(op, move(right_side)));
+                break;
+            }
+            case IExpression::BINARY: {
+                int op_as_int;
+                in >> op_as_int;
+                Keywords::Operators_e op = static_cast<Keywords::Operators_e>(op_as_int);
+                Expression left_side;
+                Expression right_side;
+                in >> left_side >> right_side;
+                expr.reset(new BinaryOperator(move(left_side), op, move(right_side)));
+                break;
+            }
+            case IExpression::IDENTIFIER: {
+                int id;
+                in >> id;
+                expr.reset(new IdentifierNode(id));
+                break;
+            }
+            case IExpression::VALUE: {
+                Value value;
+                in >> value;
+                expr.reset(new ValueExpression(move(value)));
+                break;
+            }
+        }
+        return in;
     }
     
 } // archetype

@@ -129,7 +129,7 @@ namespace archetype {
                                                  "health := health - 1\n"
                                                  "write \"The monster is down to \", health, \".\"\n"
                                                  "health }\n");
-        int kill_message_id = Universe::instance().Vocabulary.index("kill");
+        int kill_message_id = Universe::instance().TextLiterals.index("kill");
         monster->setMethod(kill_message_id, std::move(kill_stmt));
         Expression expr1 = make_expr_from_str("'kill' -> monster");
         Value val1 = expr1->evaluate()->numericConversion();
@@ -143,7 +143,7 @@ namespace archetype {
         ObjectPtr animal_type = Universe::instance().defineNewObject();
         int desc_id = Universe::instance().Identifiers.index("desc");
         Statement growl_stmt = make_stmt_from_str("write \"The \", desc, \" growls.\"");
-        int growl_message_id = Universe::instance().Vocabulary.index("growl");
+        int growl_message_id = Universe::instance().TextLiterals.index("growl");
         animal_type->setAttribute(desc_id, Value(new StringValue("animal")));
         animal_type->setMethod(growl_message_id, std::move(growl_stmt));
         animal_type->setPrototype(true);

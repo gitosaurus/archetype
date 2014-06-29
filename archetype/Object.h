@@ -16,6 +16,7 @@
 #include "Expression.h"
 #include "Statement.h"
 #include "Value.h"
+#include "Serialization.h"
 
 namespace archetype {
 
@@ -65,7 +66,13 @@ namespace archetype {
         virtual Value executeDefaultMethod();
         
         virtual Value dispatch(Value message);
+        
+        virtual void write(Storage& out);
+        virtual void read(Storage& in);
     };
+    
+    Storage& operator<<(Storage& out, const ObjectPtr& p);
+    Storage& operator>>(Storage&in, ObjectPtr& p);
     
 }
 

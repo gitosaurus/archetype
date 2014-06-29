@@ -18,6 +18,11 @@ using namespace std;
 
 namespace archetype {
     
+    std::ostream& operator<<(std::ostream& out, const Value& value) {
+        value->display(out);
+        return out;
+    }
+    
     Value IValue::messageConversion() const {
         return Value(new UndefinedValue);
     }
@@ -51,9 +56,21 @@ namespace archetype {
         return other_p != nullptr;
     }
     
+    void UndefinedValue::display(std::ostream &out) const {
+        out << Keywords::instance().Reserved.get(Keywords::RW_UNDEFINED);
+    }
+    
     bool BooleanValue::isSameValueAs(const Value &other) const {
         const BooleanValue* other_p = dynamic_cast<const BooleanValue*>(other.get());
         return other_p and other_p->value_ == value_;
+    }
+    
+    void BooleanValue::display(std::ostream &out) const {
+        if (value_) {
+            out << Keywords::instance().Reserved.get(Keywords::RW_TRUE);
+        } else {
+            out << Keywords::instance().Reserved.get(Keywords::RW_FALSE);
+        }
     }
     
     Value BooleanValue::numericConversion() const {
@@ -69,7 +86,7 @@ namespace archetype {
     }
     
     Value MessageValue::stringConversion() const {
-        string conversion = Universe::instance().Vocabulary.get(message_);
+        string conversion = Universe::instance().TextLiterals.get(message_);
         return Value(new StringValue(conversion));
     }
     
@@ -78,9 +95,17 @@ namespace archetype {
         return other_p and other_p->message_ == message_;
     }
     
+    void MessageValue::display(std::ostream &out) const {
+        out << "'" << Universe::instance().TextLiterals.get(message_);
+    }
+    
     bool NumericValue::isSameValueAs(const Value &other) const {
         const NumericValue* other_p = dynamic_cast<const NumericValue*>(other.get());
         return other_p and other_p->value_ == value_;
+    }
+    
+    void NumericValue::display(std::ostream &out) const {
+        out << value_;
     }
     
     int NumericValue::getNumber() const {
@@ -98,13 +123,17 @@ namespace archetype {
         return other_p and other_p->value_ == value_;
     }
     
+    void StringValue::display(std::ostream &out) const {
+        out << '"' << value_ << '"';
+    }
+    
     string StringValue::getString() const {
         return value_;
     }
     
     Value StringValue::messageConversion() const {
-        if (Universe::instance().Vocabulary.has(value_)) {
-            return Value(new MessageValue(Universe::instance().Vocabulary.index(value_)));
+        if (Universe::instance().TextLiterals.has(value_)) {
+            return Value(new MessageValue(Universe::instance().TextLiterals.index(value_)));
         } else {
             return Value(new UndefinedValue);
         }
@@ -122,12 +151,16 @@ namespace archetype {
         return Value(new NumericValue(number));
     }
     
+    void ReservedConstantValue::display(std::ostream &out) const {
+        out << Keywords::instance().Reserved.get(word_);
+    }
+    
     Value ReservedConstantValue::stringConversion() const {
         return Value(new StringValue(Keywords::instance().Reserved.get(word_)));
     }
     
     bool ReservedConstantValue::isTrueEnough() const {
-        // TODO: How often does it happen that FALSE and UNDEFINED get to here?
+        // TODO: How often will it happen that FALSE and UNDEFINED get to here?
         if (word_ == Keywords::RW_UNDEFINED ||
             word_ == Keywords::RW_FALSE ||
             word_ == Keywords::RW_ABSENT) {
@@ -148,6 +181,10 @@ namespace archetype {
         } else {
             return Value(new UndefinedValue);
         }
+    }
+    
+    void IdentifierValue::display(std::ostream &out) const {
+        out << Universe::instance().Identifiers.get(id_);
     }
     
     int IdentifierValue::getIdentifier() const {
@@ -189,6 +226,11 @@ namespace archetype {
         return other_p and other_p->objectId_ == objectId_;
     }
     
+    void ObjectValue::display(std::ostream &out) const {
+        int identifier = Universe::instance().ObjectIdentifiers[objectId_];
+        out << Universe::instance().Identifiers.get(identifier);
+    }
+    
     int ObjectValue::getObject() const {
         return objectId_;
     }
@@ -196,6 +238,15 @@ namespace archetype {
     bool AttributeValue::isSameValueAs(const Value &other) const {
         const AttributeValue* other_p = dynamic_cast<const AttributeValue*>(other.get());
         return other_p and other_p->objectId_ == objectId_ and other_p->attributeId_ == attributeId_;
+    }
+    
+    void AttributeValue::display(std::ostream &out) const {
+        int identifier = Universe::instance().ObjectIdentifiers[objectId_];
+        out
+            << Universe::instance().Identifiers.get(identifier)
+            << '.'
+            << Universe::instance().Identifiers.get(attributeId_)
+        ;
     }
     
     int AttributeValue::getIdentifier() const {
@@ -242,5 +293,16 @@ namespace archetype {
             return clone();
         }
     }
+    
+    Storage& operator<<(Storage& out, const Value& v) {
+        // TODO:  finish
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, Value& v) {
+        // TODO:  finish.  Will probably need another enumeration
+        return in;
+    }
+
     
 }

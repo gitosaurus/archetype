@@ -8,6 +8,7 @@
 
 #include <stdexcept>
 #include <algorithm>
+#include <sstream>
 
 #include "Serialization.h"
 
@@ -69,6 +70,37 @@ namespace archetype {
             bits = 7;
             byte = (value & PayloadBits);
         } while (value);
+    }
+    
+    Storage& operator<<(Storage& out, int value) {
+        out.writeInteger(value);
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, int& value) {
+        value = in.readInteger();
+        return in;
+    }
+    
+    Storage& operator<<(Storage& out, std::string value) {
+        int size = static_cast<int>(value.size());
+        out << size;
+        out.write(reinterpret_cast<const Storage::Byte*>(value.data()), size);
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, std::string& value) {
+        int size;
+        in >> size;
+        value.resize(size);
+        int bytes_read = in.read(reinterpret_cast<Storage::Byte*>(&value[0]), size);
+        if (bytes_read != size) {
+            ostringstream out;
+            out << "Could not fully read string declared as " << size << " bytes; "
+                << "only read " << bytes_read;
+            throw invalid_argument(out.str());
+        }
+        return in;
     }
     
     MemoryStorage::MemoryStorage():
