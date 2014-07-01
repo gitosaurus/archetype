@@ -14,6 +14,7 @@
 		45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A28190CAAB9002224D4 /* SystemSorter.cpp */; };
 		45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A2B190CAAC5002224D4 /* SystemParser.cpp */; };
 		458776A319511F9E000D8C46 /* TestSerialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 458776A119511F9E000D8C46 /* TestSerialization.cpp */; };
+		4588EC441961A3970024E2E7 /* TestValue.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4588EC421961A3970024E2E7 /* TestValue.cpp */; };
 		459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 459010DD19326E19007B14C0 /* TestSystemParser.cpp */; };
 		45B2450118A34A0B006A5FA8 /* main.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45B2450018A34A0B006A5FA8 /* main.cpp */; };
 		45B2450318A34A0B006A5FA8 /* archetype.1 in CopyFiles */ = {isa = PBXBuildFile; fileRef = 45B2450218A34A0B006A5FA8 /* archetype.1 */; };
@@ -64,6 +65,8 @@
 		45817A2C190CAAC5002224D4 /* SystemParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemParser.h; sourceTree = "<group>"; };
 		458776A119511F9E000D8C46 /* TestSerialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSerialization.cpp; sourceTree = "<group>"; };
 		458776A219511F9E000D8C46 /* TestSerialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSerialization.h; sourceTree = "<group>"; };
+		4588EC421961A3970024E2E7 /* TestValue.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestValue.cpp; sourceTree = "<group>"; };
+		4588EC431961A3970024E2E7 /* TestValue.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestValue.h; sourceTree = "<group>"; };
 		459010DD19326E19007B14C0 /* TestSystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSystemParser.cpp; sourceTree = "<group>"; };
 		459010DE19326E19007B14C0 /* TestSystemParser.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestSystemParser.h; sourceTree = "<group>"; };
 		45B244FD18A34A0B006A5FA8 /* archetype */ = {isa = PBXFileReference; explicitFileType = "compiled.mach-o.executable"; includeInIndex = 0; path = archetype; sourceTree = BUILT_PRODUCTS_DIR; };
@@ -201,6 +204,8 @@
 				459010DE19326E19007B14C0 /* TestSystemParser.h */,
 				458776A119511F9E000D8C46 /* TestSerialization.cpp */,
 				458776A219511F9E000D8C46 /* TestSerialization.h */,
+				4588EC421961A3970024E2E7 /* TestValue.cpp */,
+				4588EC431961A3970024E2E7 /* TestValue.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -261,6 +266,7 @@
 				45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */,
 				45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
+				4588EC441961A3970024E2E7 /* TestValue.cpp in Sources */,
 				45DE416D18F6EBC1007A9EB6 /* SystemObject.cpp in Sources */,
 				4571ECCB193F6BF5006D85A9 /* Wellspring.cpp in Sources */,
 				45DDAD12194E8D0500B282F7 /* Serialization.cpp in Sources */,

@@ -18,7 +18,12 @@ using namespace std;
 
 namespace archetype {
     
-    bool is_binary(Keywords::Operators_e op) {
+    inline Value as_boolean_value(bool value) {
+        Keywords::Reserved_e word = value ? Keywords::RW_TRUE : Keywords::RW_FALSE;
+        return Value(new ReservedConstantValue(word));
+    }
+    
+    inline bool is_binary(Keywords::Operators_e op) {
         switch (op) {
             case Keywords::OP_LPAREN:
             case Keywords::OP_CHS:
@@ -32,7 +37,7 @@ namespace archetype {
         }
     }
     
-    bool is_right_associative(Keywords::Operators_e op) {
+    inline bool is_right_associative(Keywords::Operators_e op) {
         
         // Anything unary must be right-associative;
         // all others are  left-associative, unless
@@ -51,7 +56,7 @@ namespace archetype {
         }
     }
     
-    int precedence(Keywords::Operators_e op) {
+    inline int precedence(Keywords::Operators_e op) {
         switch (op) {
             case Keywords::OP_LPAREN: return 14;
             case Keywords::OP_DOT: return 13;
@@ -103,6 +108,22 @@ namespace archetype {
         }
     }
     
+    // Most reserved values will be handled by ReservedConstantValue, but this
+    // type of node is needed for those reserved words that behave like zero-argument
+    // functions (sender, read, key, and so forth).
+    // TODO:  maybe renamed to reflect this
+    class ReservedConstantNode : public ScalarNode {
+        Keywords::Reserved_e word_;
+    public:
+        ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
+        virtual NodeType_e nodeType() const override { return RESERVED; }
+        virtual void write(Storage& out) const override { } // TODO: finish
+        virtual Value evaluate() const override;
+        virtual void prefixDisplay(std::ostream& out) const override {
+            out << Keywords::instance().Reserved.get(word_);
+        }
+    };
+    
     Expression tie_on_rside(Expression existing,
                             Keywords::Operators_e op,
                             Expression new_rside);
@@ -137,7 +158,12 @@ namespace archetype {
             assert(not is_binary(op));
         }
         
-        virtual NodeType_e nodeType() const { return BINARY; }
+        virtual NodeType_e nodeType() const override { return BINARY; }
+        
+        virtual void write(Storage& out) const override {
+            int op_as_int = static_cast<int>(op());
+            out << op_as_int << right_;
+        }
         
         virtual Value evaluate() const {
             throw logic_error("UnaryOperator::evaluate under construction");
@@ -177,7 +203,7 @@ namespace archetype {
             case Keywords::OP_CONCAT:
                 return Value(new StringValue(lv_s + rv_s));
             case Keywords::OP_WITHIN:
-                return Value(new BooleanValue(rv_s.find(lv_s) != string::npos));
+                return as_boolean_value(rv_s.find(lv_s) != string::npos);
             default:
                 throw logic_error("string-op-string attempted on this operator");
         }
@@ -255,7 +281,11 @@ namespace archetype {
             assert(is_binary(op));
         }
         
-        virtual NodeType_e nodeType() const { return BINARY; }
+        virtual NodeType_e nodeType() const override { return BINARY; }
+        virtual void write(Storage& out) const override {
+            int op_as_int = static_cast<int>(op());
+            out << op_as_int << left_ << right_;
+        }
         
         virtual Value evaluate() const {
             Value lv = left_->evaluate();
@@ -295,14 +325,14 @@ namespace archetype {
                     }
                 }
                 case Keywords::OP_EQ:
-                    if (lv->isSameValueAs(rv)) return Value(new BooleanValue(true));
+                    if (lv->isSameValueAs(rv)) return as_boolean_value(true);
                     // Otherwise, intentional fall-through
                 case Keywords::OP_NE:
                 case Keywords::OP_LT:
                 case Keywords::OP_LE:
                 case Keywords::OP_GE:
                 case Keywords::OP_GT:
-                    return Value(new BooleanValue(eval_compare(op(), lv, rv)));
+                    return as_boolean_value(eval_compare(op(), lv, rv));
 
                 case Keywords::OP_ASSIGN: {
                     Value lv_a = lv->attributeConversion();
@@ -377,29 +407,12 @@ namespace archetype {
         }
     };
     
-    class LiteralNode : public ScalarNode {
-        int index_;
-    protected:
-        LiteralNode(int index): index_{index} { }
-    public:
-        int index() const { return index_; }
-        
-    };
-    
-    class MessageNode : public LiteralNode {
-    public:
-        MessageNode(int index): LiteralNode{index} { }
-        virtual Value evaluate() const override { return Value(new MessageValue(index())); }
-        virtual void prefixDisplay(ostream& out) const override {
-            out << "'" << Universe::instance().TextLiterals.get(index()) << "'";
-        }
-    };
-    
     class IdentifierNode : public ScalarNode {
         int id_;
     public:
         IdentifierNode(int id): id_{id} { }
         virtual NodeType_e nodeType() const { return IDENTIFIER; }
+        virtual void write(Storage& out) const override { out << id_; }
         virtual Value evaluate() const override {
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
             if (selfObject and selfObject->hasAttribute(id_)) {
@@ -589,16 +602,11 @@ namespace archetype {
     Storage& operator<<(Storage& out, const Expression& expr) {
         int node_type_as_int = static_cast<int>(expr->nodeType());
         out << node_type_as_int;
-        switch (expr->nodeType()) {
-                // TODO:  implement.  Now I'm obliged to dynamic_cast??  Nah, use polymorphic write
-                // TODO:  or else I'll have to allow default ctors
-        }
+        expr->write(out);
         return out;
     }
     
     Storage& operator>>(Storage& in, Expression& expr) {
-        // TODO:  Some asymmetry here, as this is obliged to function as a factory
-        // TODO:  The lack of default constructors prevents virtual read
         int node_type_as_int;
         in >> node_type_as_int;
         IExpression::NodeType_e node_type = static_cast<IExpression::NodeType_e>(node_type_as_int);

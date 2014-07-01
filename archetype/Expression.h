@@ -40,6 +40,7 @@ namespace archetype {
         virtual ~IExpression() { }
         
         virtual NodeType_e nodeType() const = 0;
+        virtual void write(Storage& out) const = 0;
         
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) { }
@@ -53,6 +54,7 @@ namespace archetype {
         virtual Value evaluate() const = 0;
     };
     
+    // TODO:  Necessary?  This only provides this tiny prettyPrint implementation, only used by 2 classes
     class ScalarNode : public IExpression {
     public:
         virtual void prettyPrint(std::ostream& out, std::string indent) const override {
@@ -62,21 +64,11 @@ namespace archetype {
         }
     };
     
-    class ReservedConstantNode : public ScalarNode {
-        Keywords::Reserved_e word_;
-    public:
-        ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
-        virtual NodeType_e nodeType() const { return RESERVED; }
-        virtual Value evaluate() const override;
-        virtual void prefixDisplay(std::ostream& out) const override {
-            out << Keywords::instance().Reserved.get(word_);
-        }
-    };
-    
     class ValueExpression : public ScalarNode {
         Value value_;
     public:
         ValueExpression(Value value): value_(std::move(value)) { }
+        virtual void write(Storage& out) const override { value_->write(out); }
         virtual Value evaluate() const override { return value_->clone(); }
         virtual void prefixDisplay(std::ostream& out) const override {
             out << value_;

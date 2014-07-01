@@ -60,27 +60,6 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_UNDEFINED);
     }
     
-    bool BooleanValue::isSameValueAs(const Value &other) const {
-        const BooleanValue* other_p = dynamic_cast<const BooleanValue*>(other.get());
-        return other_p and other_p->value_ == value_;
-    }
-    
-    void BooleanValue::display(std::ostream &out) const {
-        if (value_) {
-            out << Keywords::instance().Reserved.get(Keywords::RW_TRUE);
-        } else {
-            out << Keywords::instance().Reserved.get(Keywords::RW_FALSE);
-        }
-    }
-    
-    Value BooleanValue::numericConversion() const {
-        return Value(new NumericValue(value_ ? 1 : 0));
-    }
-    
-    Value BooleanValue::stringConversion() const {
-        return Value(new StringValue(value_ ? "TRUE" : "FALSE"));
-    }
-    
     int MessageValue::getMessage() const {
         return message_;
     }
@@ -127,6 +106,13 @@ namespace archetype {
         out << '"' << value_ << '"';
     }
     
+    void StringValue::write(Storage& out) const {
+        int text_length = static_cast<int>(value_.size());
+        out << text_length;
+        const Storage::Byte* buffer = reinterpret_cast<const Storage::Byte*>(value_.data());
+        out.write(buffer, text_length);
+    }
+    
     string StringValue::getString() const {
         return value_;
     }
@@ -155,12 +141,31 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(word_);
     }
     
+    Value ReservedConstantValue::messageConversion() const {
+        if (word_ == Keywords::RW_MESSAGE) {
+            return Universe::instance().currentContext().messageValue->clone();
+        } else {
+            return Value(new UndefinedValue);
+        }
+    }
+    
     Value ReservedConstantValue::stringConversion() const {
         return Value(new StringValue(Keywords::instance().Reserved.get(word_)));
     }
     
+    Value ReservedConstantValue::numericConversion() const {
+        switch (word_) {
+            case Keywords::RW_TRUE:
+                return Value(new NumericValue(1));
+            case Keywords::RW_FALSE:
+                return Value(new NumericValue(0));
+                
+            default:
+                return Value(new UndefinedValue);
+        }
+    }
+    
     bool ReservedConstantValue::isTrueEnough() const {
-        // TODO: How often will it happen that FALSE and UNDEFINED get to here?
         if (word_ == Keywords::RW_UNDEFINED ||
             word_ == Keywords::RW_FALSE ||
             word_ == Keywords::RW_ABSENT) {
@@ -173,14 +178,6 @@ namespace archetype {
     bool ReservedConstantValue::isSameValueAs(const Value &other) const {
         const ReservedConstantValue* other_p = dynamic_cast<const ReservedConstantValue*>(other.get());
         return other_p and other_p->word_ == word_;
-    }
-    
-    Value ReservedConstantValue::messageConversion() const {
-        if (word_ == Keywords::RW_MESSAGE) {
-            return Universe::instance().currentContext().messageValue->clone();
-        } else {
-            return Value(new UndefinedValue);
-        }
     }
     
     void IdentifierValue::display(std::ostream &out) const {
@@ -295,12 +292,68 @@ namespace archetype {
     }
     
     Storage& operator<<(Storage& out, const Value& v) {
-        // TODO:  finish
+        int type_as_int = static_cast<int>(v->type());
+        out << type_as_int;
+        v->write(out);
         return out;
     }
     
     Storage& operator>>(Storage& in, Value& v) {
-        // TODO:  finish.  Will probably need another enumeration
+        int type_as_int;
+        in >> type_as_int;
+        IValue::Type_e type = static_cast<IValue::Type_e>(type_as_int);
+        switch (type) {
+            case IValue::UNDEFINED:
+                v = Value(new UndefinedValue);
+                break;
+            case IValue::MESSAGE: {
+                int message_id;
+                in >> message_id;
+                v = Value(new MessageValue(message_id));
+                break;
+            }
+            case IValue::NUMERIC: {
+                int number;
+                in >> number;
+                v = Value(new NumericValue(number));
+                break;
+            }
+            case IValue::RESERVED: {
+                int word_as_int;
+                in >> word_as_int;
+                Keywords::Reserved_e word = static_cast<Keywords::Reserved_e>(word_as_int);
+                v = Value(new ReservedConstantValue(word));
+                break;
+            }
+            case IValue::STRING: {
+                int text_size;
+                in >> text_size;
+                string text;
+                text.resize(text_size);
+                Storage::Byte* buffer = reinterpret_cast<Storage::Byte*>(&text[0]);
+                in.read(buffer, text_size);
+                v = Value(new StringValue(text));
+                break;
+            }
+            case IValue::IDENTIFIER: {
+                int id;
+                in >> id;
+                v = Value(new IdentifierValue(id));
+                break;
+            }
+            case IValue::OBJECT: {
+                int object_id;
+                in >> object_id;
+                v = Value(new ObjectValue(object_id));
+                break;
+            }
+            case IValue::ATTRIBUTE: {
+                int object_id, attribute_id;
+                in >> object_id >> attribute_id;
+                v = Value(new AttributeValue(object_id, attribute_id));
+                break;
+            }
+        }
         return in;
     }
 

@@ -26,6 +26,17 @@ namespace archetype {
     
     class IValue {
     public:
+        enum Type_e {
+            UNDEFINED,
+            MESSAGE,
+            NUMERIC,
+            RESERVED,
+            STRING,
+            IDENTIFIER,
+            OBJECT,
+            ATTRIBUTE
+        };
+        
         IValue() { }
         IValue(const IValue&) = delete;
         IValue& operator=(const IValue&) = delete;
@@ -35,6 +46,8 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const = 0;
         virtual Value clone() const = 0;
         virtual void display(std::ostream& out) const = 0;
+        virtual Type_e type() const = 0;
+        virtual void write(Storage& out) const = 0;
 
         virtual bool isTrueEnough() const     { return true; }
         virtual int getMessage() const        { throw std::logic_error("Value is not a defined message"); }
@@ -59,24 +72,11 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new UndefinedValue); }
         virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return UNDEFINED; }
+        virtual void write(Storage& out) const override { }
 
         virtual bool isDefined()   const override { return false; }
         virtual bool isTrueEnough() const override { return false; }
-    };
-    
-    // TODO:  can/should this simply be a type of ReservedConstantValue?
-    class BooleanValue : public IValue {
-        bool value_;
-    public:
-        BooleanValue(bool value): value_(value) { }
-
-        virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new BooleanValue(value_)); }
-        virtual void display(std::ostream& out) const override;
-
-        virtual bool isTrueEnough() const override { return value_; }
-        virtual Value stringConversion() const;
-        virtual Value numericConversion() const;
     };
     
     class MessageValue : public IValue {
@@ -87,7 +87,9 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new MessageValue(message_)); }
         virtual void display(std::ostream& out) const override;
-        
+        virtual Type_e type() const override { return MESSAGE; }
+        virtual void write(Storage& out) const override { out << message_; }
+       
         virtual int getMessage() const override;
         
         virtual Value messageConversion() const override { return clone(); }
@@ -102,6 +104,8 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new NumericValue(value_)); }
         virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return NUMERIC; }
+        virtual void write(Storage& out) const override { out << value_; }
         
         virtual int getNumber() const override;
         
@@ -117,11 +121,14 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new ReservedConstantValue(word_)); }
         virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return RESERVED; }
+        virtual void write(Storage& out) const override { out << static_cast<int>(word_); }
         
         virtual bool isTrueEnough() const override;
         
         virtual Value messageConversion() const override;
         virtual Value stringConversion() const override;
+        virtual Value numericConversion() const override;
     };
     
     class StringValue : public IValue {
@@ -132,6 +139,8 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new StringValue(value_)); }
         virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return STRING; }
+        virtual void write(Storage& out) const override;
         
         virtual std::string getString() const override;
         
@@ -148,6 +157,8 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new IdentifierValue(id_)); }
         virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return IDENTIFIER; }
+        virtual void write(Storage& out) const override { out << id_; }
         
         virtual int getIdentifier() const override;
         
@@ -165,13 +176,18 @@ namespace archetype {
         
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new ObjectValue(objectId_)); }
+        virtual Type_e type() const override { return OBJECT; }
         virtual void display(std::ostream& out) const override;
+        virtual void write(Storage& out) const override { out << objectId_; }
         
         virtual int getObject() const override;
 
         virtual Value objectConversion() const override { return clone(); }
     };
     
+    // The purpose of this Value type is to track a writable reference to an object attribute.
+    // If Archetype had any other types of left-hand values, there would be a parent
+    // of this class called LeftHandValue.
     class AttributeValue : public IValue {
         int objectId_;
         int attributeId_;
@@ -183,6 +199,8 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new AttributeValue(objectId_, attributeId_)); }
         virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return ATTRIBUTE; }
+        virtual void write(Storage& out) const override { out << objectId_ << attributeId_; }
         
         virtual int getIdentifier() const override;
         
