@@ -28,9 +28,10 @@ namespace archetype {
     public:
         enum Type_e {
             UNDEFINED,
+            ABSENT,
+            BOOLEAN,
             MESSAGE,
             NUMERIC,
-            RESERVED,
             STRING,
             IDENTIFIER,
             OBJECT,
@@ -70,13 +71,42 @@ namespace archetype {
     public:
         UndefinedValue() { }
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new UndefinedValue); }
+        virtual Value clone() const override { return Value{new UndefinedValue}; }
         virtual void display(std::ostream& out) const override;
         virtual Type_e type() const override { return UNDEFINED; }
         virtual void write(Storage& out) const override { }
 
         virtual bool isDefined()   const override { return false; }
         virtual bool isTrueEnough() const override { return false; }
+    };
+    
+    class AbsentValue : public IValue {
+    public:
+        AbsentValue() { }
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value{new AbsentValue}; }
+        virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return ABSENT; }
+        virtual void write(Storage& out) const override { }
+
+        virtual bool isDefined()   const override { return true; }
+        virtual bool isTrueEnough() const override { return false; }
+    };
+    
+    class BooleanValue : public IValue {
+        bool value_;
+    public:
+        BooleanValue(bool value): value_(value) { }
+        
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value(new BooleanValue(value_)); }
+        virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return BOOLEAN; }
+        virtual void write(Storage& out) const override;
+
+        virtual bool isTrueEnough() const override { return value_; }
+        virtual Value stringConversion() const;
+        virtual Value numericConversion() const;
     };
     
     class MessageValue : public IValue {
@@ -111,24 +141,6 @@ namespace archetype {
         
         virtual Value stringConversion() const override;
         virtual Value numericConversion() const override { return clone(); }
-    };
-    
-    class ReservedConstantValue : public IValue {
-        Keywords::Reserved_e word_;
-    public:
-        ReservedConstantValue(Keywords::Reserved_e word): word_(word) { }
-
-        virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new ReservedConstantValue(word_)); }
-        virtual void display(std::ostream& out) const override;
-        virtual Type_e type() const override { return RESERVED; }
-        virtual void write(Storage& out) const override { out << static_cast<int>(word_); }
-        
-        virtual bool isTrueEnough() const override;
-        
-        virtual Value messageConversion() const override;
-        virtual Value stringConversion() const override;
-        virtual Value numericConversion() const override;
     };
     
     class StringValue : public IValue {

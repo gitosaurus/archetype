@@ -16,7 +16,7 @@ using namespace std;
 namespace archetype {
     
     Value IStatement::execute(std::ostream& out) const {
-        return Value(new UndefinedValue);
+        return Value{new UndefinedValue};
     }
 
     bool CompoundStatement::make(TokenStream& t) {

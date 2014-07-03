@@ -19,8 +19,7 @@ using namespace std;
 namespace archetype {
     
     inline Value as_boolean_value(bool value) {
-        Keywords::Reserved_e word = value ? Keywords::RW_TRUE : Keywords::RW_FALSE;
-        return Value(new ReservedConstantValue(word));
+        return Value{new BooleanValue{value}};
     }
     
     inline bool is_binary(Keywords::Operators_e op) {
@@ -266,7 +265,13 @@ namespace archetype {
                 default: throw logic_error("Unexpected numeric eval_compare case");
             }
         }
-        return false;
+        // Special case:  if the two values aren't comparable, that is, the comparison
+        // fails no matter the conversion, then they definitely aren't equal.
+        if (op == Keywords::OP_NE) {
+            return true;
+        } else {
+            return false;
+        }
     }
 
     class BinaryOperator : public Operator {
@@ -299,7 +304,7 @@ namespace archetype {
                     if (lv_s->isDefined() and rv_s->isDefined()) {
                         return eval_ss(op(), lv_s->getString(), rv_s->getString());
                     } else {
-                        return Value(new UndefinedValue);
+                        return Value{new UndefinedValue};
                     }
                 }
                 case Keywords::OP_LEFTFROM:
@@ -309,7 +314,7 @@ namespace archetype {
                     if (lv_s->isDefined() and rv_n->isDefined()) {
                         return eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
-                        return Value(new UndefinedValue);
+                        return Value{new UndefinedValue};
                     }
                 }
                 case Keywords::OP_PLUS:
@@ -321,7 +326,7 @@ namespace archetype {
                     if (lv_n->isDefined() and rv_n->isDefined()) {
                         return eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
                     } else {
-                        return Value(new UndefinedValue);
+                        return Value{new UndefinedValue};
                     }
                 }
                 case Keywords::OP_EQ:
@@ -347,7 +352,7 @@ namespace archetype {
                         int attribute_id = rv_a->getIdentifier();
                         return Value(new AttributeValue(object_id, attribute_id));
                     } else {
-                        return Value(new UndefinedValue);
+                        return Value{new UndefinedValue};
                     }
                 }
                     
@@ -355,11 +360,11 @@ namespace archetype {
                 case Keywords::OP_PASS: {
                     Value rv_o = rv->objectConversion();
                     if (not rv_o->isDefined()) {
-                        return Value(new UndefinedValue);
+                        return Value{new UndefinedValue};
                     }
                     ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
                     if (not recipient) {
-                        return Value(new UndefinedValue);
+                        return Value{new UndefinedValue};
                     } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
                         return recipient->dispatch(std::move(lv));
                     } else {
@@ -435,9 +440,9 @@ namespace archetype {
                 return Value(new ObjectValue(Universe::instance().currentContext().senderObject->id()));
             case Keywords::RW_MESSAGE:
                 return Universe::instance().currentContext().messageValue->clone();
-                // TODO:  other things to handle:  each, maybe?
+                // TODO:  other things to handle:  each, read, key
             default:
-                return Value(new ReservedConstantValue(word_));
+                throw logic_error("Attempt to evaluate reserved word which is not a lambda");
         }
     }
     
@@ -458,14 +463,19 @@ namespace archetype {
                 break;
             case Token::RESERVED_WORD: {
                 // Some reserved words are like zero-argument functions, others are constant values
-                // TODO:  Looks nice, but ironically this will cause the values to take an extra byte to serialize
                 Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());
                 switch (word) {
-                    case Keywords::RW_NULL:
                     case Keywords::RW_UNDEFINED:
+                        scalar.reset(new ValueExpression{Value{new UndefinedValue}});
+                        break;
                     case Keywords::RW_ABSENT:
-                    case Keywords::RW_TRUE: case Keywords::RW_FALSE:
-                        scalar.reset(new ValueExpression(Value(new ReservedConstantValue(word))));
+                        scalar.reset(new ValueExpression{Value{new AbsentValue}});
+                        break;
+                    case Keywords::RW_TRUE:
+                        scalar.reset(new ValueExpression{Value{new BooleanValue{true}}});
+                        break;
+                    case Keywords::RW_FALSE:
+                        scalar.reset(new ValueExpression{Value{new BooleanValue{false}}});
                         break;
                     case Keywords::RW_READ: case Keywords::RW_KEY:
                     case Keywords::RW_EACH:

@@ -210,7 +210,7 @@ namespace archetype {
         Statement stmt5 = make_stmt_from_str("'yelp' -> another");
         Value actual5 = stmt5->execute(out);
         ARCHETYPE_TEST(actual5->isDefined());
-        Value expected5 = Value(new ReservedConstantValue(Keywords::RW_ABSENT));
+        Value expected5 = Value{new AbsentValue};
         ARCHETYPE_TEST(actual5->isSameValueAs(expected5));
 
         list<pair<string, string>> test_pairs = {

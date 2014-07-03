@@ -67,7 +67,7 @@ namespace archetype {
         Context context;
         context.selfObject = nullObject;
         context.senderObject = nullObject;
-        context.messageValue = Value(new UndefinedValue);
+        context.messageValue = Value{new UndefinedValue};
         context_.push(context);
         
         output_ = &std::cout;

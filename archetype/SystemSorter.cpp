@@ -23,6 +23,6 @@ namespace archetype {
             sortedStrings_.erase(sortedStrings_.begin());
             return Value(new StringValue(result));
         }
-        return Value(new UndefinedValue);
+        return Value{new UndefinedValue};
     }
 }

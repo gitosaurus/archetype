@@ -63,7 +63,7 @@ namespace archetype {
     }
     
     Value SystemObject::executeMethod(int message_id) {
-        return Value(new UndefinedValue);
+        return Value{new UndefinedValue};
     }
     
     bool SystemObject::hasDefaultMethod() const {
@@ -229,6 +229,6 @@ namespace archetype {
                 break;
                 
         }
-        return Value(new UndefinedValue);
+        return Value{new UndefinedValue};
     }
 }

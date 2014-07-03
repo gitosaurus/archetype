@@ -41,7 +41,7 @@ namespace archetype {
         } else if (p and p->hasAttribute(attribute_id)) {
             return p->getAttributeValue(attribute_id);
         } else {
-            return Value(new UndefinedValue);
+            return Value{new UndefinedValue};
         }
     }
     
@@ -70,7 +70,7 @@ namespace archetype {
         } else if (p and p->hasDefaultMethod()) {
             return p->executeDefaultMethod();
         } else {
-            return Value(new ReservedConstantValue(Keywords::RW_ABSENT));
+            return Value{new AbsentValue};
         }
     }
     
@@ -112,7 +112,7 @@ namespace archetype {
             return p->executeDefaultMethod();
         }
         
-        return Value(new UndefinedValue);
+        return Value{new UndefinedValue};
     }
     
     void Object::write(Storage &out) {

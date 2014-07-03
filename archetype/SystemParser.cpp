@@ -161,7 +161,7 @@ namespace archetype {
     
     Value SystemParser::nextObject() {
         if (parsedValues_.empty()) {
-            return Value(new UndefinedValue);
+            return Value{new UndefinedValue};
         } else {
             Value result = std::move(parsedValues_.front());
             parsedValues_.pop_front();
@@ -179,7 +179,7 @@ namespace archetype {
         if (words.size() == 1) {
             return words.front()->objectConversion();
         } else {
-            return Value(new UndefinedValue);
+            return Value{new UndefinedValue};
         }
     }
 }
