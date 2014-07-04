@@ -174,11 +174,7 @@ namespace archetype {
         
         virtual int getIdentifier() const override;
         
-        virtual Value stringConversion() const override;
-        virtual Value numericConversion() const override;
         virtual Value identifierConversion() const override { return clone(); }
-        virtual Value objectConversion() const override;
-        virtual Value attributeConversion() const override;
     };
     
     class ObjectValue : public IValue {

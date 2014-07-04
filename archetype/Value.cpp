@@ -181,31 +181,6 @@ namespace archetype {
         return id_;
     }
     
-    Value IdentifierValue::stringConversion() const {
-        return attributeConversion()->stringConversion();
-    }
-    
-    Value IdentifierValue::numericConversion() const {
-        return attributeConversion()->numericConversion();
-    }
-    
-    Value IdentifierValue::objectConversion() const {
-        auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
-        if (id_obj_p == Universe::instance().ObjectIdentifiers.end()) {
-            return Value{new UndefinedValue};
-        }
-        return Value(new ObjectValue(id_obj_p->second));
-    }
-    
-    Value IdentifierValue::attributeConversion() const {
-        ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
-        if (selfObject and selfObject->hasAttribute(id_)) {
-            return Value(new AttributeValue(selfObject->id(), id_));
-        } else {
-            return Value{new UndefinedValue};
-        }
-    }
-    
     bool IdentifierValue::isSameValueAs(const Value &other) const {
         const IdentifierValue* other_p = dynamic_cast<const IdentifierValue*>(other.get());
         return other_p and other_p->id_ == id_;

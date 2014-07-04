@@ -417,12 +417,19 @@ namespace archetype {
         virtual NodeType_e nodeType() const { return IDENTIFIER; }
         virtual void write(Storage& out) const override { out << id_; }
         virtual Value evaluate() const override {
+            // Closest binding:  an attribute in the current object
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
             if (selfObject and selfObject->hasAttribute(id_)) {
                 return Value(new AttributeValue(selfObject->id(), id_));
-            } else {
-                return Value(new IdentifierValue(id_));
             }
+            // Next:  an object in the Universe
+            auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
+            if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
+                return Value(new ObjectValue(id_obj_p->second));
+            }
+            
+            // Finally:  just a keyword value
+            return Value(new IdentifierValue(id_));
         }
 
         virtual void prefixDisplay(ostream& out) const override {
