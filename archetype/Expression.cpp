@@ -107,14 +107,12 @@ namespace archetype {
         }
     }
     
-    // Most reserved values will be handled by ReservedConstantValue, but this
-    // type of node is needed for those reserved words that behave like zero-argument
+    // This node is for those reserved words that behave like zero-argument
     // functions (sender, read, key, and so forth).
-    // TODO:  maybe renamed to reflect this
-    class ReservedConstantNode : public ScalarNode {
+    class ReservedWordNode : public ScalarNode {
         Keywords::Reserved_e word_;
     public:
-        ReservedConstantNode(Keywords::Reserved_e word): word_(word) { }
+        ReservedWordNode(Keywords::Reserved_e word): word_(word) { }
         virtual NodeType_e nodeType() const override { return RESERVED; }
         virtual void write(Storage& out) const override { } // TODO: finish
         virtual Value evaluate() const override;
@@ -432,7 +430,7 @@ namespace archetype {
         }
     };
     
-    Value ReservedConstantNode::evaluate() const {
+    Value ReservedWordNode::evaluate() const {
         switch (word_) {
             case Keywords::RW_SELF:
                 return Value(new ObjectValue(Universe::instance().currentContext().selfObject->id()));
@@ -480,7 +478,7 @@ namespace archetype {
                     case Keywords::RW_READ: case Keywords::RW_KEY:
                     case Keywords::RW_EACH:
                     case Keywords::RW_SELF: case Keywords::RW_SENDER: case Keywords::RW_MESSAGE:
-                        scalar.reset(new ReservedConstantNode(word));
+                        scalar.reset(new ReservedWordNode(word));
                         break;
                     default:
                         scalar.reset();
@@ -625,7 +623,7 @@ namespace archetype {
                 int word_as_int;
                 in >> word_as_int;
                 Keywords::Reserved_e word = static_cast<Keywords::Reserved_e>(word_as_int);
-                expr.reset(new ReservedConstantNode(word));
+                expr.reset(new ReservedWordNode(word));
                 break;
             }
             case IExpression::UNARY: {
