@@ -53,7 +53,7 @@ namespace archetype {
     "methods\n"
     "  'eat': write \"You gobble down the \", desc, \".\"\n"
     "end\n"
-    "edible cracker desc : \"cracker\" end\n"
+    "edible cracker desc : \"cracker\" flavor : \"salty\" end\n"
     "edible granola_bar end\n"
     ;
     
@@ -87,11 +87,12 @@ namespace archetype {
     
     static char program3[] =
     "include \"snack.ach\"\n"
+    "null flavor desc : \"Confusing object with same name as an attribute\" end\n"
     "null conservatory\n"
     "  desc: \"A nicely appointed room overlooking the garden.\"\n"
     "  contents: cracker\n"
     "methods\n"
-    "  'look' : write \"A \", contents.desc, \" is here.\"\n"
+    "  'look' : write \"A \", contents.flavor, \" \", contents.desc, \" is here.\"\n"
     "end\n"
     ;
     
@@ -105,7 +106,7 @@ namespace archetype {
         Statement stmt = make_stmt_from_str("'look' -> conservatory");
         stmt->execute(out);
         string actual = out.str();
-        string expected = "A cracker is here.\n";
+        string expected = "A salty cracker is here.\n";
         ARCHETYPE_TEST_EQUAL(actual, expected);
     }
     

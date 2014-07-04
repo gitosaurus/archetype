@@ -188,16 +188,19 @@ namespace archetype {
     
     bool ObjectValue::isSameValueAs(const Value &other) const {
         const ObjectValue* other_p = dynamic_cast<const ObjectValue*>(other.get());
-        return other_p and other_p->objectId_ == objectId_;
+        return other_p and other_p->objectNameId_ == objectNameId_;
     }
     
     void ObjectValue::display(std::ostream &out) const {
-        int identifier = Universe::instance().ObjectIdentifiers[objectId_];
-        out << Universe::instance().Identifiers.get(identifier);
+        out << Universe::instance().Identifiers.get(objectNameId_);
+    }
+    
+    Value ObjectValue::identifierConversion() const {
+        return Value{new IdentifierValue{objectNameId_}};
     }
     
     int ObjectValue::getObject() const {
-        return objectId_;
+        return objectNameId_;
     }
     
     bool AttributeValue::isSameValueAs(const Value &other) const {
@@ -242,7 +245,7 @@ namespace archetype {
     }
     
     Value AttributeValue::identifierConversion() const {
-        return Value(new IdentifierValue(attributeId_));
+        return Value{new IdentifierValue{attributeId_}};
     }
     
     Value AttributeValue::objectConversion() const {
@@ -254,7 +257,7 @@ namespace archetype {
         if (not obj) {
             return Value{new UndefinedValue};
         } else {
-            obj->setAttribute(attributeId_, Expression(new ValueExpression(std::move(new_value))));
+            obj->setAttribute(attributeId_, Expression{new ValueExpression{std::move(new_value)}});
             return clone();
         }
     }

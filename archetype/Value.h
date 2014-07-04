@@ -178,18 +178,21 @@ namespace archetype {
     };
     
     class ObjectValue : public IValue {
-        int objectId_;
+        // This is the identifier by which the object is known in the game, not its
+        // creation ID.
+        int objectNameId_;
     public:
-        ObjectValue(int object_id): objectId_(object_id) { }
+        ObjectValue(int object_id): objectNameId_(object_id) { }
         
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new ObjectValue(objectId_)); }
+        virtual Value clone() const override { return Value(new ObjectValue(objectNameId_)); }
         virtual Type_e type() const override { return OBJECT; }
         virtual void display(std::ostream& out) const override;
-        virtual void write(Storage& out) const override { out << objectId_; }
+        virtual void write(Storage& out) const override { out << objectNameId_; }
         
         virtual int getObject() const override;
 
+        virtual Value identifierConversion() const override;
         virtual Value objectConversion() const override { return clone(); }
     };
     
