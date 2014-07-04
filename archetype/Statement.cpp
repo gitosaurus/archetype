@@ -126,8 +126,7 @@ namespace archetype {
         }
         
         typeId_ = 0;
-        if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_NULL) and
-            t.token().type() != Token::IDENTIFIER) {
+        if (t.token().type() != Token::IDENTIFIER) {
             t.expectGeneral("type identifier");
             return false;
         }

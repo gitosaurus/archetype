@@ -56,6 +56,10 @@ namespace archetype {
     Universe::Universe() {
         ObjectPtr nullObject = defineNewObject();
         assignObjectIdentifier(nullObject, "null");
+        nullObject->setPrototype(true);
+        // If the "null" object had a parent ID of zero, it would be its own parent.
+        // But it's a special object, one that has no parent.
+        nullObject->setParentId(-1);
         assert(nullObject->id() == NullObjectId);
         
         ObjectPtr system_obj(new SystemObject);
@@ -199,7 +203,7 @@ namespace archetype {
                 return nullptr;
             }
             obj->setParentId(parent->id());
-        } else if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_NULL)) {
+        } else {
             t.expectGeneral("name of a previously defined type");
             return nullptr;
         }
@@ -213,12 +217,6 @@ namespace archetype {
                     case Keywords::RW_TYPE:
                     case Keywords::RW_CLASS:
                         if (not define_type(t)) {
-                            return false;
-                        } else {
-                            break;
-                        }
-                    case Keywords::RW_NULL:
-                        if (not instantiate(t)) {
                             return false;
                         } else {
                             break;

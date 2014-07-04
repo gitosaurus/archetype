@@ -40,7 +40,6 @@ namespace archetype {
             RW_MESSAGE,
             RW_METHODS,
             RW_NAMED,
-            RW_NULL,
             RW_OF,
             RW_ON,
             RW_READ,

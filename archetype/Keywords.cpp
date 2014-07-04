@@ -51,7 +51,6 @@ namespace archetype {
         RESERVE(RW_MESSAGE, "message");
         RESERVE(RW_METHODS, "methods");
         RESERVE(RW_NAMED, "named");
-        RESERVE(RW_NULL, "null");
         RESERVE(RW_OF, "of");
         RESERVE(RW_ON, "on");
         RESERVE(RW_READ, "read");
