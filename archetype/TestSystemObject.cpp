@@ -42,7 +42,7 @@ namespace archetype {
         Statement stmt = make_stmt_from_str("'OPEN SORTER' -> system");
         stmt->execute(out);
         deque<string> to_sort = {"dog", "xylem", "cat", "Ajax", "several", "Zebra"};
-        for (string s : to_sort) {
+        for (auto const& s : to_sort) {
             // Because we are creating statements to be executed, the strings need to be in double
             // quotes.  Otherwise they'll get evaluated to UNDEFINED, since they are indeed
             // undefined identifiers.
@@ -58,7 +58,7 @@ namespace archetype {
         deque<string> sorted = to_sort;
         sort(sorted.begin(), sorted.end());
         stmt = make_stmt_from_str("'NEXT SORTED' -> system");
-        for (string s : sorted) {
+        for (auto const& s : sorted) {
             Value ans = stmt->execute(out);
             ARCHETYPE_TEST(ans->isDefined());
             Value ans_str = ans->stringConversion();

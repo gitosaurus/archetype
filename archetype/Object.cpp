@@ -118,12 +118,12 @@ namespace archetype {
     void Object::write(Storage &out) {
         out << parentId_ << id_ << static_cast<int>(prototype_);
         out << static_cast<int>(attributes_.size());
-        for (auto a_p = attributes_.begin(); a_p != attributes_.end(); ++a_p) {
-            out << a_p->first << a_p->second;
+        for (auto const& attribute : attributes_) {
+            out << attribute.first << attribute.second;
         }
         out << static_cast<int>(methods_.size());
-        for (auto m_p = methods_.begin(); m_p != methods_.end(); ++m_p) {
-            out << m_p->first << m_p->second;
+        for (auto const& method : methods_) {
+            out << method.first << method.second;
         }
     }
     

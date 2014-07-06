@@ -42,7 +42,7 @@ namespace archetype {
             // the Universe constructs a SystemObject, and would result
             // in an infinite loop.
             int state_counter = 0;
-            for (auto message_name : SystemMessageNames) {
+            for (auto const& message_name : SystemMessageNames) {
                 int message_id = Universe::instance().TextLiterals.index(message_name);
                 stateByMessage_[message_id] = State_e(state_counter++);
             }

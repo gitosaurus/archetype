@@ -60,14 +60,14 @@ namespace archetype {
     
     void SystemParser::close() {
         verbs_.sort(longest_phrase_first);
-        for (auto verb_phrase : verbs_) {
+        for (auto const& verb_phrase : verbs_) {
             verbMatches_.push_back(PhraseMatch());
             istringstream in(verb_phrase.first);
             transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(verbMatches_.back().first), [](string s) { return make_string_value(lowercase(s)); });
             verbMatches_.back().second = verb_phrase.second;
         }
         nouns_.sort(longest_phrase_first);
-        for (auto noun_phrase : nouns_) {
+        for (auto const& noun_phrase : nouns_) {
             nounMatches_.push_back(PhraseMatch());
             istringstream in(noun_phrase.first);
             transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(nounMatches_.back().first), [](string s) { return make_string_value(lowercase(s)); });

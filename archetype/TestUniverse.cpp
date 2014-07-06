@@ -140,7 +140,7 @@ namespace archetype {
             { "'fee' -> thing", "something has everything" },
             { "'fizzle' -> thing", "bazzle" },
         };
-        for (auto t : test_pairs) {
+        for (auto const& t : test_pairs) {
             cout << "TESTING: {" << t.first << "}" << endl;
             ostringstream out;
             Statement stmt = make_stmt_from_str(t.first);
@@ -220,7 +220,7 @@ namespace archetype {
             { "'cheep' -> another", "Hello, another" },
             { "'goodbye' -> another", "Goodbye from another" },
         };
-        for (auto t : test_pairs) {
+        for (auto const& t : test_pairs) {
             cout << "TESTING: {" << t.first << "}" << endl;
             ostringstream out;
             Statement stmt = make_stmt_from_str(t.first);

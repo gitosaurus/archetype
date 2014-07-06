@@ -62,8 +62,8 @@ namespace archetype {
         void write(Storage& out) const {
             int entries = static_cast<int>(registry_.size());
             out << entries;
-            for (auto p = index_.begin(); p != index_.end(); ++p) {
-                out << p->first << p->second;
+            for (auto const& entry : index_) {
+                out << entry.first << entry.second;
             }
         }
         

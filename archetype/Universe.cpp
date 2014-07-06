@@ -282,8 +282,8 @@ namespace archetype {
     Storage& operator<<(Storage& out, const IdentifierMap& m) {
         int entries = static_cast<int>(m.size());
         out << entries;
-        for (auto p = m.begin(); p != m.end(); ++p) {
-            out << p->first << p->second;
+        for (auto const& p : m) {
+            out << p.first << p.second;
         }
         return out;
     }

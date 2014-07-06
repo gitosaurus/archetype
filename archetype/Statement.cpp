@@ -40,7 +40,7 @@ namespace archetype {
     
     Value CompoundStatement::execute(std::ostream& out) const {
         Value result(new UndefinedValue);
-        for (const Statement& stmt : statements_) {
+        for (auto const& stmt : statements_) {
             result = stmt->execute(out);
         }
         return result;
@@ -172,7 +172,7 @@ namespace archetype {
     
     Value OutputStatement::execute(std::ostream &out) const {
         Value last_value(new UndefinedValue);
-        for (const Expression& expr : expressions_) {
+        for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
             Value v_s = last_value->stringConversion();
             if (v_s->isDefined()) {
