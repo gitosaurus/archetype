@@ -48,23 +48,12 @@ namespace archetype {
         virtual Expression anyFewerNodeEquivalent() { return nullptr; }
         virtual int nodeCount() const { return 1; }
         
-        virtual void printOutline(std::ostream& out, std::string indent = "") const = 0;
         virtual void prefixDisplay(std::ostream& out) const = 0;
         
         virtual Value evaluate() const = 0;
     };
     
-    // TODO:  Necessary?  This only provides this tiny prettyPrint implementation, only used by 2 classes
-    class ScalarNode : public IExpression {
-    public:
-        virtual void printOutline(std::ostream& out, std::string indent) const override {
-            out << indent;
-            prefixDisplay(out);
-            out << std::endl;
-        }
-    };
-    
-    class ValueExpression : public ScalarNode {
+    class ValueExpression : public IExpression {
         Value value_;
     public:
         ValueExpression(Value value): value_(std::move(value)) { }

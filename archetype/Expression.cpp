@@ -109,12 +109,12 @@ namespace archetype {
     
     // This node is for those reserved words that behave like zero-argument
     // functions (sender, read, key, and so forth).
-    class ReservedWordNode : public ScalarNode {
+    class ReservedWordNode : public IExpression {
         Keywords::Reserved_e word_;
     public:
         ReservedWordNode(Keywords::Reserved_e word): word_(word) { }
         virtual NodeType_e nodeType() const override { return RESERVED; }
-        virtual void write(Storage& out) const override { } // TODO: finish
+        virtual void write(Storage& out) const override;
         virtual Value evaluate() const override;
         virtual void prefixDisplay(std::ostream& out) const override {
             out << Keywords::instance().Reserved.get(word_);
@@ -177,12 +177,6 @@ namespace archetype {
             return op() != Keywords::OP_LPAREN ? nullptr : move(right_);
         }
         
-        virtual void printOutline(std::ostream& out, std::string indent) const {
-            if (op() != Keywords::OP_LPAREN) {
-                out << indent << Keywords::instance().Operators.get(int(op())) << endl;
-            }
-            right_->printOutline(out, indent + " ");
-        }
         virtual void prefixDisplay(ostream& out) const {
             if (op() == Keywords::OP_LPAREN) {
                 right_->prefixDisplay(out);
@@ -396,11 +390,6 @@ namespace archetype {
             return nullptr;
         }
         
-        virtual void printOutline(ostream& out, string indent) const {
-            out << indent << Keywords::instance().Operators.get(int(op())) << endl;
-            left_->printOutline(out, indent + " ");
-            right_->printOutline(out, indent + " ");
-        }
         virtual void prefixDisplay(ostream& out) const {
             out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';
             left_->prefixDisplay(out);
@@ -410,7 +399,7 @@ namespace archetype {
         }
     };
     
-    class IdentifierNode : public ScalarNode {
+    class IdentifierNode : public IExpression {
         int id_;
     public:
         IdentifierNode(int id): id_{id} { }
@@ -431,11 +420,15 @@ namespace archetype {
             // Finally:  just a keyword value
             return Value(new IdentifierValue(id_));
         }
-
         virtual void prefixDisplay(ostream& out) const override {
             out << Universe::instance().Identifiers.get(id_);
         }
     };
+    
+    void ReservedWordNode::write(Storage& out) const {
+        int word_as_int = static_cast<int>(word_);
+        out << word_as_int;
+    }
     
     Value ReservedWordNode::evaluate() const {
         switch (word_) {
@@ -457,7 +450,6 @@ namespace archetype {
             case Token::TEXT_LITERAL:
             case Token::QUOTE_LITERAL:
             case Token::MESSAGE:
-                // TODO:  Harmonize by not calling this 'MessageValue'.  It's an interred string
                 scalar.reset(new ValueExpression(Value(new MessageValue(t.token().number()))));
                 break;
             case Token::NUMERIC:

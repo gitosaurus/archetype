@@ -163,17 +163,32 @@ namespace archetype {
     }
     
     void TestExpression::testSerialization_() {
-        string expr_str = "monster.health -:= 'damage' -> damage_calculator";
-        string expected_back = "(-:= (. monster health) (-> 'damage' damage_calculator))";
-        Expression expr = make_expr_from_str(expr_str);
-        MemoryStorage mem;
-        mem << expr;
-        Expression expr_back;
-        mem >> expr_back;
-        ostringstream out;
-        expr_back->prefixDisplay(out);
-        string expr_back_str = out.str();
-        ARCHETYPE_TEST_EQUAL(expr_back_str, expected_back);
+        list<pair<string, string>> expressions = {
+            {
+                "monster.health -:= 'damage' -> damage_calculator",
+                "(-:= (. monster health) (-> 'damage' damage_calculator))"
+            },
+            {
+                "message & '...' & main.dobj --> self.verbiage",
+                "(--> (& (& message '...') (. main dobj)) (. self verbiage))"
+            },
+            {
+                // String literals are message literals, like Python
+                "\"Hello \" & \"world\"",
+                "(& 'Hello ' 'world')"
+            }
+        };
+        for (auto const& p : expressions) {
+            Expression expr = make_expr_from_str(p.first);
+            MemoryStorage mem;
+            mem << expr;
+            Expression expr_back;
+            mem >> expr_back;
+            ostringstream out;
+            expr_back->prefixDisplay(out);
+            string expr_back_str = out.str();
+            ARCHETYPE_TEST_EQUAL(expr_back_str, p.second);
+        }
     }
     
     void TestExpression::runTests_() {
