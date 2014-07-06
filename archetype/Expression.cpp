@@ -177,11 +177,11 @@ namespace archetype {
             return op() != Keywords::OP_LPAREN ? nullptr : move(right_);
         }
         
-        virtual void prettyPrint(std::ostream& out, std::string indent) const {
+        virtual void printOutline(std::ostream& out, std::string indent) const {
             if (op() != Keywords::OP_LPAREN) {
                 out << indent << Keywords::instance().Operators.get(int(op())) << endl;
             }
-            right_->prettyPrint(out, indent + " ");
+            right_->printOutline(out, indent + " ");
         }
         virtual void prefixDisplay(ostream& out) const {
             if (op() == Keywords::OP_LPAREN) {
@@ -396,10 +396,10 @@ namespace archetype {
             return nullptr;
         }
         
-        virtual void prettyPrint(ostream& out, string indent) const {
+        virtual void printOutline(ostream& out, string indent) const {
             out << indent << Keywords::instance().Operators.get(int(op())) << endl;
-            left_->prettyPrint(out, indent + " ");
-            right_->prettyPrint(out, indent + " ");
+            left_->printOutline(out, indent + " ");
+            right_->printOutline(out, indent + " ");
         }
         virtual void prefixDisplay(ostream& out) const {
             out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';

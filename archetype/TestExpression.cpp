@@ -6,13 +6,14 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <string>
+#include <sstream>
+
 #include "TestExpression.h"
 #include "TestRegistry.h"
 #include "TokenStream.h"
 #include "Expression.h"
-
-#include <string>
-#include <sstream>
+#include "Serialization.h"
 
 using namespace std;
 
@@ -161,8 +162,23 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual12, expected12);
     }
     
+    void TestExpression::testSerialization_() {
+        string expr_str = "monster.health -:= 'damage' -> damage_calculator";
+        string expected_back = "(-:= (. monster health) (-> 'damage' damage_calculator))";
+        Expression expr = make_expr_from_str(expr_str);
+        MemoryStorage mem;
+        mem << expr;
+        Expression expr_back;
+        mem >> expr_back;
+        ostringstream out;
+        expr_back->prefixDisplay(out);
+        string expr_back_str = out.str();
+        ARCHETYPE_TEST_EQUAL(expr_back_str, expected_back);
+    }
+    
     void TestExpression::runTests_() {
         testTranslation_();
         testEvaluation_();
+        testSerialization_();
     }
 }

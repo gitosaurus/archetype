@@ -111,7 +111,7 @@ namespace archetype {
     }
     
     void MessageValue::display(std::ostream &out) const {
-        out << "'" << Universe::instance().TextLiterals.get(message_);
+        out << "'" << Universe::instance().TextLiterals.get(message_) << "'";
     }
     
     bool NumericValue::isSameValueAs(const Value &other) const {

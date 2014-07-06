@@ -17,6 +17,7 @@ namespace archetype {
     class TestExpression : public ITestSuite {
         void testTranslation_();
         void testEvaluation_();
+        void testSerialization_();
     protected:
         virtual void runTests_() override;
     public:

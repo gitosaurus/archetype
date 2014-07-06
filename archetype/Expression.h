@@ -48,7 +48,7 @@ namespace archetype {
         virtual Expression anyFewerNodeEquivalent() { return nullptr; }
         virtual int nodeCount() const { return 1; }
         
-        virtual void prettyPrint(std::ostream& out, std::string indent = "") const = 0;
+        virtual void printOutline(std::ostream& out, std::string indent = "") const = 0;
         virtual void prefixDisplay(std::ostream& out) const = 0;
         
         virtual Value evaluate() const = 0;
@@ -57,7 +57,7 @@ namespace archetype {
     // TODO:  Necessary?  This only provides this tiny prettyPrint implementation, only used by 2 classes
     class ScalarNode : public IExpression {
     public:
-        virtual void prettyPrint(std::ostream& out, std::string indent) const override {
+        virtual void printOutline(std::ostream& out, std::string indent) const override {
             out << indent;
             prefixDisplay(out);
             out << std::endl;
@@ -68,11 +68,9 @@ namespace archetype {
         Value value_;
     public:
         ValueExpression(Value value): value_(std::move(value)) { }
-        virtual void write(Storage& out) const override { value_->write(out); }
+        virtual void write(Storage& out) const override { out << value_; }
         virtual Value evaluate() const override { return value_->clone(); }
-        virtual void prefixDisplay(std::ostream& out) const override {
-            out << value_;
-        }
+        virtual void prefixDisplay(std::ostream& out) const override { out << value_; }
         
         virtual NodeType_e nodeType() const { return VALUE; }
     };
