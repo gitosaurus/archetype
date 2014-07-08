@@ -29,6 +29,7 @@ namespace archetype {
         enum Type_e {
             UNDEFINED,
             ABSENT,
+            BREAK,
             BOOLEAN,
             MESSAGE,
             NUMERIC,
@@ -91,6 +92,18 @@ namespace archetype {
 
         virtual bool isDefined()   const override { return true; }
         virtual bool isTrueEnough() const override { return false; }
+    };
+    
+    class BreakValue : public IValue {
+    public:
+        BreakValue() { }
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value{new BreakValue}; }
+        virtual void display(std::ostream& out) const override;
+        virtual Type_e type() const override { return BREAK; }
+        virtual void write(Storage& out) const override { }
+        
+        virtual bool isDefined()   const override { return true; }
     };
     
     class BooleanValue : public IValue {

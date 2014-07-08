@@ -69,6 +69,15 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_ABSENT);
     }
     
+    bool BreakValue::isSameValueAs(const Value &other) const {
+        const BreakValue* other_p = dynamic_cast<const BreakValue*>(other.get());
+        return other_p != nullptr;
+    }
+    
+    void BreakValue::display(std::ostream &out) const {
+        out << Keywords::instance().Reserved.get(Keywords::RW_BREAK);
+    }
+    
     bool BooleanValue::isSameValueAs(const Value &other) const {
         const BooleanValue* other_p = dynamic_cast<const BooleanValue*>(other.get());
         return other_p and other_p->value_ == value_;
@@ -279,6 +288,9 @@ namespace archetype {
                 break;
             case IValue::ABSENT:
                 v = Value{new AbsentValue};
+                break;
+            case IValue::BREAK:
+                v = Value{new BreakValue};
                 break;
             case IValue::BOOLEAN: {
                 int bool_as_int;

@@ -12,6 +12,7 @@
 #include "TestStatement.h"
 #include "TestRegistry.h"
 #include "Statement.h"
+#include "Universe.h"
 
 using namespace std;
 
@@ -88,9 +89,25 @@ namespace archetype {
         string expected_4_2 = "Hello, world!\n";
         ARCHETYPE_TEST_EQUAL(actual_4_2, expected_4_2);
     }
+    
+    void TestStatement::testLoopBreaks_() {
+        Universe::destroy();
+        ObjectPtr x = Universe::instance().defineNewObject();
+        Universe::instance().assignObjectIdentifier(x, "x");
+        int i_id = Universe::instance().Identifiers.index("i");
+        Expression init{new ValueExpression{Value{new NumericValue{0}}}};
+        x->setAttribute(i_id, move(init));
+        Statement loop_w = make_stmt_from_str("{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } x.i}");
+        ARCHETYPE_TEST(loop_w != nullptr);
+        ostringstream out;
+        Value val = loop_w->execute(cout)->numericConversion();
+        ARCHETYPE_TEST(val->isDefined());
+        ARCHETYPE_TEST_EQUAL(val->getNumber(), 6);
+    }
 
     void TestStatement::runTests_() {
-        testExecution_();
         testConstruction_();
+        testExecution_();
+        testLoopBreaks_();
     }
 }

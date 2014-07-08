@@ -15,10 +15,25 @@ using namespace std;
 
 namespace archetype {
     
-    Value IStatement::execute(std::ostream& out) const {
-        return Value{new UndefinedValue};
+    void CompoundStatement::read(Storage& in) {
+        int count;
+        in >> count;
+        statements_.clear();
+        for (int i = 0; i < count; ++i) {
+            Statement stmt;
+            in >> stmt;
+            statements_.push_back(move(stmt));
+        }
     }
-
+    
+    void CompoundStatement::write(Storage& out) const {
+        int count = static_cast<int>(statements_.size());
+        out << count;
+        for (auto const& stmt : statements_) {
+            stmt->write(out);
+        }
+    }
+    
     bool CompoundStatement::make(TokenStream& t) {
         while (t.fetch()) {
             if (t.token() == Token(Token::PUNCTUATION, '}')) {
@@ -39,14 +54,19 @@ namespace archetype {
     }
     
     Value CompoundStatement::execute(std::ostream& out) const {
-        Value result(new UndefinedValue);
+        Value break_v{new BreakValue};
+        Value result{new UndefinedValue};
         for (auto const& stmt : statements_) {
             result = stmt->execute(out);
+            if (result->isSameValueAs(break_v)) {
+                // Break statements stop a compound statement, but the result must be propagated up
+                // to the containing loop, which consumes it.
+                break;
+            }
         }
         return result;
     }
 
-    
     bool ExpressionStatement::make(TokenStream& t) {
         expression_ = make_expr(t);
         return expression_ != nullptr;
@@ -74,8 +94,42 @@ namespace archetype {
         Value conditionValue = condition_->evaluate();
         if (conditionValue->isTrueEnough()) {
             return thenBranch_->execute(out);
-        } else {
+        } else if (elseBranch_){
             return elseBranch_->execute(out);
+        } else {
+            return Value{new UndefinedValue};
+        }
+    }
+    
+    void CaseStatement::read(Storage& in) {
+        in >> testExpression_;
+        int entries;
+        in >> entries;
+        cases_.clear();
+        for (int i = 0; i < entries; ++i) {
+            Case case_pair;
+            in >> case_pair.match >> case_pair.action;
+        }
+        int default_exists;
+        in >> default_exists;
+        if (default_exists) {
+            in >> defaultCase_;
+        } else {
+            defaultCase_.reset();
+        }
+    }
+    
+    void CaseStatement::write(Storage& out) const {
+        out << testExpression_;
+        int entries = static_cast<int>(cases_.size());
+        out << entries;
+        for (auto const& case_pair : cases_) {
+            out << case_pair.match << case_pair.action;
+        }
+        if (not defaultCase_) {
+            out << 0;
+        } else {
+            out << 1 << defaultCase_;
         }
     }
     
@@ -109,14 +163,28 @@ namespace archetype {
             } else {
                 t.didNotConsume();
                 cases_.push_back(Case());
-                cases_.back().value = make_expr(t);
-                if (not cases_.back().value) return false;
+                cases_.back().match = make_expr(t);
+                if (not cases_.back().match) return false;
                 if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) return false;
                 cases_.back().action = make_statement(t);
                 if (not cases_.back().action) return false;
             }
         }
         return true;
+    }
+    
+    Value CaseStatement::execute(ostream& out) const {
+        Value value = testExpression_->evaluate();
+        for (auto const& case_pair : cases_) {
+            Value case_value = case_pair.match->evaluate();
+            if (value->isSameValueAs(case_value) or  eval_compare(Keywords::OP_EQ, case_value, case_value)) {
+                return case_pair.action->execute(out);
+            }
+        }
+        if (defaultCase_) {
+            return defaultCase_->execute(out);
+        }
+        return Value{new UndefinedValue};
     }
 
     bool CreateStatement::make(TokenStream& t) {
@@ -141,8 +209,50 @@ namespace archetype {
         return t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_NAMED)) and (target_ = make_expr(t));
     }
     
+    Value CreateStatement::execute(std::ostream &out) const {
+        ObjectPtr object{Universe::instance().defineNewObject(typeId_)};
+        Value object_v{new ObjectValue{object->id()}};
+        Value result{object_v->clone()};
+        Value target = target_->evaluate()->attributeConversion();
+        target->assign(move(object_v));
+        // Intentionally return a clone of the object value, not the target, in order not to
+        // leak an l-value out to the caller.
+        return result;
+    }
+    
     bool DestroyStatement::make(TokenStream& t) {
         return (victim_ = make_expr(t)) != nullptr;
+    }
+    
+    Value DestroyStatement::execute(std::ostream &out) const {
+        // TODO:  Remove/release the identified object
+        // TODO:  how to keep from invalidating identifiers?  Make that identifier a nullptr?
+        // TODO:  original Archetype searched the list for "holes" when creating new ones vs. compact
+        return Value{new UndefinedValue};
+    }
+    
+    void OutputStatement::read(Storage& in) {
+        int write_type_as_int;
+        in >> write_type_as_int;
+        writeType_ = static_cast<Keywords::Reserved_e>(write_type_as_int);
+        int entries;
+        in >> entries;
+        expressions_.clear();
+        for (int i = 0; i < entries; ++i) {
+            Expression expr;
+            in >> expr;
+            expressions_.push_back(move(expr));
+        }
+    }
+    
+    void OutputStatement::write(Storage& out) const {
+        int write_type_as_int = static_cast<int>(writeType_);
+        out << write_type_as_int;
+        int entries = static_cast<int>(expressions_.size());
+        out << entries;
+        for (auto const& expr : expressions_) {
+            out << expr;
+        }
     }
     
     bool OutputStatement::make(TokenStream& t) {
@@ -195,18 +305,54 @@ namespace archetype {
         return action_ != nullptr;
     }
     
+    Value ForStatement::execute(std::ostream &out) const {
+        // TODO:  set 'each' in the context to each object in turn
+        // TODO:  skip over null/deleted objects
+        // TODO:  must either know the object count or have an iterator or expose collection
+        // TODO:  need to look for 'break'
+        Value break_v{new BreakValue};
+        Value result{new UndefinedValue};
+        for (;;) { // TODO:  for every object in the universe
+            Value selection = selection_->evaluate();
+            if (selection->isTrueEnough()) {
+                result = action_->execute(out);
+                if (result->isSameValueAs(break_v)) {
+                    // The for-loop "consumes" the break so it doesn't keep breaking outer loops
+                    result.reset(new UndefinedValue);
+                    break;
+                }
+            }
+        }
+        return result;
+    }
+    
     bool WhileStatement::make(TokenStream& t) {
         if (not (condition_ = make_expr(t))) return false;
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
     }
+    
+    Value WhileStatement::execute(std::ostream &out) const {
+        Value break_v{new BreakValue};
+        Value result{new UndefinedValue};
+        for (;;) {
+            Value condition = condition_->evaluate();
+            if (not condition->isTrueEnough()) {
+                break;
+            }
+            result = action_->execute(out);
+            if (result->isSameValueAs(break_v)) {
+                // The while-loop "consumes" the break so it doesn't keep breaking outer loops
+                result.reset(new UndefinedValue);
+                break;
+            }
+        }
+        return result;
+    }
 
     /**
-     A very busy procedure.  Ensures semantic correctness of a general
-     Archetype statement.
-     
-     @param f (IN/OUT)             -- the input .ACH file
+     @param t (IN/OUT)             -- the token stream
      
      @return A pointer to the statment; or nullptr if (the statement was not syntactically
      correct.
@@ -260,9 +406,6 @@ namespace archetype {
                 case Keywords::RW_WHILE:
                     the_stmt.reset(new WhileStatement);
                     break;
-                case Keywords::RW_BREAK:
-                    the_stmt.reset(new BreakStatement);
-                    break;
                 default:
                     /* Default:  an expression that may begin with a reserved word */
                     t.didNotConsume();
@@ -279,12 +422,46 @@ namespace archetype {
     }  /* make_statement */
     
     Storage& operator<<(Storage& out, const Statement& stmt) {
-        // TODO:  finish
+        int stmt_type_as_int = static_cast<int>(stmt->type());
+        out << stmt_type_as_int;
+        stmt->write(out);
         return out;
     }
 
     Storage& operator>>(Storage& in, Statement& stmt) {
-        // TODO:  finish
+        int stmt_type_as_int;
+        in >> stmt_type_as_int;
+        IStatement::Type_e type = static_cast<IStatement::Type_e>(stmt_type_as_int);
+        switch (type) {
+            case IStatement::COMPOUND:
+                stmt.reset(new CompoundStatement);
+                break;
+            case IStatement::EXPRESSION:
+                stmt.reset(new ExpressionStatement);
+                break;
+            case IStatement::IF:
+                stmt.reset(new IfStatement);
+                break;
+            case IStatement::CASE:
+                stmt.reset(new CaseStatement);
+                break;
+            case IStatement::CREATE:
+                stmt.reset(new CreateStatement);
+                break;
+            case IStatement::DESTROY:
+                stmt.reset(new DestroyStatement);
+                break;
+            case IStatement::FOR:
+                stmt.reset(new ForStatement);
+                break;
+            case IStatement::WHILE:
+                stmt.reset(new WhileStatement);
+                break;
+            case IStatement::OUTPUT:
+                stmt.reset(new OutputStatement);
+                break;
+        }
+        stmt->read(in);
         return in;
     }
 

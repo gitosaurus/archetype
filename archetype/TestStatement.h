@@ -17,6 +17,7 @@ namespace archetype {
     class TestStatement : public ITestSuite {
         void testConstruction_();
         void testExecution_();
+        void testLoopBreaks_();
     protected:
         virtual void runTests_() override;
     public:

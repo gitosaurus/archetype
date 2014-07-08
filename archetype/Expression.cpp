@@ -113,7 +113,7 @@ namespace archetype {
         Keywords::Reserved_e word_;
     public:
         ReservedWordNode(Keywords::Reserved_e word): word_(word) { }
-        virtual NodeType_e nodeType() const override { return RESERVED; }
+        virtual Type_e type() const override { return RESERVED; }
         virtual void write(Storage& out) const override;
         virtual Value evaluate() const override;
         virtual void prefixDisplay(std::ostream& out) const override {
@@ -155,7 +155,7 @@ namespace archetype {
             assert(not is_binary(op));
         }
         
-        virtual NodeType_e nodeType() const override { return BINARY; }
+        virtual Type_e type() const override { return BINARY; }
         
         virtual void write(Storage& out) const override {
             int op_as_int = static_cast<int>(op());
@@ -278,7 +278,7 @@ namespace archetype {
             assert(is_binary(op));
         }
         
-        virtual NodeType_e nodeType() const override { return BINARY; }
+        virtual Type_e type() const override { return BINARY; }
         virtual void write(Storage& out) const override {
             int op_as_int = static_cast<int>(op());
             out << op_as_int << left_ << right_;
@@ -403,7 +403,7 @@ namespace archetype {
         int id_;
     public:
         IdentifierNode(int id): id_{id} { }
-        virtual NodeType_e nodeType() const { return IDENTIFIER; }
+        virtual Type_e type() const { return IDENTIFIER; }
         virtual void write(Storage& out) const override { out << id_; }
         virtual Value evaluate() const override {
             // Closest binding:  an attribute in the current object
@@ -468,15 +468,21 @@ namespace archetype {
                     case Keywords::RW_ABSENT:
                         scalar.reset(new ValueExpression{Value{new AbsentValue}});
                         break;
+                    case Keywords::RW_BREAK:
+                        scalar.reset(new ValueExpression{Value{new BreakValue}});
+                        break;
                     case Keywords::RW_TRUE:
                         scalar.reset(new ValueExpression{Value{new BooleanValue{true}}});
                         break;
                     case Keywords::RW_FALSE:
                         scalar.reset(new ValueExpression{Value{new BooleanValue{false}}});
                         break;
-                    case Keywords::RW_READ: case Keywords::RW_KEY:
+                    case Keywords::RW_READ:
+                    case Keywords::RW_KEY:
                     case Keywords::RW_EACH:
-                    case Keywords::RW_SELF: case Keywords::RW_SENDER: case Keywords::RW_MESSAGE:
+                    case Keywords::RW_SELF:
+                    case Keywords::RW_SENDER:
+                    case Keywords::RW_MESSAGE:
                         scalar.reset(new ReservedWordNode(word));
                         break;
                     default:
@@ -607,7 +613,7 @@ namespace archetype {
     }
     
     Storage& operator<<(Storage& out, const Expression& expr) {
-        int node_type_as_int = static_cast<int>(expr->nodeType());
+        int node_type_as_int = static_cast<int>(expr->type());
         out << node_type_as_int;
         expr->write(out);
         return out;
@@ -616,7 +622,7 @@ namespace archetype {
     Storage& operator>>(Storage& in, Expression& expr) {
         int node_type_as_int;
         in >> node_type_as_int;
-        IExpression::NodeType_e node_type = static_cast<IExpression::NodeType_e>(node_type_as_int);
+        IExpression::Type_e node_type = static_cast<IExpression::Type_e>(node_type_as_int);
         switch (node_type) {
             case IExpression::RESERVED: {
                 int word_as_int;

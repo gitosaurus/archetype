@@ -28,7 +28,7 @@ namespace archetype {
     protected:
         IExpression() { }
     public:
-        enum NodeType_e {
+        enum Type_e {
             RESERVED,
             UNARY,
             BINARY,
@@ -39,7 +39,7 @@ namespace archetype {
         IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }
         
-        virtual NodeType_e nodeType() const = 0;
+        virtual Type_e type() const = 0;
         virtual void write(Storage& out) const = 0;
         
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
@@ -61,7 +61,7 @@ namespace archetype {
         virtual Value evaluate() const override { return value_->clone(); }
         virtual void prefixDisplay(std::ostream& out) const override { out << value_; }
         
-        virtual NodeType_e nodeType() const { return VALUE; }
+        virtual Type_e type() const { return VALUE; }
     };
     
     bool is_binary(Keywords::Operators_e op);
@@ -71,6 +71,8 @@ namespace archetype {
     Expression get_operand(TokenStream& t);
     Expression form_expr(TokenStream& t, int stop_precedence = 0);
     Expression tighten(Expression expr);
+    
+    bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv);
     
     Expression make_expr(TokenStream& t);
     
