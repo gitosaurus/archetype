@@ -30,7 +30,7 @@ namespace archetype {
         int count = static_cast<int>(statements_.size());
         out << count;
         for (auto const& stmt : statements_) {
-            stmt->write(out);
+            out << stmt;
         }
     }
     
@@ -53,6 +53,17 @@ namespace archetype {
         return false;
     }
     
+    void CompoundStatement::display(std::ostream &out) const {
+        out << "{";
+        for (auto stmt_p = statements_.begin(); stmt_p != statements_.end(); ++stmt_p) {
+            if (stmt_p != statements_.begin()) {
+                out << "; ";
+            }
+            (*stmt_p)->display(out);
+        }
+        out << "}";
+    }
+    
     Value CompoundStatement::execute(std::ostream& out) const {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
@@ -72,6 +83,10 @@ namespace archetype {
         return expression_ != nullptr;
     }
     
+    void ExpressionStatement::display(std::ostream &out) const {
+        expression_->prefixDisplay(out);
+    }
+    
     Value ExpressionStatement::execute(std::ostream &out) const {
         Universe::instance().setOutput(out);
         return expression_->evaluate();
@@ -88,6 +103,17 @@ namespace archetype {
             t.didNotConsume();
         }
         return true;
+    }
+    
+    void IfStatement::display(std::ostream &out) const {
+        out << "if ";
+        condition_->prefixDisplay(out);
+        out << " then ";
+        thenBranch_->display(out);
+        if (elseBranch_) {
+            out << " else ";
+            elseBranch_->display(out);
+        }
     }
     
     Value IfStatement::execute(std::ostream &out) const {
@@ -173,6 +199,23 @@ namespace archetype {
         return true;
     }
     
+    void CaseStatement::display(std::ostream &out) const {
+        out << "case ";
+        testExpression_->prefixDisplay(out);
+        out << " of {";
+        for (const auto& c : cases_) {
+            c.match->prefixDisplay(out);
+            out << " : ";
+            c.action->display(out);
+            out << "; ";
+        }
+        if (defaultCase_) {
+            out << "default : ";
+            defaultCase_->display(out);
+        }
+        out << "}";
+    }
+    
     Value CaseStatement::execute(ostream& out) const {
         Value value = testExpression_->evaluate();
         for (auto const& case_pair : cases_) {
@@ -209,6 +252,11 @@ namespace archetype {
         return t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_NAMED)) and (target_ = make_expr(t));
     }
     
+    void CreateStatement::display(std::ostream &out) const {
+        out << "create <something> named ";
+        target_->prefixDisplay(out);
+    }
+    
     Value CreateStatement::execute(std::ostream &out) const {
         ObjectPtr object{Universe::instance().defineNewObject(typeId_)};
         Value object_v{new ObjectValue{object->id()}};
@@ -222,6 +270,10 @@ namespace archetype {
     
     bool DestroyStatement::make(TokenStream& t) {
         return (victim_ = make_expr(t)) != nullptr;
+    }
+    
+    void DestroyStatement::display(std::ostream &out) const {
+        victim_->prefixDisplay(out);
     }
     
     Value DestroyStatement::execute(std::ostream &out) const {
@@ -280,6 +332,19 @@ namespace archetype {
         return true;
     }
     
+    void OutputStatement::display(std::ostream &out) const {
+        out << Keywords::instance().Reserved.get(writeType_);
+        if (not expressions_.empty()) {
+            out << ' ';
+            for (auto expr_p = expressions_.begin(); expr_p != expressions_.end(); ++expr_p) {
+                if (expr_p != expressions_.begin()) {
+                    out << ", ";
+                }
+                (*expr_p)->prefixDisplay(out);
+            }
+        }
+    }
+    
     Value OutputStatement::execute(std::ostream &out) const {
         Value last_value(new UndefinedValue);
         for (auto const& expr : expressions_) {
@@ -303,6 +368,13 @@ namespace archetype {
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
+    }
+    
+    void ForStatement::display(std::ostream &out) const {
+        out << "for ";
+        selection_->prefixDisplay(out);
+        out << " do ";
+        action_->display(out);
     }
     
     Value ForStatement::execute(std::ostream &out) const {
@@ -331,6 +403,13 @@ namespace archetype {
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
+    }
+    
+    void WhileStatement::display(std::ostream &out) const {
+        out << "while ";
+        condition_->prefixDisplay(out);
+        out << " do ";
+        action_->display(out);
     }
     
     Value WhileStatement::execute(std::ostream &out) const {

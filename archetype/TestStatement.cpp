@@ -8,6 +8,8 @@
 
 #include <string>
 #include <sstream>
+#include <list>
+#include <utility>
 
 #include "TestStatement.h"
 #include "TestRegistry.h"
@@ -97,17 +99,39 @@ namespace archetype {
         int i_id = Universe::instance().Identifiers.index("i");
         Expression init{new ValueExpression{Value{new NumericValue{0}}}};
         x->setAttribute(i_id, move(init));
-        Statement loop_w = make_stmt_from_str("{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } x.i}");
+        Statement loop_w = make_stmt_from_str("{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } write; x.i}");
         ARCHETYPE_TEST(loop_w != nullptr);
         ostringstream out;
         Value val = loop_w->execute(cout)->numericConversion();
         ARCHETYPE_TEST(val->isDefined());
         ARCHETYPE_TEST_EQUAL(val->getNumber(), 6);
     }
+    
+    void TestStatement::testSerialization_() {
+        list<pair<string, string>> statements = {
+            {
+                "{writes 'The monster '; if health <= death then write \" dies\" else write ' lives'}",
+                "{writes 'The monster '; if (<= health death) then write ' dies' else write ' lives'}"
+            }
+        };
+        for (auto const& p : statements) {
+            Statement stmt = make_stmt_from_str(p.first);
+            MemoryStorage mem;
+            mem << stmt;
+            Statement stmt_back;
+            mem >> stmt_back;
+            ostringstream out;
+            stmt_back->display(out);
+            string stmt_back_str = out.str();
+            ARCHETYPE_TEST_EQUAL(stmt_back_str, p.second);
+        }
+
+    }
 
     void TestStatement::runTests_() {
         testConstruction_();
         testExecution_();
         testLoopBreaks_();
+        testSerialization_();
     }
 }

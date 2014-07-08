@@ -41,6 +41,7 @@ namespace archetype {
         virtual void read(Storage& in) = 0;
         virtual void write(Storage& out) const = 0;
         virtual bool make(TokenStream& t) = 0;
+        virtual void display(std::ostream& out) const = 0;
         virtual Value execute(std::ostream& out) const = 0;
     };
     
@@ -56,6 +57,7 @@ namespace archetype {
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
         
         const std::list<Statement>& statements() const { return statements_; }
@@ -68,6 +70,7 @@ namespace archetype {
         virtual void read(Storage& in) override { in >> expression_; }
         virtual void write(Storage& out) const override { out << expression_; }
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
 
         const Expression& expression() const { return expression_; }
@@ -82,6 +85,7 @@ namespace archetype {
         virtual void read(Storage& in) override { in >> condition_ >> thenBranch_ >> elseBranch_; }
         virtual void write(Storage& out) const override { out << condition_ << thenBranch_ << elseBranch_; }
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
     };
     
@@ -100,6 +104,7 @@ namespace archetype {
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
         
         const Expression& testExpression() const { return testExpression_; }
@@ -114,6 +119,7 @@ namespace archetype {
         virtual void read(Storage& in) override { in >> typeId_ >> target_; }
         virtual void write(Storage& out) const override { out << typeId_ << target_; }
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
     };
     
@@ -124,6 +130,7 @@ namespace archetype {
         virtual void read(Storage& in) override { in >> victim_; }
         virtual void write(Storage& out) const override { out << victim_; }
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
     };
     
@@ -135,6 +142,7 @@ namespace archetype {
         virtual void read(Storage& in) override { in >> selection_ >> action_; }
         virtual void write(Storage& out) const override { out << selection_ << action_; }
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
     };
     
@@ -146,6 +154,7 @@ namespace archetype {
         virtual void read(Storage& in) override { in >> condition_ >> action_; }
         virtual void write(Storage& out) const override { out << condition_ << action_; }
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
     };
     
@@ -158,6 +167,7 @@ namespace archetype {
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;
     };
     

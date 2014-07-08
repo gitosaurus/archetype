@@ -26,6 +26,7 @@ namespace archetype {
             Value{new StringValue{"Hello, world"}},
             Value{new StringValue{""}},
             Value{new StringValue{" "}},
+            Value{new BreakValue},
             Value{new MessageValue{88}},
             Value{new NumericValue{42}},
             Value{new BooleanValue{true}},

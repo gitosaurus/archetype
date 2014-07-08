@@ -8,6 +8,8 @@
 
 #include <string>
 #include <sstream>
+#include <list>
+#include <utility>
 
 #include "TestExpression.h"
 #include "TestRegistry.h"
