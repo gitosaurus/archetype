@@ -92,6 +92,24 @@ namespace archetype {
         return expression_->evaluate();
     }
     
+    void IfStatement::read(Storage& in) {
+        in >> condition_ >> thenBranch_;
+        int has_else;
+        in >> has_else;
+        if (has_else) {
+            in >> elseBranch_;
+        }
+    }
+    
+    void IfStatement::write(Storage& out) const {
+        out << condition_ << thenBranch_;
+        if (not elseBranch_) {
+            out << 0;
+        } else {
+            out << 1 << elseBranch_;
+        }
+    }
+    
     bool IfStatement::make(TokenStream& t) {
         /* BNF:  <if_stmt> := if (<expr>) <statement> [else <statement>] */
         if (not (condition_ = make_expr(t))) return false;

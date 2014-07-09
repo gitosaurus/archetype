@@ -82,8 +82,8 @@ namespace archetype {
         Statement elseBranch_;
     public:
         virtual Type_e type() const override { return IF; }
-        virtual void read(Storage& in) override { in >> condition_ >> thenBranch_ >> elseBranch_; }
-        virtual void write(Storage& out) const override { out << condition_ << thenBranch_ << elseBranch_; }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute(std::ostream& out) const override;

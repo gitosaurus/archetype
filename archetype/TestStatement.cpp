@@ -112,6 +112,10 @@ namespace archetype {
             {
                 "{writes 'The monster '; if health <= death then write \" dies\" else write ' lives'}",
                 "{writes 'The monster '; if (<= health death) then write ' dies' else write ' lives'}"
+            },
+            {
+                "for each.isAverb and each.unlisted do { if 'register' -> each then each.unlisted := FALSE }",
+                "for (and (. each isAverb) (. each unlisted)) do {if (-> 'register' each) then (:= (. each unlisted) FALSE)}"
             }
         };
         for (auto const& p : statements) {
