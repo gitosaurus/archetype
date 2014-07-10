@@ -18,6 +18,19 @@ using namespace std;
 
 namespace archetype {
     
+    enum Type_e {
+        UNDEFINED,
+        ABSENT,
+        BREAK,
+        BOOLEAN,
+        MESSAGE,
+        NUMERIC,
+        STRING,
+        IDENTIFIER,
+        OBJECT,
+        ATTRIBUTE
+    };
+        
     std::ostream& operator<<(std::ostream& out, const Value& value) {
         value->display(out);
         return out;
@@ -60,6 +73,10 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_UNDEFINED);
     }
     
+    void UndefinedValue::write(Storage& out) const {
+        out << UNDEFINED;
+    }
+    
     bool AbsentValue::isSameValueAs(const Value &other) const {
         const AbsentValue* other_p = dynamic_cast<const AbsentValue*>(other.get());
         return other_p != nullptr;
@@ -69,6 +86,10 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_ABSENT);
     }
     
+    void AbsentValue::write(Storage& out) const {
+        out << ABSENT;
+    }
+    
     bool BreakValue::isSameValueAs(const Value &other) const {
         const BreakValue* other_p = dynamic_cast<const BreakValue*>(other.get());
         return other_p != nullptr;
@@ -76,6 +97,10 @@ namespace archetype {
     
     void BreakValue::display(std::ostream &out) const {
         out << Keywords::instance().Reserved.get(Keywords::RW_BREAK);
+    }
+    
+    void BreakValue::write(Storage& out) const {
+        out << BREAK;
     }
     
     bool BooleanValue::isSameValueAs(const Value &other) const {
@@ -90,8 +115,7 @@ namespace archetype {
     }
     
     void BooleanValue::write(Storage& out) const {
-        int bool_as_int = static_cast<int>(value_);
-        out << bool_as_int;
+        out << BOOLEAN << static_cast<int>(value_);
     }
     
     Value BooleanValue::numericConversion() const {
@@ -123,6 +147,10 @@ namespace archetype {
         out << "'" << Universe::instance().TextLiterals.get(message_) << "'";
     }
     
+    void MessageValue::write(Storage& out) const {
+        out << MESSAGE << message_;
+    }
+    
     bool NumericValue::isSameValueAs(const Value &other) const {
         const NumericValue* other_p = dynamic_cast<const NumericValue*>(other.get());
         return other_p and other_p->value_ == value_;
@@ -130,6 +158,10 @@ namespace archetype {
     
     void NumericValue::display(std::ostream &out) const {
         out << value_;
+    }
+    
+    void NumericValue::write(Storage& out) const {
+        out << NUMERIC << value_;
     }
     
     int NumericValue::getNumber() const {
@@ -152,6 +184,7 @@ namespace archetype {
     }
     
     void StringValue::write(Storage& out) const {
+        out << STRING;
         int text_length = static_cast<int>(value_.size());
         out << text_length;
         const Storage::Byte* buffer = reinterpret_cast<const Storage::Byte*>(value_.data());
@@ -195,6 +228,10 @@ namespace archetype {
         return other_p and other_p->id_ == id_;
     }
     
+    void IdentifierValue::write(Storage& out) const {
+        out << IDENTIFIER << id_;
+    }
+    
     bool ObjectValue::isSameValueAs(const Value &other) const {
         const ObjectValue* other_p = dynamic_cast<const ObjectValue*>(other.get());
         return other_p and other_p->objectNameId_ == objectNameId_;
@@ -202,6 +239,10 @@ namespace archetype {
     
     void ObjectValue::display(std::ostream &out) const {
         out << Universe::instance().Identifiers.get(objectNameId_);
+    }
+    
+    void ObjectValue::write(Storage& out) const {
+        out << OBJECT << objectNameId_;
     }
     
     Value ObjectValue::identifierConversion() const {
@@ -224,6 +265,10 @@ namespace archetype {
             << '.'
             << Universe::instance().Identifiers.get(attributeId_)
         ;
+    }
+    
+    void AttributeValue::write(Storage& out) const {
+        out << ATTRIBUTE << objectId_ << attributeId_;
     }
     
     int AttributeValue::getIdentifier() const {
@@ -272,45 +317,44 @@ namespace archetype {
     }
     
     Storage& operator<<(Storage& out, const Value& v) {
-        int type_as_int = static_cast<int>(v->type());
-        out << type_as_int;
         v->write(out);
         return out;
     }
     
     Storage& operator>>(Storage& in, Value& v) {
+        
         int type_as_int;
         in >> type_as_int;
-        IValue::Type_e type = static_cast<IValue::Type_e>(type_as_int);
+        Type_e type = static_cast<Type_e>(type_as_int);
         switch (type) {
-            case IValue::UNDEFINED:
+            case UNDEFINED:
                 v = Value{new UndefinedValue};
                 break;
-            case IValue::ABSENT:
+            case ABSENT:
                 v = Value{new AbsentValue};
                 break;
-            case IValue::BREAK:
+            case BREAK:
                 v = Value{new BreakValue};
                 break;
-            case IValue::BOOLEAN: {
+            case BOOLEAN: {
                 int bool_as_int;
                 in >> bool_as_int;
                 v = Value(new BooleanValue(static_cast<bool>(bool_as_int)));
                 break;
             }
-            case IValue::MESSAGE: {
+            case MESSAGE: {
                 int message_id;
                 in >> message_id;
                 v = Value(new MessageValue(message_id));
                 break;
             }
-            case IValue::NUMERIC: {
+            case NUMERIC: {
                 int number;
                 in >> number;
                 v = Value(new NumericValue(number));
                 break;
             }
-            case IValue::STRING: {
+            case STRING: {
                 int text_size;
                 in >> text_size;
                 string text;
@@ -320,19 +364,19 @@ namespace archetype {
                 v = Value(new StringValue(text));
                 break;
             }
-            case IValue::IDENTIFIER: {
+            case IDENTIFIER: {
                 int id;
                 in >> id;
                 v = Value(new IdentifierValue(id));
                 break;
             }
-            case IValue::OBJECT: {
+            case OBJECT: {
                 int object_id;
                 in >> object_id;
                 v = Value(new ObjectValue(object_id));
                 break;
             }
-            case IValue::ATTRIBUTE: {
+            case ATTRIBUTE: {
                 int object_id, attribute_id;
                 in >> object_id >> attribute_id;
                 v = Value(new AttributeValue(object_id, attribute_id));
