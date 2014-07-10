@@ -162,7 +162,7 @@ namespace archetype {
         
         Statement stmt1 = make_stmt_from_str("{ 'growl' -> dog; 'growl' -> cat }");
         Capture capture1;
-        Value val1 = stmt1->execute(cerr);
+        Value val1 = stmt1->execute();
         string expected1 = "The dog growls.\nThe cat growls.\nThe cat does a double-take.\n";
         string actual1 = capture1.getCapture();
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
@@ -177,7 +177,7 @@ namespace archetype {
         Statement stmt2 = make_stmt_from_str("'growl' -> goat");
         Capture capture2;
         string expected2 = "The goat growls.\nThe goat coughs, embarrassed.\n";
-        stmt2->execute(cerr);
+        stmt2->execute();
         string actual2 = capture2.getCapture();
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }

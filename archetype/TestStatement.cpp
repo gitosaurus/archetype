@@ -58,7 +58,7 @@ namespace archetype {
     void TestStatement::testExecution_() {
         Statement stmt1 = make_stmt_from_str("{ 3 + \"7\"; 12 + 34 }");
         ARCHETYPE_TEST(stmt1 != nullptr);
-        Value val1 = stmt1->execute(out())->numericConversion();
+        Value val1 = stmt1->execute()->numericConversion();
         ARCHETYPE_TEST(val1->isDefined());
         int actual1 = val1->getNumber();
         int expected1 = 46;
@@ -66,7 +66,7 @@ namespace archetype {
         
         Statement stmt2 = make_stmt_from_str("if 2 < 3 then \"Sakes alive\" else 95");
         ARCHETYPE_TEST(stmt2 != nullptr);
-        Value val2 = stmt2->execute(out())->stringConversion();
+        Value val2 = stmt2->execute()->stringConversion();
         ARCHETYPE_TEST(val2->isDefined());
         string actual2 = val2->getString();
         string expected2 = "Sakes alive";
@@ -74,7 +74,7 @@ namespace archetype {
         
         Statement stmt3 = make_stmt_from_str("if \"something\" ~= UNDEFINED then 314 else 999");
         ARCHETYPE_TEST(stmt3 != nullptr);
-        Value val3 = stmt3->execute(out())->numericConversion();
+        Value val3 = stmt3->execute()->numericConversion();
         ARCHETYPE_TEST(val3->isDefined());
         int actual3 = val3->getNumber();
         int expected3 = 314;
@@ -83,7 +83,7 @@ namespace archetype {
         Statement stmt4 = make_stmt_from_str("write \"Hello, \", \"world!\"");
         ARCHETYPE_TEST(stmt4 != nullptr);
         Capture capture4;
-        Value val4 = stmt4->execute(cerr)->stringConversion();
+        Value val4 = stmt4->execute()->stringConversion();
         ARCHETYPE_TEST(val4->isDefined());
         string actual4_1 = val4->getString();
         string expected4_1 = "world!";
@@ -103,7 +103,7 @@ namespace archetype {
         Statement loop_w = make_stmt_from_str("{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } write; x.i}");
         ARCHETYPE_TEST(loop_w != nullptr);
         ostringstream out;
-        Value val = loop_w->execute(cout)->numericConversion();
+        Value val = loop_w->execute()->numericConversion();
         ARCHETYPE_TEST(val->isDefined());
         ARCHETYPE_TEST_EQUAL(val->getNumber(), 6);
     }

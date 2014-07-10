@@ -40,26 +40,26 @@ namespace archetype {
         
         ostringstream out;
         Statement stmt = make_stmt_from_str("'OPEN SORTER' -> system");
-        stmt->execute(out);
+        stmt->execute();
         deque<string> to_sort = {"dog", "xylem", "cat", "Ajax", "several", "Zebra"};
         for (auto const& s : to_sort) {
             // Because we are creating statements to be executed, the strings need to be in double
             // quotes.  Otherwise they'll get evaluated to UNDEFINED, since they are indeed
             // undefined identifiers.
             stmt = make_stmt_from_str("\"" + s + "\" -> system");
-            Value ans = stmt->execute(out);
+            Value ans = stmt->execute();
             ARCHETYPE_TEST(ans->isDefined());
             Value ans_str = ans->stringConversion();
             ARCHETYPE_TEST(ans_str->isDefined());
             ARCHETYPE_TEST_EQUAL(ans_str->getString(), s);
         }
         stmt = make_stmt_from_str("'CLOSE SORTER' -> system");
-        stmt->execute(out);
+        stmt->execute();
         deque<string> sorted = to_sort;
         sort(sorted.begin(), sorted.end());
         stmt = make_stmt_from_str("'NEXT SORTED' -> system");
         for (auto const& s : sorted) {
-            Value ans = stmt->execute(out);
+            Value ans = stmt->execute();
             ARCHETYPE_TEST(ans->isDefined());
             Value ans_str = ans->stringConversion();
             ARCHETYPE_TEST(ans_str->isDefined());
@@ -67,7 +67,7 @@ namespace archetype {
             cout << "NEXT SORTED: " << ans_str->getString() << endl;
         }
         // Now it should be exhausted, and NEXT SORTED should be undefined
-        Value no_more = stmt->execute(out);
+        Value no_more = stmt->execute();
         ARCHETYPE_TEST(not no_more->isDefined());
     }
     
@@ -97,14 +97,14 @@ namespace archetype {
         ;
         Statement stmt = make_stmt_from_str(build_vocab);
         ostringstream out;
-        stmt->execute(out);
+        stmt->execute();
         
         stmt = make_stmt_from_str("'NEXT OBJECT' -> system");
-        Value val = stmt->execute(out);
+        Value val = stmt->execute();
         list<Value> parsed;
         while (val->isDefined()) {
             parsed.push_back(move(val));
-            val = stmt->execute(out);
+            val = stmt->execute();
         }
         ARCHETYPE_TEST_EQUAL(parsed.size(), size_t(3));
         list<Value> expected;

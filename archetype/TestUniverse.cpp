@@ -65,7 +65,7 @@ namespace archetype {
         ARCHETYPE_TEST(Universe::instance().make(t1));
         Capture capture1;
         Statement stmt1 = make_stmt_from_str("'heft' -> vase");
-        stmt1->execute(cerr);
+        stmt1->execute();
         string actual1 = capture1.getCapture();
         string expected1 = "The vase has a weight of 1.\n";
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
@@ -74,13 +74,13 @@ namespace archetype {
         ARCHETYPE_TEST(Universe::instance().make(t2));
         Capture capture2;
         Statement stmt2 = make_stmt_from_str("'eat' -> cracker");
-        stmt2->execute(cerr);
+        stmt2->execute();
         string actual2 = capture2.getCapture();
         string expected2 = "You gobble down the cracker.\n";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
         Capture capture3;
         Statement stmt3 = make_stmt_from_str("'eat' -> granola_bar");
-        stmt3->execute(cerr);
+        stmt3->execute();
         string actual3 = capture3.getCapture();
         string expected3 = "You gobble down the snack.\n";
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
@@ -105,7 +105,7 @@ namespace archetype {
         ARCHETYPE_TEST(Universe::instance().make(t3));
         Capture capture;
         Statement stmt = make_stmt_from_str("'look' -> conservatory");
-        stmt->execute(cerr);
+        stmt->execute();
         string actual = capture.getCapture();
         string expected = "A salty cracker is here.\n";
         ARCHETYPE_TEST_EQUAL(actual, expected);
@@ -145,7 +145,7 @@ namespace archetype {
             cout << "TESTING: {" << t.first << "}" << endl;
             ostringstream out;
             Statement stmt = make_stmt_from_str(t.first);
-            Value actual = stmt->execute(out)->stringConversion();
+            Value actual = stmt->execute()->stringConversion();
             ARCHETYPE_TEST(actual->isDefined());
             ARCHETYPE_TEST_EQUAL(actual->getString(), t.second);
         }
@@ -189,28 +189,28 @@ namespace archetype {
 
         ostringstream out;
         Statement stmt1 = make_stmt_from_str("'some message' -> echo");
-        Value actual1 = stmt1->execute(out)->stringConversion();
+        Value actual1 = stmt1->execute()->stringConversion();
         ARCHETYPE_TEST(actual1->isDefined());
         string expected1 = "some message";
         ARCHETYPE_TEST_EQUAL(actual1->getString(), expected1);
         
         Statement stmt2 = make_stmt_from_str("\"Random string\" -> echo");
-        Value actual2 = stmt2->execute(out)->stringConversion();
+        Value actual2 = stmt2->execute()->stringConversion();
         ARCHETYPE_TEST(actual2->isDefined());
         ARCHETYPE_TEST_EQUAL(actual2->getString(), string("Random string"));
         
         Statement stmt3 = make_stmt_from_str("42 -> echo");
-        Value actual3 = stmt3->execute(out)->numericConversion();
+        Value actual3 = stmt3->execute()->numericConversion();
         ARCHETYPE_TEST(actual3->isDefined());
         ARCHETYPE_TEST_EQUAL(actual3->getNumber(), 42);
         
         Statement stmt4 = make_stmt_from_str("42 -> me_too");
-        Value actual4 = stmt4->execute(out)->numericConversion();
+        Value actual4 = stmt4->execute()->numericConversion();
         ARCHETYPE_TEST(actual4->isDefined());
         ARCHETYPE_TEST_EQUAL(actual4->getNumber(), 42);
         
         Statement stmt5 = make_stmt_from_str("'yelp' -> another");
-        Value actual5 = stmt5->execute(out);
+        Value actual5 = stmt5->execute();
         ARCHETYPE_TEST(actual5->isDefined());
         Value expected5 = Value{new AbsentValue};
         ARCHETYPE_TEST(actual5->isSameValueAs(expected5));
@@ -225,7 +225,7 @@ namespace archetype {
             cout << "TESTING: {" << t.first << "}" << endl;
             ostringstream out;
             Statement stmt = make_stmt_from_str(t.first);
-            Value actual = stmt->execute(out)->stringConversion();
+            Value actual = stmt->execute()->stringConversion();
             ARCHETYPE_TEST(actual->isDefined());
             ARCHETYPE_TEST_EQUAL(actual->getString(), t.second);
         }

@@ -42,7 +42,7 @@ namespace archetype {
         virtual void write(Storage& out) const = 0;
         virtual bool make(TokenStream& t) = 0;
         virtual void display(std::ostream& out) const = 0;
-        virtual Value execute(std::ostream& out) const = 0;
+        virtual Value execute() const = 0;
     };
     
     typedef std::unique_ptr<IStatement> Statement;
@@ -58,7 +58,7 @@ namespace archetype {
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
         
         const std::list<Statement>& statements() const { return statements_; }
     };
@@ -71,7 +71,7 @@ namespace archetype {
         virtual void write(Storage& out) const override { out << expression_; }
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
 
         const Expression& expression() const { return expression_; }
     };
@@ -86,7 +86,7 @@ namespace archetype {
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
     };
     
     class CaseStatement : public IStatement {
@@ -105,7 +105,7 @@ namespace archetype {
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
         
         const Expression& testExpression() const { return testExpression_; }
         const std::list<Case>& cases() const { return cases_; }
@@ -120,7 +120,7 @@ namespace archetype {
         virtual void write(Storage& out) const override { out << typeId_ << target_; }
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
     };
     
     class DestroyStatement : public IStatement {
@@ -131,7 +131,7 @@ namespace archetype {
         virtual void write(Storage& out) const override { out << victim_; }
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
     };
     
     class ForStatement : public IStatement {
@@ -143,7 +143,7 @@ namespace archetype {
         virtual void write(Storage& out) const override { out << selection_ << action_; }
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
     };
     
     class WhileStatement : public IStatement {
@@ -155,7 +155,7 @@ namespace archetype {
         virtual void write(Storage& out) const override { out << condition_ << action_; }
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
     };
     
     class OutputStatement : public IStatement {
@@ -168,7 +168,7 @@ namespace archetype {
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
-        virtual Value execute(std::ostream& out) const override;
+        virtual Value execute() const override;
     };
     
     Statement make_statement(TokenStream& t);

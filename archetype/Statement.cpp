@@ -64,11 +64,11 @@ namespace archetype {
         out << "}";
     }
     
-    Value CompoundStatement::execute(std::ostream& out) const {
+    Value CompoundStatement::execute() const {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
         for (auto const& stmt : statements_) {
-            result = stmt->execute(out);
+            result = stmt->execute();
             if (result->isSameValueAs(break_v)) {
                 // Break statements stop a compound statement, but the result must be propagated up
                 // to the containing loop, which consumes it.
@@ -87,7 +87,7 @@ namespace archetype {
         expression_->prefixDisplay(out);
     }
     
-    Value ExpressionStatement::execute(std::ostream &out) const {
+    Value ExpressionStatement::execute() const {
         return expression_->evaluate();
     }
     
@@ -133,12 +133,12 @@ namespace archetype {
         }
     }
     
-    Value IfStatement::execute(std::ostream &out) const {
+    Value IfStatement::execute() const {
         Value conditionValue = condition_->evaluate();
         if (conditionValue->isTrueEnough()) {
-            return thenBranch_->execute(out);
+            return thenBranch_->execute();
         } else if (elseBranch_){
-            return elseBranch_->execute(out);
+            return elseBranch_->execute();
         } else {
             return Value{new UndefinedValue};
         }
@@ -233,16 +233,16 @@ namespace archetype {
         out << "}";
     }
     
-    Value CaseStatement::execute(ostream& out) const {
+    Value CaseStatement::execute() const {
         Value value = testExpression_->evaluate();
         for (auto const& case_pair : cases_) {
             Value case_value = case_pair.match->evaluate();
             if (value->isSameValueAs(case_value) or  eval_compare(Keywords::OP_EQ, case_value, case_value)) {
-                return case_pair.action->execute(out);
+                return case_pair.action->execute();
             }
         }
         if (defaultCase_) {
-            return defaultCase_->execute(out);
+            return defaultCase_->execute();
         }
         return Value{new UndefinedValue};
     }
@@ -274,7 +274,7 @@ namespace archetype {
         target_->prefixDisplay(out);
     }
     
-    Value CreateStatement::execute(std::ostream &out) const {
+    Value CreateStatement::execute() const {
         ObjectPtr object{Universe::instance().defineNewObject(typeId_)};
         Value object_v{new ObjectValue{object->id()}};
         Value result{object_v->clone()};
@@ -293,7 +293,7 @@ namespace archetype {
         victim_->prefixDisplay(out);
     }
     
-    Value DestroyStatement::execute(std::ostream &out) const {
+    Value DestroyStatement::execute() const {
         // TODO:  Remove/release the identified object
         // TODO:  how to keep from invalidating identifiers?  Make that identifier a nullptr?
         // TODO:  original Archetype searched the list for "holes" when creating new ones vs. compact
@@ -362,7 +362,7 @@ namespace archetype {
         }
     }
     
-    Value OutputStatement::execute(std::ostream &out) const {
+    Value OutputStatement::execute() const {
         Value last_value(new UndefinedValue);
         for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
@@ -394,7 +394,7 @@ namespace archetype {
         action_->display(out);
     }
     
-    Value ForStatement::execute(std::ostream &out) const {
+    Value ForStatement::execute() const {
         // TODO:  set 'each' in the context to each object in turn
         // TODO:  skip over null/deleted objects
         // TODO:  must either know the object count or have an iterator or expose collection
@@ -404,7 +404,7 @@ namespace archetype {
         for (;;) { // TODO:  for every object in the universe
             Value selection = selection_->evaluate();
             if (selection->isTrueEnough()) {
-                result = action_->execute(out);
+                result = action_->execute();
                 if (result->isSameValueAs(break_v)) {
                     // The for-loop "consumes" the break so it doesn't keep breaking outer loops
                     result.reset(new UndefinedValue);
@@ -429,7 +429,7 @@ namespace archetype {
         action_->display(out);
     }
     
-    Value WhileStatement::execute(std::ostream &out) const {
+    Value WhileStatement::execute() const {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
         for (;;) {
@@ -437,7 +437,7 @@ namespace archetype {
             if (not condition->isTrueEnough()) {
                 break;
             }
-            result = action_->execute(out);
+            result = action_->execute();
             if (result->isSameValueAs(break_v)) {
                 // The while-loop "consumes" the break so it doesn't keep breaking outer loops
                 result.reset(new UndefinedValue);
