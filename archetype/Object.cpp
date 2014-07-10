@@ -62,7 +62,7 @@ namespace archetype {
         ObjectPtr p = parent();
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
-            return where->second->execute(Universe::instance().output());
+            return where->second->execute(cout);
         } else if (p and p->hasMethod(message_id)) {
             return p->executeMethod(message_id);
         } else if (hasDefaultMethod()) {
@@ -82,7 +82,7 @@ namespace archetype {
         assert(not methods_.empty());
         auto defaultMethod = methods_.rbegin();
         assert(defaultMethod->first == DefaultMethod);
-        return defaultMethod->second->execute(Universe::instance().output());
+        return defaultMethod->second->execute(cout);
     }
     
     void Object::setMethod(int message_id, Statement stmt) {

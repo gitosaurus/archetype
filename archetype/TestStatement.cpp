@@ -15,6 +15,7 @@
 #include "TestRegistry.h"
 #include "Statement.h"
 #include "Universe.h"
+#include "Capture.h"
 
 using namespace std;
 
@@ -81,13 +82,13 @@ namespace archetype {
         
         Statement stmt4 = make_stmt_from_str("write \"Hello, \", \"world!\"");
         ARCHETYPE_TEST(stmt4 != nullptr);
-        ostringstream sout;
-        Value val4 = stmt4->execute(sout)->stringConversion();
+        Capture capture4;
+        Value val4 = stmt4->execute(cerr)->stringConversion();
         ARCHETYPE_TEST(val4->isDefined());
         string actual4_1 = val4->getString();
         string expected4_1 = "world!";
         ARCHETYPE_TEST_EQUAL(actual4_1, expected4_1);
-        string actual_4_2 = sout.str();
+        string actual_4_2 = capture4.getCapture();
         string expected_4_2 = "Hello, world!\n";
         ARCHETYPE_TEST_EQUAL(actual_4_2, expected_4_2);
     }

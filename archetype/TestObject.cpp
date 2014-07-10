@@ -16,6 +16,7 @@
 #include "Statement.h"
 #include "TokenStream.h"
 #include "Expression.h"
+#include "Capture.h"
 
 using namespace std;
 
@@ -160,10 +161,10 @@ namespace archetype {
         cat->setMethod(growl_message_id, std::move(meow_stmt));
         
         Statement stmt1 = make_stmt_from_str("{ 'growl' -> dog; 'growl' -> cat }");
-        ostringstream sout1;
-        Value val1 = stmt1->execute(sout1);
+        Capture capture1;
+        Value val1 = stmt1->execute(cerr);
         string expected1 = "The dog growls.\nThe cat growls.\nThe cat does a double-take.\n";
-        string actual1 = sout1.str();
+        string actual1 = capture1.getCapture();
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
         // Test that the single arrow works as a pass with types
@@ -174,10 +175,10 @@ namespace archetype {
         goat->setMethod(growl_message_id, std::move(baa_stmt));
         
         Statement stmt2 = make_stmt_from_str("'growl' -> goat");
-        ostringstream sout2;
+        Capture capture2;
         string expected2 = "The goat growls.\nThe goat coughs, embarrassed.\n";
-        stmt2->execute(sout2);
-        string actual2 = sout2.str();
+        stmt2->execute(cerr);
+        string actual2 = capture2.getCapture();
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
     

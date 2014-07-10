@@ -88,7 +88,6 @@ namespace archetype {
     }
     
     Value ExpressionStatement::execute(std::ostream &out) const {
-        Universe::instance().setOutput(out);
         return expression_->evaluate();
     }
     
@@ -369,11 +368,11 @@ namespace archetype {
             last_value = expr->evaluate();
             Value v_s = last_value->stringConversion();
             if (v_s->isDefined()) {
-                out << v_s->getString();
+                Universe::instance().output()->put(v_s->getString());
             }
         }
         if (writeType_ == Keywords::RW_WRITE) {
-            out << endl;
+            Universe::instance().output()->endLine();
         } else if (writeType_ == Keywords::RW_STOP) {
             // TODO: Need something gentler than this!
             terminate();

@@ -16,6 +16,7 @@
 #include "SourceFile.h"
 #include "TokenStream.h"
 #include "Wellspring.h"
+#include "Capture.h"
 
 using namespace std;
 
@@ -62,25 +63,25 @@ namespace archetype {
 
         TokenStream t1(make_source_from_str("program1", program1));
         ARCHETYPE_TEST(Universe::instance().make(t1));
-        ostringstream out1;
+        Capture capture1;
         Statement stmt1 = make_stmt_from_str("'heft' -> vase");
-        stmt1->execute(out1);
-        string actual1 = out1.str();
+        stmt1->execute(cerr);
+        string actual1 = capture1.getCapture();
         string expected1 = "The vase has a weight of 1.\n";
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
         TokenStream t2(make_source_from_str("program2", program2));
         ARCHETYPE_TEST(Universe::instance().make(t2));
-        ostringstream out2;
+        Capture capture2;
         Statement stmt2 = make_stmt_from_str("'eat' -> cracker");
-        stmt2->execute(out2);
-        string actual2 = out2.str();
+        stmt2->execute(cerr);
+        string actual2 = capture2.getCapture();
         string expected2 = "You gobble down the cracker.\n";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
-        ostringstream out3;
+        Capture capture3;
         Statement stmt3 = make_stmt_from_str("'eat' -> granola_bar");
-        stmt3->execute(out3);
-        string actual3 = out3.str();
+        stmt3->execute(cerr);
+        string actual3 = capture3.getCapture();
         string expected3 = "You gobble down the snack.\n";
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
@@ -102,10 +103,10 @@ namespace archetype {
         Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program2));
         TokenStream t3(make_source_from_str("program3", program3));
         ARCHETYPE_TEST(Universe::instance().make(t3));
-        ostringstream out;
+        Capture capture;
         Statement stmt = make_stmt_from_str("'look' -> conservatory");
-        stmt->execute(out);
-        string actual = out.str();
+        stmt->execute(cerr);
+        string actual = capture.getCapture();
         string expected = "A salty cracker is here.\n";
         ARCHETYPE_TEST_EQUAL(actual, expected);
     }

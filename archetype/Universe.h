@@ -20,6 +20,8 @@
 #include "Value.h"
 #include "TokenStream.h"
 #include "Serialization.h"
+#include "UserInput.h"
+#include "UserOutput.h"
 
 namespace archetype {
     
@@ -51,8 +53,10 @@ namespace archetype {
         void pushContext(const Context& context) { context_.push(context); }
         void popContext() { context_.pop(); }
         
-        std::ostream& output();
-        void setOutput(std::ostream& out);
+        UserInput input() const { return input_; }
+        void setInput(UserInput input) { input_ = input; }
+        UserOutput output() const { return output_; }
+        void setOutput(UserOutput output) { output_ = output; }
         
         ObjectPtr getObject(int object_id) const;
         ObjectPtr getObject(std::string identifier) const;
@@ -68,7 +72,8 @@ namespace archetype {
     private:
         ObjectIndex   objects_;
         std::stack<Context> context_;
-        std::ostream* output_;
+        UserInput input_;
+        UserOutput output_;
         
         static Universe* instance_;
 

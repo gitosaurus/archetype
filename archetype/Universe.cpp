@@ -16,6 +16,7 @@ using namespace std;
 #include "Universe.h"
 #include "Wellspring.h"
 #include "SystemObject.h"
+#include "ConsoleOutput.h"
 
 namespace archetype {
     Universe* Universe::instance_ = nullptr;
@@ -53,7 +54,10 @@ namespace archetype {
     Universe::Context::~Context()
     { }
     
-    Universe::Universe() {
+    Universe::Universe() :
+    input_{nullptr},
+    output_{new ConsoleOutput}
+    {
         ObjectPtr nullObject = defineNewObject();
         assignObjectIdentifier(nullObject, "null");
         nullObject->setPrototype(true);
@@ -73,16 +77,6 @@ namespace archetype {
         context.senderObject = nullObject;
         context.messageValue = Value{new UndefinedValue};
         context_.push(context);
-        
-        output_ = &std::cout;
-    }
-    
-    std::ostream& Universe::output() {
-        return *output_;
-    }
-    
-    void Universe::setOutput(std::ostream &out) {
-        output_ = &out;
     }
     
     ObjectPtr Universe::getObject(int object_id) const {
