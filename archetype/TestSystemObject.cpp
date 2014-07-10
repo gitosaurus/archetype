@@ -38,7 +38,6 @@ namespace archetype {
     void TestSystemObject::testSorting_() {
         Universe::destroy();
         
-        ostringstream out;
         Statement stmt = make_stmt_from_str("'OPEN SORTER' -> system");
         stmt->execute();
         deque<string> to_sort = {"dog", "xylem", "cat", "Ajax", "several", "Zebra"};
@@ -96,7 +95,6 @@ namespace archetype {
             "'PARSE' -> system}"
         ;
         Statement stmt = make_stmt_from_str(build_vocab);
-        ostringstream out;
         stmt->execute();
         
         stmt = make_stmt_from_str("'NEXT OBJECT' -> system");

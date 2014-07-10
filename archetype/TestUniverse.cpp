@@ -143,7 +143,6 @@ namespace archetype {
         };
         for (auto const& t : test_pairs) {
             cout << "TESTING: {" << t.first << "}" << endl;
-            ostringstream out;
             Statement stmt = make_stmt_from_str(t.first);
             Value actual = stmt->execute()->stringConversion();
             ARCHETYPE_TEST(actual->isDefined());
@@ -187,7 +186,6 @@ namespace archetype {
         TokenStream t5(make_source_from_str("program5", program5));
         ARCHETYPE_TEST(Universe::instance().make(t5));
 
-        ostringstream out;
         Statement stmt1 = make_stmt_from_str("'some message' -> echo");
         Value actual1 = stmt1->execute()->stringConversion();
         ARCHETYPE_TEST(actual1->isDefined());
@@ -223,7 +221,6 @@ namespace archetype {
         };
         for (auto const& t : test_pairs) {
             cout << "TESTING: {" << t.first << "}" << endl;
-            ostringstream out;
             Statement stmt = make_stmt_from_str(t.first);
             Value actual = stmt->execute()->stringConversion();
             ARCHETYPE_TEST(actual->isDefined());
