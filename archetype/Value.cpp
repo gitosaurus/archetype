@@ -18,7 +18,7 @@ using namespace std;
 
 namespace archetype {
     
-    enum Type_e {
+    enum ValueType_e {
         UNDEFINED,
         ABSENT,
         BREAK,
@@ -325,7 +325,7 @@ namespace archetype {
         
         int type_as_int;
         in >> type_as_int;
-        Type_e type = static_cast<Type_e>(type_as_int);
+        ValueType_e type = static_cast<ValueType_e>(type_as_int);
         switch (type) {
             case UNDEFINED:
                 v = Value{new UndefinedValue};

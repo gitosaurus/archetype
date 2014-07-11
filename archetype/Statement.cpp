@@ -15,6 +15,18 @@ using namespace std;
 
 namespace archetype {
     
+    enum StatementType_e {
+        COMPOUND,
+        EXPRESSION,
+        IF,
+        CASE,
+        CREATE,
+        DESTROY,
+        FOR,
+        WHILE,
+        OUTPUT
+    };
+    
     void CompoundStatement::read(Storage& in) {
         int count;
         in >> count;
@@ -27,6 +39,7 @@ namespace archetype {
     }
     
     void CompoundStatement::write(Storage& out) const {
+        out << COMPOUND;
         int count = static_cast<int>(statements_.size());
         out << count;
         for (auto const& stmt : statements_) {
@@ -77,6 +90,14 @@ namespace archetype {
         }
         return result;
     }
+    
+    void ExpressionStatement::read(Storage& in) {
+        in >> expression_;
+    }
+    
+    void ExpressionStatement::write(Storage& out) const {
+        out << EXPRESSION << expression_;
+    }
 
     bool ExpressionStatement::make(TokenStream& t) {
         expression_ = make_expr(t);
@@ -101,6 +122,7 @@ namespace archetype {
     }
     
     void IfStatement::write(Storage& out) const {
+        out << IF;
         out << condition_ << thenBranch_;
         if (not elseBranch_) {
             out << 0;
@@ -163,6 +185,7 @@ namespace archetype {
     }
     
     void CaseStatement::write(Storage& out) const {
+        out << CASE;
         out << testExpression_;
         int entries = static_cast<int>(cases_.size());
         out << entries;
@@ -246,6 +269,14 @@ namespace archetype {
         }
         return Value{new UndefinedValue};
     }
+    
+    void CreateStatement::read(Storage& in) {
+        in >> typeId_ >> target_;
+    }
+    
+    void CreateStatement::write(Storage& out) const {
+        out << CREATE << typeId_ << target_;
+    }
 
     bool CreateStatement::make(TokenStream& t) {
         if (not t.fetch()) {
@@ -285,6 +316,14 @@ namespace archetype {
         return result;
     }
     
+    void DestroyStatement::read(Storage& in) {
+        in >> victim_;
+    }
+    
+    void DestroyStatement::write(Storage& out) const {
+        out << DESTROY << victim_;
+    }
+    
     bool DestroyStatement::make(TokenStream& t) {
         return (victim_ = make_expr(t)) != nullptr;
     }
@@ -296,7 +335,7 @@ namespace archetype {
     Value DestroyStatement::execute() const {
         // TODO:  Remove/release the identified object
         // TODO:  how to keep from invalidating identifiers?  Make that identifier a nullptr?
-        // TODO:  original Archetype searched the list for "holes" when creating new ones vs. compact
+        // TODO:  original Archetype searched the list for "holes" when creating new ones vs. compact, I think
         return Value{new UndefinedValue};
     }
     
@@ -315,6 +354,7 @@ namespace archetype {
     }
     
     void OutputStatement::write(Storage& out) const {
+        out << OUTPUT;
         int write_type_as_int = static_cast<int>(writeType_);
         out << write_type_as_int;
         int entries = static_cast<int>(expressions_.size());
@@ -380,6 +420,14 @@ namespace archetype {
         return last_value;
     }
     
+    void ForStatement::read(Storage& in) {
+        in >> selection_ >> action_;
+    }
+    
+    void ForStatement::write(Storage& out) const {
+        out << FOR << selection_ << action_;
+    }
+    
     bool ForStatement::make(TokenStream& t) {
         if (not (selection_ = make_expr(t))) return false;
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
@@ -413,6 +461,14 @@ namespace archetype {
             }
         }
         return result;
+    }
+    
+    void WhileStatement::read(Storage &in) {
+        in >> condition_ >> action_;
+    }
+    
+    void WhileStatement::write(Storage& out) const {
+        out << WHILE << condition_ << action_;
     }
     
     bool WhileStatement::make(TokenStream& t) {
@@ -518,8 +574,8 @@ namespace archetype {
     }  /* make_statement */
     
     Storage& operator<<(Storage& out, const Statement& stmt) {
-        int stmt_type_as_int = static_cast<int>(stmt->type());
-        out << stmt_type_as_int;
+        // Each statement writes its own type out first before writing the rest
+        // of its implementation.
         stmt->write(out);
         return out;
     }
@@ -527,33 +583,33 @@ namespace archetype {
     Storage& operator>>(Storage& in, Statement& stmt) {
         int stmt_type_as_int;
         in >> stmt_type_as_int;
-        IStatement::Type_e type = static_cast<IStatement::Type_e>(stmt_type_as_int);
+        StatementType_e type = static_cast<StatementType_e>(stmt_type_as_int);
         switch (type) {
-            case IStatement::COMPOUND:
+            case COMPOUND:
                 stmt.reset(new CompoundStatement);
                 break;
-            case IStatement::EXPRESSION:
+            case EXPRESSION:
                 stmt.reset(new ExpressionStatement);
                 break;
-            case IStatement::IF:
+            case IF:
                 stmt.reset(new IfStatement);
                 break;
-            case IStatement::CASE:
+            case CASE:
                 stmt.reset(new CaseStatement);
                 break;
-            case IStatement::CREATE:
+            case CREATE:
                 stmt.reset(new CreateStatement);
                 break;
-            case IStatement::DESTROY:
+            case DESTROY:
                 stmt.reset(new DestroyStatement);
                 break;
-            case IStatement::FOR:
+            case FOR:
                 stmt.reset(new ForStatement);
                 break;
-            case IStatement::WHILE:
+            case WHILE:
                 stmt.reset(new WhileStatement);
                 break;
-            case IStatement::OUTPUT:
+            case OUTPUT:
                 stmt.reset(new OutputStatement);
                 break;
         }

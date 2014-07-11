@@ -22,22 +22,10 @@ namespace archetype {
     protected:
         IStatement() { }
     public:
-        enum Type_e {
-            COMPOUND,
-            EXPRESSION,
-            IF,
-            CASE,
-            CREATE,
-            DESTROY,
-            FOR,
-            WHILE,
-            OUTPUT
-        };
         IStatement(const IStatement&) = delete;
         IStatement& operator=(const IStatement&) = delete;
         virtual ~IStatement() { }
         
-        virtual Type_e type() const = 0;
         virtual void read(Storage& in) = 0;
         virtual void write(Storage& out) const = 0;
         virtual bool make(TokenStream& t) = 0;
@@ -53,7 +41,6 @@ namespace archetype {
     class CompoundStatement : public IStatement {
         std::list<Statement> statements_;
     public:
-        virtual Type_e type() const override { return COMPOUND; }
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
@@ -66,9 +53,8 @@ namespace archetype {
     class ExpressionStatement : public IStatement {
         Expression expression_;
     public:
-        virtual Type_e type() const override { return EXPRESSION; }
-        virtual void read(Storage& in) override { in >> expression_; }
-        virtual void write(Storage& out) const override { out << expression_; }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
@@ -81,7 +67,6 @@ namespace archetype {
         Statement thenBranch_;
         Statement elseBranch_;
     public:
-        virtual Type_e type() const override { return IF; }
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
@@ -100,7 +85,6 @@ namespace archetype {
         std::list<Case> cases_;
         Statement defaultCase_;
     public:
-        virtual Type_e type() const override { return CASE; }
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
@@ -115,9 +99,8 @@ namespace archetype {
         int typeId_;
         Expression target_;
     public:
-        virtual Type_e type() const override { return CREATE; }
-        virtual void read(Storage& in) override { in >> typeId_ >> target_; }
-        virtual void write(Storage& out) const override { out << typeId_ << target_; }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
@@ -126,9 +109,8 @@ namespace archetype {
     class DestroyStatement : public IStatement {
         Expression victim_;
     public:
-        virtual Type_e type() const override { return DESTROY; }
-        virtual void read(Storage& in) override { in >> victim_; }
-        virtual void write(Storage& out) const override { out << victim_; }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
@@ -138,9 +120,8 @@ namespace archetype {
         Expression selection_;
         Statement action_;
     public:
-        virtual Type_e type() const override { return FOR; }
-        virtual void read(Storage& in) override { in >> selection_ >> action_; }
-        virtual void write(Storage& out) const override { out << selection_ << action_; }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
@@ -150,9 +131,8 @@ namespace archetype {
         Expression condition_;
         Statement action_;
     public:
-        virtual Type_e type() const override { return WHILE; }
-        virtual void read(Storage& in) override { in >> condition_ >> action_; }
-        virtual void write(Storage& out) const override { out << condition_ << action_; }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
@@ -163,7 +143,6 @@ namespace archetype {
         std::list<Expression> expressions_;
     public:
         OutputStatement(Keywords::Reserved_e write_type = Keywords::RW_WRITE): writeType_(write_type) { }
-        virtual Type_e type() const override { return OUTPUT; }
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;
