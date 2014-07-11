@@ -121,13 +121,21 @@ namespace archetype {
         };
         for (auto const& p : statements) {
             Statement stmt = make_stmt_from_str(p.first);
-            MemoryStorage mem;
-            mem << stmt;
-            Statement stmt_back;
-            mem >> stmt_back;
-            ostringstream out;
-            stmt_back->display(out);
-            string stmt_back_str = out.str();
+            string stmt_back_str;
+            try {
+                MemoryStorage mem;
+                mem << stmt;
+                Statement stmt_back;
+                mem >> stmt_back;
+                ARCHETYPE_TEST_EQUAL(mem.remaining(), 0);
+                if (not mem.remaining()) {
+                    ostringstream out;
+                    stmt_back->display(out);
+                    stmt_back_str = out.str();
+                }
+            } catch (const std::exception& e) {
+                stmt_back_str = "Could not deserialize; caught " + string(e.what());
+            }
             ARCHETYPE_TEST_EQUAL(stmt_back_str, p.second);
         }
 

@@ -18,6 +18,14 @@ using namespace std;
 
 namespace archetype {
     
+    enum ExpressionType_e {
+        RESERVED,
+        UNARY,
+        BINARY,
+        IDENTIFIER,
+        VALUE
+    };
+
     inline Value as_boolean_value(bool value) {
         return Value{new BooleanValue{value}};
     }
@@ -107,13 +115,16 @@ namespace archetype {
         }
     }
     
+    void ValueExpression::write(Storage& out) const {
+        out << VALUE << value_;
+    }
+    
     // This node is for those reserved words that behave like zero-argument
     // functions (sender, read, key, and so forth).
     class ReservedWordNode : public IExpression {
         Keywords::Reserved_e word_;
     public:
         ReservedWordNode(Keywords::Reserved_e word): word_(word) { }
-        virtual Type_e type() const override { return RESERVED; }
         virtual void write(Storage& out) const override;
         virtual Value evaluate() const override;
         virtual void prefixDisplay(std::ostream& out) const override {
@@ -155,9 +166,8 @@ namespace archetype {
             assert(not is_binary(op));
         }
         
-        virtual Type_e type() const override { return BINARY; }
-        
         virtual void write(Storage& out) const override {
+            out << UNARY;
             int op_as_int = static_cast<int>(op());
             out << op_as_int << right_;
         }
@@ -278,8 +288,8 @@ namespace archetype {
             assert(is_binary(op));
         }
         
-        virtual Type_e type() const override { return BINARY; }
         virtual void write(Storage& out) const override {
+            out << BINARY;
             int op_as_int = static_cast<int>(op());
             out << op_as_int << left_ << right_;
         }
@@ -392,9 +402,17 @@ namespace archetype {
         
         virtual void prefixDisplay(ostream& out) const {
             out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';
-            left_->prefixDisplay(out);
+            if (left_) {
+                left_->prefixDisplay(out);
+            } else {
+                out << "nullptr";
+            }
             out << ' ';
-            right_->prefixDisplay(out);
+            if (right_) {
+                right_->prefixDisplay(out);
+            } else {
+                out << "nullptr";
+            }
             out << ')';
         }
     };
@@ -403,8 +421,7 @@ namespace archetype {
         int id_;
     public:
         IdentifierNode(int id): id_{id} { }
-        virtual Type_e type() const { return IDENTIFIER; }
-        virtual void write(Storage& out) const override { out << id_; }
+        virtual void write(Storage& out) const override { out << IDENTIFIER << id_; }
         virtual Value evaluate() const override {
             // Closest binding:  an attribute in the current object
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
@@ -426,6 +443,7 @@ namespace archetype {
     };
     
     void ReservedWordNode::write(Storage& out) const {
+        out << RESERVED;
         int word_as_int = static_cast<int>(word_);
         out << word_as_int;
     }
@@ -613,8 +631,6 @@ namespace archetype {
     }
     
     Storage& operator<<(Storage& out, const Expression& expr) {
-        int node_type_as_int = static_cast<int>(expr->type());
-        out << node_type_as_int;
         expr->write(out);
         return out;
     }
@@ -622,16 +638,16 @@ namespace archetype {
     Storage& operator>>(Storage& in, Expression& expr) {
         int node_type_as_int;
         in >> node_type_as_int;
-        IExpression::Type_e node_type = static_cast<IExpression::Type_e>(node_type_as_int);
+        ExpressionType_e node_type = static_cast<ExpressionType_e>(node_type_as_int);
         switch (node_type) {
-            case IExpression::RESERVED: {
+            case RESERVED: {
                 int word_as_int;
                 in >> word_as_int;
                 Keywords::Reserved_e word = static_cast<Keywords::Reserved_e>(word_as_int);
                 expr.reset(new ReservedWordNode(word));
                 break;
             }
-            case IExpression::UNARY: {
+            case UNARY: {
                 int op_as_int;
                 in >> op_as_int;
                 Keywords::Operators_e op = static_cast<Keywords::Operators_e>(op_as_int);
@@ -640,7 +656,7 @@ namespace archetype {
                 expr.reset(new UnaryOperator(op, move(right_side)));
                 break;
             }
-            case IExpression::BINARY: {
+            case BINARY: {
                 int op_as_int;
                 in >> op_as_int;
                 Keywords::Operators_e op = static_cast<Keywords::Operators_e>(op_as_int);
@@ -650,13 +666,13 @@ namespace archetype {
                 expr.reset(new BinaryOperator(move(left_side), op, move(right_side)));
                 break;
             }
-            case IExpression::IDENTIFIER: {
+            case IDENTIFIER: {
                 int id;
                 in >> id;
                 expr.reset(new IdentifierNode(id));
                 break;
             }
-            case IExpression::VALUE: {
+            case VALUE: {
                 Value value;
                 in >> value;
                 expr.reset(new ValueExpression(move(value)));

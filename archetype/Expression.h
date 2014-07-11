@@ -28,18 +28,10 @@ namespace archetype {
     protected:
         IExpression() { }
     public:
-        enum Type_e {
-            RESERVED,
-            UNARY,
-            BINARY,
-            IDENTIFIER,
-            VALUE
-        };
         IExpression(const IExpression&) = delete;
         IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }
         
-        virtual Type_e type() const = 0;
         virtual void write(Storage& out) const = 0;
         
         virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
@@ -57,11 +49,9 @@ namespace archetype {
         Value value_;
     public:
         ValueExpression(Value value): value_(std::move(value)) { }
-        virtual void write(Storage& out) const override { out << value_; }
+        virtual void write(Storage& out) const override;
         virtual Value evaluate() const override { return value_->clone(); }
         virtual void prefixDisplay(std::ostream& out) const override { out << value_; }
-        
-        virtual Type_e type() const { return VALUE; }
     };
     
     bool is_binary(Keywords::Operators_e op);

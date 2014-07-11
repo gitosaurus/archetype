@@ -32,7 +32,11 @@ namespace archetype {
     };
         
     std::ostream& operator<<(std::ostream& out, const Value& value) {
-        value->display(out);
+        if (value) {
+            value->display(out);
+        } else {
+            out << "nullptr";
+        }
         return out;
     }
     
