@@ -18,6 +18,7 @@ namespace archetype {
         void testTranslation_();
         void testEvaluation_();
         void testSerialization_();
+        void testInput_();
     protected:
         virtual void runTests_() override;
     public:

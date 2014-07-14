@@ -16,6 +16,8 @@
 #include "TokenStream.h"
 #include "Expression.h"
 #include "Serialization.h"
+#include "StringInput.h"
+#include "Universe.h"
 
 using namespace std;
 
@@ -193,9 +195,31 @@ namespace archetype {
         }
     }
     
+    void TestExpression::testInput_() {
+        UserInput input_seq{new StringInput{"Hello, world!\nyGoodbye, world."}};
+        Universe::instance().setInput(input_seq);
+        Expression read_expr = make_expr_from_str("read");
+        Value val = read_expr->evaluate()->stringConversion();
+        ARCHETYPE_TEST(val->isDefined());
+        ARCHETYPE_TEST_EQUAL(val->getString(), string{"Hello, world!"});
+        Expression key_expr = make_expr_from_str("'Save file? (y/n) ' & key");
+        val = key_expr->evaluate()->stringConversion();
+        ARCHETYPE_TEST(val->isDefined());
+        ARCHETYPE_TEST_EQUAL(val->getString(), string{"Save file? (y/n) y"});
+        val = read_expr->evaluate()->stringConversion();
+        ARCHETYPE_TEST(val->isDefined());
+        ARCHETYPE_TEST_EQUAL(val->getString(), string{"Goodbye, world."});
+        // Now test the EOF conditions of both, which are blank strings
+        val = read_expr->evaluate()->stringConversion();
+        ARCHETYPE_TEST_EQUAL(val->getString(), string{});
+        val = key_expr->evaluate()->stringConversion();
+        ARCHETYPE_TEST_EQUAL(val->getString(), string{"Save file? (y/n) "});
+    }
+    
     void TestExpression::runTests_() {
         testTranslation_();
         testEvaluation_();
         testSerialization_();
+        testInput_();
     }
 }

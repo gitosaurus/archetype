@@ -451,12 +451,23 @@ namespace archetype {
     Value ReservedWordNode::evaluate() const {
         switch (word_) {
             case Keywords::RW_SELF:
-                return Value(new ObjectValue(Universe::instance().currentContext().selfObject->id()));
+                return Value{new ObjectValue{Universe::instance().currentContext().selfObject->id()}};
             case Keywords::RW_SENDER:
-                return Value(new ObjectValue(Universe::instance().currentContext().senderObject->id()));
+                return Value{new ObjectValue{Universe::instance().currentContext().senderObject->id()}};
             case Keywords::RW_MESSAGE:
                 return Universe::instance().currentContext().messageValue->clone();
-                // TODO:  other things to handle:  each, read, key
+            case Keywords::RW_EACH:
+                return Value{new ObjectValue{Universe::instance().currentContext().eachObject->id()}};
+            case Keywords::RW_READ:
+                return Value{new StringValue{Universe::instance().input()->getLine()}};
+            case Keywords::RW_KEY: {
+                char key = Universe::instance().input()->getKey();
+                if (key == '\0') {
+                    return Value{new StringValue{""}};
+                } else {
+                    return Value{new StringValue{string{key}}};
+                }
+            }
             default:
                 throw logic_error("Attempt to evaluate reserved word which is not a lambda");
         }

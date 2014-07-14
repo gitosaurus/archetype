@@ -39,15 +39,17 @@ namespace archetype {
     { }
     
     Universe::Context::Context(const Context& c):
-    selfObject(c.selfObject),
-    senderObject(c.senderObject),
-    messageValue(c.messageValue->clone())
+    selfObject{c.selfObject},
+    senderObject{c.senderObject},
+    messageValue{c.messageValue->clone()},
+    eachObject{c.eachObject}
     { }
     
     Universe::Context& Universe::Context::operator=(const Universe::Context& c) {
         selfObject = c.selfObject;
         senderObject = c.senderObject;
         messageValue = c.messageValue->clone();
+        eachObject = c.eachObject;
         return *this;
     }
     

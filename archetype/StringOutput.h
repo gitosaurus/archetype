@@ -19,8 +19,8 @@ namespace archetype {
         std::ostringstream stream_;
     public:
         virtual ~StringOutput() { }
-        virtual void put(const std::string& line) { stream_ << line; }
-        virtual void endLine() { stream_ << std::endl; }
+        virtual void put(const std::string& line) override { stream_ << line; }
+        virtual void endLine() override { stream_ << std::endl; }
         
         std::string getOutput() const { return stream_.str(); }
     };

@@ -37,6 +37,7 @@ namespace archetype {
             ObjectPtr selfObject;
             ObjectPtr senderObject;
             Value messageValue;
+            ObjectPtr eachObject;
             
             Context();
             Context(const Context& c);

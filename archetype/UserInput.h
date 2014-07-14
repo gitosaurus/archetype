@@ -15,12 +15,13 @@
 namespace archetype {
     class IUserInput {
     public:
+        IUserInput() { }
         virtual ~IUserInput() { }
-        virtual char getKey() const = 0;
-        virtual std::string getLine() const = 0;
+        virtual char getKey() = 0;
+        virtual std::string getLine() = 0;
     private:
-        IUserInput& operator=(const IUserInput&) = delete;
         IUserInput(const IUserInput&) = delete;
+        IUserInput& operator=(const IUserInput&) = delete;
     };
     
     typedef std::shared_ptr<IUserInput> UserInput;

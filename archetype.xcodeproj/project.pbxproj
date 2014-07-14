@@ -61,6 +61,7 @@
 		4532541F196DA0B4009A1EE0 /* ConsoleOutput.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = ConsoleOutput.h; sourceTree = "<group>"; };
 		45447AA518DE505900839C15 /* TestUniverse.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestUniverse.cpp; sourceTree = "<group>"; };
 		45447AA618DE505900839C15 /* TestUniverse.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestUniverse.h; sourceTree = "<group>"; };
+		456DA75B19704480006ACBFF /* StringInput.h */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.c.h; path = StringInput.h; sourceTree = "<group>"; };
 		4571C3B4196E183000BD024D /* Capture.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Capture.cpp; sourceTree = "<group>"; };
 		4571C3B5196E183000BD024D /* Capture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Capture.h; sourceTree = "<group>"; };
 		4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Wellspring.cpp; sourceTree = "<group>"; };
@@ -156,6 +157,7 @@
 				4532541D196D9CD2009A1EE0 /* UserInput.h */,
 				4532541E196D9E51009A1EE0 /* UserOutput.h */,
 				4532541F196DA0B4009A1EE0 /* ConsoleOutput.h */,
+				456DA75B19704480006ACBFF /* StringInput.h */,
 				459B70C6196DA3E400A07EE5 /* StringOutput.h */,
 				4571C3B4196E183000BD024D /* Capture.cpp */,
 				4571C3B5196E183000BD024D /* Capture.h */,
