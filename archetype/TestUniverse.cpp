@@ -93,9 +93,9 @@ namespace archetype {
     "  'look' : write \"A crummy shade of \", shade, \".\"\n"
     "end\n"
     "\n"
-    "null customer left : UNDEFINED right : UNDEFINED methods\n"
+    "null customer left : UNDEFINED right : UNDEFINED other_ref : UNDEFINED methods\n"
     "  'buy' : { create blinds named left; left.shade := \"white\"\n"
-    "            create blinds named right; right.shade := \"alabaster\" }\n"
+    "            create blinds named right; right.shade := \"alabaster\"; other_ref := right }\n"
     "end\n"
     ;
     
@@ -131,6 +131,21 @@ namespace archetype {
         
         Statement type_not_instance = make_stmt_from_str("create customer named customer.left");
         ARCHETYPE_TEST(type_not_instance == nullptr);
+        
+        // Destroy an object and verify that all references to and through it become undefined
+        Statement ref1 = make_stmt_from_str("customer.right.shade");
+        Statement ref2 = make_stmt_from_str("customer.other_ref.shade");
+        // First, check the references before destruction
+        Value val1 = ref1->execute()->stringConversion();
+        Value val2 = ref2->execute()->stringConversion();
+        ARCHETYPE_TEST(val1->isDefined());
+        ARCHETYPE_TEST(val2->isDefined());
+        ARCHETYPE_TEST(val1->getString() == val2->getString());
+        Statement destroy_stmt = make_stmt_from_str("destroy customer.right");
+        val1 = ref1->execute()->objectConversion();
+        val2 = ref1->execute()->objectConversion();
+        ARCHETYPE_TEST(not val1->isDefined());
+        ARCHETYPE_TEST(not val2->isDefined());
     }
     
     static char program3[] =
