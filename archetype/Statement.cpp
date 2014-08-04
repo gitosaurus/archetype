@@ -289,6 +289,8 @@ namespace archetype {
             t.expectGeneral("type identifier");
             return false;
         }
+        
+        typeId_ = Universe::instance().ObjectIdentifiers.find(t.token().number())->second;
 #ifdef NOTYET
         // TODO: Does this really belong here?  In a two-pass situation, it doesn't.
         get_meaning(t.token().number(), the_type_id, typeId_);
@@ -333,9 +335,10 @@ namespace archetype {
     }
     
     Value DestroyStatement::execute() const {
-        // TODO:  Remove/release the identified object
-        // TODO:  how to keep from invalidating identifiers?  Make that identifier a nullptr?
-        // TODO:  original Archetype searched the list for "holes" when creating new ones vs. compact, I think
+        Value victim_v{victim_->evaluate()->objectConversion()};
+        if (victim_v->isDefined()) {
+            Universe::instance().destroyObject(victim_v->getObject());
+        }
         return Value{new UndefinedValue};
     }
     

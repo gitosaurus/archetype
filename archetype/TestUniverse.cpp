@@ -86,6 +86,19 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
     
+    static char program_dynamic[] =
+    "type blinds based on null\n"
+    "  shade : UNDEFINED\n"
+    "methods\n"
+    "  'look' : write \"A crummy shade of \", shade, \".\"\n"
+    "end\n"
+    "\n"
+    "null customer left : UNDEFINED right : UNDEFINED methods\n"
+    "  'buy' : { create blinds named left; left.shade := \"white\"\n"
+    "            create blinds named right; right.shade := \"alabaster\" }\n"
+    "end\n"
+    ;
+    
     void TestUniverse::testDynamicObjects_() {
         Universe::destroy();
         
@@ -100,6 +113,17 @@ namespace archetype {
         
         ObjectPtr obj3 = Universe::instance().defineNewObject();
         ARCHETYPE_TEST_EQUAL(obj1->id(), Object::INVALID);
+        
+        // Verify that the "hole" from the destroyed object is reused
+        // ARCHETYPE_TEST_EQUAL(obj3->id(), 3);
+        
+        TokenStream t(make_source_from_str("dynamic.ach", program_dynamic));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+        Capture capture;
+        Statement stmt = make_stmt_from_str("{'buy' -> customer; 'look' -> customer.left; 'look' -> customer.right}");
+        stmt->execute();
+        string actual = capture.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual, string("A crummy shade of white.\nA crummy shade of alabaster.\n"));
     }
     
     static char program3[] =
