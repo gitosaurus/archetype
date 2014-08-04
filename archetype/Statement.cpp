@@ -290,15 +290,18 @@ namespace archetype {
             return false;
         }
         
-        typeId_ = Universe::instance().ObjectIdentifiers.find(t.token().number())->second;
-#ifdef NOTYET
-        // TODO: Does this really belong here?  In a two-pass situation, it doesn't.
-        get_meaning(t.token().number(), the_type_id, typeId_);
-        if (the_type_id != TYPE_ID) {
-            t.errorMessage("Require name of defined type");
+        int identifier = t.token().number();
+        auto where = Universe::instance().ObjectIdentifiers.find(identifier);
+        if (where == Universe::instance().ObjectIdentifiers.end()) {
+            t.expectGeneral("defined type identifier");
             return false;
         }
-#endif
+        ObjectPtr typeObject = Universe::instance().getObject(where->second);
+        if (not (typeObject and typeObject->isPrototype())) {
+            t.expectGeneral("identifier of defined type, not instance");
+            return false;
+        }
+        typeId_ = typeObject->id();
         return t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_NAMED)) and (target_ = make_expr(t));
     }
     

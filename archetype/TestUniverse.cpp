@@ -124,6 +124,13 @@ namespace archetype {
         stmt->execute();
         string actual = capture.getCapture();
         ARCHETYPE_TEST_EQUAL(actual, string("A crummy shade of white.\nA crummy shade of alabaster.\n"));
+        
+        // Cause some compilation errors
+        Statement no_type_stmt = make_stmt_from_str("create nonsense named customer.left");
+        ARCHETYPE_TEST(no_type_stmt == nullptr);
+        
+        Statement type_not_instance = make_stmt_from_str("create customer named customer.left");
+        ARCHETYPE_TEST(type_not_instance == nullptr);
     }
     
     static char program3[] =
