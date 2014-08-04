@@ -86,6 +86,22 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
     
+    void TestUniverse::testDynamicObjects_() {
+        Universe::destroy();
+        
+        ObjectPtr obj1 = Universe::instance().defineNewObject();
+        // 0 = null, 1 = system, 2 = main, so 3 is the first possible
+        ARCHETYPE_TEST_EQUAL(obj1->id(), 3);
+        
+        ObjectPtr obj2 = Universe::instance().defineNewObject();
+        ARCHETYPE_TEST_EQUAL(obj2->id(), 4);
+        
+        Universe::instance().destroyObject(3);
+        
+        ObjectPtr obj3 = Universe::instance().defineNewObject();
+        ARCHETYPE_TEST_EQUAL(obj1->id(), Object::INVALID);
+    }
+    
     static char program3[] =
     "include \"snack.ach\"\n"
     "null flavor desc : \"Confusing object with same name as an attribute\" end\n"
@@ -230,6 +246,7 @@ namespace archetype {
     
     void TestUniverse::runTests_() {
         testBasicObjects_();
+        testDynamicObjects_();
         testInclusion_();
         testDefaultMethods_();
         testMessagingKeywords_();

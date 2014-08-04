@@ -65,7 +65,7 @@ namespace archetype {
         nullObject->setPrototype(true);
         // If the "null" object had a parent ID of zero, it would be its own parent.
         // But it's a special object, one that has no parent.
-        nullObject->setParentId(-1);
+        nullObject->setParentId(Object::INVALID);
         assert(nullObject->id() == NullObjectId);
         
         ObjectPtr system_obj(new SystemObject);
@@ -73,6 +73,11 @@ namespace archetype {
         system_obj->setId(system_id);
         assert(system_id == SystemObjectId);
         assignObjectIdentifier(system_obj, "system");
+        
+        // And one more:  the main object.  This object will be redefined by the user,
+        // but its ID is reserved.
+        ObjectPtr mainObject = defineNewObject();
+        assignObjectIdentifier(mainObject, "main");
         
         Context context;
         context.selfObject = nullObject;
@@ -106,6 +111,13 @@ namespace archetype {
         int object_id = objects_.index(std::move(obj));
         obj->setId(object_id);
         return objects_.get(object_id);
+    }
+    
+    void Universe::destroyObject(int object_id) {
+        ObjectPtr existing = objects_.get(object_id);
+        // Debugging sentinel, noting that the object is now invalid.
+        existing->setId(Object::INVALID);
+        objects_.deindex(object_id, nullptr);
     }
     
     void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string identifier) {

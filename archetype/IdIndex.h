@@ -12,6 +12,7 @@
 #include <iostream>
 #include <map>
 #include <deque>
+#include <cassert>
 
 #include "Serialization.h"
 
@@ -23,6 +24,7 @@ namespace archetype {
         std::deque<T> registry_;
     public:
         static const int npos = -1;
+        
         int index(const T& obj) {
             auto where = index_.find(obj);
             if (where == index_.end()) {
@@ -30,6 +32,14 @@ namespace archetype {
                 registry_.push_back(obj);
             }
             return where->second;
+        }
+        
+        void deindex(int obj_index, const T& sentinel) {
+            const T& obj = registry_.at(obj_index);
+            auto where = index_.find(obj);
+            assert(where != index_.end());
+            index_.erase(where);
+            registry_[obj_index] = sentinel;
         }
         
         int find(const T& obj) const {

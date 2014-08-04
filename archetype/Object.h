@@ -30,7 +30,9 @@ namespace archetype {
         std::map<int, Expression> attributes_;
         std::map<int, Statement> methods_;
     public:
-        Object(int parent_id = -1):
+        static const int INVALID = -1;
+        
+        Object(int parent_id = INVALID):
         parentId_{parent_id},
         id_{0},
         prototype_{false}
