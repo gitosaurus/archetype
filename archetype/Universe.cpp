@@ -117,7 +117,7 @@ namespace archetype {
         ObjectPtr existing = objects_.get(object_id);
         // Debugging sentinel, noting that the object is now invalid.
         existing->setId(Object::INVALID);
-        objects_.deindex(object_id, nullptr);
+        objects_.remove(object_id);
     }
     
     void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string identifier) {

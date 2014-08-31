@@ -115,7 +115,7 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(obj1->id(), Object::INVALID);
         
         // Verify that the "hole" from the destroyed object is reused
-        // ARCHETYPE_TEST_EQUAL(obj3->id(), 3);
+        ARCHETYPE_TEST_EQUAL(obj3->id(), 3);
         
         TokenStream t(make_source_from_str("dynamic.ach", program_dynamic));
         ARCHETYPE_TEST(Universe::instance().make(t));

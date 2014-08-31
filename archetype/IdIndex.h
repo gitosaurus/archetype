@@ -13,6 +13,7 @@
 #include <map>
 #include <deque>
 #include <cassert>
+#include <algorithm>
 
 #include "Serialization.h"
 
@@ -22,24 +23,45 @@ namespace archetype {
     class IdIndex {
         std::map<T, int> index_;
         std::deque<T> registry_;
+        T sentinel_;
+        int holes_;
     public:
         static const int npos = -1;
+        
+        IdIndex(const T& sentinel = T()):
+        sentinel_(sentinel),
+        holes_(0)
+        { }
         
         int index(const T& obj) {
             auto where = index_.find(obj);
             if (where == index_.end()) {
-                where = index_.insert(std::make_pair(obj, registry_.size())).first;
-                registry_.push_back(obj);
+                int new_index = static_cast<int>(registry_.size());
+                if (holes_) {
+                    auto last_hole = std::find(registry_.rbegin(), registry_.rend(), sentinel_);
+                    assert(last_hole != registry_.rend());
+                    new_index = static_cast<int>(registry_.rend() - last_hole) - 1;
+                    holes_--;
+                    registry_[new_index] = obj;
+                } else {
+                    registry_.push_back(obj);
+                }
+                where = index_.insert(std::make_pair(obj, new_index)).first;
             }
             return where->second;
         }
         
-        void deindex(int obj_index, const T& sentinel) {
+        void remove(int obj_index) {
             const T& obj = registry_.at(obj_index);
             auto where = index_.find(obj);
             assert(where != index_.end());
             index_.erase(where);
-            registry_[obj_index] = sentinel;
+            if (obj_index == registry_.size() - 1) {
+                registry_.resize(obj_index);
+            } else {
+                registry_[obj_index] = sentinel_;
+                holes_++;
+            }
         }
         
         int find(const T& obj) const {
