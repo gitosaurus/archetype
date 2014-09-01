@@ -24,6 +24,7 @@ namespace archetype {
         BREAK,
         BOOLEAN,
         MESSAGE,
+        TEXT_LITERAL,
         NUMERIC,
         STRING,
         IDENTIFIER,
@@ -138,8 +139,8 @@ namespace archetype {
     }
     
     Value MessageValue::stringConversion() const {
-        string conversion = Universe::instance().TextLiterals.get(message_);
-        return Value(new StringValue(conversion));
+        string conversion = Universe::instance().Messages.get(message_);
+        return Value{new StringValue{conversion}};
     }
     
     bool MessageValue::isSameValueAs(const Value &other) const {
@@ -148,11 +149,38 @@ namespace archetype {
     }
     
     void MessageValue::display(std::ostream &out) const {
-        out << "'" << Universe::instance().TextLiterals.get(message_) << "'";
+        out << "'" << Universe::instance().Messages.get(message_) << "'";
     }
     
     void MessageValue::write(Storage& out) const {
         out << MESSAGE << message_;
+    }
+    
+    Value TextLiteralValue::messageConversion() const {
+        string value = Universe::instance().TextLiterals.get(textLiteral_);
+        if (Universe::instance().Messages.has(value)) {
+            return Value{new MessageValue{Universe::instance().Messages.index(value)}};
+        } else {
+            return Value{new UndefinedValue};
+        }
+    }
+    
+    Value TextLiteralValue::stringConversion() const {
+        string conversion = Universe::instance().TextLiterals.get(textLiteral_);
+        return Value{new StringValue{conversion}};
+    }
+    
+    bool TextLiteralValue::isSameValueAs(const Value &other) const {
+        const TextLiteralValue* other_p = dynamic_cast<const TextLiteralValue*>(other.get());
+        return other_p and other_p->textLiteral_ == textLiteral_;
+    }
+    
+    void TextLiteralValue::display(std::ostream &out) const {
+        out << '"' << Universe::instance().TextLiterals.get(textLiteral_) << '"';
+    }
+    
+    void TextLiteralValue::write(Storage& out) const {
+        out << TEXT_LITERAL << textLiteral_;
     }
     
     bool NumericValue::isSameValueAs(const Value &other) const {
@@ -200,8 +228,8 @@ namespace archetype {
     }
     
     Value StringValue::messageConversion() const {
-        if (Universe::instance().TextLiterals.has(value_)) {
-            return Value(new MessageValue(Universe::instance().TextLiterals.index(value_)));
+        if (Universe::instance().Messages.has(value_)) {
+            return Value{new MessageValue{Universe::instance().Messages.index(value_)}};
         } else {
             return Value{new UndefinedValue};
         }
@@ -349,7 +377,13 @@ namespace archetype {
             case MESSAGE: {
                 int message_id;
                 in >> message_id;
-                v = Value(new MessageValue(message_id));
+                v = Value{new MessageValue{message_id}};
+                break;
+            }
+            case TEXT_LITERAL: {
+                int text_literal;
+                in >> text_literal;
+                v = Value{new TextLiteralValue{text_literal}};
                 break;
             }
             case NUMERIC: {

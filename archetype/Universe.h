@@ -45,6 +45,7 @@ namespace archetype {
             ~Context();
         };
 
+        StringIdIndex Messages;
         StringIdIndex TextLiterals;
         StringIdIndex Identifiers;
 

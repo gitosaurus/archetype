@@ -112,7 +112,7 @@ namespace archetype {
         list<pair<string, string>> statements = {
             {
                 "{writes 'The monster '; if health <= death then write \" dies\" else write ' lives'}",
-                "{writes 'The monster '; if (<= health death) then write ' dies' else write ' lives'}"
+                "{writes 'The monster '; if (<= health death) then write \" dies\" else write ' lives'}"
             },
             {
                 "for each.isAverb and each.unlisted do { if 'register' -> each then each.unlisted := FALSE }",

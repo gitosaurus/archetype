@@ -492,14 +492,16 @@ namespace archetype {
         switch (t.token().type()) {
             case Token::TEXT_LITERAL:
             case Token::QUOTE_LITERAL:
+                scalar.reset(new ValueExpression{Value{new TextLiteralValue{t.token().number()}}});
+                break;
             case Token::MESSAGE:
-                scalar.reset(new ValueExpression(Value(new MessageValue(t.token().number()))));
+                scalar.reset(new ValueExpression{Value{new MessageValue{t.token().number()}}});
                 break;
             case Token::NUMERIC:
-                scalar.reset(new ValueExpression(Value(new NumericValue(t.token().number()))));
+                scalar.reset(new ValueExpression{Value{new NumericValue{t.token().number()}}});
                 break;
             case Token::IDENTIFIER:
-                scalar.reset(new IdentifierNode(t.token().number()));
+                scalar.reset(new IdentifierNode{t.token().number()});
                 break;
             case Token::RESERVED_WORD: {
                 // Some reserved words are like zero-argument functions, others are constant values

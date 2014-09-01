@@ -319,7 +319,7 @@ namespace archetype {
     }
     
     Storage& operator<<(Storage& out, const Universe& u) {
-        out << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
+        out << u.Messages << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
         out << u.objects_;
         int stack_size = static_cast<int>(u.context_.size());
         out << stack_size;
@@ -330,7 +330,7 @@ namespace archetype {
     }
     
     Storage& operator>>(Storage& in, Universe& u) {
-        in >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
+        in >> u.Messages >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
         in >> u.objects_;
         int stack_size;
         in >> stack_size;

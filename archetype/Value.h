@@ -110,7 +110,7 @@ namespace archetype {
         MessageValue(int message): message_(message) { }
         
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new MessageValue(message_)); }
+        virtual Value clone() const override { return Value{new MessageValue{message_}}; }
         virtual void display(std::ostream& out) const override;
         virtual void write(Storage& out) const override;
        
@@ -118,6 +118,21 @@ namespace archetype {
         
         virtual Value messageConversion() const override { return clone(); }
         virtual Value stringConversion() const override;
+    };
+    
+    class TextLiteralValue : public IValue {
+        int textLiteral_;
+    public:
+        TextLiteralValue(int text_literal): textLiteral_(text_literal) { }
+        
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override { return Value{new TextLiteralValue{textLiteral_}}; }
+        virtual void display(std::ostream& out) const override;
+        virtual void write(Storage& out) const override;
+        
+        virtual Value messageConversion() const override;
+        virtual Value stringConversion() const override;
+        
     };
     
     class NumericValue : public IValue {

@@ -179,9 +179,8 @@ namespace archetype {
                 "(--> (& (& message '...') (. main dobj)) (. self verbiage))"
             },
             {
-                // String literals are message literals, like Python
                 "\"Hello \" & \"world\"",
-                "(& 'Hello ' 'world')"
+                "(& \"Hello \" \"world\")"
             }
         };
         for (auto const& p : expressions) {
