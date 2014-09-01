@@ -331,6 +331,20 @@ namespace archetype {
                         return Value{new UndefinedValue};
                     }
                 }
+                
+                case Keywords::OP_C_PLUS: {
+                    Value lv_a = lv->attributeConversion();
+                    Value lv_n = lv->numericConversion();
+                    Value rv_n = rv->numericConversion();
+                    Value rv_c;
+                    if (lv_n->isDefined() and rv_n->isDefined()) {
+                        rv_c = eval_nn(Keywords::OP_PLUS, lv_n->getNumber(), rv_n->getNumber());
+                    } else {
+                        rv_c = Value{new UndefinedValue};
+                    }
+                    return lv_a->assign(std::move(rv_c));
+                }
+                    
                 case Keywords::OP_EQ:
                     if (lv->isSameValueAs(rv)) return as_boolean_value(true);
                     // Otherwise, intentional fall-through

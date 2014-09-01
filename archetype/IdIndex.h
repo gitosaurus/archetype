@@ -104,6 +104,7 @@ namespace archetype {
             in >> entries;
             index_.clear();
             registry_.clear();
+            registry_.resize(entries, sentinel_);
             for (int i = 0; i < entries; ++i) {
                 T value;
                 int value_index;

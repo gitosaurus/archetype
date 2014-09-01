@@ -20,6 +20,7 @@ namespace archetype {
         void testInclusion_();
         void testDefaultMethods_();
         void testMessagingKeywords_();
+        void testSerialization_();
     protected:
         virtual void runTests_() override;
     public:

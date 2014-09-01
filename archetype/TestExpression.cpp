@@ -49,6 +49,8 @@ namespace archetype {
 #define SHOW(expr) out() << #expr << " == " << (expr) << endl;
     
     void TestExpression::testTranslation_() {
+        Universe::destroy();
+        
         string expr_str_1 = "3 + 4 * 5";
         Expression expr1 = form_expr_from_str(expr_str_1);
         ARCHETYPE_TEST(expr1 != nullptr);

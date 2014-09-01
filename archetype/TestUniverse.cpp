@@ -39,7 +39,7 @@ namespace archetype {
         return stmt;
     }
     
-    static char program1[] =
+    static char program_basic_1[] =
     "null vase\n"
     "  desc: \"vase\"\n"
     "  weight: 1\n"
@@ -48,7 +48,7 @@ namespace archetype {
     "end\n"
     ;
     
-    static char program2[] =
+    static char program_basic_2[] =
     "type edible based on null\n"
     "  desc: \"snack\"\n"
     "methods\n"
@@ -61,7 +61,7 @@ namespace archetype {
     void TestUniverse::testBasicObjects_() {
         Universe::destroy();
 
-        TokenStream t1(make_source_from_str("program1", program1));
+        TokenStream t1(make_source_from_str("program_basic_1", program_basic_1));
         ARCHETYPE_TEST(Universe::instance().make(t1));
         Capture capture1;
         Statement stmt1 = make_stmt_from_str("'heft' -> vase");
@@ -70,7 +70,7 @@ namespace archetype {
         string expected1 = "The vase has a weight of 1.\n";
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         
-        TokenStream t2(make_source_from_str("program2", program2));
+        TokenStream t2(make_source_from_str("program_basic_2", program_basic_2));
         ARCHETYPE_TEST(Universe::instance().make(t2));
         Capture capture2;
         Statement stmt2 = make_stmt_from_str("'eat' -> cracker");
@@ -148,7 +148,7 @@ namespace archetype {
         ARCHETYPE_TEST(not val2->isDefined());
     }
     
-    static char program3[] =
+    static char program_inclusion[] =
     "include \"snack.ach\"\n"
     "null flavor desc : \"Confusing object with same name as an attribute\" end\n"
     "null conservatory\n"
@@ -162,8 +162,8 @@ namespace archetype {
     void TestUniverse::testInclusion_() {
         Universe::destroy();
 
-        Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program2));
-        TokenStream t3(make_source_from_str("program3", program3));
+        Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program_basic_2));
+        TokenStream t3(make_source_from_str("program_inclusion", program_inclusion));
         ARCHETYPE_TEST(Universe::instance().make(t3));
         Capture capture;
         Statement stmt = make_stmt_from_str("'look' -> conservatory");
@@ -173,7 +173,7 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual, expected);
     }
     
-    static char program4[] =
+    static char program_default_methods[] =
     "type something based on null\n"
     "methods\n"
     "  'foo' : \"bar\"\n"
@@ -192,7 +192,7 @@ namespace archetype {
     void TestUniverse::testDefaultMethods_() {
         Universe::destroy();
         
-        TokenStream t4(make_source_from_str("program4", program4));
+        TokenStream t4(make_source_from_str("program_default_methods", program_default_methods));
         ARCHETYPE_TEST(Universe::instance().make(t4));
         
         list<pair<string, string>> test_pairs = {
@@ -212,7 +212,7 @@ namespace archetype {
         }
     }
     
-    static char program5[] =
+    static char program_messaging[] =
     "type echo_type based on null\n"
     "  desc: \"Echo Type!\"\n"
     "methods\n"
@@ -245,7 +245,7 @@ namespace archetype {
     void TestUniverse::testMessagingKeywords_() {
         Universe::destroy();
         
-        TokenStream t5(make_source_from_str("program5", program5));
+        TokenStream t5(make_source_from_str("program_messaging", program_messaging));
         ARCHETYPE_TEST(Universe::instance().make(t5));
 
         Statement stmt1 = make_stmt_from_str("'some message' -> echo");
@@ -274,6 +274,12 @@ namespace archetype {
         ARCHETYPE_TEST(actual5->isDefined());
         Value expected5 = Value{new AbsentValue};
         ARCHETYPE_TEST(actual5->isSameValueAs(expected5));
+        
+        Statement stmt6 = make_stmt_from_str("'con' & 'structed' -> another");
+        Value actual6 = stmt6->execute();
+        ARCHETYPE_TEST(actual6->isDefined());
+        Value expected6 = Value{new AbsentValue};
+        ARCHETYPE_TEST(actual6->isSameValueAs(expected6));
 
         list<pair<string, string>> test_pairs = {
             { "'greet' -> me_too", "Hello, me too" },
@@ -290,11 +296,52 @@ namespace archetype {
         }
     }
     
+    static char program_serialization[] =
+    "null coffee_table\n"
+    "  desc : 'coffee table'\n"
+    "  views : 0\n"
+    "methods \n"
+    "  'desc' : write desc\n"
+    "  'look' : { views +:= 1; 'check' -> self }\n"
+    "  'check' : { writes 'You have looked '\n"
+    "              if views = 1 then write 'once.' else write views, ' times.' }\n"
+    "end\n"
+    ;
+    
+    void TestUniverse::testSerialization_() {
+        Universe::destroy();
+        
+        // Test the ability to create a program, modify it a little, save it, get it back
+        TokenStream t1(make_source_from_str("serialization", program_serialization));
+        ARCHETYPE_TEST(Universe::instance().make(t1));
+        Statement look_stmt = make_stmt_from_str("'look' -> coffee_table");
+        Capture look1;
+        look_stmt->execute();
+        ARCHETYPE_TEST_EQUAL(look1.getCapture(), string("You have looked once.\n"));
+        
+        MemoryStorage mem;
+        mem << Universe::instance();
+
+        look_stmt->execute(); // look 2
+        look_stmt->execute(); // look 3
+        look_stmt->execute(); // look 4
+        Capture look5;
+        look_stmt->execute();
+        ARCHETYPE_TEST_EQUAL(look5.getCapture(), string("You have looked 5 times.\n"));
+        
+        // Restore old state!
+        mem >> Universe::instance();
+        Capture after_undo;
+        look_stmt->execute();
+        ARCHETYPE_TEST_EQUAL(after_undo.getCapture(), string("You have looked 2 times.\n"));
+    }
+    
     void TestUniverse::runTests_() {
         testBasicObjects_();
         testDynamicObjects_();
         testInclusion_();
         testDefaultMethods_();
         testMessagingKeywords_();
+        testSerialization_();
     }
 }

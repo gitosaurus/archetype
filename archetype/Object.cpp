@@ -111,8 +111,7 @@ namespace archetype {
             c->messageValue = std::move(message);
             return p->executeDefaultMethod();
         }
-        
-        return Value{new UndefinedValue};
+        return Value{new AbsentValue};
     }
     
     void Object::write(Storage &out) {
@@ -154,13 +153,24 @@ namespace archetype {
     }
     
     Storage& operator<<(Storage& out, const ObjectPtr& p) {
-        p->write(out);
+        if (!p) {
+            out << 0;
+        } else {
+            out << 1;
+            p->write(out);
+        }
         return out;
     }
     
     Storage& operator>>(Storage& in, ObjectPtr& p) {
-        p.reset(new Object);
-        p->read(in);
+        int non_null;
+        in >> non_null;
+        if (non_null) {
+            p.reset(new Object);
+            p->read(in);
+        } else {
+            p.reset();
+        }
         return in;
     }
     

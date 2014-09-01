@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 #include <memory>
-#include <stack>
+#include <deque>
 
 #include "IdIndex.h"
 #include "StringIdIndex.h"
@@ -50,9 +50,9 @@ namespace archetype {
 
         IdentifierMap ObjectIdentifiers;
         
-        Context& currentContext() { return context_.top(); }
-        void pushContext(const Context& context) { context_.push(context); }
-        void popContext() { context_.pop(); }
+        Context& currentContext() { return context_.back(); }
+        void pushContext(const Context& context) { context_.push_back(context); }
+        void popContext() { context_.pop_back(); }
         
         UserInput input() const { return input_; }
         void setInput(UserInput input) { input_ = input; }
@@ -77,7 +77,7 @@ namespace archetype {
         
     private:
         ObjectIndex   objects_;
-        std::stack<Context> context_;
+        std::deque<Context> context_;
         UserInput input_;
         UserOutput output_;
         
@@ -86,6 +86,9 @@ namespace archetype {
         Universe();
         Universe(const Universe&) = delete;
         Universe& operator=(const Universe&) = delete;
+
+        friend Storage& operator<<(Storage& out, const Universe& u);
+        friend Storage& operator>>(Storage& in, Universe& u);
     };
     
     class ContextScope {
@@ -101,6 +104,9 @@ namespace archetype {
     
     Storage& operator<<(Storage& out, const IdentifierMap& m);
     Storage& operator>>(Storage&in, IdentifierMap& m);
+    
+    Storage& operator<<(Storage& out, const Universe::Context& c);
+    Storage& operator>>(Storage& in, Universe::Context& c);
     
     Storage& operator<<(Storage& out, const Universe& u);
     Storage& operator>>(Storage& in, Universe& u);

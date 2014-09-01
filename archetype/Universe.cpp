@@ -83,7 +83,7 @@ namespace archetype {
         context.selfObject = nullObject;
         context.senderObject = nullObject;
         context.messageValue = Value{new UndefinedValue};
-        context_.push(context);
+        context_.push_back(context);
     }
     
     ObjectPtr Universe::getObject(int object_id) const {
@@ -308,20 +308,38 @@ namespace archetype {
         return in;
     }
     
+    Storage& operator<<(Storage& out, const Universe::Context& c) {
+        out << c.selfObject << c.senderObject << c.messageValue << c.eachObject;
+        return out;
+    }
+    
+    Storage& operator>>(Storage& in, Universe::Context& c) {
+        in >> c.selfObject >> c.senderObject >> c.messageValue >> c.eachObject;
+        return in;
+    }
+    
     Storage& operator<<(Storage& out, const Universe& u) {
         out << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
-        /*
-         TODO:  finish
-         ObjectIndex   objects_;
-         std::stack<Context> context_;
-         std::ostream* output_;
-         */
+        out << u.objects_;
+        int stack_size = static_cast<int>(u.context_.size());
+        out << stack_size;
+        for (auto const& c : u.context_) {
+            out << c;
+        }
         return out;
     }
     
     Storage& operator>>(Storage& in, Universe& u) {
         in >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
-        // TODO: finish
+        in >> u.objects_;
+        int stack_size;
+        in >> stack_size;
+        u.context_.clear();
+        for (int i = 0; i < stack_size; ++i) {
+            Universe::Context c;
+            in >> c;
+            u.context_.push_back(c);
+        }
         return in;
     }
     
