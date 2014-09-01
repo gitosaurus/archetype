@@ -298,13 +298,13 @@ namespace archetype {
     
     static char program_serialization[] =
     "null coffee_table\n"
-    "  desc : 'coffee table'\n"
+    "  desc : \"coffee table\"\n"
     "  views : 0\n"
     "methods \n"
     "  'desc' : write desc\n"
-    "  'look' : { views +:= 1; 'check' -> self }\n"
-    "  'check' : { writes 'You have looked '\n"
-    "              if views = 1 then write 'once.' else write views, ' times.' }\n"
+    "  'look' : { views +:= 1; 'check' }\n"
+    "  'check' : { writes \"You have looked \"\n"
+    "              if views = 1 then write \"once.\" else write views, \" times.\" }\n"
     "end\n"
     ;
     

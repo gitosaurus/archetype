@@ -109,6 +109,14 @@ namespace archetype {
     }
     
     Value ExpressionStatement::execute() const {
+        ValueExpression* val_expr = dynamic_cast<ValueExpression*>(expression_.get());
+        if (val_expr) {
+            Value val = val_expr->evaluate();
+            MessageValue* message_value = dynamic_cast<MessageValue*>(val.get());
+            if (message_value) {
+                return Universe::instance().currentContext().selfObject->dispatch(std::move(val));
+            }
+        }
         return expression_->evaluate();
     }
     
