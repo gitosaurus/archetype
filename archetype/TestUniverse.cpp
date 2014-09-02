@@ -9,6 +9,7 @@
 #include <string>
 #include <sstream>
 #include <memory>
+#include <vector>
 
 #include "TestUniverse.h"
 #include "TestRegistry.h"
@@ -297,6 +298,12 @@ namespace archetype {
     }
     
     static char program_serialization[] =
+    "type stuff based on null\n"
+    "  desc : \"nothing special\"\n"
+    "methods\n"
+    "  'inspect' : write desc, \" is on the coffee table\"\n"
+    "end\n"
+    "\n"
     "null coffee_table\n"
     "  desc : \"coffee table\"\n"
     "  views : 0\n"
@@ -319,6 +326,20 @@ namespace archetype {
         look_stmt->execute();
         ARCHETYPE_TEST_EQUAL(look1.getCapture(), string("You have looked once.\n"));
         
+        // Put some stuff on the coffee table
+        vector<int> objects;
+        for (auto s : {"cup", "magazine", "remote", "saltshaker" }) {
+            Statement create_stmt = make_stmt_from_str("create stuff named coffee_table." + string(s));
+            Statement rename_stmt = make_stmt_from_str(string(s) + ".desc := \"" + string(s) + "\"");
+            int obj_id = create_stmt->execute()->objectConversion()->getObject();
+            objects.push_back(obj_id);
+            rename_stmt->execute();
+        }
+        
+        // Now create some holes by deleting one of the middle ones
+        Statement holes_stmt = make_stmt_from_str("{destroy coffee_table.magazine; destroy coffee_table.remote}");
+        holes_stmt->execute();
+        
         MemoryStorage mem;
         mem << Universe::instance();
 
@@ -329,11 +350,38 @@ namespace archetype {
         look_stmt->execute();
         ARCHETYPE_TEST_EQUAL(look5.getCapture(), string("You have looked 5 times.\n"));
         
+        // Add a new dynamic object. It should take the place of the remote.
+        Statement create_another = make_stmt_from_str("create stuff named coffee_table.napkin");
+        int napkin_id = create_another->execute()->objectConversion()->getObject();
+        ARCHETYPE_TEST_EQUAL(napkin_id, objects.at(2));
+        
         // Restore old state!
         mem >> Universe::instance();
         Capture after_undo;
         look_stmt->execute();
         ARCHETYPE_TEST_EQUAL(after_undo.getCapture(), string("You have looked 2 times.\n"));
+        
+        // Verify that the cup and saltshaker are still at their old addresses
+        Statement find_cup = make_stmt_from_str("coffee_table.cup");
+        int cup_id = find_cup->execute()->objectConversion()->getObject();
+        ARCHETYPE_TEST_EQUAL(cup_id, objects.at(0));
+        
+        Statement find_saltshaker = make_stmt_from_str("coffee_table.saltshaker");
+        int saltshaker_id = find_saltshaker->execute()->objectConversion()->getObject();
+        ARCHETYPE_TEST_EQUAL(saltshaker_id, objects.at(3));
+        
+        // And be sure the others are unusable.  They won't evaluate to UNDEFINED,
+        // only because Archetype doesn't force an early lookup in object conversion,
+        // but the resulting object should be null in the Universe.
+        Statement find_magazine = make_stmt_from_str("coffee_table.magazine");
+        int magazine_id = find_magazine->execute()->objectConversion()->getObject();
+        ObjectPtr magazine = Universe::instance().getObject(magazine_id);
+        ARCHETYPE_TEST(not magazine);
+
+        Statement find_remote = make_stmt_from_str("coffee_table.remote");
+        int remote_id = find_remote->execute()->objectConversion()->getObject();
+        ObjectPtr remote = Universe::instance().getObject(remote_id);
+        ARCHETYPE_TEST(not remote);
     }
     
     void TestUniverse::runTests_() {

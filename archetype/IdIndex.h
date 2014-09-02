@@ -92,20 +92,22 @@ namespace archetype {
         }
         
         void write(Storage& out) const {
-            int entries = static_cast<int>(registry_.size());
-            out << entries;
+            int total_entries = static_cast<int>(registry_.size());
+            int indexed_entries = static_cast<int>(index_.size());
+            out << total_entries << indexed_entries;
             for (auto const& entry : index_) {
                 out << entry.first << entry.second;
             }
         }
         
         void read(Storage& in) {
-            int entries;
-            in >> entries;
+            int total_entries;
+            int indexed_entries;
+            in >> total_entries >> indexed_entries;
             index_.clear();
             registry_.clear();
-            registry_.resize(entries, sentinel_);
-            for (int i = 0; i < entries; ++i) {
+            registry_.resize(total_entries, sentinel_);
+            for (int i = 0; i < indexed_entries; ++i) {
                 T value;
                 int value_index;
                 in >> value >> value_index;
