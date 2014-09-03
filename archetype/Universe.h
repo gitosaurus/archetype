@@ -12,7 +12,7 @@
 #include <string>
 #include <map>
 #include <memory>
-#include <deque>
+#include <stack>
 
 #include "IdIndex.h"
 #include "StringIdIndex.h"
@@ -51,9 +51,9 @@ namespace archetype {
 
         IdentifierMap ObjectIdentifiers;
         
-        Context& currentContext() { return context_.back(); }
-        void pushContext(const Context& context) { context_.push_back(context); }
-        void popContext() { context_.pop_back(); }
+        Context& currentContext() { return context_.top(); }
+        void pushContext(const Context& context) { context_.push(context); }
+        void popContext() { context_.pop(); }
         
         UserInput input() const { return input_; }
         void setInput(UserInput input) { input_ = input; }
@@ -78,7 +78,7 @@ namespace archetype {
         
     private:
         ObjectIndex   objects_;
-        std::deque<Context> context_;
+        std::stack<Context> context_;
         UserInput input_;
         UserOutput output_;
         

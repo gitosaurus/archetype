@@ -83,7 +83,7 @@ namespace archetype {
         context.selfObject = nullObject;
         context.senderObject = nullObject;
         context.messageValue = Value{new UndefinedValue};
-        context_.push_back(context);
+        context_.push(context);
     }
     
     ObjectPtr Universe::getObject(int object_id) const {
