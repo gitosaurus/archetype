@@ -44,7 +44,7 @@ namespace archetype {
         return 0;
     }
     
-    int OutFileStorage::Storage::read(Byte *buf, int nbytes) {
+    int OutFileStorage::read(Byte *buf, int nbytes) {
         return 0;
     }
     
