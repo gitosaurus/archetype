@@ -106,9 +106,6 @@ namespace archetype {
     Storage& operator<<(Storage& out, const IdentifierMap& m);
     Storage& operator>>(Storage&in, IdentifierMap& m);
     
-    Storage& operator<<(Storage& out, const Universe::Context& c);
-    Storage& operator>>(Storage& in, Universe::Context& c);
-    
     Storage& operator<<(Storage& out, const Universe& u);
     Storage& operator>>(Storage& in, Universe& u);
     
