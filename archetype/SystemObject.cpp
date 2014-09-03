@@ -13,6 +13,7 @@
 
 #include "SystemObject.h"
 #include "Universe.h"
+#include "FileStorage.h"
 
 using namespace std;
 
@@ -126,7 +127,9 @@ namespace archetype {
                             state_ = IDLING;
                             return parser_->nextObject();
                         case WHICH_OBJECT:
-                            // Nothing new; remain in this state
+                        case SAVE_STATE:
+                        case LOAD_STATE:
+                            // Nothing new; remain in this state for the argument
                             break;
                             
                         case IDLING:
@@ -210,6 +213,30 @@ namespace archetype {
                 Value message_str = message->stringConversion();
                 if (message_str->isDefined()) {
                     return parser_->whichObject(message_str->getString());
+                }
+                break;
+            }
+            case SAVE_STATE: {
+                state_ = IDLING;
+                Value filename_str = message->stringConversion();
+                if (filename_str->isDefined()) {
+                    string filename = filename_str->getString();
+                    OutFileStorage save_file(filename);
+                    if (save_file.ok()) {
+                        save_file << Universe::instance();
+                    }
+                }
+                break;
+            }
+            case LOAD_STATE: {
+                state_ = IDLING;
+                Value filename_str = message->stringConversion();
+                if (filename_str->isDefined()) {
+                    string filename = filename_str->getString();
+                    InFileStorage load_file(filename);
+                    if (load_file.ok()) {
+                        load_file >> Universe::instance();
+                    }
                 }
                 break;
             }

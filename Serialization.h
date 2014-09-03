@@ -38,9 +38,9 @@ namespace archetype {
     public:
         MemoryStorage();
         virtual ~MemoryStorage() { }
-        virtual int remaining() const;
-        virtual int read(Byte* buf, int nbytes);
-        virtual void write(const Byte* buf, int nbytes);
+        virtual int remaining() const override;
+        virtual int read(Byte* buf, int nbytes) override;
+        virtual void write(const Byte* buf, int nbytes) override;
     };
 }
 
