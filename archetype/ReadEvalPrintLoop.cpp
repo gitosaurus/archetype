@@ -66,18 +66,22 @@ namespace archetype {
                     break;
                 }
                 TokenStream input_tokens = make_tokens_from_string("input", command);
-                if (not input_tokens.fetch()) {
-                    continue;
-                }
-                if (is_object_declaration(input_tokens.token())) {
-                    input_tokens.didNotConsume();
-                    if (Universe::instance().make(input_tokens)) {
-                        out->put("Added to Universe.\n");
-                    }
-                } else {
-                    input_tokens.didNotConsume();
-                    Statement stmt = make_statement(input_tokens);
-                    if (stmt) {
+                while (input_tokens.fetch()) {
+                    if (is_object_declaration(input_tokens.token())) {
+                        input_tokens.didNotConsume();
+                        if (Universe::instance().make(input_tokens)) {
+                            out->put("Added to Universe.\n");
+                        } else {
+                            out->put("Could not compile as an object declaration.\n");
+                            break;
+                        }
+                    } else {
+                        input_tokens.didNotConsume();
+                        Statement stmt = make_statement(input_tokens);
+                        if (not stmt) {
+                            out->put("Could not compile as a statement.\n");
+                            break;
+                        }
                         Value result = stmt->execute();
                         ostringstream sout;
                         sout << "[";
@@ -89,8 +93,6 @@ namespace archetype {
                         }
                         sout << endl;
                         out->put(sout.str());
-                    } else {
-                        out->put("Could not compile as a statement.\n");
                     }
                 }
             } catch (const std::exception& e) {
