@@ -46,6 +46,10 @@ int main(int argc, const char* argv[]) {
         usage();
         return 0;
     }
+    if (opts.empty() and args.empty()) {
+        usage();
+        return 0;
+    }
     if (opts.count("test")) {
         bool success = TestRegistry::instance().runAllTestSuites(cout);
         int exit_code = success ? 0 : 1;
