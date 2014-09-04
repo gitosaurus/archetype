@@ -14,6 +14,7 @@
 #include <string>
 
 #include "TestRegistry.h"
+#include "ReadEvalPrintLoop.h"
 
 using namespace std;
 using namespace archetype;
@@ -24,6 +25,7 @@ void usage() {
         << endl
         << " --help    Print this message and exit." << endl
         << " --test    Run all test suites." << endl
+        << " --repl    Enter the REPL (Read-Eval-Print Loop)" << endl;
     ;
 }
 
@@ -42,11 +44,11 @@ int main(int argc, const char* argv[]) {
             opts[opt_name] = opt_value;
         }
     }
-    if (opts.count("help")) {
+    if (opts.empty() and args.empty()) {
         usage();
         return 0;
     }
-    if (opts.empty() and args.empty()) {
+    if (opts.count("help")) {
         usage();
         return 0;
     }
@@ -54,6 +56,9 @@ int main(int argc, const char* argv[]) {
         bool success = TestRegistry::instance().runAllTestSuites(cout);
         int exit_code = success ? 0 : 1;
         return exit_code;
+    }
+    if (opts.count("repl")) {
+        return repl();
     }
 }
 

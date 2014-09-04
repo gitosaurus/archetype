@@ -16,6 +16,7 @@ using namespace std;
 #include "Universe.h"
 #include "Wellspring.h"
 #include "SystemObject.h"
+#include "ConsoleInput.h"
 #include "ConsoleOutput.h"
 
 namespace archetype {
@@ -57,7 +58,7 @@ namespace archetype {
     { }
     
     Universe::Universe() :
-    input_{nullptr},
+    input_{new ConsoleInput},
     output_{new ConsoleOutput}
     {
         ObjectPtr nullObject = defineNewObject();

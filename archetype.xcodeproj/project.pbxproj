@@ -7,6 +7,7 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		450F908C19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 450F908A19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp */; };
 		451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451BA00C18D7C3AF0043C274 /* TestObject.cpp */; };
 		4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4532326E18B1DEF0008B68E1 /* TokenStream.cpp */; };
 		45447AA718DE505900839C15 /* TestUniverse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45447AA518DE505900839C15 /* TestUniverse.cpp */; };
@@ -53,6 +54,9 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		450F908A19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ReadEvalPrintLoop.cpp; sourceTree = "<group>"; };
+		450F908B19B7E9EF002AB81D /* ReadEvalPrintLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReadEvalPrintLoop.h; sourceTree = "<group>"; };
+		450F908E19B7EAC6002AB81D /* ConsoleInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsoleInput.h; sourceTree = "<group>"; };
 		451BA00C18D7C3AF0043C274 /* TestObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestObject.cpp; sourceTree = "<group>"; };
 		451BA00D18D7C3AF0043C274 /* TestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestObject.h; sourceTree = "<group>"; };
 		4532326E18B1DEF0008B68E1 /* TokenStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TokenStream.cpp; sourceTree = "<group>"; };
@@ -161,6 +165,7 @@
 				45F3A74A19B6A14700DBAECE /* FileStorage.h */,
 				4532541D196D9CD2009A1EE0 /* UserInput.h */,
 				4532541E196D9E51009A1EE0 /* UserOutput.h */,
+				450F908E19B7EAC6002AB81D /* ConsoleInput.h */,
 				4532541F196DA0B4009A1EE0 /* ConsoleOutput.h */,
 				456DA75B19704480006ACBFF /* StringInput.h */,
 				459B70C6196DA3E400A07EE5 /* StringOutput.h */,
@@ -193,6 +198,8 @@
 				45817A2C190CAAC5002224D4 /* SystemParser.h */,
 				4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */,
 				4571ECCA193F6BF5006D85A9 /* Wellspring.h */,
+				450F908A19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp */,
+				450F908B19B7E9EF002AB81D /* ReadEvalPrintLoop.h */,
 				45F7CF3418AA904900D39E12 /* Testing */,
 			);
 			path = archetype;
@@ -294,6 +301,7 @@
 				45DDAD12194E8D0500B282F7 /* Serialization.cpp in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cpp in Sources */,
 				451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */,
+				450F908C19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp in Sources */,
 				459010DF19326E19007B14C0 /* TestSystemParser.cpp in Sources */,
 				45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */,
 				45F0610A18C0FAC2000FB4C3 /* TestStatement.cpp in Sources */,
