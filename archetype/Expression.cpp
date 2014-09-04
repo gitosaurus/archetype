@@ -645,6 +645,9 @@ namespace archetype {
     } // form_expr
     
     Expression tighten(Expression expr) {
+        if (not expr) {
+            return nullptr;
+        }
         Expression t = expr->anyFewerNodeEquivalent();
         return move(t != nullptr ? t : expr);
     }

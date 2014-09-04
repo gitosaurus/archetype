@@ -235,8 +235,7 @@ namespace archetype {
                     
                     if (next_ch != bracket) {
                         source_->showPosition(cout);
-                        cout << "Unterminated literal" << endl;
-                        terminate();
+                        throw std::runtime_error("Unterminated literal");
                     }
                     else {
                         
