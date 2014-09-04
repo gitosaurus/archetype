@@ -224,6 +224,9 @@ namespace archetype {
                     OutFileStorage save_file(filename);
                     if (save_file.ok()) {
                         save_file << Universe::instance();
+                        return Value{new BooleanValue{true}};
+                    } else {
+                        return Value{new BooleanValue{false}};
                     }
                 }
                 break;
@@ -236,6 +239,9 @@ namespace archetype {
                     InFileStorage load_file(filename);
                     if (load_file.ok()) {
                         load_file >> Universe::instance();
+                        return Value{new BooleanValue{true}};
+                    } else {
+                        return Value{new BooleanValue{false}};
                     }
                 }
                 break;

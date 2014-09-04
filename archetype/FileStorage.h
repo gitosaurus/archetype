@@ -19,7 +19,7 @@ namespace archetype {
     class InFileStorage : public Storage {
     public:
         InFileStorage(std::string filename);
-        bool ok() const { return stream_ ? true : false; }
+        bool ok() const;
         virtual ~InFileStorage() { }
         virtual int remaining() const override;
         virtual int read(Byte* buf, int nbytes) override;
@@ -35,7 +35,7 @@ namespace archetype {
     class OutFileStorage : public Storage {
     public:
         OutFileStorage(std::string filename);
-        bool ok() const { return stream_ ? true : false; }
+        bool ok() const;
         virtual ~OutFileStorage() { }
         virtual int remaining() const override;
         virtual int read(Byte* buf, int nbytes) override;

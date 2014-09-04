@@ -14,12 +14,16 @@
 using namespace std;
 
 namespace archetype {
-    InFileStorage::InFileStorage(std::string filename):
-    stream_(filename.c_str())
+    InFileStorage::InFileStorage(std::string filename)
     {
+        stream_.open(filename.c_str(), ios::in | ios::binary);
         stream_.seekg(0, ios::end);
         remaining_ = static_cast<int>(stream_.tellg());
         stream_.seekg(0, ios::beg);
+    }
+    
+    bool InFileStorage::ok() const {
+        return stream_.is_open();
     }
     
     int InFileStorage::remaining() const {
@@ -36,9 +40,14 @@ namespace archetype {
     void InFileStorage::write(const Byte *buf, int nbytes) {
     }
     
-    OutFileStorage::OutFileStorage(std::string filename):
-    stream_(filename.c_str())
-    { }
+    OutFileStorage::OutFileStorage(std::string filename)
+    {
+        stream_.open(filename.c_str(), ios::out | ios::binary);
+    }
+    
+    bool OutFileStorage::ok() const {
+        return stream_.is_open();
+    }
     
     int OutFileStorage::remaining() const {
         return 0;
