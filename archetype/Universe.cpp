@@ -75,11 +75,6 @@ namespace archetype {
         assert(system_id == SystemObjectId);
         assignObjectIdentifier(system_obj, "system");
         
-        // And one more:  the main object.  This object will be redefined by the user,
-        // but its ID is reserved.
-        ObjectPtr mainObject = defineNewObject();
-        assignObjectIdentifier(mainObject, "main");
-        
         Context context;
         context.selfObject = nullObject;
         context.senderObject = nullObject;

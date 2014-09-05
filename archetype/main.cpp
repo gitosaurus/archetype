@@ -12,9 +12,13 @@
 #include <map>
 #include <list>
 #include <string>
+#include <fstream>
 
 #include "TestRegistry.h"
 #include "ReadEvalPrintLoop.h"
+#include "SourceFile.h"
+#include "TokenStream.h"
+#include "Universe.h"
 
 using namespace std;
 using namespace archetype;
@@ -40,7 +44,7 @@ int main(int argc, const char* argv[]) {
             if (iequal != a->end()) {
                 opt_value.assign(iequal + 1, a->end());
             }
-            args.erase(a);
+            a = args.erase(a);
             opts[opt_name] = opt_value;
         }
     }
@@ -59,6 +63,35 @@ int main(int argc, const char* argv[]) {
     }
     if (opts.count("repl")) {
         return repl();
+    }
+    
+    if (opts.count("source")) {
+        string filename = opts["source"];
+        stream_ptr in(new ifstream(filename.c_str()));
+        SourceFilePtr source(new SourceFile(filename, in));
+        TokenStream tokens(source);
+        if (not Universe::instance().make(tokens)) {
+            return 1;
+        }
+        
+        ObjectPtr main_object = Universe::instance().getObject("main");
+        if (not main_object) {
+            cout << "ERROR:  No 'main' object" << endl;
+            return 1;
+        } else {
+            try {
+                int start_id = Universe::instance().Messages.index("START");
+                Value start{new MessageValue{start_id}};
+                ContextScope c;
+                c->senderObject = c->selfObject;
+                c->selfObject = main_object;
+                main_object->dispatch(move(start));
+            } catch (const std::exception& e) {
+                // TODO:  gentler catch for system exit
+                cerr << "Caught:  " << e.what() << endl;
+            }
+            return 0;
+        }
     }
 }
 

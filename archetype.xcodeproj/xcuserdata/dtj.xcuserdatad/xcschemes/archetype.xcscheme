@@ -67,15 +67,7 @@
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--create"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--output=/dev/null"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "gorreven"
+            argument = "--source=/Users/dtj/Archetype/Archetype_102/animal.ach"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>

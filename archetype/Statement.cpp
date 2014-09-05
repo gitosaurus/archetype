@@ -427,9 +427,10 @@ namespace archetype {
                 Universe::instance().output()->put(v_s->getString());
             }
         }
-        if (writeType_ == Keywords::RW_WRITE) {
+        if (writeType_ != Keywords::RW_WRITES) {
             Universe::instance().output()->endLine();
-        } else if (writeType_ == Keywords::RW_STOP) {
+        }
+        if (writeType_ == Keywords::RW_STOP) {
             // TODO:  use a better name
             throw logic_error("Terminate");
         }

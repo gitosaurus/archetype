@@ -175,8 +175,22 @@ namespace archetype {
         }
         
         virtual Value evaluate() const {
-            throw logic_error("UnaryOperator::evaluate under construction");
-            return Value(new StringValue("<unknown>"));
+            Value rv = right_->evaluate();
+            // Sort evaluations by "signature"
+            switch (op()) {
+                case Keywords::OP_NOT: {
+                    bool negation = not rv->isTrueEnough();
+                    return Value{new BooleanValue{negation}};
+                }
+                default:
+                    if (is_binary(op())) {
+                        throw logic_error("Attempt to do UnaryOperator evaluation on binary operator " +
+                                          Keywords::instance().Operators.get(op()));
+                    } else {
+                        throw logic_error("No unary operator evaluation written for " +
+                                          Keywords::instance().Operators.get(op()));
+                    }
+            }
         }
         
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
@@ -402,7 +416,6 @@ namespace archetype {
                                           Keywords::instance().Operators.get(op()));
                     }
             }
-            throw logic_error("BinaryOperator::evaluate under construction");
         }
         
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {

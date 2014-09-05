@@ -224,10 +224,13 @@ namespace archetype {
                                 case 'b' : next_ch = '\b'; break;
                                 case 'e' : next_ch = '\e'; break;
                                 case 'n' : next_ch = '\n'; break;
-                                default:
-                                    // TODO: Need true error reporting
-                                    cout << "Unknown escape character" << endl;
+                                case '"' : next_ch = '"'; break;
+                                default: {
+                                    ostringstream out;
+                                    out << "Unknown escape character \\" << next_ch;
+                                    errorMessage(out.str());
                                     break;
+                                }
                             }  /* switch */
                         }
                         s += next_ch;

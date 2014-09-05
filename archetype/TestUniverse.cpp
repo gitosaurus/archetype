@@ -104,19 +104,19 @@ namespace archetype {
         Universe::destroy();
         
         ObjectPtr obj1 = Universe::instance().defineNewObject();
-        // 0 = null, 1 = system, 2 = main, so 3 is the first possible
-        ARCHETYPE_TEST_EQUAL(obj1->id(), 3);
+        // 0 = null, 1 = system, so 2 is the first possible
+        ARCHETYPE_TEST_EQUAL(obj1->id(), 2);
         
         ObjectPtr obj2 = Universe::instance().defineNewObject();
-        ARCHETYPE_TEST_EQUAL(obj2->id(), 4);
+        ARCHETYPE_TEST_EQUAL(obj2->id(), 3);
         
-        Universe::instance().destroyObject(3);
+        Universe::instance().destroyObject(2);
         
         ObjectPtr obj3 = Universe::instance().defineNewObject();
         ARCHETYPE_TEST_EQUAL(obj1->id(), Object::INVALID);
         
         // Verify that the "hole" from the destroyed object is reused
-        ARCHETYPE_TEST_EQUAL(obj3->id(), 3);
+        ARCHETYPE_TEST_EQUAL(obj3->id(), 2);
         
         TokenStream t(make_source_from_str("dynamic.ach", program_dynamic));
         ARCHETYPE_TEST(Universe::instance().make(t));
