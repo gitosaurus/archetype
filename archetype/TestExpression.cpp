@@ -24,19 +24,17 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestExpression);
     
+    inline TokenStream tokens_from_str(string src_str) {
+        stream_ptr in(new istringstream(src_str));
+        SourceFilePtr src(new SourceFile("test", in));
+        return TokenStream(src);
+    }
+    
     inline Expression form_expr_from_str(string src_str) {
         stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
         TokenStream token_stream(src);
         Expression expr = form_expr(token_stream);
-        return expr;
-    }
-    
-    inline Expression make_expr_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
-        TokenStream token_stream(src);
-        Expression expr = make_expr(token_stream);
         return expr;
     }
     
@@ -103,6 +101,22 @@ namespace archetype {
         string actual6 = as_prefix(expr6);
         string expected6 = "(+ 3 5)";
         ARCHETYPE_TEST_EQUAL(actual6, expected6);
+        
+        // Verify that an expression knows when to stop.
+        // In this case it needs to not consume the 'then'.
+        string source7 = "not 'AFFIRM' -> main then 3 else 4";
+        TokenStream tokens7 = tokens_from_str(source7);
+        Expression expr7 = make_expr(tokens7);
+        string actual7 = as_prefix(expr7);
+        string expected7 = "(not (-> 'AFFIRM' main))";
+        ARCHETYPE_TEST_EQUAL(actual7, expected7);
+        ARCHETYPE_TEST(tokens7.fetch());
+        ARCHETYPE_TEST_EQUAL(tokens7.token(), Token(Token::RESERVED_WORD, Keywords::RW_THEN));
+        
+        Expression expr8 = make_expr_from_str("(x.i := x.i + 1) > 5");
+        string actual8 = as_prefix(expr8);
+        string expected8 = "(> (:= (. x i) (+ (. x i) 1)) 5)";
+        ARCHETYPE_TEST_EQUAL(actual8, expected8);
     }
     
     void TestExpression::testEvaluation_() {

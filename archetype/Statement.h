@@ -151,6 +151,7 @@ namespace archetype {
     };
     
     Statement make_statement(TokenStream& t);
+    Statement make_stmt_from_str(std::string src_str);
 }
 
 #endif /* defined(__archetype__Statement__) */

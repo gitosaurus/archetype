@@ -7,6 +7,8 @@
 //
 
 #include <memory>
+#include <stdexcept>
+#include <sstream>
 
 #include "Statement.h"
 #include "Universe.h"
@@ -428,8 +430,8 @@ namespace archetype {
         if (writeType_ == Keywords::RW_WRITE) {
             Universe::instance().output()->endLine();
         } else if (writeType_ == Keywords::RW_STOP) {
-            // TODO: Need something gentler than this!
-            terminate();
+            // TODO:  use a better name
+            throw logic_error("Terminate");
         }
         return last_value;
     }
@@ -630,5 +632,13 @@ namespace archetype {
         stmt->read(in);
         return in;
     }
-
+    
+    Statement make_stmt_from_str(string src_str) {
+        stream_ptr in(new istringstream(src_str));
+        SourceFilePtr src(new SourceFile("test", in));
+        TokenStream token_stream(src);
+        Statement stmt = make_statement(token_stream);
+        return stmt;
+    }
+    
 }

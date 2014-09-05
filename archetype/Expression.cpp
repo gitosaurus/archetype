@@ -9,6 +9,7 @@
 #include <stdexcept>
 #include <cassert>
 #include <algorithm>
+#include <sstream>
 
 #include "Expression.h"
 #include "Keywords.h"
@@ -35,6 +36,7 @@ namespace archetype {
             case Keywords::OP_LPAREN:
             case Keywords::OP_CHS:
             case Keywords::OP_NUMERIC:
+            case Keywords::OP_NOT:
             case Keywords::OP_STRING:
             case Keywords::OP_RANDOM:
             case Keywords::OP_LENGTH:
@@ -622,9 +624,12 @@ namespace archetype {
         Expression expr = get_operand(t);
         if (not expr) return nullptr;
         while (t.fetch()) {
+            // Proceed only if the next token is a binary operator.
+            // If this token we have just taken is a right-hand parenthesis,
+            // only consume it if we're at level 0.
             if ((t.token().type() != Token::OPERATOR) or
                 (not is_binary(Keywords::Operators_e(t.token().number())))) {
-                if (t.token() != Token(Token::PUNCTUATION, ')') and stop_precedence == 0) {
+                if (not (t.token() == Token(Token::PUNCTUATION, ')') and stop_precedence == 0)) {
                     t.didNotConsume();
                 }
                 break;
@@ -710,6 +715,14 @@ namespace archetype {
             }
         }
         return in;
+    }
+    
+    Expression make_expr_from_str(string src_str) {
+        stream_ptr in(new istringstream(src_str));
+        SourceFilePtr src(new SourceFile("test", in));
+        TokenStream token_stream(src);
+        Expression expr = make_expr(token_stream);
+        return expr;
     }
     
 } // archetype

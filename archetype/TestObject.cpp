@@ -23,22 +23,6 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestObject);
     
-    inline Expression make_expr_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
-        TokenStream token_stream(src);
-        Expression expr = make_expr(token_stream);
-        return expr;
-    }
-    
-    inline Statement make_stmt_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
-        TokenStream token_stream(src);
-        Statement stmt = make_statement(token_stream);
-        return stmt;
-    }
-    
     void TestObject::testObjects_() {
         ObjectPtr test = Universe::instance().defineNewObject();
         Universe::instance().assignObjectIdentifier(test, "test");

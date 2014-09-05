@@ -65,6 +65,7 @@ namespace archetype {
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv);
     
     Expression make_expr(TokenStream& t);
+    Expression make_expr_from_str(std::string src_str);
     
     Storage& operator<<(Storage& out, const Expression& expr);
     Storage& operator>>(Storage& in, Expression& expr);
