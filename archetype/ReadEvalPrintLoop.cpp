@@ -54,14 +54,7 @@ namespace archetype {
             try {
                 out->put("> ");
                 string command = in->getLine();
-                if (command.empty()) {
-                    out->put("Goodbye.\n");
-                    break;
-                }
-                if (command[command.size() - 1] == '\n') {
-                    command.resize(command.size() - 1);
-                }
-                if (command == "exit") {
+                if (in->atEOF() or command == "exit") {
                     out->put("Goodbye.\n");
                     break;
                 }

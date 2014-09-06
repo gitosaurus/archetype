@@ -19,6 +19,7 @@ namespace archetype {
         virtual ~IUserInput() { }
         virtual char getKey() = 0;
         virtual std::string getLine() = 0;
+        virtual bool atEOF() const = 0;
     private:
         IUserInput(const IUserInput&) = delete;
         IUserInput& operator=(const IUserInput&) = delete;

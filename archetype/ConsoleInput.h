@@ -18,21 +18,18 @@ namespace archetype {
     public:
         virtual ~ConsoleInput() { }
         virtual char getKey() override {
-            // TODO:  Totally not good enough.
+            // TODO:  Totally not good enough; befouls "animal.ach"
             char key;
             std::cin >> key;
             return key;
         }
         virtual std::string getLine() override {
             std::string line;
-            if (std::getline(std::cin, line)) {
-                // TODO:  Uh oh.  This prevents "animal" from working correctly
-                // TODO:  But without it, the REPL can't detect end-of-file
-                // TODO:  I think IUserInput needs an EOF inspector
-                return line + "\n";
-            } else {
-                return line;
-            }
+            std::getline(std::cin, line);
+            return line;
+        }
+        virtual bool atEOF() const override {
+            return cin.eof();
         }
     };
 }

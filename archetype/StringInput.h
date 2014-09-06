@@ -30,6 +30,9 @@ namespace archetype {
             (void)std::getline(stream_, result);
             return result;
         }
+        virtual bool atEOF() const override {
+            return stream_.eof();
+        }
     };
 }
 
