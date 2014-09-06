@@ -266,23 +266,34 @@ namespace archetype {
     
     bool ObjectValue::isSameValueAs(const Value &other) const {
         const ObjectValue* other_p = dynamic_cast<const ObjectValue*>(other.get());
-        return other_p and other_p->objectNameId_ == objectNameId_;
+        return other_p and other_p->objectId_ == objectId_;
     }
     
     void ObjectValue::display(std::ostream &out) const {
-        out << Universe::instance().Identifiers.get(objectNameId_);
+        for (auto const& p : Universe::instance().ObjectIdentifiers) {
+            if (p.second == objectId_) {
+                out << Universe::instance().Identifiers.get(p.first);
+                return;
+            }
+        }
+        out << "<object " << objectId_ << '>';
     }
     
     void ObjectValue::write(Storage& out) const {
-        out << OBJECT << objectNameId_;
+        out << OBJECT << objectId_;
     }
     
     Value ObjectValue::identifierConversion() const {
-        return Value{new IdentifierValue{objectNameId_}};
+        for (auto const& p : Universe::instance().ObjectIdentifiers) {
+            if (p.second == objectId_) {
+                return Value{new IdentifierValue{p.first}};
+            }
+        }
+        return Value{new UndefinedValue};
     }
     
     int ObjectValue::getObject() const {
-        return objectNameId_;
+        return objectId_;
     }
     
     bool AttributeValue::isSameValueAs(const Value &other) const {
@@ -291,11 +302,10 @@ namespace archetype {
     }
     
     void AttributeValue::display(std::ostream &out) const {
-        int identifier = Universe::instance().ObjectIdentifiers[objectId_];
-        out
-            << Universe::instance().Identifiers.get(identifier)
-            << '.'
-            << Universe::instance().Identifiers.get(attributeId_)
+        Value obj_v{new ObjectValue{objectId_}};
+        obj_v->display(out);
+        out << '.';
+        out << Universe::instance().Identifiers.get(attributeId_)
         ;
     }
     

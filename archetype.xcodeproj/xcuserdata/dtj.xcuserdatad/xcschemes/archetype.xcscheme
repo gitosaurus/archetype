@@ -60,14 +60,14 @@
       <CommandLineArguments>
          <CommandLineArgument
             argument = "--test"
-            isEnabled = "NO">
-         </CommandLineArgument>
-         <CommandLineArgument
-            argument = "--repl"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--source=/Users/dtj/Archetype/Archetype_102/animal.ach"
+            argument = "--repl"
+            isEnabled = "NO">
+         </CommandLineArgument>
+         <CommandLineArgument
+            argument = "--source=/Users/dtj/Archetype/Archetype_102/animal-dbg.ach"
             isEnabled = "NO">
          </CommandLineArgument>
       </CommandLineArguments>
