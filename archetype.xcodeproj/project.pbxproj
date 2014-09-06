@@ -87,8 +87,8 @@
 		45B2450218A34A0B006A5FA8 /* archetype.1 */ = {isa = PBXFileReference; lastKnownFileType = text.man; path = archetype.1; sourceTree = "<group>"; };
 		45D89F3518C81644009CCF30 /* Value.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Value.cpp; sourceTree = "<group>"; };
 		45D89F3618C81644009CCF30 /* Value.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Value.h; sourceTree = "<group>"; };
-		45DDAD10194E8D0500B282F7 /* Serialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; name = Serialization.cpp; path = ../Serialization.cpp; sourceTree = "<group>"; };
-		45DDAD11194E8D0500B282F7 /* Serialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; name = Serialization.h; path = ../Serialization.h; sourceTree = "<group>"; };
+		45DDAD10194E8D0500B282F7 /* Serialization.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Serialization.cpp; sourceTree = "<group>"; };
+		45DDAD11194E8D0500B282F7 /* Serialization.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Serialization.h; sourceTree = "<group>"; };
 		45DE416B18F6EBC1007A9EB6 /* SystemObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemObject.cpp; sourceTree = "<group>"; };
 		45DE416C18F6EBC1007A9EB6 /* SystemObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemObject.h; sourceTree = "<group>"; };
 		45ECAF7B18BD04D800FA1924 /* TestExpression.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestExpression.cpp; sourceTree = "<group>"; };
