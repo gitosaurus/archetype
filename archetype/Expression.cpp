@@ -138,6 +138,32 @@ namespace archetype {
                             Keywords::Operators_e op,
                             Expression new_rside);
     
+    class IdentifierNode : public IExpression {
+        int id_;
+    public:
+        IdentifierNode(int id): id_{id} { }
+        int id() const { return id_; }
+        virtual void write(Storage& out) const override { out << IDENTIFIER << id_; }
+        virtual Value evaluate() const override {
+            // Closest binding:  an attribute in the current object
+            ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
+            if (selfObject and selfObject->hasAttribute(id_)) {
+                return Value(new AttributeValue(selfObject->id(), id_));
+            }
+            // Next:  an object in the Universe
+            auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
+            if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
+                return Value(new ObjectValue(id_obj_p->second));
+            }
+            
+            // Finally:  just a keyword value
+            return Value(new IdentifierValue(id_));
+        }
+        virtual void prefixDisplay(ostream& out) const override {
+            out << Universe::instance().Identifiers.get(id_);
+        }
+    };
+    
     class Operator : public IExpression {
         Keywords::Operators_e op_;
     protected:
@@ -175,7 +201,7 @@ namespace archetype {
         }
         
         virtual Value evaluate() const {
-            Value rv = right_->evaluate();
+            Value rv = right_->evaluate()->valueConversion();
             // Sort evaluations by "signature"
             switch (op()) {
                 case Keywords::OP_NOT: {
@@ -312,7 +338,7 @@ namespace archetype {
         
         virtual Value evaluate() const {
             Value lv = left_->evaluate();
-            Value rv = right_->evaluate();
+            Value rv = right_->evaluate()->valueConversion();
             // Sort evaluations by "signature"
             switch (op()) {
                 case Keywords::OP_CONCAT:
@@ -378,13 +404,17 @@ namespace archetype {
                     
                 case Keywords::OP_DOT: {
                     Value lv_o = lv->objectConversion();
-                    Value rv_a = rv->identifierConversion();
-                    if (lv_o->isDefined() and rv_a->isDefined()) {
-                        int object_id = lv_o->getObject();
-                        int attribute_id = rv_a->getIdentifier();
-                        return Value(new AttributeValue(object_id, attribute_id));
-                    } else {
+                    if (not lv_o->isDefined()) {
                         return Value{new UndefinedValue};
+                    } else {
+                        int object_id = lv_o->getObject();
+                        const IdentifierNode* id_node = dynamic_cast<const IdentifierNode*>(right_.get());
+                        if (id_node) {
+                            int attribute_id = id_node->id();
+                            return Value(new AttributeValue(object_id, attribute_id));
+                        } else {
+                            throw logic_error("Non-identifier node on right-hand-side of OP_DOT");
+                        }
                     }
                 }
                     
@@ -443,31 +473,6 @@ namespace archetype {
                 out << "nullptr";
             }
             out << ')';
-        }
-    };
-    
-    class IdentifierNode : public IExpression {
-        int id_;
-    public:
-        IdentifierNode(int id): id_{id} { }
-        virtual void write(Storage& out) const override { out << IDENTIFIER << id_; }
-        virtual Value evaluate() const override {
-            // Closest binding:  an attribute in the current object
-            ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
-            if (selfObject and selfObject->hasAttribute(id_)) {
-                return Value(new AttributeValue(selfObject->id(), id_));
-            }
-            // Next:  an object in the Universe
-            auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
-            if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
-                return Value(new ObjectValue(id_obj_p->second));
-            }
-            
-            // Finally:  just a keyword value
-            return Value(new IdentifierValue(id_));
-        }
-        virtual void prefixDisplay(ostream& out) const override {
-            out << Universe::instance().Identifiers.get(id_);
         }
     };
     

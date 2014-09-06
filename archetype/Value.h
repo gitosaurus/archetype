@@ -50,6 +50,7 @@ namespace archetype {
         virtual Value identifierConversion() const;
         virtual Value objectConversion() const;
         virtual Value attributeConversion() const;
+        virtual Value valueConversion() const { return clone(); }
         
         virtual Value assign(Value new_value);
     };
@@ -223,6 +224,7 @@ namespace archetype {
         virtual Value identifierConversion() const override;
         virtual Value objectConversion() const override;
         virtual Value attributeConversion() const override { return clone(); }
+        virtual Value valueConversion() const override { return dereference_(); }
         
         virtual Value assign(Value new_value) override;
     };

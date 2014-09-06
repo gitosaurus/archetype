@@ -26,6 +26,9 @@ namespace archetype {
         virtual std::string getLine() override {
             std::string line;
             if (std::getline(std::cin, line)) {
+                // TODO:  Uh oh.  This prevents "animal" from working correctly
+                // TODO:  But without it, the REPL can't detect end-of-file
+                // TODO:  I think IUserInput needs an EOF inspector
                 return line + "\n";
             } else {
                 return line;

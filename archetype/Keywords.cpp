@@ -39,6 +39,7 @@ namespace archetype {
         RESERVE(RW_CREATE, "create");
         RESERVE(RW_DEFAULT, "default");
         RESERVE(RW_DESTROY, "destroy");
+        RESERVE(RW_DISPLAY, "display");
         RESERVE(RW_DO, "do");
         RESERVE(RW_EACH, "each");
         RESERVE(RW_ELSE, "else");

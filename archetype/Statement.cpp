@@ -119,7 +119,7 @@ namespace archetype {
                 return Universe::instance().currentContext().selfObject->dispatch(std::move(val));
             }
         }
-        return expression_->evaluate();
+        return expression_->evaluate()->valueConversion();
     }
     
     void IfStatement::read(Storage& in) {
@@ -422,6 +422,13 @@ namespace archetype {
         Value last_value(new UndefinedValue);
         for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
+            if (writeType_ == Keywords::RW_DISPLAY) {
+                ostringstream out;
+                out << '[';
+                last_value->display(out);
+                out << ']';
+                Universe::instance().output()->put(out.str());
+            }
             Value v_s = last_value->stringConversion();
             if (v_s->isDefined()) {
                 Universe::instance().output()->put(v_s->getString());
@@ -564,6 +571,7 @@ namespace archetype {
                 case Keywords::RW_DESTROY:
                     the_stmt.reset(new DestroyStatement);
                     break;
+                case Keywords::RW_DISPLAY:
                 case Keywords::RW_WRITE:
                 case Keywords::RW_WRITES:
                 case Keywords::RW_STOP:

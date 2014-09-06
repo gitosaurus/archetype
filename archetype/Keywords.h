@@ -28,6 +28,7 @@ namespace archetype {
             RW_CREATE,
             RW_DEFAULT,
             RW_DESTROY,
+            RW_DISPLAY,
             RW_DO,
             RW_EACH,
             RW_ELSE,

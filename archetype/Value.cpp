@@ -305,8 +305,9 @@ namespace archetype {
         Value obj_v{new ObjectValue{objectId_}};
         obj_v->display(out);
         out << '.';
-        out << Universe::instance().Identifiers.get(attributeId_)
-        ;
+        out << Universe::instance().Identifiers.get(attributeId_);
+        out << " : ";
+        dereference_()->display(out);
     }
     
     void AttributeValue::write(Storage& out) const {
