@@ -467,13 +467,16 @@ namespace archetype {
     }
     
     Value ForStatement::execute() const {
-        // TODO:  set 'each' in the context to each object in turn
-        // TODO:  skip over null/deleted objects
-        // TODO:  must either know the object count or have an iterator or expose collection
-        // TODO:  need to look for 'break'
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
-        for (;;) { // TODO:  for every object in the universe
+        int object_count = Universe::instance().objectCount();
+        for (int object_id = Universe::UserObjectsBeginAt; object_id < object_count; ++object_id) {
+            ObjectPtr each_object = Universe::instance().getObject(object_id);
+            if (not each_object or each_object->id() == Object::INVALID) {
+                continue;
+            }
+            ContextScope c;
+            c->eachObject = each_object;
             Value selection = selection_->evaluate();
             if (selection->isTrueEnough()) {
                 result = action_->execute();

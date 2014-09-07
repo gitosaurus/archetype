@@ -82,6 +82,10 @@ namespace archetype {
         context_.push(context);
     }
     
+    int Universe::objectCount() const {
+        return objects_.count();
+    }
+    
     ObjectPtr Universe::getObject(int object_id) const {
         // Because deserialization tramples on null and (especially) system,
         // dispatch to the originals every time.

@@ -32,6 +32,7 @@ namespace archetype {
     public:
         static const int NullObjectId = 0;
         static const int SystemObjectId = 1;
+        static const int UserObjectsBeginAt = 2;
         
         struct Context {
             ObjectPtr selfObject;
@@ -60,6 +61,7 @@ namespace archetype {
         UserOutput output() const { return output_; }
         void setOutput(UserOutput output) { output_ = output; }
         
+        int objectCount() const;
         ObjectPtr getObject(int object_id) const;
         ObjectPtr getObject(std::string identifier) const;
         ObjectPtr defineNewObject(int parent_id = 0);

@@ -64,6 +64,10 @@ namespace archetype {
             }
         }
         
+        int count() const {
+            return static_cast<int>(registry_.size());
+        }
+        
         int find(const T& obj) const {
             auto where = index_.find(obj);
             if (where == index_.end()) {
