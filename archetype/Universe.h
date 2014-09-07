@@ -77,9 +77,11 @@ namespace archetype {
         static void destroy();
         
     private:
-        ObjectIndex   objects_;
+        ObjectIndex objects_;
+        ObjectPtr   nullObject_;
+        ObjectPtr   systemObject_;
         std::stack<Context> context_;
-        UserInput input_;
+        UserInput  input_;
         UserOutput output_;
         
         static Universe* instance_;

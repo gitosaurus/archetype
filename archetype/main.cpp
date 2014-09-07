@@ -19,6 +19,7 @@
 #include "SourceFile.h"
 #include "TokenStream.h"
 #include "Universe.h"
+#include "FileStorage.h"
 
 using namespace std;
 using namespace archetype;
@@ -27,9 +28,11 @@ void usage() {
     cout
         << "Usage: " << endl
         << endl
-        << " --help    Print this message and exit." << endl
-        << " --test    Run all test suites." << endl
-        << " --repl    Enter the REPL (Read-Eval-Print Loop)" << endl;
+        << " --help             Print this message and exit." << endl
+        << " --test             Run all test suites." << endl
+        << " --repl             Enter the REPL (Read-Eval-Print Loop)" << endl
+        << " --source=file.ach  Read, compile, and run the given program." << endl
+        << " --load=file.acx    Load the saved binary file and resume running it." << endl
     ;
 }
 
@@ -85,7 +88,43 @@ int main(int argc, const char* argv[]) {
                 ContextScope c;
                 c->senderObject = c->selfObject;
                 c->selfObject = main_object;
-                main_object->dispatch(move(start));
+                Value result = main_object->dispatch(move(start));
+                if (result->isSameValueAs(Value{new AbsentValue})) {
+                    throw runtime_error("No 'START' method on main");
+                }
+            } catch (const std::exception& e) {
+                // TODO:  gentler catch for system exit
+                cerr << "Caught:  " << e.what() << endl;
+            }
+            return 0;
+        }
+    }
+    
+    if (opts.count("load")) {
+        string filename = opts["load"];
+        InFileStorage in(filename);
+        in >> Universe::instance();
+        ObjectPtr main_object = Universe::instance().getObject("main");
+        if (not main_object) {
+            cout << "ERROR:  No 'main' object" << endl;
+            return 1;
+        } else {
+            try {
+                int resume_id = Universe::instance().Messages.index("RESUME");
+                Value resume{new MessageValue{resume_id}};
+                ContextScope c;
+                c->senderObject = c->selfObject;
+                c->selfObject = main_object;
+                Value result = main_object->dispatch(move(resume));
+                if (result->isSameValueAs(Value{new AbsentValue})) {
+                    cerr << "No 'RESUME' method on main; sending 'START'" << endl;
+                    int start_id = Universe::instance().Messages.index("START");
+                    Value start{new MessageValue{start_id}};
+                    result = main_object->dispatch(move(start));
+                    if (result->isSameValueAs(Value{new AbsentValue})) {
+                        throw runtime_error("No 'START' method on main");
+                    }
+                }
             } catch (const std::exception& e) {
                 // TODO:  gentler catch for system exit
                 cerr << "Caught:  " << e.what() << endl;

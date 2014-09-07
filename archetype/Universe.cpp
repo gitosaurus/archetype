@@ -61,32 +61,41 @@ namespace archetype {
     input_{new ConsoleInput},
     output_{new ConsoleOutput}
     {
-        ObjectPtr nullObject = defineNewObject();
-        assignObjectIdentifier(nullObject, "null");
-        nullObject->setPrototype(true);
+        nullObject_ = defineNewObject();
+        assignObjectIdentifier(nullObject_, "null");
+        nullObject_->setPrototype(true);
         // If the "null" object had a parent ID of zero, it would be its own parent.
         // But it's a special object, one that has no parent.
-        nullObject->setParentId(Object::INVALID);
-        assert(nullObject->id() == NullObjectId);
+        nullObject_->setParentId(Object::INVALID);
+        assert(nullObject_->id() == NullObjectId);
         
-        ObjectPtr system_obj(new SystemObject);
-        int system_id = objects_.index(std::move(system_obj));
-        system_obj->setId(system_id);
+        systemObject_ = ObjectPtr{new SystemObject};
+        int system_id = objects_.index(std::move(systemObject_));
+        systemObject_->setId(system_id);
         assert(system_id == SystemObjectId);
-        assignObjectIdentifier(system_obj, "system");
+        assignObjectIdentifier(systemObject_, "system");
         
         Context context;
-        context.selfObject = nullObject;
-        context.senderObject = nullObject;
+        context.selfObject = nullObject_;
+        context.senderObject = nullObject_;
         context.messageValue = Value{new UndefinedValue};
         context_.push(context);
     }
     
     ObjectPtr Universe::getObject(int object_id) const {
-        if (objects_.hasIndex(object_id)) {
-            return objects_.get(object_id);
-        } else {
-            return nullptr;
+        // Because deserialization tramples on null and (especially) system,
+        // dispatch to the originals every time.
+        switch (object_id) {
+            case NullObjectId:
+                return nullObject_;
+            case SystemObjectId:
+                return systemObject_;
+            default:
+                if (objects_.hasIndex(object_id)) {
+                    return objects_.get(object_id);
+                } else {
+                    return nullptr;
+                }
         }
     }
     
