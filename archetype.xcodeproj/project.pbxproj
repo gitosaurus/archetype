@@ -8,6 +8,7 @@
 
 /* Begin PBXBuildFile section */
 		450F908C19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 450F908A19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp */; };
+		451A4E3C19BC1C830000C985 /* ConsoleInput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451A4E3A19BC1C830000C985 /* ConsoleInput.cpp */; };
 		451BA00E18D7C3AF0043C274 /* TestObject.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 451BA00C18D7C3AF0043C274 /* TestObject.cpp */; };
 		4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4532326E18B1DEF0008B68E1 /* TokenStream.cpp */; };
 		45447AA718DE505900839C15 /* TestUniverse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45447AA518DE505900839C15 /* TestUniverse.cpp */; };
@@ -56,7 +57,8 @@
 /* Begin PBXFileReference section */
 		450F908A19B7E9EF002AB81D /* ReadEvalPrintLoop.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ReadEvalPrintLoop.cpp; sourceTree = "<group>"; };
 		450F908B19B7E9EF002AB81D /* ReadEvalPrintLoop.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ReadEvalPrintLoop.h; sourceTree = "<group>"; };
-		450F908E19B7EAC6002AB81D /* ConsoleInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsoleInput.h; sourceTree = "<group>"; };
+		451A4E3A19BC1C830000C985 /* ConsoleInput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = ConsoleInput.cpp; sourceTree = "<group>"; };
+		451A4E3B19BC1C830000C985 /* ConsoleInput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = ConsoleInput.h; sourceTree = "<group>"; };
 		451BA00C18D7C3AF0043C274 /* TestObject.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestObject.cpp; sourceTree = "<group>"; };
 		451BA00D18D7C3AF0043C274 /* TestObject.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestObject.h; sourceTree = "<group>"; };
 		4532326E18B1DEF0008B68E1 /* TokenStream.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TokenStream.cpp; sourceTree = "<group>"; };
@@ -165,7 +167,8 @@
 				45F3A74A19B6A14700DBAECE /* FileStorage.h */,
 				4532541D196D9CD2009A1EE0 /* UserInput.h */,
 				4532541E196D9E51009A1EE0 /* UserOutput.h */,
-				450F908E19B7EAC6002AB81D /* ConsoleInput.h */,
+				451A4E3A19BC1C830000C985 /* ConsoleInput.cpp */,
+				451A4E3B19BC1C830000C985 /* ConsoleInput.h */,
 				4532541F196DA0B4009A1EE0 /* ConsoleOutput.h */,
 				456DA75B19704480006ACBFF /* StringInput.h */,
 				459B70C6196DA3E400A07EE5 /* StringOutput.h */,
@@ -312,6 +315,7 @@
 				45F7CF2418A9E9A000D39E12 /* Object.cpp in Sources */,
 				4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */,
 				45F7CF3718AA908600D39E12 /* TestIdIndex.cpp in Sources */,
+				451A4E3C19BC1C830000C985 /* ConsoleInput.cpp in Sources */,
 				45F7CF2718A9EA3700D39E12 /* Expression.cpp in Sources */,
 				45F7CF3318A9EE2200D39E12 /* SourceFile.cpp in Sources */,
 				45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */,
