@@ -91,6 +91,15 @@ namespace archetype {
         string actual_4_2 = capture4.getCapture();
         string expected_4_2 = "Hello, world!\n";
         ARCHETYPE_TEST_EQUAL(actual_4_2, expected_4_2);
+        
+        Statement stmt5 = make_stmt_from_str(">>Now, this is a \"quote\".");
+        ARCHETYPE_TEST(stmt5 != nullptr);
+        Capture capture5;
+        Value val5 = stmt5->execute()->stringConversion();
+        ARCHETYPE_TEST(val5->isDefined());
+        ARCHETYPE_TEST_EQUAL(val5->getString(), string("Now, this is a \"quote\"."));
+        string actual5 = capture5.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual5, string("Now, this is a \"quote\".\n"));
     }
     
     void TestStatement::testLoopBreaks_() {

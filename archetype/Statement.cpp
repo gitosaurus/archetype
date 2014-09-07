@@ -553,6 +553,9 @@ namespace archetype {
 
         if (t.token() == Token(Token::PUNCTUATION, '{')) {
             the_stmt.reset(new CompoundStatement);
+        } else if (t.token().type() == Token::QUOTE_LITERAL) {
+            t.didNotConsume();
+            the_stmt.reset(new OutputStatement{Keywords::RW_WRITE});
         } else if (t.token().type() != Token::RESERVED_WORD) {
             t.didNotConsume();
             the_stmt.reset(new ExpressionStatement);

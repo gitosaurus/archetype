@@ -103,6 +103,10 @@ int main(int argc, const char* argv[]) {
     if (opts.count("load")) {
         string filename = opts["load"];
         InFileStorage in(filename);
+        if (not in.ok()) {
+            cerr << "Cannot open " << filename << endl;
+            return 1;
+        }
         in >> Universe::instance();
         ObjectPtr main_object = Universe::instance().getObject("main");
         if (not main_object) {
