@@ -97,7 +97,7 @@ namespace archetype {
                             state_ = IDLING;
                             break;
                         case PRESENT:
-                            parser_->announcePresence(Universe::instance().currentContext().selfObject->id());
+                            parser_->announcePresence(Universe::instance().currentContext().senderObject->id());
                             state_ = IDLING;
                             break;
                         case PARSE:
