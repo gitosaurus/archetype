@@ -41,6 +41,18 @@ namespace archetype {
         return out;
     }
     
+    inline Value numeric_value_from_string(string str) {
+        int number = 0;
+        for (char ch : str) {
+            if (not isdigit(ch)) {
+                return Value{new UndefinedValue};
+            }
+            number *= 10;
+            number += (ch - '0');
+        }
+        return Value(new NumericValue(number));
+    }
+    
     Value IValue::messageConversion() const {
         return Value{new UndefinedValue};
     }
@@ -156,8 +168,12 @@ namespace archetype {
         out << MESSAGE << message_;
     }
     
+    string TextLiteralValue::getString() const {
+        return Universe::instance().TextLiterals.get(textLiteral_);
+    }
+    
     Value TextLiteralValue::messageConversion() const {
-        string value = Universe::instance().TextLiterals.get(textLiteral_);
+        string value = getString();
         if (Universe::instance().Messages.has(value)) {
             return Value{new MessageValue{Universe::instance().Messages.index(value)}};
         } else {
@@ -166,8 +182,11 @@ namespace archetype {
     }
     
     Value TextLiteralValue::stringConversion() const {
-        string conversion = Universe::instance().TextLiterals.get(textLiteral_);
-        return Value{new StringValue{conversion}};
+        return Value{new StringValue{getString()}};
+    }
+    
+    Value TextLiteralValue::numericConversion() const {
+        return numeric_value_from_string(getString());
     }
     
     bool TextLiteralValue::isSameValueAs(const Value &other) const {
@@ -236,15 +255,7 @@ namespace archetype {
     }
     
     Value StringValue::numericConversion() const {
-        int number = 0;
-        for (char ch : value_) {
-            if (not isdigit(ch)) {
-                return Value{new UndefinedValue};
-            }
-            number *= 10;
-            number += (ch - '0');
-        }
-        return Value(new NumericValue(number));
+        return numeric_value_from_string(value_);
     }
     
     void IdentifierValue::display(std::ostream &out) const {

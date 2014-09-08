@@ -13,6 +13,7 @@
 
 #include "TestExpression.h"
 #include "TestRegistry.h"
+#include "SourceFile.h"
 #include "TokenStream.h"
 #include "Expression.h"
 #include "Serialization.h"
@@ -180,6 +181,55 @@ namespace archetype {
         string actual12 = expr12->evaluate()->stringConversion()->getString();
         string expected12 = "FALSE";
         ARCHETYPE_TEST_EQUAL(actual12, expected12);
+        
+        // More ways of testing evaluation.  Throw in a single object for
+        // attribute scratch space.
+        
+        string src_str = "null scratch end";
+        stream_ptr in(new istringstream(src_str));
+        SourceFilePtr src(new SourceFile("scratch", in));
+        TokenStream token_stream(src);
+        ARCHETYPE_TEST(Universe::instance().make(token_stream));
+        list<pair<string, IValue*>> testing_pairs = {
+            {"numeric \"35\"", new NumericValue{35}},
+            {"+ \"hello\"", new UndefinedValue},
+            {"+ (\"1\" & 9)", new NumericValue{19}},
+            {"& (13 + 7)", new StringValue{"20"}},
+            {"string 82", new StringValue{"82"}},
+            {"FALSE and TRUE", new BooleanValue{false}},
+            {"FALSE or TRUE", new BooleanValue{true}},
+            {"not FALSE", new BooleanValue{true}},
+            // Try reacting to UNDEFINED as a truth value, also
+            {"not ('nothing' -> nowhere)", new BooleanValue{true}},
+            {"13 - - 14", new NumericValue{27}},
+            
+            // Testing these cumulative operators requires executing these statements
+            // in order.  Be careful of rearranging the tests.
+            {"scratch.n := 5", new NumericValue{5}},
+            {"scratch.n +:= 7", new NumericValue{12}},
+            {"scratch.n", new NumericValue{12}},
+            {"scratch.n /:= 2", new NumericValue{6}},
+            {"scratch.n -:= 1", new NumericValue{5}},
+            {"scratch.n *:= 7", new NumericValue{35}},
+            {"scratch.s := \"hello\"", new TextLiteralValue{Universe::instance().TextLiterals.index("hello")}},
+            {"scratch.s &:= \" world\"", new StringValue{"hello world"}}
+        };
+        for (auto p : testing_pairs) {
+            Expression expr = make_expr_from_str(p.first);
+            ARCHETYPE_TEST(expr != nullptr);
+            // We're not testing for AttributeValue equivalence here.
+            // It does matter, but in this case, we're wanting to be sure the value got through.
+            Value val = expr->evaluate()->valueConversion();
+            // This will adopt and destroy the pointer in the pair
+            Value test_value{p.second};
+            p.second = nullptr;
+            ARCHETYPE_TEST(val->isSameValueAs(test_value));
+            // Compare by string, too, so that it's easier to catch in the test output
+            ostringstream out1, out2;
+            val->display(out1);
+            test_value->display(out2);
+            ARCHETYPE_TEST_EQUAL(out1.str(), out2.str());
+        }
     }
     
     void TestExpression::testSerialization_() {

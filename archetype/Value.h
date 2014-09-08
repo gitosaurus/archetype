@@ -131,9 +131,11 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual void write(Storage& out) const override;
         
+        virtual std::string getString() const override;
+        
         virtual Value messageConversion() const override;
         virtual Value stringConversion() const override;
-        
+        virtual Value numericConversion() const override;
     };
     
     class NumericValue : public IValue {

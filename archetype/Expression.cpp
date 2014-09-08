@@ -117,6 +117,23 @@ namespace archetype {
         }
     }
     
+    Keywords::Operators_e non_assignment_equivalent(Keywords::Operators_e op) {
+        switch (op) {
+            case Keywords::OP_C_PLUS:
+                return Keywords::OP_PLUS;
+            case Keywords::OP_C_MINUS:
+                return Keywords::OP_MINUS;
+            case Keywords::OP_C_MULTIPLY:
+                return Keywords::OP_MULTIPLY;
+            case Keywords::OP_C_DIVIDE:
+                return Keywords::OP_DIVIDE;
+            case Keywords::OP_C_CONCAT:
+                return Keywords::OP_CONCAT;
+            default:
+                throw logic_error("Unexpected cumulative assignment operator");
+        }
+    }
+    
     void ValueExpression::write(Storage& out) const {
         out << VALUE << value_;
     }
@@ -202,11 +219,31 @@ namespace archetype {
         
         virtual Value evaluate() const {
             Value rv = right_->evaluate()->valueConversion();
-            // Sort evaluations by "signature"
             switch (op()) {
-                case Keywords::OP_NOT: {
-                    bool negation = not rv->isTrueEnough();
-                    return Value{new BooleanValue{negation}};
+                case Keywords::OP_CHS: {
+                    Value rv_n = rv->numericConversion();
+                    if (rv_n->isDefined()) {
+                        return Value{new NumericValue{-rv_n->getNumber()}};
+                    } else {
+                        return rv_n;
+                    }
+                }
+                case Keywords::OP_NUMERIC:
+                    return rv->numericConversion();
+                case Keywords::OP_NOT:
+                    return Value{new BooleanValue{not rv->isTrueEnough()}};
+                case Keywords::OP_STRING:
+                    return rv->stringConversion();
+                case Keywords::OP_RANDOM: {
+                    throw logic_error("Unimplemented OP_RANDOM");
+                }
+                case Keywords::OP_LENGTH: {
+                    Value rv_s = rv->stringConversion();
+                    if (rv_s->isDefined()) {
+                        return Value{new NumericValue{static_cast<int>(rv_s->getString().size())}};
+                    } else {
+                        return rv_s;
+                    }
                 }
                 default:
                     if (is_binary(op())) {
@@ -275,7 +312,7 @@ namespace archetype {
             default:
                 throw logic_error("number-op-number attempted on this operator");
         }
-        return Value(new NumericValue(result));
+        return Value{new NumericValue{result}};
     }
     
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
@@ -361,6 +398,10 @@ namespace archetype {
                         return Value{new UndefinedValue};
                     }
                 }
+                case Keywords::OP_AND:
+                    return Value{new BooleanValue{lv->isTrueEnough() and rv->isTrueEnough()}};
+                case Keywords::OP_OR:
+                    return Value{new BooleanValue{lv->isTrueEnough() or rv->isTrueEnough()}};
                 case Keywords::OP_PLUS:
                 case Keywords::OP_MINUS:
                 case Keywords::OP_MULTIPLY:
@@ -374,17 +415,35 @@ namespace archetype {
                     }
                 }
                 
-                case Keywords::OP_C_PLUS: {
+                case Keywords::OP_C_PLUS:
+                case Keywords::OP_C_MINUS:
+                case Keywords::OP_C_MULTIPLY:
+                case Keywords::OP_C_DIVIDE: {
                     Value lv_a = lv->attributeConversion();
                     Value lv_n = lv->numericConversion();
                     Value rv_n = rv->numericConversion();
                     Value rv_c;
                     if (lv_n->isDefined() and rv_n->isDefined()) {
-                        rv_c = eval_nn(Keywords::OP_PLUS, lv_n->getNumber(), rv_n->getNumber());
+                        rv_c = eval_nn(non_assignment_equivalent(op()), lv_n->getNumber(), rv_n->getNumber());
                     } else {
                         rv_c = Value{new UndefinedValue};
                     }
                     return lv_a->assign(std::move(rv_c));
+                }
+                    
+                case Keywords::OP_C_CONCAT:
+                {
+                    Value lv_a = lv->attributeConversion();
+                    Value lv_s = lv->stringConversion();
+                    Value rv_s = rv->stringConversion();
+                    Value rv_c;
+                    if (lv_s->isDefined() and rv_s->isDefined()) {
+                        rv_c = eval_ss(non_assignment_equivalent(op()), lv_s->getString(), rv_s->getString());
+                    } else {
+                        rv_c = Value{new UndefinedValue};
+                    }
+                    return lv_a->assign(std::move(rv_c));
+                    
                 }
                     
                 case Keywords::OP_EQ:
@@ -582,11 +641,16 @@ namespace archetype {
                 break;
             case Token::OPERATOR: {
                 Keywords::Operators_e op_name = Keywords::Operators_e(t.token().number());
+                // Check for special cases, operators that can be unary in this context
                 switch (op_name) {
                     case Keywords::OP_PLUS:
-                    case Keywords::OP_NUMERIC:
+                        op_name = Keywords::OP_NUMERIC;
+                        break;
+                    case Keywords::OP_MINUS:
+                        op_name = Keywords::OP_CHS;
+                        break;
                     case Keywords::OP_CONCAT:
-                        // Special cases, operators that can be unary in this context
+                        op_name = Keywords::OP_STRING;
                         break;
                     default:
                         if (is_binary(op_name)) {
