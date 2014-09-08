@@ -35,7 +35,9 @@ namespace archetype {
         ARCHETYPE_TEST(stmt1 != nullptr);
         CompoundStatement* dstmt1 = dynamic_cast<CompoundStatement*>(stmt1.get());
         ARCHETYPE_TEST(dstmt1 != nullptr);
-        ARCHETYPE_TEST_EQUAL(dstmt1->statements().size(), size_t(0));
+        if (dstmt1) {
+            ARCHETYPE_TEST_EQUAL(dstmt1->statements().size(), size_t(0));
+        }
         
         Statement stmt2 = make_stmt_from_str("guard.location := main.dobj");
         ARCHETYPE_TEST(stmt2 != nullptr);
