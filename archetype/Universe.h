@@ -13,6 +13,7 @@
 #include <map>
 #include <memory>
 #include <stack>
+#include <stdexcept>
 
 #include "IdIndex.h"
 #include "StringIdIndex.h"
@@ -24,6 +25,11 @@
 #include "UserOutput.h"
 
 namespace archetype {
+    
+    class QuitGame : public std::runtime_error {
+    public:
+        QuitGame(): runtime_error("Exiting.") { }
+    };
     
     typedef IdIndex<ObjectPtr> ObjectIndex;
     typedef std::map<int, int> IdentifierMap;

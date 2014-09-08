@@ -258,7 +258,7 @@ namespace archetype {
                             if (not make(included_tokens)) {
                                 return false;
                             }
-                            Wellspring::instance().close(source_file);
+                            Wellspring::instance().close(source);
                         }
                         break;
                     }

@@ -438,8 +438,7 @@ namespace archetype {
             Universe::instance().output()->endLine();
         }
         if (writeType_ == Keywords::RW_STOP) {
-            // TODO:  use a better name
-            throw logic_error("Terminate");
+            throw QuitGame();
         }
         return last_value;
     }

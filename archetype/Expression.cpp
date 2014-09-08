@@ -291,8 +291,14 @@ namespace archetype {
         switch (op) {
             case Keywords::OP_CONCAT:
                 return Value(new StringValue(lv_s + rv_s));
-            case Keywords::OP_WITHIN:
-                return as_boolean_value(rv_s.find(lv_s) != string::npos);
+            case Keywords::OP_WITHIN: {
+                size_t where = rv_s.find(lv_s);
+                if (where == string::npos) {
+                    return Value{new UndefinedValue};
+                } else {
+                    return Value{new NumericValue{static_cast<int>(where+ 1)}};
+                }
+            }
             default:
                 throw logic_error("string-op-string attempted on this operator");
         }
@@ -327,6 +333,22 @@ namespace archetype {
     }
     
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
+        // Quick shortcut for identity.  Will also catch (v = UNDEFINED) and (UNDEFINED = v).
+        if (op == Keywords::OP_EQ and lv->isSameValueAs(rv)) {
+            return true;
+        }
+        
+        // If one side or the other is UNDEFINED, only ~= is possible to be true.
+        if ((not lv->isDefined()) ^ (not rv->isDefined())) {
+            return op == Keywords::OP_NE;
+        }
+        
+        // But if they are both UNDEFINED, then they are only equal if testing for
+        // that equality.
+        if ((not lv->isDefined()) and (not rv->isDefined())) {
+            return op == Keywords::OP_EQ;
+        }
+        
         Value lv_n = lv->numericConversion();
         Value rv_n = rv->numericConversion();
         if (lv_n->isDefined() and rv_n->isDefined()) {
@@ -355,6 +377,18 @@ namespace archetype {
                 case Keywords::OP_GE: return ls >= rs;
                 case Keywords::OP_GT: return ls >  rs;
                 default: throw logic_error("Unexpected numeric eval_compare case");
+            }
+        }
+        Value lv_o = lv->objectConversion();
+        Value rv_o = rv->objectConversion();
+        if (lv_o->isDefined() and rv_o->isDefined()) {
+            int l_obj = lv_o->getObject();
+            int r_obj = rv_o->getObject();
+            switch (op) {
+                case Keywords::OP_EQ: return l_obj == r_obj;
+                case Keywords::OP_NE: return l_obj != r_obj;
+                default:
+                    return false;
             }
         }
         // Special case:  if the two values aren't comparable, that is, the comparison
@@ -459,14 +493,12 @@ namespace archetype {
                 }
                     
                 case Keywords::OP_EQ:
-                    if (lv->isSameValueAs(rv)) return as_boolean_value(true);
-                    // Otherwise, intentional fall-through
                 case Keywords::OP_NE:
                 case Keywords::OP_LT:
                 case Keywords::OP_LE:
                 case Keywords::OP_GE:
                 case Keywords::OP_GT:
-                    return as_boolean_value(eval_compare(op(), lv, rv));
+                    return as_boolean_value(eval_compare(op(), lv->valueConversion(), rv->valueConversion()));
 
                 case Keywords::OP_ASSIGN: {
                     Value lv_a = lv->attributeConversion();
@@ -491,6 +523,7 @@ namespace archetype {
                     
                 case Keywords::OP_SEND:
                 case Keywords::OP_PASS: {
+                    Value lv_v = lv->valueConversion();
                     Value rv_o = rv->objectConversion();
                     if (not rv_o->isDefined()) {
                         return Value{new UndefinedValue};
@@ -499,12 +532,12 @@ namespace archetype {
                     if (not recipient) {
                         return Value{new UndefinedValue};
                     } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
-                        return recipient->dispatch(std::move(lv));
+                        return recipient->dispatch(std::move(lv_v));
                     } else {
                         ContextScope c;
                         c->senderObject = c->selfObject;
                         c->selfObject = recipient;
-                        return recipient->dispatch(std::move(lv));
+                        return recipient->dispatch(std::move(lv_v));
                     }
                 }
                     

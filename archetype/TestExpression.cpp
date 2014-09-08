@@ -214,10 +214,32 @@ namespace archetype {
             {"scratch.n -:= 1", new NumericValue{5}},
             {"scratch.n *:= 7", new NumericValue{35}},
             {"scratch.s := \"hello\"", new TextLiteralValue{Universe::instance().TextLiterals.index("hello")}},
-            {"scratch.s &:= \" world\"", new StringValue{"hello world"}}
+            {"scratch.s &:= \" world\"", new StringValue{"hello world"}},
+            
+            // The nasty tests of definition.  So tricky.
+            {"3 ~= UNDEFINED", new BooleanValue{true}},
+            {"UNDEFINED ~= 3", new BooleanValue{true}},
+            {"UNDEFINED = UNDEFINED", new BooleanValue{true}},
+            {"UNDEFINED ~= UNDEFINED", new BooleanValue{false}},
+            {"(& \"hello\") ~= UNDEFINED", new BooleanValue{true}},
+            {"UNDEFINED ~= (& \"hello\")", new BooleanValue{true}},
+            {"(\"world\" within scratch.s) ~= UNDEFINED", new BooleanValue{true}},
+            {"(\"Mars\" within scratch.s) = UNDEFINED", new BooleanValue{true}},
+            {"scratch.n ~= UNDEFINED", new BooleanValue{true}},
+            {"scratch.less = UNDEFINED", new BooleanValue{true}},
+            {"scratch = system", new BooleanValue{false}},
+            {"(scratch.nothing := null) = null", new BooleanValue{true}},
+            {"scratch.nothing ~= system", new BooleanValue{true}},
+            {"scratch ~= system", new BooleanValue{true}},
+            {"scratch.nothing = system", new BooleanValue{false}},
+            {"system = system", new BooleanValue{true}},
+            {"(scratch.sys := system) = system", new BooleanValue{true}},
+            {"scratch.sys ~= system", new BooleanValue{false}}
+            
         };
         for (auto p : testing_pairs) {
             Expression expr = make_expr_from_str(p.first);
+            out() << "Testing: {" << p.first << "}" << endl;
             ARCHETYPE_TEST(expr != nullptr);
             // We're not testing for AttributeValue equivalence here.
             // It does matter, but in this case, we're wanting to be sure the value got through.

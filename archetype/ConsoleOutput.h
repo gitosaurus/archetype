@@ -17,7 +17,7 @@ namespace archetype {
     class ConsoleOutput : public IUserOutput {
     public:
         virtual ~ConsoleOutput() { }
-        virtual void put(const std::string& line) override { cout << line; }
+        virtual void put(const std::string& line) override { cout << line; cout.flush(); }
         virtual void endLine() override { cout << endl; }
     };
 }

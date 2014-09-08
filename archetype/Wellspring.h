@@ -28,14 +28,21 @@ namespace archetype {
     public:
         static Wellspring& instance();
         
-        void addSearchPath(std::string path) {
-            paths_.push_back(path);
-        }
+        // Given the path to a source file, prioritize the path to the directory
+        // in which it resides, searching it before all other search paths,
+        // including any which have been added so far through addSearchPath.
+        // The given file must exist or invalid_argument will be thrown.
+        // If it does exist, open and return.
+        SourceFilePtr primarySource(std::string file_path);
+        
+        // Adds the given path to the list of paths to search for include files.
+        // It is will be searched after all the paths that have been added via this call so far.
+        void addSearchPath(std::string directory_path);
         
         bool hasNeverBeenOpened(std::string source_name) const;
         void put(std::string source_name, SourceFilePtr);
         SourceFilePtr open(std::string source_name);
-        void close(std::string source_name);
+        void close(SourceFilePtr source);
         void closeAll();
     private:
         static Wellspring* instance_;

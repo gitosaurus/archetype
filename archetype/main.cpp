@@ -20,6 +20,7 @@
 #include "TokenStream.h"
 #include "Universe.h"
 #include "FileStorage.h"
+#include "Wellspring.h"
 
 using namespace std;
 using namespace archetype;
@@ -69,34 +70,35 @@ int main(int argc, const char* argv[]) {
     }
     
     if (opts.count("source")) {
-        string filename = opts["source"];
-        stream_ptr in(new ifstream(filename.c_str()));
-        SourceFilePtr source(new SourceFile(filename, in));
-        TokenStream tokens(source);
-        if (not Universe::instance().make(tokens)) {
-            return 1;
-        }
-        
-        ObjectPtr main_object = Universe::instance().getObject("main");
-        if (not main_object) {
-            cout << "ERROR:  No 'main' object" << endl;
-            return 1;
-        } else {
-            try {
-                int start_id = Universe::instance().Messages.index("START");
-                Value start{new MessageValue{start_id}};
-                ContextScope c;
-                c->senderObject = c->selfObject;
-                c->selfObject = main_object;
-                Value result = main_object->dispatch(move(start));
-                if (result->isSameValueAs(Value{new AbsentValue})) {
-                    throw runtime_error("No 'START' method on main");
-                }
-            } catch (const std::exception& e) {
-                // TODO:  gentler catch for system exit
-                cerr << "Caught:  " << e.what() << endl;
+        try {
+            string source_path = opts["source"];
+            SourceFilePtr source = Wellspring::instance().primarySource(source_path);
+            if (not source) {
+                throw invalid_argument("Cannot open \"" + source_path + "\"");
             }
+            TokenStream tokens(source);
+            if (not Universe::instance().make(tokens)) {
+                return 1;
+            }
+            ObjectPtr main_object = Universe::instance().getObject("main");
+            if (not main_object) {
+                throw invalid_argument("No 'main' object");
+            }
+            int start_id = Universe::instance().Messages.index("START");
+            Value start{new MessageValue{start_id}};
+            ContextScope c;
+            c->senderObject = c->selfObject;
+            c->selfObject = main_object;
+            Value result = main_object->dispatch(move(start));
+            if (result->isSameValueAs(Value{new AbsentValue})) {
+                throw runtime_error("No 'START' method on main");
+            }
+        } catch (const archetype::QuitGame& quit_game) {
+            cout << quit_game.what() << endl;
             return 0;
+        } catch (const std::exception& e) {
+            cerr << "ERROR: " << e.what() << endl;
+            return 1;
         }
     }
     
