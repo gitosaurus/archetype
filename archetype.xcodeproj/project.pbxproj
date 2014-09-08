@@ -399,7 +399,6 @@
 		45B2450718A34A0B006A5FA8 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INSTALL_PATH = /Users/dtj/local/bin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Debug;
@@ -407,7 +406,6 @@
 		45B2450818A34A0B006A5FA8 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
-				INSTALL_PATH = /Users/dtj/local/bin;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 			};
 			name = Release;

@@ -239,8 +239,24 @@ namespace archetype {
                             break;
                         }
                     case Keywords::RW_KEYWORD:
-                        // TODO:  Return here to complete 'keyword' feature
-                        // TODO:  Allows users to catch spelling errors
+                        if (not t.fetch() or t.token().type() != Token::IDENTIFIER) {
+                            t.errorMessage("Must follow \"keyword\" with one or more identifiers");
+                            return false;
+                        } else {
+                            // TODO:  Return here to complete 'keyword' feature
+                            /*
+                             success = classify_as(source, source.tnum,
+                             ENUMERATE_ID, nullptr) != 0;
+                             */
+                            while (t.token().type() == Token::IDENTIFIER and
+                                   t.fetch() and t.token() == Token(Token::PUNCTUATION, ',')) {
+                                if (not t.fetch()) {
+                                    t.expectGeneral("identifier of keyword");
+                                    return false;
+                                }
+                            }
+                            t.didNotConsume();
+                        }
                         break;
                     case Keywords::RW_INCLUDE: {
                         if (not t.fetch() or  t.token().type() != Token::TEXT_LITERAL) {
