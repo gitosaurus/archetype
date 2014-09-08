@@ -394,7 +394,7 @@ namespace archetype {
         // Special case:  if the two values aren't comparable, that is, the comparison
         // fails no matter the conversion, then they definitely aren't equal.
         if (op == Keywords::OP_NE) {
-            return true;
+            return not lv->isSameValueAs(rv);
         } else {
             return false;
         }

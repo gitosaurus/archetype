@@ -185,7 +185,7 @@ namespace archetype {
         // More ways of testing evaluation.  Throw in a single object for
         // attribute scratch space.
         
-        string src_str = "null scratch end";
+        string src_str = "null scratch x : 0 methods 'hello' : x +:= 1 end";
         stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("scratch", in));
         TokenStream token_stream(src);
@@ -234,7 +234,11 @@ namespace archetype {
             {"scratch.nothing = system", new BooleanValue{false}},
             {"system = system", new BooleanValue{true}},
             {"(scratch.sys := system) = system", new BooleanValue{true}},
-            {"scratch.sys ~= system", new BooleanValue{false}}
+            {"scratch.sys ~= system", new BooleanValue{false}},
+            {"'never' -> scratch = ABSENT", new BooleanValue{true}},
+            {"'never' -> scratch ~= ABSENT", new BooleanValue{false}},
+            {"'hello' -> scratch = ABSENT", new BooleanValue{false}},
+            {"'hello' -> scratch ~= ABSENT", new BooleanValue{true}},
             
         };
         for (auto p : testing_pairs) {

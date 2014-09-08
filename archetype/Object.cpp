@@ -54,16 +54,24 @@ namespace archetype {
     }
     
     bool Object::hasMethod(int message_id) const {
+        bool has_local = methods_.count(message_id);
+        if (has_local) {
+            return true;
+        }
         ObjectPtr p = parent();
-        return methods_.count(message_id) > 0 or (p and p->hasMethod(message_id));
+        if (not p) {
+            return false;
+        }
+        return p->hasMethod(message_id);
     }
     
     Value Object::executeMethod(int message_id) {
-        ObjectPtr p = parent();
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
             return where->second->execute();
-        } else if (p and p->hasMethod(message_id)) {
+        }
+        ObjectPtr p = parent();
+        if (p and p->hasMethod(message_id)) {
             return p->executeMethod(message_id);
         } else if (hasDefaultMethod()) {
             return executeDefaultMethod();

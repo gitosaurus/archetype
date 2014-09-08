@@ -267,10 +267,10 @@ namespace archetype {
     }
     
     Value CaseStatement::execute() const {
-        Value value = testExpression_->evaluate();
+        Value value = testExpression_->evaluate()->valueConversion();
         for (auto const& case_pair : cases_) {
-            Value case_value = case_pair.match->evaluate();
-            if (value->isSameValueAs(case_value) or  eval_compare(Keywords::OP_EQ, case_value, case_value)) {
+            Value case_value = case_pair.match->evaluate()->valueConversion();
+            if (eval_compare(Keywords::OP_EQ, value, case_value)) {
                 return case_pair.action->execute();
             }
         }
