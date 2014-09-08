@@ -53,16 +53,38 @@ namespace archetype {
         attributes_[attribute_id] = Expression(new ValueExpression(std::move(val)));
     }
     
-    bool Object::hasMethod(int message_id) const {
-        bool has_local = methods_.count(message_id);
-        if (has_local) {
-            return true;
+    Value Object::send(ObjectPtr target, Value message) {
+        ContextScope c;
+        c->senderObject = c->selfObject;
+        c->selfObject = target;
+        c->messageValue = std::move(message);
+        return target->dispatch();
+    }
+    
+    Value Object::pass(ObjectPtr target, Value message) {
+        ContextScope c;
+        c->messageValue = std::move(message);
+        return target->dispatch();
+    }
+
+    Value Object::dispatch() {
+        Value defined_message = Universe::instance().currentContext().messageValue->messageConversion();
+        Value absence{new AbsentValue};
+        Value result{new AbsentValue};
+        if (defined_message->isDefined()) {
+            int message_id = defined_message->getMessage();
+            result = executeMethod(message_id);
         }
-        ObjectPtr p = parent();
-        if (not p) {
-            return false;
+        if (result->isSameValueAs(absence)) {
+            result = executeDefaultMethod();
         }
-        return p->hasMethod(message_id);
+        if (result->isSameValueAs(absence)) {
+            ObjectPtr p = parent();
+            if (p) {
+                result = p->executeDefaultMethod();
+            }
+        }
+        return result;
     }
     
     Value Object::executeMethod(int message_id) {
@@ -71,55 +93,24 @@ namespace archetype {
             return where->second->execute();
         }
         ObjectPtr p = parent();
-        if (p and p->hasMethod(message_id)) {
+        if (p) {
             return p->executeMethod(message_id);
-        } else if (hasDefaultMethod()) {
-            return executeDefaultMethod();
-        } else if (p and p->hasDefaultMethod()) {
-            return p->executeDefaultMethod();
         } else {
             return Value{new AbsentValue};
         }
     }
     
-    bool Object::hasDefaultMethod() const {
-        return methods_.size() > 0  and  methods_.rbegin()->first == DefaultMethod;
-    }
-    
     Value Object::executeDefaultMethod() {
-        assert(not methods_.empty());
-        auto defaultMethod = methods_.rbegin();
-        assert(defaultMethod->first == DefaultMethod);
-        return defaultMethod->second->execute();
+        if (methods_.size() > 0  and  methods_.rbegin()->first == DefaultMethod) {
+            auto defaultMethod = methods_.rbegin();
+            return defaultMethod->second->execute();
+        } else {
+            return Value{new AbsentValue};
+        }
     }
     
     void Object::setMethod(int message_id, Statement stmt) {
         methods_[message_id] = std::move(stmt);
-    }
-    
-    Value Object::dispatch(Value message) {
-        Value defined_message = message->messageConversion();
-        if (defined_message->isDefined()) {
-            int message_id = defined_message->getMessage();
-            ContextScope c;
-            c->messageValue = std::move(defined_message);
-            return executeMethod(message_id);
-        }
-
-        // If the message isn't defined, then the only place to which it can be delivered
-        // is the default method, if one exists.
-        if (hasDefaultMethod()) {
-            ContextScope c;
-            c->messageValue = std::move(message);
-            return executeDefaultMethod();
-        }
-        ObjectPtr p = parent();
-        if (p and p->hasDefaultMethod()) {
-            ContextScope c;
-            c->messageValue = std::move(message);
-            return p->executeDefaultMethod();
-        }
-        return Value{new AbsentValue};
     }
     
     void Object::write(Storage &out) {

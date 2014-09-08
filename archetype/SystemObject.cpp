@@ -59,24 +59,10 @@ namespace archetype {
         return false;
     }
     
-    bool SystemObject::hasMethod(int message_id) const {
-        return false;
-    }
-    
     Value SystemObject::executeMethod(int message_id) {
-        return Value{new UndefinedValue};
+        return Value{new AbsentValue};
     }
     
-    bool SystemObject::hasDefaultMethod() const {
-        return true;
-    }
-    
-    Value SystemObject::dispatch(Value message) {
-        ContextScope c;
-        c->messageValue = move(message);
-        return executeDefaultMethod();
-    }
-
     Value SystemObject::executeDefaultMethod() {
         Value message = Universe::instance().currentContext().messageValue->clone();
         switch (state_) {

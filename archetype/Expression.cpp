@@ -532,12 +532,9 @@ namespace archetype {
                     if (not recipient) {
                         return Value{new UndefinedValue};
                     } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
-                        return recipient->dispatch(std::move(lv_v));
+                        return Object::pass(recipient, std::move(lv_v));
                     } else {
-                        ContextScope c;
-                        c->senderObject = c->selfObject;
-                        c->selfObject = recipient;
-                        return recipient->dispatch(std::move(lv_v));
+                        return Object::send(recipient, std::move(lv_v));
                     }
                 }
                     

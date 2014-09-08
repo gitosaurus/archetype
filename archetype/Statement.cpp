@@ -116,7 +116,7 @@ namespace archetype {
             Value val = val_expr->evaluate();
             MessageValue* message_value = dynamic_cast<MessageValue*>(val.get());
             if (message_value) {
-                return Universe::instance().currentContext().selfObject->dispatch(std::move(val));
+                return Object::send(Universe::instance().currentContext().selfObject, std::move(val));
             }
         }
         return expression_->evaluate()->valueConversion();

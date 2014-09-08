@@ -86,10 +86,7 @@ int main(int argc, const char* argv[]) {
             }
             int start_id = Universe::instance().Messages.index("START");
             Value start{new MessageValue{start_id}};
-            ContextScope c;
-            c->senderObject = c->selfObject;
-            c->selfObject = main_object;
-            Value result = main_object->dispatch(move(start));
+            Value result = Object::send(main_object, move(start));
             if (result->isSameValueAs(Value{new AbsentValue})) {
                 throw runtime_error("No 'START' method on main");
             }
@@ -118,15 +115,12 @@ int main(int argc, const char* argv[]) {
             try {
                 int resume_id = Universe::instance().Messages.index("RESUME");
                 Value resume{new MessageValue{resume_id}};
-                ContextScope c;
-                c->senderObject = c->selfObject;
-                c->selfObject = main_object;
-                Value result = main_object->dispatch(move(resume));
+                Value result = Object::send(main_object, move(resume));
                 if (result->isSameValueAs(Value{new AbsentValue})) {
                     cerr << "No 'RESUME' method on main; sending 'START'" << endl;
                     int start_id = Universe::instance().Messages.index("START");
                     Value start{new MessageValue{start_id}};
-                    result = main_object->dispatch(move(start));
+                    result = Object::send(main_object, move(start));
                     if (result->isSameValueAs(Value{new AbsentValue})) {
                         throw runtime_error("No 'START' method on main");
                     }

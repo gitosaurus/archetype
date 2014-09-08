@@ -61,13 +61,13 @@ namespace archetype {
         
         void setMethod(int message_id, Statement stmt);
 
-        virtual bool hasMethod(int message_id) const;
-        virtual Value executeMethod(int message_id);
-
-        virtual bool hasDefaultMethod() const;
-        virtual Value executeDefaultMethod();
+        static Value send(ObjectPtr target, Value message);
+        static Value pass(ObjectPtr target, Value message);
         
-        virtual Value dispatch(Value message);
+        virtual Value dispatch();
+        
+        virtual Value executeMethod(int message_id);
+        virtual Value executeDefaultMethod();
         
         virtual void write(Storage& out);
         virtual void read(Storage& in);

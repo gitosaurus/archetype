@@ -38,14 +38,9 @@ namespace archetype {
         
         virtual ~SystemObject() { }
         
-        virtual bool hasMethod(int message_id) const;
-        virtual Value executeMethod(int message_id);
+        virtual Value executeMethod(int message_id) override;
+        virtual Value executeDefaultMethod() override;
         
-        virtual bool hasDefaultMethod() const;
-        virtual Value executeDefaultMethod();
-        
-        virtual Value dispatch(Value message);
-
     private:
         State_e state_;
         std::map<int, State_e> stateByMessage_;
