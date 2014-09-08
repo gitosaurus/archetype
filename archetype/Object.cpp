@@ -68,11 +68,6 @@ namespace archetype {
     }
 
     Value Object::dispatch() {
-        //cerr << "{DISPATCH ";
-        //Universe::instance().currentContext().messageValue->display(cerr);
-        //cerr << " -> ";
-        //Value obj_v{new ObjectValue{id()}};
-        //obj_v->display(cerr);
         Value defined_message = Universe::instance().currentContext().messageValue->messageConversion();
         Value absence{new AbsentValue};
         Value result{new AbsentValue};
@@ -83,15 +78,10 @@ namespace archetype {
         if (result->isSameValueAs(absence)) {
             result = executeDefaultMethod();
         }
-        //cerr << " = ";
-        //result->display(cerr);
-        //cerr << "}";
         return result;
     }
     
     Value Object::executeMethod(int message_id) {
-        //Value obj{new ObjectValue{id()}};
-        //cerr << "(try "; obj->display(cerr); cerr << ")";
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
             return where->second->execute();
@@ -106,7 +96,6 @@ namespace archetype {
     
     Value Object::executeDefaultMethod() {
         Value obj{new ObjectValue{id()}};
-        //cerr << "(try default "; obj->display(cerr); cerr << ")";
         if (methods_.size() > 0  and  methods_.rbegin()->first == DefaultMethod) {
             auto defaultMethod = methods_.rbegin();
             return defaultMethod->second->execute();
