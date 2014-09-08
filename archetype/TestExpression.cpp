@@ -202,6 +202,8 @@ namespace archetype {
             // Try reacting to UNDEFINED as a truth value, also
             {"not ('nothing' -> nowhere)", new BooleanValue{true}},
             {"13 - - 14", new NumericValue{27}},
+            {"2^4", new NumericValue{16}},
+            {"3 ^ \"4\"", new NumericValue{81}},
             
             // Testing these cumulative operators requires executing these statements
             // in order.  Be careful of rearranging the tests.

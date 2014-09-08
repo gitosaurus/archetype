@@ -10,6 +10,7 @@
 #include <cassert>
 #include <algorithm>
 #include <sstream>
+#include <cmath>
 
 #include "Expression.h"
 #include "Keywords.h"
@@ -235,7 +236,15 @@ namespace archetype {
                 case Keywords::OP_STRING:
                     return rv->stringConversion();
                 case Keywords::OP_RANDOM: {
-                    throw logic_error("Unimplemented OP_RANDOM");
+                    Value rv_n = rv->numericConversion();
+                    // TODO:  How to handle zero, or negative?  As simply UNDEFINED?
+                    if (rv_n->isDefined() and rv_n->getNumber() > 0) {
+                        double r = drand48();
+                        int r_i = static_cast<int>(r * rv_n->getNumber()) + 1;
+                        return Value{new NumericValue{r_i}};
+                    } else {
+                        return rv_n;
+                    }
                 }
                 case Keywords::OP_LENGTH: {
                     Value rv_s = rv->stringConversion();
@@ -305,10 +314,12 @@ namespace archetype {
     Value eval_nn(Keywords::Operators_e op, int lv_n, int rv_n) {
         int result;
         switch (op) {
-            case Keywords::OP_PLUS:     result = lv_n + rv_n; break;
-            case Keywords::OP_MINUS:    result = lv_n - rv_n; break;
-            case Keywords::OP_MULTIPLY: result = lv_n * rv_n; break;
-            case Keywords::OP_DIVIDE:   result = lv_n / rv_n; break;
+            case Keywords::OP_PLUS:     result = lv_n + rv_n;     break;
+            case Keywords::OP_MINUS:    result = lv_n - rv_n;     break;
+            case Keywords::OP_MULTIPLY: result = lv_n * rv_n;     break;
+            case Keywords::OP_DIVIDE:   result = lv_n / rv_n;     break;
+                // TODO:  for bonus points, return UNDEFINED if it goes out of range
+            case Keywords::OP_POWER:    result = pow(lv_n, rv_n); break;
             default:
                 throw logic_error("number-op-number attempted on this operator");
         }
@@ -405,7 +416,8 @@ namespace archetype {
                 case Keywords::OP_PLUS:
                 case Keywords::OP_MINUS:
                 case Keywords::OP_MULTIPLY:
-                case Keywords::OP_DIVIDE: {
+                case Keywords::OP_DIVIDE:
+                case Keywords::OP_POWER: {
                     Value lv_n = lv->numericConversion();
                     Value rv_n = rv->numericConversion();
                     if (lv_n->isDefined() and rv_n->isDefined()) {
