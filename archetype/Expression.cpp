@@ -419,14 +419,12 @@ namespace archetype {
         }
         
         virtual Value evaluate() const {
-            Value lv = left_->evaluate();
-            Value rv = right_->evaluate()->valueConversion();
             // Sort evaluations by "signature"
             switch (op()) {
                 case Keywords::OP_CONCAT:
                 case Keywords::OP_WITHIN: {
-                    Value lv_s = lv->stringConversion();
-                    Value rv_s = rv->stringConversion();
+                    Value lv_s = left_->evaluate()->stringConversion();
+                    Value rv_s = right_->evaluate()->stringConversion();
                     if (lv_s->isDefined() and rv_s->isDefined()) {
                         return eval_ss(op(), lv_s->getString(), rv_s->getString());
                     } else {
@@ -435,25 +433,31 @@ namespace archetype {
                 }
                 case Keywords::OP_LEFTFROM:
                 case Keywords::OP_RIGHTFROM: {
-                    Value lv_s = lv->stringConversion();
-                    Value rv_n = rv->numericConversion();
+                    Value lv_s = left_->evaluate()->stringConversion();
+                    Value rv_n = right_->evaluate()->numericConversion();
                     if (lv_s->isDefined() and rv_n->isDefined()) {
                         return eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
                         return Value{new UndefinedValue};
                     }
                 }
-                case Keywords::OP_AND:
+                case Keywords::OP_AND: {
+                    Value lv = left_->evaluate();
+                    Value rv = right_->evaluate();
                     return Value{new BooleanValue{lv->isTrueEnough() and rv->isTrueEnough()}};
-                case Keywords::OP_OR:
+                }
+                case Keywords::OP_OR: {
+                    Value lv = left_->evaluate();
+                    Value rv = right_->evaluate();
                     return Value{new BooleanValue{lv->isTrueEnough() or rv->isTrueEnough()}};
+                }
                 case Keywords::OP_PLUS:
                 case Keywords::OP_MINUS:
                 case Keywords::OP_MULTIPLY:
                 case Keywords::OP_DIVIDE:
                 case Keywords::OP_POWER: {
-                    Value lv_n = lv->numericConversion();
-                    Value rv_n = rv->numericConversion();
+                    Value lv_n = left_->evaluate()->numericConversion();
+                    Value rv_n = right_->evaluate()->numericConversion();
                     if (lv_n->isDefined() and rv_n->isDefined()) {
                         return eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
                     } else {
@@ -465,6 +469,8 @@ namespace archetype {
                 case Keywords::OP_C_MINUS:
                 case Keywords::OP_C_MULTIPLY:
                 case Keywords::OP_C_DIVIDE: {
+                    Value lv = left_->evaluate();
+                    Value rv = right_->evaluate();
                     Value lv_a = lv->attributeConversion();
                     Value lv_n = lv->numericConversion();
                     Value rv_n = rv->numericConversion();
@@ -477,8 +483,9 @@ namespace archetype {
                     return lv_a->assign(std::move(rv_c));
                 }
                     
-                case Keywords::OP_C_CONCAT:
-                {
+                case Keywords::OP_C_CONCAT: {
+                    Value lv = left_->evaluate();
+                    Value rv = right_->evaluate();
                     Value lv_a = lv->attributeConversion();
                     Value lv_s = lv->stringConversion();
                     Value rv_s = rv->stringConversion();
@@ -498,15 +505,16 @@ namespace archetype {
                 case Keywords::OP_LE:
                 case Keywords::OP_GE:
                 case Keywords::OP_GT:
-                    return as_boolean_value(eval_compare(op(), lv->valueConversion(), rv->valueConversion()));
+                    return as_boolean_value(eval_compare(op(), left_->evaluate()->valueConversion(), right_->evaluate()->valueConversion()));
 
                 case Keywords::OP_ASSIGN: {
-                    Value lv_a = lv->attributeConversion();
-                    return lv_a->assign(std::move(rv));
+                    Value lv_a = left_->evaluate()->attributeConversion();
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    return lv_a->assign(std::move(rv_v));
                 }
                     
                 case Keywords::OP_DOT: {
-                    Value lv_o = lv->objectConversion();
+                    Value lv_o = left_->evaluate()->objectConversion();
                     if (not lv_o->isDefined()) {
                         return Value{new UndefinedValue};
                     } else {
@@ -523,10 +531,10 @@ namespace archetype {
                     
                 case Keywords::OP_SEND:
                 case Keywords::OP_PASS: {
-                    Value lv_v = lv->valueConversion();
-                    Value rv_o = rv->objectConversion();
+                    Value lv_v = left_->evaluate()->valueConversion();
+                    Value rv_o = right_->evaluate()->objectConversion();
                     if (not rv_o->isDefined()) {
-                        return Value{new UndefinedValue};
+                        return rv_o;
                     }
                     ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
                     if (not recipient) {

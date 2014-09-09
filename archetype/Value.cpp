@@ -364,6 +364,10 @@ namespace archetype {
         return dereference_()->objectConversion();
     }
     
+    Value AttributeValue::valueConversion() const {
+        return dereference_();
+    }
+    
     Value AttributeValue::assign(Value new_value) {
         ObjectPtr obj = Universe::instance().getObject(objectId_);
         if (not obj) {

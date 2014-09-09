@@ -34,11 +34,12 @@ namespace archetype {
     }
     
     Value Object::getAttributeValue(int attribute_id) const {
-        ObjectPtr p = parent();
         auto where = attributes_.find(attribute_id);
         if (where != attributes_.end()) {
             return where->second->evaluate();
-        } else if (p and p->hasAttribute(attribute_id)) {
+        }
+        ObjectPtr p = parent();
+        if (p) {
             return p->getAttributeValue(attribute_id);
         } else {
             return Value{new UndefinedValue};
