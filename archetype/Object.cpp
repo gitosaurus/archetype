@@ -16,9 +16,9 @@
 using namespace std;
 
 namespace archetype {
-    
+
     const int DefaultMethod = numeric_limits<int>::max();
-    
+
     ObjectPtr Object::parent() const {
         if (parentId_ < 0) {
             return nullptr;
@@ -27,12 +27,12 @@ namespace archetype {
             return (obj and obj->isPrototype()) ? obj : nullptr;
         }
     }
-    
+
     bool Object::hasAttribute(int attribute_id) const {
         ObjectPtr p = parent();
         return attributes_.count(attribute_id) > 0 or (p and p->hasAttribute(attribute_id));
     }
-    
+
     Value Object::getAttributeValue(int attribute_id) const {
         auto where = attributes_.find(attribute_id);
         if (where != attributes_.end()) {
@@ -45,15 +45,15 @@ namespace archetype {
             return Value{new UndefinedValue};
         }
     }
-    
+
     void Object::setAttribute(int attribute_id, Expression expr) {
         attributes_[attribute_id] = std::move(expr);
     }
-    
+
     void Object::setAttribute(int attribute_id, Value val) {
         attributes_[attribute_id] = Expression(new ValueExpression(std::move(val)));
     }
-    
+
     Value Object::send(ObjectPtr target, Value message) {
         ContextScope c;
         c->senderObject = c->selfObject;
@@ -61,7 +61,7 @@ namespace archetype {
         c->messageValue = std::move(message);
         return target->dispatch();
     }
-    
+
     Value Object::pass(ObjectPtr target, Value message) {
         ContextScope c;
         c->messageValue = std::move(message);
@@ -81,7 +81,7 @@ namespace archetype {
         }
         return result;
     }
-    
+
     Value Object::executeMethod(int message_id) {
         auto where = methods_.find(message_id);
         if (where != methods_.end()) {
@@ -94,7 +94,7 @@ namespace archetype {
             return Value{new AbsentValue};
         }
     }
-    
+
     Value Object::executeDefaultMethod() {
         Value obj{new ObjectValue{id()}};
         if (methods_.size() > 0  and  methods_.rbegin()->first == DefaultMethod) {
@@ -108,11 +108,11 @@ namespace archetype {
             return Value{new AbsentValue};
         }
     }
-    
+
     void Object::setMethod(int message_id, Statement stmt) {
         methods_[message_id] = std::move(stmt);
     }
-    
+
     void Object::write(Storage &out) {
         out << parentId_ << id_ << static_cast<int>(prototype_);
         out << static_cast<int>(attributes_.size());
@@ -124,12 +124,12 @@ namespace archetype {
             out << method.first << method.second;
         }
     }
-    
+
     void Object::read(Storage &in) {
         int is_prototype;
         in >> parentId_ >> id_ >> is_prototype;
         prototype_ = static_cast<bool>(is_prototype);
-        
+
         int attribute_entries;
         in >> attribute_entries;
         attributes_.clear();
@@ -139,7 +139,7 @@ namespace archetype {
             in >> attribute_id >> expr;
             attributes_[attribute_id] = move(expr);
         }
-        
+
         int method_entries;
         in >> method_entries;
         methods_.clear();
@@ -150,7 +150,7 @@ namespace archetype {
             methods_[message_id] = move(stmt);
         }
     }
-    
+
     Storage& operator<<(Storage& out, const ObjectPtr& p) {
         if (!p) {
             out << 0;
@@ -160,7 +160,7 @@ namespace archetype {
         }
         return out;
     }
-    
+
     Storage& operator>>(Storage& in, ObjectPtr& p) {
         int non_null;
         in >> non_null;
@@ -172,5 +172,5 @@ namespace archetype {
         }
         return in;
     }
-    
+
 }

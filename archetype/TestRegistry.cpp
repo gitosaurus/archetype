@@ -12,26 +12,26 @@ using namespace std;
 
 namespace archetype {
     TestRegistry* TestRegistry::instance_ = 0;
-    
+
     TestRegistry& TestRegistry::instance() {
         if (not instance_) {
             instance_ = new TestRegistry();
         }
         return *instance_;
     }
-    
+
     void TestRegistry::destroy() {
         delete instance_;
         instance_ = nullptr;
     }
-    
+
     TestRegistry::TestRegistry() {
     }
-    
+
     void TestRegistry::registerSuite(ITestSuite* suite) {
         suites_.push_back(unique_ptr<ITestSuite>(suite));
     }
-    
+
     bool TestRegistry::runAllTestSuites(std::ostream &out) {
         bool success = true;
         int failed_suites = 0;

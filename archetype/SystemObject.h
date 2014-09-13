@@ -32,19 +32,19 @@ namespace archetype {
             DEBUG_STATEMENTS,
             SAVE_STATE, LOAD_STATE
         };
-        
+
 
         SystemObject();
-        
+
         virtual ~SystemObject() { }
-        
+
         virtual Value executeMethod(int message_id) override;
         virtual Value executeDefaultMethod() override;
-        
+
     private:
         State_e state_;
         std::map<int, State_e> stateByMessage_;
-        
+
         std::unique_ptr<SystemSorter> sorter_;
         std::unique_ptr<SystemParser> parser_;
 

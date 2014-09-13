@@ -13,7 +13,7 @@ namespace archetype {
     type_(BAD_TOKEN),
     number_(0)
     { }
-    
+
     Token::Token(Type_e type, int number):
     type_(type),
     number_(number)
@@ -23,11 +23,11 @@ namespace archetype {
         out << "Token(" << t.type() << ", " << t.number() << ")";
         return out;
     }
-    
+
     bool operator==(const Token& t1, const Token& t2) {
         return t1.type() == t2.type() && t1.number() == t2.number();
     }
-    
+
     bool operator!=(const Token& t1, const Token& t2) {
         return not (t1 == t2);
     }

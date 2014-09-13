@@ -21,10 +21,10 @@ namespace archetype {
         virtual ~StringOutput() { }
         virtual void put(const std::string& line) override { stream_ << line; }
         virtual void endLine() override { stream_ << std::endl; }
-        
+
         std::string getOutput() const { return stream_.str(); }
     };
-    
+
 }
 
 #endif

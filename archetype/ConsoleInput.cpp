@@ -41,13 +41,13 @@ namespace archetype {
             return key;
         }
     }
-    
+
     string ConsoleInput::getLine() {
         string line;
         getline(cin, line);
         return line;
     }
-    
+
     bool ConsoleInput::atEOF() const {
         return cin.eof();
     }

@@ -17,12 +17,12 @@ namespace archetype {
         previous_ = Universe::instance().output();
         Universe::instance().setOutput(output_);
     }
-    
+
     Capture::~Capture()
     {
         Universe::instance().setOutput(previous_);
     }
-    
+
     std::string Capture::getCapture() const {
         return dynamic_cast<const StringOutput*>(output_.get())->getOutput();
     }

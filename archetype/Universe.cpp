@@ -27,25 +27,25 @@ namespace archetype {
         }
         return *instance_;
     }
-    
+
     void Universe::destroy() {
         delete instance_;
         instance_ = nullptr;
     }
-    
+
     Universe::Context::Context():
     selfObject(nullptr),
     senderObject(nullptr),
     messageValue(new UndefinedValue)
     { }
-    
+
     Universe::Context::Context(const Context& c):
     selfObject{c.selfObject},
     senderObject{c.senderObject},
     messageValue{c.messageValue->clone()},
     eachObject{c.eachObject}
     { }
-    
+
     Universe::Context& Universe::Context::operator=(const Universe::Context& c) {
         selfObject = c.selfObject;
         senderObject = c.senderObject;
@@ -53,10 +53,10 @@ namespace archetype {
         eachObject = c.eachObject;
         return *this;
     }
-    
+
     Universe::Context::~Context()
     { }
-    
+
     Universe::Universe() :
     input_{new ConsoleInput},
     output_{new ConsoleOutput}
@@ -68,24 +68,24 @@ namespace archetype {
         // But it's a special object, one that has no parent.
         nullObject_->setParentId(Object::INVALID);
         assert(nullObject_->id() == NullObjectId);
-        
+
         systemObject_ = ObjectPtr{new SystemObject};
         int system_id = objects_.index(std::move(systemObject_));
         systemObject_->setId(system_id);
         assert(system_id == SystemObjectId);
         assignObjectIdentifier(systemObject_, "system");
-        
+
         Context context;
         context.selfObject = nullObject_;
         context.senderObject = nullObject_;
         context.messageValue = Value{new UndefinedValue};
         context_.push(context);
     }
-    
+
     int Universe::objectCount() const {
         return objects_.count();
     }
-    
+
     ObjectPtr Universe::getObject(int object_id) const {
         // Because deserialization tramples on null and (especially) system,
         // dispatch to the originals every time.
@@ -102,7 +102,7 @@ namespace archetype {
                 }
         }
     }
-    
+
     ObjectPtr Universe::getObject(std::string identifier) const {
         int name_id = Identifiers.find(identifier);
         if (name_id != StringIdIndex::npos) {
@@ -114,31 +114,31 @@ namespace archetype {
         }
         return nullptr;
     }
-    
+
     ObjectPtr Universe::defineNewObject(int parent_id) {
         ObjectPtr obj(new Object(parent_id));
         int object_id = objects_.index(std::move(obj));
         obj->setId(object_id);
         return objects_.get(object_id);
     }
-    
+
     void Universe::destroyObject(int object_id) {
         ObjectPtr existing = objects_.get(object_id);
         // Debugging sentinel, noting that the object is now invalid.
         existing->setId(Object::INVALID);
         objects_.remove(object_id);
     }
-    
+
     void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string identifier) {
         int identifier_id_for_object = Identifiers.index(identifier);
         assignObjectIdentifier(object, identifier_id_for_object);
     }
-    
+
     void Universe::assignObjectIdentifier(const ObjectPtr& object, int identifier_id) {
         int object_id = object->id();
         ObjectIdentifiers[identifier_id] = object_id;
     }
-    
+
     static ObjectPtr declare_object(TokenStream& t, ObjectPtr obj) {
         while (t.fetch()) {
             if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
@@ -180,7 +180,7 @@ namespace archetype {
         }
         return nullptr;
     }
-    
+
     static ObjectPtr instantiate(TokenStream& t, ObjectPtr parent = nullptr) {
         if (not t.fetch() or t.token().type() != Token::IDENTIFIER) {
             t.expectGeneral("name of new object");
@@ -193,7 +193,7 @@ namespace archetype {
         }
         return declare_object(t, obj);
     }
-    
+
     static ObjectPtr define_type(TokenStream& t) {
         if (not (t.fetch() and t.token().type() == Token::IDENTIFIER)) {
             t.expectGeneral("name of new type");
@@ -226,7 +226,7 @@ namespace archetype {
         }
         return declare_object(t, obj);
     }
-    
+
     bool Universe::make(TokenStream& t) {
         while (t.fetch()) {
             if (t.token().type() == Token::RESERVED_WORD) {
@@ -303,15 +303,15 @@ namespace archetype {
         }
         return true;
     }
-    
+
     ContextScope::ContextScope() {
         Universe::instance().pushContext(Universe::instance().currentContext());
     }
-    
+
     ContextScope::~ContextScope() {
         Universe::instance().popContext();
     }
-    
+
     Storage& operator<<(Storage& out, const IdentifierMap& m) {
         int entries = static_cast<int>(m.size());
         out << entries;
@@ -320,7 +320,7 @@ namespace archetype {
         }
         return out;
     }
-    
+
     Storage& operator>>(Storage&in, IdentifierMap& m) {
         m.clear();
         int entries;
@@ -332,17 +332,17 @@ namespace archetype {
         }
         return in;
     }
-    
+
     Storage& operator<<(Storage& out, const Universe& u) {
         out << u.Messages << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
         out << u.objects_;
         return out;
     }
-    
+
     Storage& operator>>(Storage& in, Universe& u) {
         in >> u.Messages >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
         in >> u.objects_;
         return in;
     }
-    
+
 }

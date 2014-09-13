@@ -68,7 +68,7 @@ int main(int argc, const char* argv[]) {
     if (opts.count("repl")) {
         return repl();
     }
-    
+
     if (opts.count("source")) {
         try {
             string source_path = opts["source"];
@@ -97,7 +97,7 @@ int main(int argc, const char* argv[]) {
             return 1;
         }
     }
-    
+
     if (opts.count("load")) {
         string filename = opts["load"];
         InFileStorage in(filename);

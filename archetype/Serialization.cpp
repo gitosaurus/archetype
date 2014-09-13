@@ -19,7 +19,7 @@ namespace archetype {
     const Storage::Byte MoreBit = 0x80;
     const Storage::Byte PayloadBits = 0x7F;
     const Storage::Byte FirstBytePayloadBits = 0x3F;
-    
+
     int Storage::readInteger() {
         int bytes_left = remaining();
         if (not bytes_left) {
@@ -47,7 +47,7 @@ namespace archetype {
         }
         return negative ? -result : result;
     }
-    
+
     void Storage::writeInteger(int value) {
         bool negative = value < 0;
         if (negative) {
@@ -71,24 +71,24 @@ namespace archetype {
             byte = (value & PayloadBits);
         } while (value);
     }
-    
+
     Storage& operator<<(Storage& out, int value) {
         out.writeInteger(value);
         return out;
     }
-    
+
     Storage& operator>>(Storage& in, int& value) {
         value = in.readInteger();
         return in;
     }
-    
+
     Storage& operator<<(Storage& out, std::string value) {
         int size = static_cast<int>(value.size());
         out << size;
         out.write(reinterpret_cast<const Storage::Byte*>(value.data()), size);
         return out;
     }
-    
+
     Storage& operator>>(Storage& in, std::string& value) {
         int size;
         in >> size;
@@ -102,15 +102,15 @@ namespace archetype {
         }
         return in;
     }
-    
+
     MemoryStorage::MemoryStorage():
     seekIndex_{0}
     { }
-    
+
     int MemoryStorage::remaining() const {
         return int(bytes_.size() - seekIndex_);
     }
-    
+
     int MemoryStorage::read(Byte *buf, int nbytes) {
         int bytes_read = min(nbytes, remaining());
         auto cursor = bytes_.begin() + seekIndex_;
@@ -118,9 +118,9 @@ namespace archetype {
         seekIndex_ += bytes_read;
         return bytes_read;
     }
-    
+
     void MemoryStorage::write(const Byte *buf, int nbytes) {
         copy(buf, buf + nbytes, back_inserter(bytes_));
     }
-    
+
 }

@@ -18,7 +18,7 @@ namespace archetype {
         std::ostream* out_;
         int errorCount_;
     protected:
-        
+
         template <class T>
         void checkCondition_(std::string filename, int lineno, std::string expr, T actual, T expected) {
             if (actual != expected) {
@@ -27,7 +27,7 @@ namespace archetype {
                 errorCount_++;
             }
         }
-        
+
         void checkCondition_(std::string filename, int lineno, std::string expr, bool success) {
             if (not success) {
                 out() << filename << ":" << lineno << " ";
@@ -35,9 +35,9 @@ namespace archetype {
                 errorCount_++;
             }
         }
-        
+
         virtual void runTests_() = 0;
-        
+
         ITestSuite(std::string name):
         name_(name),
         out_(nullptr),

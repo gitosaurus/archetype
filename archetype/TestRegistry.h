@@ -21,7 +21,7 @@ namespace archetype {
     public:
         static TestRegistry& instance();
         static void destroy();
-        
+
         void registerSuite(ITestSuite* suite);
         bool runAllTestSuites(std::ostream& out);
     private:

@@ -30,7 +30,7 @@ namespace archetype {
         // will also supply the default extension.
         return open(full_path.substr(last_slash + 1));
     }
-    
+
     SourceFilePtr Wellspring::open(string source_name) {
         auto result = sources_.find(source_name);
         if (result != sources_.end()) {
@@ -58,15 +58,15 @@ namespace archetype {
         }
         return nullptr;
     }
-    
+
     bool Wellspring::hasNeverBeenOpened(std::string source_name) const {
         return everBeenOpened_.count(source_name) == 0;
     }
-    
+
     void Wellspring::put(std::string source_name, SourceFilePtr source) {
         sources_.insert(std::make_pair(source_name, source));
     }
-    
+
     void Wellspring::close(SourceFilePtr source) {
         for (auto p = sources_.begin(); p != sources_.end(); ++p) {
             if (p->second == source) {
@@ -75,16 +75,16 @@ namespace archetype {
             }
         }
     }
-    
+
     void Wellspring::closeAll() {
         sources_.clear();
     }
-    
+
     Wellspring* Wellspring::instance_ = 0;
-    
+
     Wellspring::Wellspring() {
     }
-    
+
     Wellspring& Wellspring::instance() {
         if (not instance_) {
             instance_ = new Wellspring;

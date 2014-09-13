@@ -18,7 +18,7 @@
 using namespace std;
 
 namespace archetype {
-    
+
     static vector<string> SystemMessageNames = {
         "IDLING",
         "INIT SORTER", "OPEN SORTER", "CLOSE SORTER", "NEXT SORTED",
@@ -30,13 +30,13 @@ namespace archetype {
         "DEBUG STATEMENTS",
         "SAVE STATE", "LOAD STATE"
     };
-    
+
     SystemObject::SystemObject():
     state_{IDLING},
     sorter_{new SystemSorter},
     parser_{new SystemParser} {
     }
-    
+
     bool SystemObject::figureState_(const Value& message) {
         if (stateByMessage_.empty()) {
             // This is done lazily and not in the constructor, because
@@ -58,11 +58,11 @@ namespace archetype {
         }
         return false;
     }
-    
+
     Value SystemObject::executeMethod(int message_id) {
         return Value{new AbsentValue};
     }
-    
+
     Value SystemObject::executeDefaultMethod() {
         Value message = Universe::instance().currentContext().messageValue->clone();
         switch (state_) {
@@ -79,7 +79,7 @@ namespace archetype {
                         case NEXT_SORTED:
                             state_ = IDLING;
                             return sorter_->nextSorted();
-                            
+
                         case INIT_PARSER:
                             parser_.reset(new SystemParser);
                             state_ = OPEN_PARSER;
@@ -87,11 +87,11 @@ namespace archetype {
                         case OPEN_PARSER:
                             // Nothing new; remain in this state
                             break;
-                            
+
                         case PLAYER_CMD:
                             // Nothing new; remain in this state
                             break;
-                            
+
                         case ROLL_CALL:
                             parser_->rollCall();
                             state_ = IDLING;
@@ -117,10 +117,10 @@ namespace archetype {
                         case LOAD_STATE:
                             // Nothing new; remain in this state for the argument
                             break;
-                            
+
                         case IDLING:
                             break;
-                            
+
                         case CLOSE_SORTER:
                         case CLOSE_PARSER:
                         case VERB_LIST:
@@ -131,7 +131,7 @@ namespace archetype {
                     }
                 }
                 break;
-                
+
             case OPEN_SORTER:
                 if (figureState_(message)) {
                     if (state_ == CLOSE_SORTER) {
@@ -153,7 +153,7 @@ namespace archetype {
             case CLOSE_SORTER:
                 cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found sorting instruction " << state_ << " at top of loop; idling" << endl;
                 state_ = IDLING;
-            
+
             case OPEN_PARSER:
                 if (figureState_(message)) {
                     if (state_ == CLOSE_PARSER) {
@@ -232,7 +232,7 @@ namespace archetype {
                 }
                 break;
             }
-                
+
             case NORMALIZE:
             case PARSE:
             case ROLL_CALL:
@@ -241,12 +241,12 @@ namespace archetype {
                 cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found interpreter instruction " << state_ << " at top of loop; idling" << endl;
                 state_ = IDLING;
                 break;
-                
+
             default:
                 cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found UNHANDLED state " << state_ << " at top of loop; idling" << endl;
                 state_ = IDLING;
                 break;
-                
+
         }
         return Value{new UndefinedValue};
     }

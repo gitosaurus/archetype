@@ -21,17 +21,17 @@ namespace archetype {
         virtual int remaining() const = 0;
         virtual int read(Byte* buf, int nbytes) = 0;
         virtual void write(const Byte* buf, int nbytes) = 0;
-        
+
         int readInteger();
         void writeInteger(int value);
     };
-    
+
     Storage& operator<<(Storage& out, int value);
     Storage& operator>>(Storage& in, int& value);
-    
+
     Storage& operator<<(Storage& out, std::string value);
     Storage& operator>>(Storage& in, std::string& value);
-    
+
     class MemoryStorage : public Storage {
         size_t seekIndex_;
         std::vector<Byte> bytes_;

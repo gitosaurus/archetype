@@ -29,7 +29,7 @@ namespace archetype {
         bool isNewlineSignificant() const { return newlineIsToken_.front(); }
         void considerNewline() { newlineIsToken_.push_front(true); }
         void restoreNewlineSignificance() { newlineIsToken_.pop_front(); }
-        
+
         Token token() const { return token_; }
         void didNotConsume();
         void expectGeneral(std::string expected);

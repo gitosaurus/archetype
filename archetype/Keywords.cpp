@@ -14,19 +14,19 @@ using namespace std;
 
 namespace archetype {
     Keywords* Keywords::instance_ = nullptr;
-    
+
     Keywords& Keywords::instance() {
         if (not instance_) {
             instance_ = new Keywords();
         }
         return *instance_;
     }
-    
+
 #define RESERVE(key, str) if (Reserved.index(str) != key) \
         throw logic_error("Reserved word " #str " did not map to " #key)
 #define OPERATOR(key, str) if (Operators.index(str) != key) \
         throw logic_error("Operator " #str " did not map to " #key)
-    
+
     Keywords::Keywords() {
         RESERVE(RW_ABSENT, "ABSENT");
         RESERVE(RW_FALSE, "FALSE");
@@ -63,7 +63,7 @@ namespace archetype {
         RESERVE(RW_WHILE, "while");
         RESERVE(RW_WRITE, "write");
         RESERVE(RW_WRITES, "writes");
-        
+
         OPERATOR(OP_CONCAT, "&");
         OPERATOR(OP_C_CONCAT, "&:=");
         OPERATOR(OP_MULTIPLY, "*");

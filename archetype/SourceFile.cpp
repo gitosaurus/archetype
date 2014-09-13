@@ -18,7 +18,7 @@ namespace archetype {
     linePos_(0),
     lastChar_(0)
     { }
-    
+
     char SourceFile::readChar() {
         if (lastChar_) {
             char ch = lastChar_;
@@ -38,11 +38,11 @@ namespace archetype {
             return lineBuffer_[linePos_];
         }
     }
-    
+
     void SourceFile::unreadChar(char ch) {
         lastChar_ = ch;
     }
-    
+
     void SourceFile::showPosition(std::ostream &out) {
         out << "At " << filename_ << ", line " << fileLine_ << ", column " << (linePos_ + 1) << ":" << endl;
         out << lineBuffer_; // has the newline built in, always

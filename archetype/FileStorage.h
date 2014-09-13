@@ -27,11 +27,11 @@ namespace archetype {
     private:
         std::ifstream stream_;
         int remaining_;
-        
+
         InFileStorage(const InFileStorage&) = delete;
         InFileStorage& operator=(const InFileStorage&) = delete;
     };
-    
+
     class OutFileStorage : public Storage {
     public:
         OutFileStorage(std::string filename);
@@ -42,7 +42,7 @@ namespace archetype {
         virtual void write(const Byte* buf, int nbytes) override;
     private:
         std::ofstream stream_;
-        
+
         OutFileStorage(const OutFileStorage&) = delete;
         OutFileStorage& operator=(const OutFileStorage&) = delete;
     };

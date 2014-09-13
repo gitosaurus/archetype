@@ -27,12 +27,12 @@ namespace archetype {
         int holes_;
     public:
         static const int npos = -1;
-        
+
         IdIndex(const T& sentinel = T()):
         sentinel_(sentinel),
         holes_(0)
         { }
-        
+
         int index(const T& obj) {
             auto where = index_.find(obj);
             if (where == index_.end()) {
@@ -50,7 +50,7 @@ namespace archetype {
             }
             return where->second;
         }
-        
+
         void remove(int obj_index) {
             const T& obj = registry_.at(obj_index);
             auto where = index_.find(obj);
@@ -63,11 +63,11 @@ namespace archetype {
                 holes_++;
             }
         }
-        
+
         int count() const {
             return static_cast<int>(registry_.size());
         }
-        
+
         int find(const T& obj) const {
             auto where = index_.find(obj);
             if (where == index_.end()) {
@@ -76,25 +76,25 @@ namespace archetype {
                 return where->second;
             }
         }
-        
+
         const T& get(int obj_index) const {
             return registry_.at(obj_index);
         }
-        
+
         bool has(const T& obj) const {
             return index_.count(obj);
         }
-        
+
         bool hasIndex(int i) const {
             return i >= 0 and i < registry_.size();
         }
-        
+
         void display(std::ostream& out) const {
             for (const T& obj : registry_) {
                 out << obj << std::endl;
             }
         }
-        
+
         void write(Storage& out) const {
             int total_entries = static_cast<int>(registry_.size());
             int indexed_entries = static_cast<int>(index_.size());
@@ -103,7 +103,7 @@ namespace archetype {
                 out << entry.first << entry.second;
             }
         }
-        
+
         void read(Storage& in) {
             int total_entries;
             int indexed_entries;
@@ -119,21 +119,21 @@ namespace archetype {
                 registry_[value_index] = value;
             }
         }
-        
+
     };
-    
+
     template <class T>
     inline Storage& operator<<(Storage& out, const IdIndex<T>& index) {
         index.write(out);
         return out;
     }
-    
+
     template <class T>
     inline Storage& operator>>(Storage& in, IdIndex<T>& index) {
         index.read(in);
         return in;
     }
-    
+
 }
 
 #endif

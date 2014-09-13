@@ -17,16 +17,16 @@ using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestIdIndex);
-    
+
     void TestIdIndex::runTests_() {
         IdIndex<string> strindex;
         ARCHETYPE_TEST_EQUAL(strindex.has("First"), false);
-        
+
         strindex.index("First");
         ARCHETYPE_TEST_EQUAL(strindex.has("First"), true);
         ARCHETYPE_TEST_EQUAL(strindex.index("Second"), 1);
         ARCHETYPE_TEST_EQUAL(strindex.index("First"), 0);
-        
+
         ARCHETYPE_TEST_EQUAL(strindex.get(1), string("Second"));
     }
 

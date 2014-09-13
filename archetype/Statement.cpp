@@ -16,7 +16,7 @@
 using namespace std;
 
 namespace archetype {
-    
+
     enum StatementType_e {
         COMPOUND,
         EXPRESSION,
@@ -28,7 +28,7 @@ namespace archetype {
         WHILE,
         OUTPUT
     };
-    
+
     void CompoundStatement::read(Storage& in) {
         int count;
         in >> count;
@@ -39,7 +39,7 @@ namespace archetype {
             statements_.push_back(move(stmt));
         }
     }
-    
+
     void CompoundStatement::write(Storage& out) const {
         out << COMPOUND;
         int count = static_cast<int>(statements_.size());
@@ -48,7 +48,7 @@ namespace archetype {
             out << stmt;
         }
     }
-    
+
     bool CompoundStatement::make(TokenStream& t) {
         while (t.fetch()) {
             if (t.token() == Token(Token::PUNCTUATION, '}')) {
@@ -67,7 +67,7 @@ namespace archetype {
         }
         return false;
     }
-    
+
     void CompoundStatement::display(std::ostream &out) const {
         out << "{";
         for (auto stmt_p = statements_.begin(); stmt_p != statements_.end(); ++stmt_p) {
@@ -78,7 +78,7 @@ namespace archetype {
         }
         out << "}";
     }
-    
+
     Value CompoundStatement::execute() const {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
@@ -92,11 +92,11 @@ namespace archetype {
         }
         return result;
     }
-    
+
     void ExpressionStatement::read(Storage& in) {
         in >> expression_;
     }
-    
+
     void ExpressionStatement::write(Storage& out) const {
         out << EXPRESSION << expression_;
     }
@@ -105,11 +105,11 @@ namespace archetype {
         expression_ = make_expr(t);
         return expression_ != nullptr;
     }
-    
+
     void ExpressionStatement::display(std::ostream &out) const {
         expression_->prefixDisplay(out);
     }
-    
+
     Value ExpressionStatement::execute() const {
         ValueExpression* val_expr = dynamic_cast<ValueExpression*>(expression_.get());
         if (val_expr) {
@@ -121,7 +121,7 @@ namespace archetype {
         }
         return expression_->evaluate()->valueConversion();
     }
-    
+
     void IfStatement::read(Storage& in) {
         in >> condition_ >> thenBranch_;
         int has_else;
@@ -130,7 +130,7 @@ namespace archetype {
             in >> elseBranch_;
         }
     }
-    
+
     void IfStatement::write(Storage& out) const {
         out << IF;
         out << condition_ << thenBranch_;
@@ -140,7 +140,7 @@ namespace archetype {
             out << 1 << elseBranch_;
         }
     }
-    
+
     bool IfStatement::make(TokenStream& t) {
         /* BNF:  <if_stmt> := if (<expr>) <statement> [else <statement>] */
         if (not (condition_ = make_expr(t))) return false;
@@ -153,7 +153,7 @@ namespace archetype {
         }
         return true;
     }
-    
+
     void IfStatement::display(std::ostream &out) const {
         out << "if ";
         condition_->prefixDisplay(out);
@@ -164,7 +164,7 @@ namespace archetype {
             elseBranch_->display(out);
         }
     }
-    
+
     Value IfStatement::execute() const {
         Value conditionValue = condition_->evaluate();
         if (conditionValue->isTrueEnough()) {
@@ -175,7 +175,7 @@ namespace archetype {
             return Value{new UndefinedValue};
         }
     }
-    
+
     void CaseStatement::read(Storage& in) {
         in >> testExpression_;
         int entries;
@@ -194,7 +194,7 @@ namespace archetype {
             defaultCase_.reset();
         }
     }
-    
+
     void CaseStatement::write(Storage& out) const {
         out << CASE;
         out << testExpression_;
@@ -209,7 +209,7 @@ namespace archetype {
             out << 1 << defaultCase_;
         }
     }
-    
+
     bool CaseStatement::make(TokenStream& t) {
         /* BNF:  <case_stmt> := switch (<expr>) { (<expr> <statement>)+
          [default <statement>] } */
@@ -223,11 +223,11 @@ namespace archetype {
                 t.hitEOF(Token(Token::PUNCTUATION, '}'));
                 return false;
             }
-            
+
             if (t.token() == Token(Token::PUNCTUATION, '}')) {
                 break;
             }
-            
+
             if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT)) {
                 if (defaultCase_) {
                     t.errorMessage("There is already a default for this case");
@@ -249,7 +249,7 @@ namespace archetype {
         }
         return true;
     }
-    
+
     void CaseStatement::display(std::ostream &out) const {
         out << "case ";
         testExpression_->prefixDisplay(out);
@@ -266,7 +266,7 @@ namespace archetype {
         }
         out << "}";
     }
-    
+
     Value CaseStatement::execute() const {
         Value value = testExpression_->evaluate()->valueConversion();
         for (auto const& case_pair : cases_) {
@@ -280,11 +280,11 @@ namespace archetype {
         }
         return Value{new UndefinedValue};
     }
-    
+
     void CreateStatement::read(Storage& in) {
         in >> typeId_ >> target_;
     }
-    
+
     void CreateStatement::write(Storage& out) const {
         out << CREATE << typeId_ << target_;
     }
@@ -294,13 +294,13 @@ namespace archetype {
             t.hitEOF(Token(Token::IDENTIFIER, -1));
             return false;
         }
-        
+
         typeId_ = 0;
         if (t.token().type() != Token::IDENTIFIER) {
             t.expectGeneral("type identifier");
             return false;
         }
-        
+
         int identifier = t.token().number();
         auto where = Universe::instance().ObjectIdentifiers.find(identifier);
         if (where == Universe::instance().ObjectIdentifiers.end()) {
@@ -315,12 +315,12 @@ namespace archetype {
         typeId_ = typeObject->id();
         return t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_NAMED)) and (target_ = make_expr(t));
     }
-    
+
     void CreateStatement::display(std::ostream &out) const {
         out << "create <something> named ";
         target_->prefixDisplay(out);
     }
-    
+
     Value CreateStatement::execute() const {
         ObjectPtr object{Universe::instance().defineNewObject(typeId_)};
         Value object_v{new ObjectValue{object->id()}};
@@ -331,23 +331,23 @@ namespace archetype {
         // leak an l-value out to the caller.
         return result;
     }
-    
+
     void DestroyStatement::read(Storage& in) {
         in >> victim_;
     }
-    
+
     void DestroyStatement::write(Storage& out) const {
         out << DESTROY << victim_;
     }
-    
+
     bool DestroyStatement::make(TokenStream& t) {
         return (victim_ = make_expr(t)) != nullptr;
     }
-    
+
     void DestroyStatement::display(std::ostream &out) const {
         victim_->prefixDisplay(out);
     }
-    
+
     Value DestroyStatement::execute() const {
         Value victim_v{victim_->evaluate()->objectConversion()};
         if (victim_v->isDefined()) {
@@ -355,7 +355,7 @@ namespace archetype {
         }
         return Value{new UndefinedValue};
     }
-    
+
     void OutputStatement::read(Storage& in) {
         int write_type_as_int;
         in >> write_type_as_int;
@@ -369,7 +369,7 @@ namespace archetype {
             expressions_.push_back(move(expr));
         }
     }
-    
+
     void OutputStatement::write(Storage& out) const {
         out << OUTPUT;
         int write_type_as_int = static_cast<int>(writeType_);
@@ -380,7 +380,7 @@ namespace archetype {
             out << expr;
         }
     }
-    
+
     bool OutputStatement::make(TokenStream& t) {
         /* If the token immediately following the write statement is NEWLINE, then
          the write was intended to be a null write - that is, no message, only
@@ -389,7 +389,7 @@ namespace archetype {
         bool found_newline = t.fetch() and (t.token().type() == Token::NEWLINE);
         t.restoreNewlineSignificance();
         if (found_newline) return true;
-        
+
         t.didNotConsume();
         Expression the_expr = make_expr(t);
         if (not the_expr) return false;
@@ -405,7 +405,7 @@ namespace archetype {
         }
         return true;
     }
-    
+
     void OutputStatement::display(std::ostream &out) const {
         out << Keywords::instance().Reserved.get(writeType_);
         if (not expressions_.empty()) {
@@ -418,7 +418,7 @@ namespace archetype {
             }
         }
     }
-    
+
     Value OutputStatement::execute() const {
         Value last_value(new UndefinedValue);
         for (auto const& expr : expressions_) {
@@ -443,29 +443,29 @@ namespace archetype {
         }
         return last_value;
     }
-    
+
     void ForStatement::read(Storage& in) {
         in >> selection_ >> action_;
     }
-    
+
     void ForStatement::write(Storage& out) const {
         out << FOR << selection_ << action_;
     }
-    
+
     bool ForStatement::make(TokenStream& t) {
         if (not (selection_ = make_expr(t))) return false;
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
     }
-    
+
     void ForStatement::display(std::ostream &out) const {
         out << "for ";
         selection_->prefixDisplay(out);
         out << " do ";
         action_->display(out);
     }
-    
+
     Value ForStatement::execute() const {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
@@ -489,29 +489,29 @@ namespace archetype {
         }
         return result;
     }
-    
+
     void WhileStatement::read(Storage &in) {
         in >> condition_ >> action_;
     }
-    
+
     void WhileStatement::write(Storage& out) const {
         out << WHILE << condition_ << action_;
     }
-    
+
     bool WhileStatement::make(TokenStream& t) {
         if (not (condition_ = make_expr(t))) return false;
         if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
     }
-    
+
     void WhileStatement::display(std::ostream &out) const {
         out << "while ";
         condition_->prefixDisplay(out);
         out << " do ";
         action_->display(out);
     }
-    
+
     Value WhileStatement::execute() const {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
@@ -532,20 +532,20 @@ namespace archetype {
 
     /**
      @param t (IN/OUT)             -- the token stream
-     
+
      @return A pointer to the statment; or nullptr if (the statement was not syntactically
      correct.
-     
+
      BNF:
      <statement> := <compound> | <single>
-     
+
      <compound> := <left brace> <single>+ <right brace>
-     
+
      <single> := <if_stmt> | <case_stmt> | <any_stmt> |
      <write_stmt> | <send_stmt> | <for_stmt>
-     
+
      */
-    
+
     Statement make_statement(TokenStream& t) {
         Statement the_stmt;
         if (not t.fetch()) {
@@ -596,14 +596,14 @@ namespace archetype {
                     break;
             }  /* switch (t.token().number()) */
         }
-        
+
         if (the_stmt->make(t))
             return the_stmt;
         else
             return nullptr;
-        
+
     }  /* make_statement */
-    
+
     Storage& operator<<(Storage& out, const Statement& stmt) {
         // Each statement writes its own type out first before writing the rest
         // of its implementation.
@@ -647,7 +647,7 @@ namespace archetype {
         stmt->read(in);
         return in;
     }
-    
+
     Statement make_stmt_from_str(string src_str) {
         stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
@@ -655,5 +655,5 @@ namespace archetype {
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
-    
+
 }

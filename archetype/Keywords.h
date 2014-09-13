@@ -54,7 +54,7 @@ namespace archetype {
             RW_WRITES,
             NumReserved
         };
-        
+
         enum Operators_e {
             OP_CONCAT,
             OP_C_CONCAT,
@@ -89,20 +89,20 @@ namespace archetype {
             OP_STRING,
             OP_WITHIN,
             NumOperators,
-            
+
             // Kept outside of the range of valid operators, but
             // it functions like an operator at run-time.
             OP_LPAREN
         };
-        
+
         StringIdIndex Reserved;
         StringIdIndex Operators;
-        
+
         static Keywords& instance();
-        
+
     private:
         static Keywords* instance_;
-        
+
         Keywords();
         // No copying
         Keywords(const Keywords&);

@@ -24,7 +24,7 @@ namespace archetype {
         SourceFilePtr source(new SourceFile(name, in));
         return TokenStream(source);
     }
-    
+
     inline bool is_object_declaration(const Token& t) {
         if (t == Token(Token::RESERVED_WORD, Keywords::RW_TYPE) ||
             t == Token(Token::RESERVED_WORD, Keywords::RW_CLASS)) {
@@ -40,7 +40,7 @@ namespace archetype {
         ObjectPtr object = Universe::instance().getObject(object_id);
         return object->isPrototype();
     }
-    
+
     int repl() {
         int errors = 0;
             UserInput in(new ConsoleInput);

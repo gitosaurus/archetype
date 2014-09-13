@@ -16,7 +16,7 @@ using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSerialization);
-    
+
     void TestSerialization::runTests_() {
         auto sample_integers = {0, 1, -1, 65, 351, 23487573, -8234924, 19};
         MemoryStorage mem;

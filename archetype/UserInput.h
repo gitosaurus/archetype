@@ -24,7 +24,7 @@ namespace archetype {
         IUserInput(const IUserInput&) = delete;
         IUserInput& operator=(const IUserInput&) = delete;
     };
-    
+
     typedef std::shared_ptr<IUserInput> UserInput;
 }
 

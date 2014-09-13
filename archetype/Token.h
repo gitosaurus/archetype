@@ -26,7 +26,7 @@ namespace archetype {
             BAD_TOKEN,
             NEWLINE
         };
-        
+
         Token();
         Token(Type_e type, int number);
         Type_e type() const     { return type_; }
@@ -35,7 +35,7 @@ namespace archetype {
         Type_e type_;
         int number_;
     };
-    
+
     bool operator==(const Token& t1, const Token& t2);
     bool operator!=(const Token& t1, const Token& t2);
     std::ostream& operator<<(std::ostream& out, const Token& t);

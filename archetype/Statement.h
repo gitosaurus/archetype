@@ -17,7 +17,7 @@
 #include "Serialization.h"
 
 namespace archetype {
-    
+
     class IStatement {
     protected:
         IStatement() { }
@@ -25,19 +25,19 @@ namespace archetype {
         IStatement(const IStatement&) = delete;
         IStatement& operator=(const IStatement&) = delete;
         virtual ~IStatement() { }
-        
+
         virtual void read(Storage& in) = 0;
         virtual void write(Storage& out) const = 0;
         virtual bool make(TokenStream& t) = 0;
         virtual void display(std::ostream& out) const = 0;
         virtual Value execute() const = 0;
     };
-    
+
     typedef std::unique_ptr<IStatement> Statement;
-    
+
     Storage& operator<<(Storage& out, const Statement& stmt);
     Storage& operator>>(Storage& in, Statement& stmt);
-    
+
     class CompoundStatement : public IStatement {
         std::list<Statement> statements_;
     public:
@@ -46,10 +46,10 @@ namespace archetype {
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
-        
+
         const std::list<Statement>& statements() const { return statements_; }
     };
-    
+
     class ExpressionStatement : public IStatement {
         Expression expression_;
     public:
@@ -61,7 +61,7 @@ namespace archetype {
 
         const Expression& expression() const { return expression_; }
     };
-    
+
     class IfStatement : public IStatement {
         Expression condition_;
         Statement thenBranch_;
@@ -73,7 +73,7 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
     };
-    
+
     class CaseStatement : public IStatement {
     public:
         struct Case {
@@ -90,11 +90,11 @@ namespace archetype {
         virtual bool make(TokenStream& t) override;
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
-        
+
         const Expression& testExpression() const { return testExpression_; }
         const std::list<Case>& cases() const { return cases_; }
     };
-    
+
     class CreateStatement : public IStatement {
         int typeId_;
         Expression target_;
@@ -105,7 +105,7 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
     };
-    
+
     class DestroyStatement : public IStatement {
         Expression victim_;
     public:
@@ -115,7 +115,7 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
     };
-    
+
     class ForStatement : public IStatement {
         Expression selection_;
         Statement action_;
@@ -126,7 +126,7 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
     };
-    
+
     class WhileStatement : public IStatement {
         Expression condition_;
         Statement action_;
@@ -137,7 +137,7 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
     };
-    
+
     class OutputStatement : public IStatement {
         Keywords::Reserved_e writeType_;
         std::list<Expression> expressions_;
@@ -149,7 +149,7 @@ namespace archetype {
         virtual void display(std::ostream& out) const override;
         virtual Value execute() const override;
     };
-    
+
     Statement make_statement(TokenStream& t);
     Statement make_stmt_from_str(std::string src_str);
 }

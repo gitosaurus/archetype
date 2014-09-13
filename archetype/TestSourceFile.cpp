@@ -18,17 +18,17 @@ using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSourceFile);
-    
+
     void TestSourceFile::runTests_() {
         stream_ptr in(new istringstream("Now is the time!"));
         SourceFile f_in("test-src", in);
-        
+
         ARCHETYPE_TEST_EQUAL(f_in.readChar(), 'N');
 
         ostringstream sout;
         f_in.showPosition(sout);
         ARCHETYPE_TEST_EQUAL(sout.str(), string("At test-src, line 1, column 1:\nNow is the time!\n^\n"));
-        
+
         while (f_in.readChar() != '!')
             ;
         ostringstream sout2;

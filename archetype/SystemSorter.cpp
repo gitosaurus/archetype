@@ -16,7 +16,7 @@ namespace archetype {
     void SystemSorter::add(std::string s) {
         sortedStrings_.insert(s);
     }
-    
+
     Value SystemSorter::nextSorted() {
         if (not sortedStrings_.empty()) {
             string result = *sortedStrings_.begin();

@@ -21,7 +21,7 @@ using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestStatement);
-    
+
     inline Statement make_stmt_from_str(string src_str) {
         stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
@@ -29,7 +29,7 @@ namespace archetype {
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
-    
+
     void TestStatement::testConstruction_() {
         Statement stmt1 = make_stmt_from_str("{}");
         ARCHETYPE_TEST(stmt1 != nullptr);
@@ -38,25 +38,25 @@ namespace archetype {
         if (dstmt1) {
             ARCHETYPE_TEST_EQUAL(dstmt1->statements().size(), size_t(0));
         }
-        
+
         Statement stmt2 = make_stmt_from_str("guard.location := main.dobj");
         ARCHETYPE_TEST(stmt2 != nullptr);
         ExpressionStatement* dstmt2 = dynamic_cast<ExpressionStatement*>(stmt2.get());
         ARCHETYPE_TEST(dstmt2 != nullptr);
         const Expression& expr = dstmt2->expression();
         ARCHETYPE_TEST_EQUAL(expr->nodeCount(), 7);
-        
+
         Statement stmt3 = make_stmt_from_str("if player.location = dungeon then stop \"Oops!\" else write \"Nice.\"");
         ARCHETYPE_TEST(stmt3 != nullptr);
         IfStatement* dstmt3 = dynamic_cast<IfStatement*>(stmt3.get());
         ARCHETYPE_TEST(dstmt3 != nullptr);
-        
+
         Statement stmt4 = make_stmt_from_str("case timer +:= 1 of { 3 : write \"Careful\" 4 : stop \"Dead!\" default : treasure +:= 1 }");
         ARCHETYPE_TEST(stmt4 != nullptr);
         CaseStatement* dstmt4 = dynamic_cast<CaseStatement*>(stmt4.get());
         ARCHETYPE_TEST(dstmt4 != nullptr);
     }
-    
+
     void TestStatement::testExecution_() {
         Statement stmt1 = make_stmt_from_str("{ 3 + \"7\"; 12 + 34 }");
         ARCHETYPE_TEST(stmt1 != nullptr);
@@ -65,7 +65,7 @@ namespace archetype {
         int actual1 = val1->getNumber();
         int expected1 = 46;
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
-        
+
         Statement stmt2 = make_stmt_from_str("if 2 < 3 then \"Sakes alive\" else 95");
         ARCHETYPE_TEST(stmt2 != nullptr);
         Value val2 = stmt2->execute()->stringConversion();
@@ -73,7 +73,7 @@ namespace archetype {
         string actual2 = val2->getString();
         string expected2 = "Sakes alive";
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
-        
+
         Statement stmt3 = make_stmt_from_str("if \"something\" ~= UNDEFINED then 314 else 999");
         ARCHETYPE_TEST(stmt3 != nullptr);
         Value val3 = stmt3->execute()->numericConversion();
@@ -81,7 +81,7 @@ namespace archetype {
         int actual3 = val3->getNumber();
         int expected3 = 314;
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
-        
+
         Statement stmt4 = make_stmt_from_str("write \"Hello, \", \"world!\"");
         ARCHETYPE_TEST(stmt4 != nullptr);
         Capture capture4;
@@ -93,7 +93,7 @@ namespace archetype {
         string actual_4_2 = capture4.getCapture();
         string expected_4_2 = "Hello, world!\n";
         ARCHETYPE_TEST_EQUAL(actual_4_2, expected_4_2);
-        
+
         Statement stmt5 = make_stmt_from_str(">>Now, this is a \"quote\".");
         ARCHETYPE_TEST(stmt5 != nullptr);
         Capture capture5;
@@ -103,7 +103,7 @@ namespace archetype {
         string actual5 = capture5.getCapture();
         ARCHETYPE_TEST_EQUAL(actual5, string("Now, this is a \"quote\".\n"));
     }
-    
+
     void TestStatement::testLoopBreaks_() {
         Universe::destroy();
         ObjectPtr x = Universe::instance().defineNewObject();
@@ -118,7 +118,7 @@ namespace archetype {
         ARCHETYPE_TEST(val->isDefined());
         ARCHETYPE_TEST_EQUAL(val->getNumber(), 6);
     }
-    
+
     void TestStatement::testSerialization_() {
         list<pair<string, string>> statements = {
             {

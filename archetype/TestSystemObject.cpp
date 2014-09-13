@@ -23,21 +23,21 @@ using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSystemObject);
-    
+
     inline SourceFilePtr make_source_from_str(string name, string src_str) {
         stream_ptr in(new istringstream(src_str));
         return SourceFilePtr(new SourceFile(name, in));
     }
-    
+
     inline Statement make_stmt_from_str(string src_str) {
         TokenStream token_stream(make_source_from_str("test", src_str));
         Statement stmt = make_statement(token_stream);
         return stmt;
     }
-    
+
     void TestSystemObject::testSorting_() {
         Universe::destroy();
-        
+
         Statement stmt = make_stmt_from_str("'OPEN SORTER' -> system");
         stmt->execute();
         deque<string> to_sort = {"dog", "xylem", "cat", "Ajax", "several", "Zebra"};
@@ -69,7 +69,7 @@ namespace archetype {
         Value no_more = stmt->execute();
         ARCHETYPE_TEST(not no_more->isDefined());
     }
-    
+
     static char program1[] =
     "type lexable based on null\n"
     "methods\n"
@@ -79,10 +79,10 @@ namespace archetype {
     "lexable take name : 'take|get|grab' end\n"
     "lexable money name : 'money|cash|bag of coins'\n"
     ;
-    
+
     void TestSystemObject::testParsing_() {
         Universe::destroy();
-        
+
         TokenStream t1(make_source_from_str("program1", program1));
         Universe::instance().make(t1);
         string build_vocab =
@@ -96,7 +96,7 @@ namespace archetype {
         ;
         Statement stmt = make_stmt_from_str(build_vocab);
         stmt->execute();
-        
+
         stmt = make_stmt_from_str("'NEXT OBJECT' -> system");
         Value val = stmt->execute();
         list<Value> parsed;
@@ -115,7 +115,7 @@ namespace archetype {
                                [](const Value& x, const Value& y){ return x->isSameValueAs(y);} );
         ARCHETYPE_TEST(are_equal);
     }
-    
+
     void TestSystemObject::runTests_() {
         testSorting_();
         testParsing_();

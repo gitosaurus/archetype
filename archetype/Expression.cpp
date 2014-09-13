@@ -19,7 +19,7 @@
 using namespace std;
 
 namespace archetype {
-    
+
     enum ExpressionType_e {
         RESERVED,
         UNARY,
@@ -31,7 +31,7 @@ namespace archetype {
     inline Value as_boolean_value(bool value) {
         return Value{new BooleanValue{value}};
     }
-    
+
     inline bool is_binary(Keywords::Operators_e op) {
         switch (op) {
             case Keywords::OP_LPAREN:
@@ -46,9 +46,9 @@ namespace archetype {
                 return true;
         }
     }
-    
+
     inline bool is_right_associative(Keywords::Operators_e op) {
-        
+
         // Anything unary must be right-associative;
         // all others are  left-associative, unless
         // special-cased.
@@ -65,59 +65,59 @@ namespace archetype {
                 return not is_binary(op);
         }
     }
-    
+
     inline int precedence(Keywords::Operators_e op) {
         switch (op) {
             case Keywords::OP_LPAREN: return 14;
             case Keywords::OP_DOT: return 13;
-                
+
             case Keywords::OP_CHS: return 12;
             case Keywords::OP_NUMERIC: return 12;
             case Keywords::OP_STRING: return 12;
             case Keywords::OP_RANDOM: return 12;
             case Keywords::OP_LENGTH: return 12;
-                
+
             case Keywords::OP_POWER: return 11;
-                
+
             case Keywords::OP_MULTIPLY: return 10;
             case Keywords::OP_DIVIDE: return 10;
-                
+
             case Keywords::OP_PLUS: return 9;
             case Keywords::OP_MINUS: return 9;
             case Keywords::OP_CONCAT: return 9;
-                
+
             case Keywords::OP_WITHIN: return 8;
-                
+
             case Keywords::OP_LEFTFROM: return 7;
             case Keywords::OP_RIGHTFROM: return 7;
-                
+
             case Keywords::OP_SEND: return 6;
             case Keywords::OP_PASS: return 6;
-                
+
             case Keywords::OP_EQ: return 5;
             case Keywords::OP_NE: return 5;
             case Keywords::OP_GT: return 5;
             case Keywords::OP_LT: return 5;
             case Keywords::OP_GE: return 5;
             case Keywords::OP_LE: return 5;
-                
+
             case Keywords::OP_NOT: return 4;
             case Keywords::OP_AND: return 3;
             case Keywords::OP_OR: return 2;
-                
+
             case Keywords::OP_C_MULTIPLY: return 1;
             case Keywords::OP_C_DIVIDE: return 1;
             case Keywords::OP_C_PLUS: return 1;
             case Keywords::OP_C_MINUS: return 1;
             case Keywords::OP_C_CONCAT: return 1;
             case Keywords::OP_ASSIGN: return 1;
-                
+
             case Keywords::NumOperators:
                 throw logic_error("Attempt to look up precedence of NumOperators");
                 break;
         }
     }
-    
+
     Keywords::Operators_e non_assignment_equivalent(Keywords::Operators_e op) {
         switch (op) {
             case Keywords::OP_C_PLUS:
@@ -134,11 +134,11 @@ namespace archetype {
                 throw logic_error("Unexpected cumulative assignment operator");
         }
     }
-    
+
     void ValueExpression::write(Storage& out) const {
         out << VALUE << value_;
     }
-    
+
     // This node is for those reserved words that behave like zero-argument
     // functions (sender, read, key, and so forth).
     class ReservedWordNode : public IExpression {
@@ -151,11 +151,11 @@ namespace archetype {
             out << Keywords::instance().Reserved.get(word_);
         }
     };
-    
+
     Expression tie_on_rside(Expression existing,
                             Keywords::Operators_e op,
                             Expression new_rside);
-    
+
     class IdentifierNode : public IExpression {
         int id_;
     public:
@@ -173,7 +173,7 @@ namespace archetype {
             if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
                 return Value(new ObjectValue(id_obj_p->second));
             }
-            
+
             // Finally:  just a keyword value
             return Value(new IdentifierValue(id_));
         }
@@ -181,14 +181,14 @@ namespace archetype {
             out << Universe::instance().Identifiers.get(id_);
         }
     };
-    
+
     class Operator : public IExpression {
         Keywords::Operators_e op_;
     protected:
         Operator(Keywords::Operators_e op): op_{op} { }
     public:
         Keywords::Operators_e op() const     { return op_; }
-        
+
         virtual bool bindsBefore(Keywords::Operators_e other) const {
             if (precedence(other) < precedence(op())) {
                 return true;
@@ -200,9 +200,9 @@ namespace archetype {
                 return true;
             }
         }
-        
+
     };
-    
+
     class UnaryOperator : public Operator {
         Expression right_;
     public:
@@ -211,13 +211,13 @@ namespace archetype {
         right_{move(right)} {
             assert(not is_binary(op));
         }
-        
+
         virtual void write(Storage& out) const override {
             out << UNARY;
             int op_as_int = static_cast<int>(op());
             out << op_as_int << right_;
         }
-        
+
         virtual Value evaluate() const {
             Value rv = right_->evaluate()->valueConversion();
             switch (op()) {
@@ -263,17 +263,17 @@ namespace archetype {
                     }
             }
         }
-        
+
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
             right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
         }
- 
+
         virtual int nodeCount() const { return 1 + right_->nodeCount(); }
         virtual Expression anyFewerNodeEquivalent() {
             right_ = tighten(move(right_));
             return op() != Keywords::OP_LPAREN ? nullptr : move(right_);
         }
-        
+
         virtual void prefixDisplay(ostream& out) const {
             if (op() == Keywords::OP_LPAREN) {
                 right_->prefixDisplay(out);
@@ -302,7 +302,7 @@ namespace archetype {
                 throw logic_error("string-op-string attempted on this operator");
         }
     }
-    
+
     Value eval_sn(Keywords::Operators_e op, string lv_s, int rv_n) {
         switch (op) {
             case Keywords::OP_LEFTFROM:
@@ -315,7 +315,7 @@ namespace archetype {
                 throw logic_error("string-op-number attempted on this operator");
         }
     }
-    
+
     Value eval_nn(Keywords::Operators_e op, int lv_n, int rv_n) {
         int result;
         switch (op) {
@@ -329,24 +329,24 @@ namespace archetype {
         }
         return Value{new NumericValue{result}};
     }
-    
+
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
         // Quick shortcut for identity.  Will also catch (v = UNDEFINED) and (UNDEFINED = v).
         if (op == Keywords::OP_EQ and lv->isSameValueAs(rv)) {
             return true;
         }
-        
+
         // If one side or the other is UNDEFINED, only ~= is possible to be true.
         if ((not lv->isDefined()) ^ (not rv->isDefined())) {
             return op == Keywords::OP_NE;
         }
-        
+
         // But if they are both UNDEFINED, then they are only equal if testing for
         // that equality.
         if ((not lv->isDefined()) and (not rv->isDefined())) {
             return op == Keywords::OP_EQ;
         }
-        
+
         Value lv_n = lv->numericConversion();
         Value rv_n = rv->numericConversion();
         if (lv_n->isDefined() and rv_n->isDefined()) {
@@ -409,13 +409,13 @@ namespace archetype {
         {
             assert(is_binary(op));
         }
-        
+
         virtual void write(Storage& out) const override {
             out << BINARY;
             int op_as_int = static_cast<int>(op());
             out << op_as_int << left_ << right_;
         }
-        
+
         virtual Value evaluate() const {
             // Sort evaluations by "signature"
             switch (op()) {
@@ -462,7 +462,7 @@ namespace archetype {
                         return Value{new UndefinedValue};
                     }
                 }
-                
+
                 case Keywords::OP_C_PLUS:
                 case Keywords::OP_C_MINUS:
                 case Keywords::OP_C_MULTIPLY:
@@ -480,7 +480,7 @@ namespace archetype {
                     }
                     return lv_a->assign(std::move(rv_c));
                 }
-                    
+
                 case Keywords::OP_C_CONCAT: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
@@ -494,9 +494,9 @@ namespace archetype {
                         rv_c = Value{new UndefinedValue};
                     }
                     return lv_a->assign(std::move(rv_c));
-                    
+
                 }
-                    
+
                 case Keywords::OP_EQ:
                 case Keywords::OP_NE:
                 case Keywords::OP_LT:
@@ -510,7 +510,7 @@ namespace archetype {
                     Value rv_v = right_->evaluate()->valueConversion();
                     return lv_a->assign(std::move(rv_v));
                 }
-                    
+
                 case Keywords::OP_DOT: {
                     Value lv_o = left_->evaluate()->objectConversion();
                     if (not lv_o->isDefined()) {
@@ -526,7 +526,7 @@ namespace archetype {
                         }
                     }
                 }
-                    
+
                 case Keywords::OP_SEND:
                 case Keywords::OP_PASS: {
                     Value lv_v = left_->evaluate()->valueConversion();
@@ -543,7 +543,7 @@ namespace archetype {
                         return Object::send(recipient, std::move(lv_v));
                     }
                 }
-                    
+
                 default:
                     if (is_binary(op())) {
                         throw logic_error("No binary operator evaluation written for " +
@@ -554,7 +554,7 @@ namespace archetype {
                     }
             }
         }
-        
+
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
             right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
         }
@@ -565,7 +565,7 @@ namespace archetype {
             right_ = move(tighten(move(right_)));
             return nullptr;
         }
-        
+
         virtual void prefixDisplay(ostream& out) const {
             out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';
             if (left_) {
@@ -582,13 +582,13 @@ namespace archetype {
             out << ')';
         }
     };
-    
+
     void ReservedWordNode::write(Storage& out) const {
         out << RESERVED;
         int word_as_int = static_cast<int>(word_);
         out << word_as_int;
     }
-    
+
     Value ReservedWordNode::evaluate() const {
         switch (word_) {
             case Keywords::RW_SELF:
@@ -613,7 +613,7 @@ namespace archetype {
                 throw logic_error("Attempt to evaluate reserved word which is not a lambda");
         }
     }
-    
+
     Expression get_scalar(TokenStream& t) {
         Expression scalar;
         switch (t.token().type()) {
@@ -669,7 +669,7 @@ namespace archetype {
         }  /* switch t.token().type() */
         return scalar;
     }
-    
+
     Expression get_operand_node(TokenStream& t) {
         switch (t.token().type()) {
             case Token::PUNCTUATION:
@@ -724,7 +724,7 @@ namespace archetype {
                 break;
         }  /* switch t.token().type() */
     }
-    
+
     Expression get_operand(TokenStream& t) {
         bool more = t.fetch();
         while (more and (t.token().type() == Token::NEWLINE)) {
@@ -778,7 +778,7 @@ namespace archetype {
         }
         return expr;
     } // form_expr
-    
+
     Expression tighten(Expression expr) {
         if (not expr) {
             return nullptr;
@@ -786,7 +786,7 @@ namespace archetype {
         Expression t = expr->anyFewerNodeEquivalent();
         return move(t != nullptr ? t : expr);
     }
-    
+
     Expression make_expr(TokenStream& t) {
         t.considerNewline();
         Expression expr = tighten(form_expr(t));
@@ -794,12 +794,12 @@ namespace archetype {
         // TODO:  will also verify the expression, which involves checking OP_ASSIGN, OP_DOT
         return expr;
     }
-    
+
     Storage& operator<<(Storage& out, const Expression& expr) {
         expr->write(out);
         return out;
     }
-    
+
     Storage& operator>>(Storage& in, Expression& expr) {
         int node_type_as_int;
         in >> node_type_as_int;
@@ -846,7 +846,7 @@ namespace archetype {
         }
         return in;
     }
-    
+
     Expression make_expr_from_str(string src_str) {
         stream_ptr in(new istringstream(src_str));
         SourceFilePtr src(new SourceFile("test", in));
@@ -854,5 +854,5 @@ namespace archetype {
         Expression expr = make_expr(token_stream);
         return expr;
     }
-    
+
 } // archetype

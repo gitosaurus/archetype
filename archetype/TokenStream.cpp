@@ -31,7 +31,7 @@ namespace archetype {
         bool isOperator(char c) const       { return opers_.count(c); }
         bool isLongOperator(char c) const   { return longOpers_.count(c); }
     } TypeCheck;
-    
+
     TypeChecker::TypeChecker():
     longOpers_({'<', '>', ':', '+', '-', '*', '/', '&', '~'}),
     opers_({'=', '.', '^', '?'})
@@ -40,7 +40,7 @@ namespace archetype {
             opers_.insert(oper);
         }
     }
-    
+
     TokenStream::TokenStream(SourceFilePtr source):
     source_(source),
     consumed_(true),
@@ -48,20 +48,20 @@ namespace archetype {
     {
         newlineIsToken_.push_front(false);
     }
-    
+
     void TokenStream::hitEOF(Token required) {
         if (keepLooking_) {
             stopLooking();
             cout << "Found end of file; expected " << required << endl;
         }
     }
-    
+
     bool TokenStream::insistOn(Token required) {
         if (not fetch()) {
             hitEOF(required);
             return false;
         }
-        
+
         if (required == token_) {
             return true;
         }
@@ -70,7 +70,7 @@ namespace archetype {
         stopLooking();
         return false;
     }
-    
+
     void TokenStream::expectGeneral(std::string required) {
         if (keepLooking_) {
             source_->showPosition(cout);
@@ -80,7 +80,7 @@ namespace archetype {
             cout << endl;
         }
     }
-    
+
     void TokenStream::expected(Token required) {
         if (keepLooking_) {
             source_->showPosition(cout);
@@ -92,18 +92,18 @@ namespace archetype {
         }
 
     }
-    
+
     void TokenStream::errorMessage(std::string message) {
         if (keepLooking_) {
             source_->showPosition(cout);
             cout << message << endl;
         }
     }
-    
+
     void TokenStream::stopLooking() {
         keepLooking_ = false;
     }
-    
+
     bool TokenStream::fetch() {
         enum StateType_e {START, STOP, DECIDE, WHITE, COMMENT, QUOTE,
             LITERAL, IDENTIFIER, NUMBER, OPERATOR};
@@ -112,26 +112,26 @@ namespace archetype {
         char bracket;
         char next_ch;
         string s;
-        
+
         /* Check for old token.  newlines_ may have changed while (an old
          token was unconsumed, so if the unconsumed token was a NEWLINE
          and newlines_ is false, we must continue and get another token;
          otherwise we jump out with what we have. */
-        
+
         if (not consumed_) {
             consumed_ = true;
             if (not ((token_.type() == Token::NEWLINE) and (not isNewlineSignificant()))) {
                 return true;
             }
         }
-        
+
         state      = START;
         s          = "";
-        
+
         while (state != STOP) {
-            
+
             switch (state) {
-                    
+
                 case START:
                     if ((next_ch = source_->readChar()))
                         state = DECIDE;
@@ -139,7 +139,7 @@ namespace archetype {
                         state = STOP;
                     }
                     break;
-                    
+
                 case DECIDE:
                     if (not next_ch)
                         state = STOP;
@@ -172,7 +172,7 @@ namespace archetype {
                                 break;
                         } // switch
                     break; /* case */
-                    
+
                 case WHITE:
                     while ((state == WHITE) and (TypeCheck.isWhite(next_ch))) {
                         if ((next_ch == '\n') and isNewlineSignificant()) {
@@ -190,7 +190,7 @@ namespace archetype {
                         }
                     }
                     break;
-                    
+
                 case COMMENT:
                 case QUOTE:
                     s = "";
@@ -210,9 +210,9 @@ namespace archetype {
                         state      = STOP;
                     }
                     break;
-                    
+
                 case LITERAL: {
-                    
+
                     bracket = next_ch;
                     s = "";
                     while ((next_ch = source_->readChar()) and
@@ -235,13 +235,13 @@ namespace archetype {
                         }
                         s += next_ch;
                     };  /* while */
-                    
+
                     if (next_ch != bracket) {
                         source_->showPosition(cout);
                         throw std::runtime_error("Unterminated literal");
                     }
                     else {
-                        
+
                         switch (bracket) {
                             case '"':
                                 token_ = Token(Token::TEXT_LITERAL,
@@ -255,14 +255,14 @@ namespace archetype {
                                 cout << "Programmer error: unknown literal type" << endl;
                                 break;
                         }  /* switch */
-                        
+
                         state = STOP;
-                        
+
                     }  /* else */
-                    
+
                 }  /* LITERAL */
                     break;
-                    
+
                 case IDENTIFIER: {
                     s = "";
                     while (TypeCheck.isIDChar(next_ch)) {
@@ -285,7 +285,7 @@ namespace archetype {
                     state = STOP;
                 }
                     break;
-                    
+
                 case NUMBER:
                 {
                     s = "";
@@ -302,7 +302,7 @@ namespace archetype {
                     state = STOP;
                 }
                     break;
-                    
+
                 case OPERATOR:
                 {
                     s = "";
@@ -338,12 +338,12 @@ namespace archetype {
                     }     /* all cases which are not >> */
                 }         /* OPERATOR */
                     break;
-                    
+
                 case STOP:
                     break;
             } // switch
         } /* while - primary state machine loop */
-        
+
         return next_ch != '\0';
     }
 
