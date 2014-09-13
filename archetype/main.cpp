@@ -91,7 +91,6 @@ int main(int argc, const char* argv[]) {
                 throw runtime_error("No 'START' method on main");
             }
         } catch (const archetype::QuitGame& quit_game) {
-            cout << quit_game.what() << endl;
             return 0;
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
@@ -125,9 +124,11 @@ int main(int argc, const char* argv[]) {
                         throw runtime_error("No 'START' method on main");
                     }
                 }
+            } catch (const archetype::QuitGame& quit_game) {
+                return 0;
             } catch (const std::exception& e) {
-                // TODO:  gentler catch for system exit
-                cerr << "Caught:  " << e.what() << endl;
+                cerr << "ERROR: " << e.what() << endl;
+                return 1;
             }
             return 0;
         }

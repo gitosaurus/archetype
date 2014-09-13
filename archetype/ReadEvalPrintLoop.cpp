@@ -19,8 +19,6 @@
 using namespace std;
 
 namespace archetype {
-    // TODO:  Used outside of TestUniverse now.  Should be elevated to its own module
-    
     inline TokenStream make_tokens_from_string(string name, string src_str) {
         stream_ptr in(new istringstream(src_str));
         SourceFilePtr source(new SourceFile(name, in));
@@ -28,7 +26,6 @@ namespace archetype {
     }
     
     inline bool is_object_declaration(const Token& t) {
-        // TODO:  Do TYPE and CLASS have to be checked for every time like this?
         if (t == Token(Token::RESERVED_WORD, Keywords::RW_TYPE) ||
             t == Token(Token::RESERVED_WORD, Keywords::RW_CLASS)) {
             return true;
