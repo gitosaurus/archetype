@@ -51,7 +51,8 @@ namespace archetype {
         IfStatement* dstmt3 = dynamic_cast<IfStatement*>(stmt3.get());
         ARCHETYPE_TEST(dstmt3 != nullptr);
 
-        Statement stmt4 = make_stmt_from_str("case timer +:= 1 of { 3 : write \"Careful\" 4 : stop \"Dead!\" default : treasure +:= 1 }");
+        string program4 = "case timer +:= 1 of { 3 : write \"Careful\" 4 : stop \"Dead!\" default : treasure +:= 1 }";
+        Statement stmt4 = make_stmt_from_str(program4);
         ARCHETYPE_TEST(stmt4 != nullptr);
         CaseStatement* dstmt4 = dynamic_cast<CaseStatement*>(stmt4.get());
         ARCHETYPE_TEST(dstmt4 != nullptr);
@@ -111,7 +112,8 @@ namespace archetype {
         int i_id = Universe::instance().Identifiers.index("i");
         Expression init{new ValueExpression{Value{new NumericValue{0}}}};
         x->setAttribute(i_id, move(init));
-        Statement loop_w = make_stmt_from_str("{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } write; x.i}");
+        string loop_str = "{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } write; x.i}";
+        Statement loop_w = make_stmt_from_str(loop_str);
         ARCHETYPE_TEST(loop_w != nullptr);
         ostringstream out;
         Value val = loop_w->execute()->numericConversion();
@@ -127,7 +129,8 @@ namespace archetype {
             },
             {
                 "for each.isAverb and each.unlisted do { if 'register' -> each then each.unlisted := FALSE }",
-                "for (and (. each isAverb) (. each unlisted)) do {if (-> 'register' each) then (:= (. each unlisted) FALSE)}"
+                "for (and (. each isAverb) (. each unlisted)) do "
+                  "{if (-> 'register' each) then (:= (. each unlisted) FALSE)}"
             }
         };
         for (auto const& p : statements) {

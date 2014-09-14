@@ -10,6 +10,7 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <sstream>
 
 #include "SystemObject.h"
 #include "Universe.h"
@@ -124,10 +125,13 @@ namespace archetype {
                         case CLOSE_SORTER:
                         case CLOSE_PARSER:
                         case VERB_LIST:
-                        case NOUN_LIST:
-                            cerr << __FILE__ << ":" << __LINE__ << ":" << "Cannot go to state " << state_ << " from IDLING; returning to idle" << endl;
+                        case NOUN_LIST: {
+                            ostringstream out;
+                            out << "Cannot go to state " << state_ << " from IDLING; returning to idle" << endl;
+                            Universe::instance().output()->put(out.str());
                             state_ = IDLING;
                             break;
+                        }
                     }
                 }
                 break;
@@ -148,11 +152,16 @@ namespace archetype {
                     }
                 }
                 break;
+
             case INIT_SORTER:
             case NEXT_SORTED:
-            case CLOSE_SORTER:
-                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found sorting instruction " << state_ << " at top of loop; idling" << endl;
+            case CLOSE_SORTER: {
+                ostringstream out;
+                out << "Unexpectedly found sorting instruction " << state_ << " at top of loop; idling" << endl;
+                Universe::instance().output()->put(out.str());
                 state_ = IDLING;
+                break;
+            }
 
             case OPEN_PARSER:
                 if (figureState_(message)) {
@@ -180,10 +189,13 @@ namespace archetype {
             case INIT_PARSER:
             case VERB_LIST:
             case NOUN_LIST:
-            case CLOSE_PARSER:
-                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found parsing instruction " << state_ << " at top of loop; idling" << endl;
+            case CLOSE_PARSER: {
+                ostringstream out;
+                out << "Unexpectedly found parsing instruction " << state_ << " at top of loop; idling" << endl;
+                Universe::instance().output()->put(out.str());
                 state_ = IDLING;
                 break;
+            }
 
             // Interpreter states
             case PLAYER_CMD: {
@@ -237,15 +249,21 @@ namespace archetype {
             case PARSE:
             case ROLL_CALL:
             case PRESENT:
-            case NEXT_OBJECT:
-                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found interpreter instruction " << state_ << " at top of loop; idling" << endl;
+            case NEXT_OBJECT: {
+                ostringstream out;
+                out << "Unexpectedly found interpreter instruction " << state_ << " at top of loop; idling" << endl;
+                Universe::instance().output()->put(out.str());
                 state_ = IDLING;
                 break;
+            }
 
-            default:
-                cerr << __FILE__ << ":" << __LINE__ << ":" << "Unexpectedly found UNHANDLED state " << state_ << " at top of loop; idling" << endl;
+            default: {
+                ostringstream out;
+                out << "Unexpectedly found UNHANDLED state " << state_ << " at top of loop; idling" << endl;
+                Universe::instance().output()->put(out.str());
                 state_ = IDLING;
                 break;
+            }
 
         }
         return Value{new UndefinedValue};

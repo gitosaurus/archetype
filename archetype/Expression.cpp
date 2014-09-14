@@ -503,7 +503,9 @@ namespace archetype {
                 case Keywords::OP_LE:
                 case Keywords::OP_GE:
                 case Keywords::OP_GT:
-                    return as_boolean_value(eval_compare(op(), left_->evaluate()->valueConversion(), right_->evaluate()->valueConversion()));
+                    return as_boolean_value(eval_compare(op(),
+                                                         left_->evaluate()->valueConversion(),
+                                                         right_->evaluate()->valueConversion()));
 
                 case Keywords::OP_ASSIGN: {
                     Value lv_a = left_->evaluate()->attributeConversion();

@@ -63,14 +63,18 @@ namespace archetype {
         for (auto const& verb_phrase : verbs_) {
             verbMatches_.push_back(PhraseMatch());
             istringstream in(verb_phrase.first);
-            transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(verbMatches_.back().first), [](string s) { return make_string_value(lowercase(s)); });
+            transform(istream_iterator<string>(in), istream_iterator<string>(),
+                      back_inserter(verbMatches_.back().first),
+                      [](string s) { return make_string_value(lowercase(s)); });
             verbMatches_.back().second = verb_phrase.second;
         }
         nouns_.sort(longest_phrase_first);
         for (auto const& noun_phrase : nouns_) {
             nounMatches_.push_back(PhraseMatch());
             istringstream in(noun_phrase.first);
-            transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(nounMatches_.back().first), [](string s) { return make_string_value(lowercase(s)); });
+            transform(istream_iterator<string>(in), istream_iterator<string>(),
+                      back_inserter(nounMatches_.back().first),
+                      [](string s) { return make_string_value(lowercase(s)); });
             nounMatches_.back().second = noun_phrase.second;
         }
     }
@@ -84,13 +88,16 @@ namespace archetype {
     inline void remove_fillers(list<Value>& wordValues) {
         auto fillers = {"a", "an", "the"};
         wordValues.erase(remove_if(begin(wordValues), end(wordValues),
-                                   [fillers](const Value& v) { return find(begin(fillers), end(fillers), v->getString()) != end(fillers); }),
+                                   [fillers](const Value& v) {
+                                       return find(begin(fillers), end(fillers), v->getString()) != end(fillers);
+                                   }),
                          end(wordValues));
     }
 
     void SystemParser::matchVerbs_(std::list<Value>& wordValues) {
         for (auto vp = begin(verbMatches_); vp != end(verbMatches_); ++vp) {
-            auto match = search(begin(wordValues), end(wordValues), begin(vp->first), end(vp->first), equal_string_values);
+            auto match = search(begin(wordValues), end(wordValues),
+                                begin(vp->first), end(vp->first), equal_string_values);
             if (match != end(wordValues)) {
                 auto match_end = match;
                 advance(match_end, vp->first.size());
@@ -102,7 +109,8 @@ namespace archetype {
 
     void SystemParser::matchNouns_(std::list<Value>& wordValues) {
         for (auto np = begin(nounMatches_); np != end(nounMatches_); ++np) {
-            auto match = search(begin(wordValues), end(wordValues), begin(np->first), end(np->first), equal_string_values);
+            auto match = search(begin(wordValues), end(wordValues),
+                                begin(np->first), end(np->first), equal_string_values);
             if (match != end(wordValues)) {
                 size_t phrase_size = np->first.size();
                 auto match_end = match;
@@ -114,7 +122,8 @@ namespace archetype {
                 if (!proximate_.count(matched_obj_id)) {
                     auto next_np = np;
                     while (++next_np != end(nounMatches_) && next_np->first.size() == phrase_size) {
-                        if (equal(match, match_end, begin(next_np->first), equal_string_values) && proximate_.count(next_np->second)) {
+                        if (equal(match, match_end, begin(next_np->first), equal_string_values) and
+                            proximate_.count(next_np->second)) {
                             // This is a nearer version of the same match phrase
                             matched_obj_id = next_np->second;
                             break;
@@ -172,7 +181,9 @@ namespace archetype {
     Value SystemParser::whichObject(std::string phrase) {
         istringstream in(phrase);
         list<Value> words;
-        transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), [](string s) { return make_string_value(lowercase(s)); });
+        transform(istream_iterator<string>(in), istream_iterator<string>(),
+                  back_inserter(words),
+                  [](string s) { return make_string_value(lowercase(s)); });
         remove_fillers(words);
         matchNouns_(words);
         matchVerbs_(words);

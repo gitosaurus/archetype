@@ -33,7 +33,8 @@ namespace archetype {
             ;
         ostringstream sout2;
         f_in.showPosition(sout2);
-        ARCHETYPE_TEST_EQUAL(sout2.str(), string("At test-src, line 1, column 16:\nNow is the time!\n               ^\n"));
+        ARCHETYPE_TEST_EQUAL(sout2.str(),
+                             string("At test-src, line 1, column 16:\nNow is the time!\n               ^\n"));
         ARCHETYPE_TEST_EQUAL(f_in.readChar(), '\n');
         ARCHETYPE_TEST_EQUAL(f_in.readChar(), '\0');
         // And repeated attempts to read beyond should "bounce" at zero
