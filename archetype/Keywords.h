@@ -104,9 +104,8 @@ namespace archetype {
         static Keywords* instance_;
 
         Keywords();
-        // No copying
-        Keywords(const Keywords&);
-        Keywords& operator=(const Keywords&);
+        Keywords(const Keywords&) = delete;
+        Keywords& operator=(const Keywords&) = delete;
     };
 }
 

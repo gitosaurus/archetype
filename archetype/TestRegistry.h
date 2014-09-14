@@ -27,9 +27,8 @@ namespace archetype {
     private:
         static TestRegistry* instance_;
         TestRegistry();
-        // No copying
-        TestRegistry(const TestRegistry&);
-        TestRegistry& operator=(const TestRegistry);
+        TestRegistry(const TestRegistry&) = delete;
+        TestRegistry& operator=(const TestRegistry) = delete;
     };
 }
 
