@@ -184,7 +184,7 @@ namespace archetype {
         for (int i = 0; i < entries; ++i) {
             Case case_pair;
             in >> case_pair.match >> case_pair.action;
-            cases_.push_back(case_pair);
+            cases_.push_back(move(case_pair));
         }
         int default_exists;
         in >> default_exists;
