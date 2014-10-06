@@ -14,6 +14,8 @@
 		45447AA718DE505900839C15 /* TestUniverse.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45447AA518DE505900839C15 /* TestUniverse.cpp */; };
 		4571C3B6196E183000BD024D /* Capture.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571C3B4196E183000BD024D /* Capture.cpp */; };
 		4571ECCB193F6BF5006D85A9 /* Wellspring.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */; };
+		45804FA819CE85E20055AF10 /* WrappedOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45804FA619CE85E20055AF10 /* WrappedOutput.cpp */; };
+		45804FAB19CF31740055AF10 /* TestWrappedOutput.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45804FA919CF31740055AF10 /* TestWrappedOutput.cpp */; };
 		45817A2A190CAAB9002224D4 /* SystemSorter.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A28190CAAB9002224D4 /* SystemSorter.cpp */; };
 		45817A2D190CAAC5002224D4 /* SystemParser.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 45817A2B190CAAC5002224D4 /* SystemParser.cpp */; };
 		458776A319511F9E000D8C46 /* TestSerialization.cpp in Sources */ = {isa = PBXBuildFile; fileRef = 458776A119511F9E000D8C46 /* TestSerialization.cpp */; };
@@ -73,6 +75,10 @@
 		4571C3B5196E183000BD024D /* Capture.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Capture.h; sourceTree = "<group>"; };
 		4571ECC9193F6BF5006D85A9 /* Wellspring.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = Wellspring.cpp; sourceTree = "<group>"; };
 		4571ECCA193F6BF5006D85A9 /* Wellspring.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = Wellspring.h; sourceTree = "<group>"; };
+		45804FA619CE85E20055AF10 /* WrappedOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = WrappedOutput.cpp; sourceTree = "<group>"; };
+		45804FA719CE85E20055AF10 /* WrappedOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = WrappedOutput.h; sourceTree = "<group>"; };
+		45804FA919CF31740055AF10 /* TestWrappedOutput.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestWrappedOutput.cpp; sourceTree = "<group>"; };
+		45804FAA19CF31740055AF10 /* TestWrappedOutput.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = TestWrappedOutput.h; sourceTree = "<group>"; };
 		45817A28190CAAB9002224D4 /* SystemSorter.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemSorter.cpp; sourceTree = "<group>"; };
 		45817A29190CAAB9002224D4 /* SystemSorter.h */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.c.h; path = SystemSorter.h; sourceTree = "<group>"; };
 		45817A2B190CAAC5002224D4 /* SystemParser.cpp */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = SystemParser.cpp; sourceTree = "<group>"; };
@@ -172,6 +178,8 @@
 				4532541F196DA0B4009A1EE0 /* ConsoleOutput.h */,
 				456DA75B19704480006ACBFF /* StringInput.h */,
 				459B70C6196DA3E400A07EE5 /* StringOutput.h */,
+				45804FA619CE85E20055AF10 /* WrappedOutput.cpp */,
+				45804FA719CE85E20055AF10 /* WrappedOutput.h */,
 				4571C3B4196E183000BD024D /* Capture.cpp */,
 				4571C3B5196E183000BD024D /* Capture.h */,
 				45F7CF1F18A9E8A200D39E12 /* Universe.cpp */,
@@ -236,6 +244,8 @@
 				458776A219511F9E000D8C46 /* TestSerialization.h */,
 				4588EC421961A3970024E2E7 /* TestValue.cpp */,
 				4588EC431961A3970024E2E7 /* TestValue.h */,
+				45804FA919CF31740055AF10 /* TestWrappedOutput.cpp */,
+				45804FAA19CF31740055AF10 /* TestWrappedOutput.h */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -297,6 +307,7 @@
 				45EDDB8918B42BC6008EAF22 /* Keywords.cpp in Sources */,
 				45EDDB8D18B55E5B008EAF22 /* TestTokenStream.cpp in Sources */,
 				45B2450118A34A0B006A5FA8 /* main.cpp in Sources */,
+				45804FA819CE85E20055AF10 /* WrappedOutput.cpp in Sources */,
 				4588EC441961A3970024E2E7 /* TestValue.cpp in Sources */,
 				45DE416D18F6EBC1007A9EB6 /* SystemObject.cpp in Sources */,
 				45F3A74B19B6A14700DBAECE /* FileStorage.cpp in Sources */,
@@ -314,6 +325,7 @@
 				45447AA718DE505900839C15 /* TestUniverse.cpp in Sources */,
 				45F7CF2418A9E9A000D39E12 /* Object.cpp in Sources */,
 				4532327018B1DEF0008B68E1 /* TokenStream.cpp in Sources */,
+				45804FAB19CF31740055AF10 /* TestWrappedOutput.cpp in Sources */,
 				45F7CF3718AA908600D39E12 /* TestIdIndex.cpp in Sources */,
 				451A4E3C19BC1C830000C985 /* ConsoleInput.cpp in Sources */,
 				45F7CF2718A9EA3700D39E12 /* Expression.cpp in Sources */,

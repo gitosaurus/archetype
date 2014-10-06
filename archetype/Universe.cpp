@@ -18,6 +18,7 @@ using namespace std;
 #include "SystemObject.h"
 #include "ConsoleInput.h"
 #include "ConsoleOutput.h"
+#include "WrappedOutput.h"
 
 namespace archetype {
     Universe* Universe::instance_ = nullptr;
@@ -59,7 +60,7 @@ namespace archetype {
 
     Universe::Universe() :
     input_{new ConsoleInput},
-    output_{new ConsoleOutput}
+    output_{new WrappedOutput{UserOutput{new ConsoleOutput}}}
     {
         nullObject_ = defineNewObject();
         assignObjectIdentifier(nullObject_, "null");
