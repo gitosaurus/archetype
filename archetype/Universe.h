@@ -79,6 +79,8 @@ namespace archetype {
         void assignObjectIdentifier(const ObjectPtr& object, std::string identifier);
         void assignObjectIdentifier(const ObjectPtr& object, int identifier_id);
 
+        bool identifierIsAssignedAs(int identifier_id, int object_id) const;
+
         bool make(TokenStream& t);
 
         static Universe& instance();

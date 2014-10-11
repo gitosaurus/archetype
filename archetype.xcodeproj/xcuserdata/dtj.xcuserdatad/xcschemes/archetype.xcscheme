@@ -75,11 +75,11 @@
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--source=/Users/dtj/Archetype/Archetype_102/gorreven-dbg.ach"
+            argument = "--source=/Users/dtj/Archetype/Archetype_102/gorreven.ach"
             isEnabled = "YES">
          </CommandLineArgument>
          <CommandLineArgument
-            argument = "--source=/Users/dtj/Archetype/Archetype_102/starship-dbg.ach"
+            argument = "--source=/Users/dtj/Archetype/Archetype_102/starship.ach"
             isEnabled = "NO">
          </CommandLineArgument>
          <CommandLineArgument

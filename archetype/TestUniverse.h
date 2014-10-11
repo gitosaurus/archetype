@@ -16,6 +16,7 @@
 namespace archetype {
     class TestUniverse : public ITestSuite {
         void testBasicObjects_();
+        void testNullIsNull_();
         void testDynamicObjects_();
         void testInclusion_();
         void testDefaultMethods_();

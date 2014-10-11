@@ -182,13 +182,22 @@ namespace archetype {
         return nullptr;
     }
 
+    bool Universe::identifierIsAssignedAs(int identifier_id, int object_id) const {
+        auto p = ObjectIdentifiers.find(identifier_id);
+        return p != ObjectIdentifiers.end() and p->second == object_id;
+    }
+
     static ObjectPtr instantiate(TokenStream& t, ObjectPtr parent = nullptr) {
         if (not t.fetch() or t.token().type() != Token::IDENTIFIER) {
             t.expectGeneral("name of new object");
             return nullptr;
         }
         ObjectPtr obj = Universe::instance().defineNewObject();
-        Universe::instance().assignObjectIdentifier(obj, t.token().number());
+        // "null" is allowed as an instance identifier which allows the instance to be
+        // anonymous.  Don't bind the identifier in this case.
+        if (not Universe::instance().identifierIsAssignedAs(t.token().number(), Universe::NullObjectId)) {
+            Universe::instance().assignObjectIdentifier(obj, t.token().number());
+        }
         if (parent) {
             obj->setParentId(parent->id());
         }

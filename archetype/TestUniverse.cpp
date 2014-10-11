@@ -87,6 +87,19 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
     }
 
+    static char program_nullity[] =
+    "type thing based on null methods 'look' : write(\"some thing\") end\n"
+    "thing null methods 'get' : write(\"You cannot.\") end\n"
+    "null slop methods 'throw' : write(\"Splat!\") end\n"
+    ;
+
+    void TestUniverse::testNullIsNull_() {
+        Universe::destroy();
+
+        TokenStream t1(make_source_from_str("program_nullity", program_nullity));
+        ARCHETYPE_TEST(Universe::instance().make(t1));
+    }
+
     static char program_dynamic[] =
     "type blinds based on null\n"
     "  shade : UNDEFINED\n"
@@ -386,6 +399,7 @@ namespace archetype {
 
     void TestUniverse::runTests_() {
         testBasicObjects_();
+        testNullIsNull_();
         testDynamicObjects_();
         testInclusion_();
         testDefaultMethods_();
