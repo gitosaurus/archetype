@@ -19,6 +19,9 @@ namespace archetype {
         virtual ~IUserOutput() { }
         virtual void put(const std::string& line) = 0;
         virtual void endLine() = 0;
+
+        // TODO:  Better plumbing?
+        virtual void resetPager() { }
     private:
         IUserOutput(const IUserOutput&) = delete;
         IUserOutput& operator=(const IUserOutput&) = delete;

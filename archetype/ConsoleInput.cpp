@@ -11,6 +11,8 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "Universe.h"
+
 #include "ConsoleInput.h"
 
 using namespace std;
@@ -23,7 +25,7 @@ namespace archetype {
             throw runtime_error("Could not get terminal settings: " + string(strerror(errno)));
         }
         struct termios prev = term;
-        term.c_lflag &= ~(ICANON | ISIG | IEXTEN);
+        term.c_lflag &= ~(ECHO | ECHONL | ICANON | ISIG | IEXTEN);
         if (tcsetattr(0, TCSANOW, &term) < 0) {
             throw runtime_error("Could not set terminal: " + string(strerror(errno)));
         }
@@ -32,9 +34,6 @@ namespace archetype {
         if (tcsetattr(0, TCSANOW, &prev) < 0) {
             throw runtime_error("Could not restore terminal: " + string(strerror(errno)));
         }
-        // This is an odd convention to have for 'key', but the Animal game appears to have
-        // depended on it.
-        cout << endl;
         if (read_stat != sizeof(key)) {
             throw runtime_error("Could not even read key from terminal");
         } else {
@@ -45,6 +44,8 @@ namespace archetype {
     string ConsoleInput::getLine() {
         string line;
         getline(cin, line);
+        // TODO: Unfortunate coupling here
+        Universe::instance().output()->resetPager();
         return line;
     }
 

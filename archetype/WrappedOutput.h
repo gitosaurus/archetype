@@ -24,10 +24,17 @@ namespace archetype {
         virtual ~WrappedOutput();
         virtual void put(const std::string& line) override;
         virtual void endLine() override;
+        virtual void resetPager() override;
 
+        // Get and set the rows of text available in the console.
+        // Zero is a special value meaning that the rows are
+        // indeterminate, so never page the output.
         int maxRows() const { return maxRows_; }
         void setMaxRows(int rows) { maxRows_ = rows; }
 
+        // Get and set the columns of text available in the console.
+        // Zero is a special value meaning that the columns are
+        // indeterminate, so never wrap lines.
         int maxColumns() const { return maxColumns_; }
         void setMaxColumns(int columns) { maxColumns_ = columns; }
     };

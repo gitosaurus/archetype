@@ -7,6 +7,8 @@
 //
 
 #include <string>
+#include <sys/ioctl.h>
+#include <unistd.h>
 
 #include "WrappedOutput.h"
 #include "Universe.h"
@@ -21,19 +23,34 @@ namespace archetype {
     maxRows_{24},
     maxColumns_{75},
     rows_{0},
-    cursor_{0}
-    { }
+    cursor_{0} {
+        struct winsize w;
+        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) < 0) {
+            perror("ioctl call to get terminal size");
+        } else {
+            maxRows_ = w.ws_row;
+            maxColumns_ = w.ws_col;
+        }
+    }
 
     WrappedOutput::~WrappedOutput() { }
 
     void WrappedOutput::wrapWait_() {
-        output_->put("Hit RETURN to continue...");
-        Universe::instance().input()->getLine();
-        // TODO:  I might need a new interface in IUserInput, to handle line erasure
+        string prompt = "Hit any key to continue...";
+        string blanks(prompt.size(), ' ');
+        output_->put(prompt);
+        Universe::instance().input()->getKey();
+        output_->put("\r" + blanks + "\r");
         rows_ = 0;
     }
 
     void WrappedOutput::put(const std::string& line) {
+        if (maxColumns_ == 0) {
+            // Sentinel meaning "do not wrap"
+            output_->put(line);
+            cursor_ += line.size();
+            return;
+        }
         string s = line;
         /* "thisline" starts out as the maximum number of characters that can be
          written before a newline; it gets trimmed back to being the number of
@@ -84,7 +101,12 @@ namespace archetype {
     void WrappedOutput::endLine() {
         output_->endLine();
         rows_++;
-        if (rows_ >= maxRows_) wrapWait_();
+        // Zero is a sentinel value meaning "never page".
+        if (maxRows_ > 0  and  rows_ >= maxRows_) wrapWait_();
         cursor_ = 0;
+    }
+
+    void WrappedOutput::resetPager() {
+        rows_ = 0;
     }
 }
