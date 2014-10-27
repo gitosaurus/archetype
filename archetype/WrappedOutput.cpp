@@ -64,8 +64,7 @@ namespace archetype {
 
         int thisline = maxchars;
         while (thisline < s.size()) {
-            // TODO:  Note the inability to deal with hard tabs
-            while ((thisline > 0) and (s[thisline] != ' ')) {
+            while (thisline > 0 and not isspace(s[thisline])) {
                 thisline--;
             }
 

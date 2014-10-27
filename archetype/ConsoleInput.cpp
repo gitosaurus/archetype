@@ -45,7 +45,6 @@ namespace archetype {
     string ConsoleInput::getLine() {
         string line;
         getline(cin, line);
-        // TODO: Unfortunate coupling here
         Universe::instance().output()->resetPager();
         return line;
     }
