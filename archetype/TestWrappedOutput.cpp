@@ -24,9 +24,9 @@ namespace archetype {
 
     void TestWrappedOutput::testBasicWrap_() {
         UserOutput user_soutput{new StringOutput};
-        StringOutput& strout{*dynamic_cast<StringOutput*>(user_soutput.get())};
+        StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
         UserOutput user_output{new WrappedOutput{user_soutput}};
-        WrappedOutput& wrout{*dynamic_cast<WrappedOutput*>(user_output.get())};
+        WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
         wrout.setMaxColumns(10);
         string utterance = "Now is the time for all good men to come to the aid of their country.";
         user_output->put(utterance);

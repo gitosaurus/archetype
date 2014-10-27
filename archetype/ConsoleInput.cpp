@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <cstring>
 #include <termios.h>
 #include <unistd.h>
 

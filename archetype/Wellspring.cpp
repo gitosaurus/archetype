@@ -18,7 +18,7 @@ using namespace std;
 
 namespace archetype {
     SourceFilePtr Wellspring::primarySource(string file_path) {
-        char full_path_c[PATH_MAX];
+        char full_path_c[4096];
         if (not realpath(file_path.c_str(), full_path_c)) {
             throw invalid_argument(file_path + " does not exist");
         }
