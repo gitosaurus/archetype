@@ -7,6 +7,7 @@
 //
 
 #include <string>
+#include <cctype>
 #include <sys/ioctl.h>
 #include <unistd.h>
 
@@ -16,12 +17,13 @@
 using namespace std;
 
 namespace archetype {
+    const int WrapMargin = 5;
     const int SafetyMargin = 3;
 
     WrappedOutput::WrappedOutput(UserOutput output):
     output_{output},
     maxRows_{24},
-    maxColumns_{75},
+    maxColumns_{80},
     rows_{0},
     cursor_{0} {
         struct winsize w;
@@ -31,6 +33,7 @@ namespace archetype {
             maxRows_ = w.ws_row;
             maxColumns_ = w.ws_col;
         }
+        maxColumns_ = max(0, maxColumns_ - WrapMargin);
     }
 
     WrappedOutput::~WrappedOutput() { }
@@ -52,20 +55,18 @@ namespace archetype {
             return;
         }
         string s = line;
-        /* "thisline" starts out as the maximum number of characters that can be
-         written before a newline; it gets trimmed back to being the number of
-         characters from the string that are actually written on this line. */
 
-        int maxchars = maxColumns_ - cursor_;
+        int remaining = max(0, maxColumns_ - cursor_);
+        // Keep trailing punctuation from being orphaned on the next line.
+        if (not s.empty() and ispunct(s[0])) {
+            remaining += SafetyMargin;
+        }
 
-        const static string punctuation = ".,:;)-\"";
-        if (punctuation.find(s[0]) != string::npos)
-            maxchars += SafetyMargin;
-
-        int thisline = maxchars;
-        while (thisline < s.size()) {
-            while (thisline > 0 and not isspace(s[thisline])) {
-                thisline--;
+        while (s.size() > remaining) {
+            // Walk backward to find a breaking point.
+            auto cut_p = s.begin() + remaining;
+            while (not isspace(*cut_p) and cut_p != s.begin()) {
+                --cut_p;
             }
 
             /*
@@ -75,23 +76,18 @@ namespace archetype {
              the entire string; i.e. print nothing, finish the line and go on.
              */
 
-            if (thisline == 0 and s.size() > maxColumns_) {
-                thisline = maxchars + 1;
+            if (cut_p == s.begin() and s.size() > maxColumns_) {
+                cut_p = s.begin() + remaining;
             }
 
-            output_->put(s.substr(0, thisline));
-            output_->endLine();
-            rows_++;
-            if (rows_ >= maxRows_) {
-                wrapWait_();
+            string written(s.begin(), cut_p);
+            output_->put(written);
+            endLine();
+            while (cut_p != s.end() and isspace(*cut_p)) {
+                ++cut_p;
             }
-            int startnext = thisline;
-            while (s[startnext] == ' ') {
-                startnext++;
-            }
-            s = s.substr(startnext);
-            cursor_ = 0;
-            thisline = maxColumns_ - cursor_;
+            s.erase(s.begin(), cut_p);
+            remaining = maxColumns_;
         }
         output_->put(s);
         cursor_ += s.size();
@@ -107,5 +103,6 @@ namespace archetype {
 
     void WrappedOutput::resetPager() {
         rows_ = 0;
+        cursor_ = 0;
     }
 }
