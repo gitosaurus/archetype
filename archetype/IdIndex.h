@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_IdIndex_h
-#define archetype_IdIndex_h
+#ifndef __archetype__IdIndex__
+#define __archetype__IdIndex__
 
 #include <iostream>
 #include <map>
@@ -136,4 +136,4 @@ namespace archetype {
 
 }
 
-#endif
+#endif /* defined(__archetype__IdIndex__) */

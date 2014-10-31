@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_ITestSuite_h
-#define archetype_ITestSuite_h
+#ifndef __archetype__ITestSuite__
+#define __archetype__ITestSuite__
 
 #include <iostream>
 #include <string>
@@ -63,4 +63,4 @@ namespace archetype {
 #define ARCHETYPE_TEST_EQUAL(actual, expected) checkCondition_(__FILE__, __LINE__, #actual, (actual), expected)
 #define ARCHETYPE_TEST(expr) checkCondition_(__FILE__, __LINE__, #expr, (expr));
 
-#endif
+#endif /* defined(__archetype__ITestSuite__) */

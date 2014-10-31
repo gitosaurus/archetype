@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_UserInput_h
-#define archetype_UserInput_h
+#ifndef __archetype__UserInput__
+#define __archetype__UserInput__
 
 #include <memory>
 #include <string>
@@ -28,4 +28,4 @@ namespace archetype {
     typedef std::shared_ptr<IUserInput> UserInput;
 }
 
-#endif
+#endif /* defined(__archetype__UserInput__) */

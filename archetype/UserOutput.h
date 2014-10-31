@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_UserOutput_h
-#define archetype_UserOutput_h
+#ifndef __archetype__UserOutput__
+#define __archetype__UserOutput__
 
 #include <string>
 #include <memory>
@@ -27,4 +27,4 @@ namespace archetype {
     typedef std::shared_ptr<IUserOutput> UserOutput;
 }
 
-#endif
+#endif /* defined(__archetype__UserOutput__) */

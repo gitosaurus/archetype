@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_StringInput_h
-#define archetype_StringInput_h
+#ifndef __archetype__StringInput__
+#define __archetype__StringInput__
 
 #include <sstream>
 
@@ -36,4 +36,4 @@ namespace archetype {
     };
 }
 
-#endif
+#endif /* defined(__archetype__StringInput__) */

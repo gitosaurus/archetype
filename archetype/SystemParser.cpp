@@ -82,7 +82,7 @@ namespace archetype {
     inline bool equal_string_values(const Value& v1, const Value& v2) {
         Value sv1 = v1->stringConversion();
         Value sv2 = v2->stringConversion();
-        return (sv1->isDefined() && sv2->isDefined() && sv1->getString() == sv2->getString());
+        return (sv1->isDefined() and sv2->isDefined() and sv1->getString() == sv2->getString());
     }
 
     inline void remove_fillers(list<Value>& wordValues) {
@@ -119,9 +119,9 @@ namespace archetype {
                 // At this point we have at least one match.  If it's proximate, we're completely
                 // done.  But if it isn't, then we want to check all remaining matches at this
                 // place, of this size, for a better match that is proximate.
-                if (!proximate_.count(matched_obj_id)) {
+                if (not proximate_.count(matched_obj_id)) {
                     auto next_np = np;
-                    while (++next_np != end(nounMatches_) && next_np->first.size() == phrase_size) {
+                    while (++next_np != end(nounMatches_) and next_np->first.size() == phrase_size) {
                         if (equal(match, match_end, begin(next_np->first), equal_string_values) and
                             proximate_.count(next_np->second)) {
                             // This is a nearer version of the same match phrase

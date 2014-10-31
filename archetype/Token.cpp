@@ -25,7 +25,7 @@ namespace archetype {
     }
 
     bool operator==(const Token& t1, const Token& t2) {
-        return t1.type() == t2.type() && t1.number() == t2.number();
+        return t1.type() == t2.type() and t1.number() == t2.number();
     }
 
     bool operator!=(const Token& t1, const Token& t2) {

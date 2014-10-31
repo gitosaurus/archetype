@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_StringIdIndex_h
-#define archetype_StringIdIndex_h
+#ifndef __archetype__StringIdIndex__
+#define __archetype__StringIdIndex__
 
 #include "IdIndex.h"
 
@@ -15,4 +15,4 @@ namespace archetype {
     typedef IdIndex<std::string> StringIdIndex;
 }
 
-#endif
+#endif /* defined(__archetype__StringIdIndex__) */

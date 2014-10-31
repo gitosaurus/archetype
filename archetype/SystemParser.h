@@ -75,6 +75,7 @@ namespace archetype {
         void matchNouns_(std::list<Value>& wordValues);
 
         SystemParser(const SystemParser&) = delete;
+        SystemParser& operator=(const SystemParser&) = delete;
     };
 }
 

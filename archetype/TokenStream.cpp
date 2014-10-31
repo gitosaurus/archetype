@@ -24,9 +24,9 @@ namespace archetype {
     public:
         TypeChecker();
         bool isWhite(char c) const          { return isspace(c); }
-        bool isLiteral(char c) const        { return c == '\'' || c == '"'; }
-        bool isIDStart(char c) const        { return isalpha(c) || c == '_'; }
-        bool isIDChar(char c) const         { return isIDStart(c) || isDigit(c); }
+        bool isLiteral(char c) const        { return c == '\'' or c == '"'; }
+        bool isIDStart(char c) const        { return isalpha(c) or c == '_'; }
+        bool isIDChar(char c) const         { return isIDStart(c) or isDigit(c); }
         bool isDigit(char c) const          { return isdigit(c); }
         bool isOperator(char c) const       { return opers_.count(c); }
         bool isLongOperator(char c) const   { return longOpers_.count(c); }

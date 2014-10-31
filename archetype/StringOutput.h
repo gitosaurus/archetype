@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_StringOutput_h
-#define archetype_StringOutput_h
+#ifndef __archetype__StringOutput__
+#define __archetype__StringOutput__
 
 #include <sstream>
 #include <string>
@@ -27,4 +27,4 @@ namespace archetype {
 
 }
 
-#endif
+#endif /* defined(__archetype__StringOutput__) */

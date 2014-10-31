@@ -6,8 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#ifndef archetype_ConsoleOutput_h
-#define archetype_ConsoleOutput_h
+#ifndef __archetype__ConsoleOutput__
+#define __archetype__ConsoleOutput__
 
 #include <iostream>
 
@@ -22,4 +22,4 @@ namespace archetype {
     };
 }
 
-#endif
+#endif /* defined(__archetype__ConsoleOutput__) */

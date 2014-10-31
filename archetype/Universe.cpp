@@ -165,7 +165,7 @@ namespace archetype {
                 if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
                     return obj;
                 }
-                if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT) &&
+                if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT) and
                     t.token().type() != Token::MESSAGE) {
                     t.expectGeneral("message literal or 'default'");
                     return nullptr;
