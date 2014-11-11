@@ -212,6 +212,10 @@ namespace archetype {
             assert(not is_binary(op));
         }
 
+        virtual bool verify(TokenStream& t) const override {
+            return right_->verify(t);
+        }
+
         virtual void write(Storage& out) const override {
             out << UNARY;
             int op_as_int = static_cast<int>(op());
@@ -408,6 +412,41 @@ namespace archetype {
         right_{move(right)}
         {
             assert(is_binary(op));
+        }
+
+        virtual bool verify(TokenStream& t) const override {
+            if (not (left_->verify(t) and right_->verify(t))) {
+                return false;
+            }
+
+            switch (op()) {
+                case Keywords::OP_DOT:
+                    if (not dynamic_cast<const IdentifierNode*>(right_.get())) {
+                        t.errorMessage("Right-hand side of \".\" must be an identifier");
+                        return false;
+                    }
+                    break;
+                case Keywords::OP_ASSIGN:
+                case Keywords::OP_C_CONCAT:
+                case Keywords::OP_C_DIVIDE:
+                case Keywords::OP_C_MINUS:
+                case Keywords::OP_C_MULTIPLY:
+                case Keywords::OP_C_PLUS:
+                    if (dynamic_cast<const IdentifierNode*>(left_.get())) {
+                        return true;
+                    } else if (const BinaryOperator* binary = dynamic_cast<const BinaryOperator*>(left_.get())) {
+                        if (binary->op() != Keywords::OP_DOT) {
+                            t.errorMessage("Left-hand side of assignment must be an attribute");
+                            return false;
+                        }
+                    } else {
+                        return false;
+                    }
+                    break;
+                default:
+                    return true;
+            }
+            return true;
         }
 
         virtual void write(Storage& out) const override {
@@ -789,12 +828,23 @@ namespace archetype {
         return move(t != nullptr ? t : expr);
     }
 
+    bool verify_expr(const Expression& expr, TokenStream& t) {
+        if (expr) {
+            return expr->verify(t);
+        } else {
+            return true;
+        }
+    }
+
     Expression make_expr(TokenStream& t) {
         t.considerNewline();
         Expression expr = tighten(form_expr(t));
         t.restoreNewlineSignificance();
-        // TODO:  will also verify the expression, which involves checking OP_ASSIGN, OP_DOT
-        return expr;
+        if (not verify_expr(expr, t)) {
+            return nullptr;
+        } else {
+            return expr;
+        }
     }
 
     Storage& operator<<(Storage& out, const Expression& expr) {

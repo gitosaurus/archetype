@@ -309,10 +309,28 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(val->getString(), string{"Save file? (y/n) "});
     }
 
+    void TestExpression::testVerification_() {
+        Expression expr1 = make_expr_from_str("3 + obj.attr - ?6");
+        ARCHETYPE_TEST(expr1 != nullptr);
+        Expression expr2 = make_expr_from_str("3 + obj.45 - ?6");
+        ARCHETYPE_TEST(expr2 == nullptr);
+        Expression expr3 = make_expr_from_str("14 / obj.\"hello\" * 6");
+        ARCHETYPE_TEST(expr3 == nullptr);
+        Expression expr4 = make_expr_from_str("obj.attr.5.hello.\"world\".eight");
+        ARCHETYPE_TEST(expr4 == nullptr);
+        Expression expr5 = make_expr_from_str("player.something.number := 6");
+        ARCHETYPE_TEST(expr5 != nullptr);
+        Expression expr6 = make_expr_from_str("5 := 6");
+        ARCHETYPE_TEST(expr6 == nullptr);
+        Expression expr7 = make_expr_from_str("('hello' -> world).tricky := 5");
+        ARCHETYPE_TEST(expr7 != nullptr);
+    }
+
     void TestExpression::runTests_() {
         testTranslation_();
         testEvaluation_();
         testSerialization_();
         testInput_();
+        testVerification_();
     }
 }

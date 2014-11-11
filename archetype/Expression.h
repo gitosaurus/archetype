@@ -39,9 +39,9 @@ namespace archetype {
 
         virtual Expression anyFewerNodeEquivalent() { return nullptr; }
         virtual int nodeCount() const { return 1; }
+        virtual bool verify(TokenStream& t) const { return true; }
 
         virtual void prefixDisplay(std::ostream& out) const = 0;
-
         virtual Value evaluate() const = 0;
     };
 
