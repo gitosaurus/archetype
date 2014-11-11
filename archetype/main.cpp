@@ -22,6 +22,19 @@
 #include "FileStorage.h"
 #include "Wellspring.h"
 
+namespace archetype {
+    static const char VersionString[] = "2.0";
+
+    inline void finish() {
+        UserOutput output = Universe::instance().output();
+        output->endLine();
+        output->put("Archetype ");
+        output->put(VersionString);
+        output->endLine();
+        Universe::destroy();
+    }
+}
+
 using namespace std;
 using namespace archetype;
 
@@ -66,7 +79,9 @@ int main(int argc, const char* argv[]) {
         return exit_code;
     }
     if (opts.count("repl")) {
-        return repl();
+        int errors = repl();
+        finish();
+        return errors;
     }
 
     if (opts.count("source")) {
@@ -91,8 +106,10 @@ int main(int argc, const char* argv[]) {
                 throw runtime_error("No 'START' method on main");
             }
         } catch (const archetype::QuitGame& quit_game) {
+            finish();
             return 0;
         } catch (const std::exception& e) {
+            finish();
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
@@ -125,8 +142,10 @@ int main(int argc, const char* argv[]) {
                     }
                 }
             } catch (const archetype::QuitGame& quit_game) {
+                finish();
                 return 0;
             } catch (const std::exception& e) {
+                finish();
                 cerr << "ERROR: " << e.what() << endl;
                 return 1;
             }
