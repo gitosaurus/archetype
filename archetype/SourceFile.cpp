@@ -12,11 +12,11 @@ using namespace std;
 
 namespace archetype {
     SourceFile::SourceFile(std::string source, stream_ptr& in):
-    filename_(source),
-    file_(move(in)),
-    fileLine_(0),
-    linePos_(0),
-    lastChar_(0)
+    filename_{source},
+    file_{move(in)},
+    fileLine_{0},
+    linePos_{0},
+    lastChar_{0}
     { }
 
     char SourceFile::readChar() {

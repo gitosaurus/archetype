@@ -113,10 +113,10 @@ namespace archetype {
         char next_ch;
         string s;
 
-        /* Check for old token.  newlines_ may have changed while (an old
-         token was unconsumed, so if the unconsumed token was a NEWLINE
-         and newlines_ is false, we must continue and get another token;
-         otherwise we jump out with what we have. */
+        // Check for old token.  newlines_ may have changed while (an old
+        // token was unconsumed, so if the unconsumed token was a NEWLINE
+        // and newlines_ is false, we must continue and get another token;
+        // otherwise we jump out with what we have.
 
         if (not consumed_) {
             consumed_ = true;
@@ -153,7 +153,7 @@ namespace archetype {
                         state = NUMBER;
                     else if (TypeCheck.isOperator(next_ch))
                         state = OPERATOR;
-                    else                    /* a single-character token */
+                    else                    // a single-character token
                         switch (next_ch) {
                             case '#':
                                 state = COMMENT;
@@ -171,7 +171,7 @@ namespace archetype {
                                 state = STOP;
                                 break;
                         } // switch
-                    break; /* case */
+                    break; // case
 
                 case WHITE:
                     while ((state == WHITE) and (TypeCheck.isWhite(next_ch))) {
@@ -183,7 +183,7 @@ namespace archetype {
                             next_ch = source_->readChar();
                     }
                     if (state == WHITE) {
-                        if (next_ch) {         /* decide on new non-white character */
+                        if (next_ch) {         // decide on new non-white character
                             state = DECIDE;
                         } else {
                             state = STOP;
@@ -203,8 +203,8 @@ namespace archetype {
                         else
                             state = STOP;
                     }
-                    else {                        /* quoted literal */
-                        source_->unreadChar(next_ch);           /* leave \n for the next guy */
+                    else {                        // quoted literal
+                        source_->unreadChar(next_ch);           // leave \n for the next guy
                         token_ = Token(Token::QUOTE_LITERAL,
                                        Universe::instance().TextLiterals.index(s));
                         state      = STOP;
@@ -231,10 +231,10 @@ namespace archetype {
                                     errorMessage(out.str());
                                     break;
                                 }
-                            }  /* switch */
+                            }  // switch
                         }
                         s += next_ch;
-                    };  /* while */
+                    };  // while
 
                     if (next_ch != bracket) {
                         source_->showPosition(cout);
@@ -254,13 +254,13 @@ namespace archetype {
                             default:
                                 cout << "Programmer error: unknown literal type" << endl;
                                 break;
-                        }  /* switch */
+                        }  // switch
 
                         state = STOP;
 
-                    }  /* else */
+                    }  // else
 
-                }  /* LITERAL */
+                }  // LITERAL
                     break;
 
                 case IDENTIFIER: {
@@ -271,7 +271,7 @@ namespace archetype {
                     }
                     if (not (TypeCheck.isIDChar(next_ch)))
                         source_->unreadChar(next_ch);
-                    /* Check for reserved words or operators */
+                    // Check for reserved words or operators
                     if (Keywords::instance().Reserved.has(s)) {
                         token_ = Token(Token::RESERVED_WORD,
                                        Keywords::instance().Reserved.index(s));
@@ -308,7 +308,7 @@ namespace archetype {
                     s = "";
                     while (next_ch and
                            (TypeCheck.isLongOperator(next_ch)) and
-                           (s != ">>")                 /* have to stop short with >> */
+                           (s != ">>")                 // have to stop short with >>
                            ) {
                         s += next_ch;
                         next_ch = source_->readChar();
@@ -335,14 +335,14 @@ namespace archetype {
                             token_ = Token(Token::OPERATOR,
                                            Keywords::instance().Operators.index(s));
                         }
-                    }     /* all cases which are not >> */
-                }         /* OPERATOR */
+                    }     // all cases which are not >>
+                }         // OPERATOR
                     break;
 
                 case STOP:
                     break;
             } // switch
-        } /* while - primary state machine loop */
+        } // while - primary state machine loop
 
         return next_ch != '\0';
     }
