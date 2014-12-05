@@ -109,7 +109,6 @@ namespace archetype {
                         case NORMALIZE:
                             state_ = IDLING;
                             return Value(new StringValue(parser_->normalized()));
-                            break;
                         case NEXT_OBJECT:
                             state_ = IDLING;
                             return parser_->nextObject();
@@ -132,6 +131,19 @@ namespace archetype {
                             state_ = IDLING;
                             break;
                         }
+
+                        case DEBUG_MESSAGES:
+                            Object::Debug = not Object::Debug;
+                            state_ = IDLING;
+                            return Value{new BooleanValue{Object::Debug}};
+                        case DEBUG_EXPRESSIONS:
+                            IExpression::Debug = not IExpression::Debug;
+                            state_ = IDLING;
+                            return Value{new BooleanValue{IExpression::Debug}};
+                        case DEBUG_STATEMENTS:
+                            IStatement::Debug = not IStatement::Debug;
+                            state_ = IDLING;
+                            return Value{new BooleanValue{IStatement::Debug}};
                     }
                 }
                 break;

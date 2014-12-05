@@ -20,6 +20,8 @@ using namespace std;
 
 namespace archetype {
 
+    bool IExpression::Debug = false;
+
     enum ExpressionType_e {
         RESERVED,
         UNARY,
@@ -27,6 +29,15 @@ namespace archetype {
         IDENTIFIER,
         VALUE
     };
+
+    static void debug_expr(const IExpression& expr, const Value& result) {
+        ostringstream out;
+        expr.prefixDisplay(out);
+        out << " => ";
+        result->display(out);
+        Universe::instance().output()->put(out.str());
+        Universe::instance().output()->endLine();
+    }
 
     inline Value as_boolean_value(bool value) {
         return Value{new BooleanValue{value}};
@@ -163,19 +174,27 @@ namespace archetype {
         int id() const { return id_; }
         virtual void write(Storage& out) const override { out << IDENTIFIER << id_; }
         virtual Value evaluate() const override {
+            Value result;
             // Closest binding:  an attribute in the current object
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
             if (selfObject and selfObject->hasAttribute(id_)) {
-                return Value(new AttributeValue(selfObject->id(), id_));
+                result = Value(new AttributeValue(selfObject->id(), id_));
+            } else {
+                // Next:  an object in the Universe
+                auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
+                if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
+                    result = Value(new ObjectValue(id_obj_p->second));
+                }
             }
-            // Next:  an object in the Universe
-            auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
-            if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
-                return Value(new ObjectValue(id_obj_p->second));
-            }
-
             // Finally:  just a keyword value
-            return Value(new IdentifierValue(id_));
+            if (not result) {
+                result = Value(new IdentifierValue(id_));
+            }
+            if (IExpression::Debug) {
+                debug_expr(*this, result);
+            }
+            assert(result);
+            return result;
         }
         virtual void prefixDisplay(ostream& out) const override {
             out << Universe::instance().Identifiers.get(id_);
@@ -224,38 +243,45 @@ namespace archetype {
 
         virtual Value evaluate() const {
             Value rv = right_->evaluate()->valueConversion();
+            Value result;
             switch (op()) {
                 case Keywords::OP_CHS: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined()) {
-                        return Value{new NumericValue{-rv_n->getNumber()}};
+                        result = Value{new NumericValue{-rv_n->getNumber()}};
                     } else {
-                        return rv_n;
+                        result = move(rv_n);
                     }
+                    break;
                 }
                 case Keywords::OP_NUMERIC:
-                    return rv->numericConversion();
+                    result = rv->numericConversion();
+                    break;
                 case Keywords::OP_NOT:
-                    return Value{new BooleanValue{not rv->isTrueEnough()}};
+                    result = Value{new BooleanValue{not rv->isTrueEnough()}};
+                    break;
                 case Keywords::OP_STRING:
-                    return rv->stringConversion();
+                    result = rv->stringConversion();
+                    break;
                 case Keywords::OP_RANDOM: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined() and rv_n->getNumber() > 0) {
                         double r = drand48();
                         int r_i = static_cast<int>(r * rv_n->getNumber()) + 1;
-                        return Value{new NumericValue{r_i}};
+                        result = Value{new NumericValue{r_i}};
                     } else {
-                        return Value{new UndefinedValue};
+                        result = Value{new UndefinedValue};
                     }
+                    break;
                 }
                 case Keywords::OP_LENGTH: {
                     Value rv_s = rv->stringConversion();
                     if (rv_s->isDefined()) {
-                        return Value{new NumericValue{static_cast<int>(rv_s->getString().size())}};
+                        result = Value{new NumericValue{static_cast<int>(rv_s->getString().size())}};
                     } else {
-                        return rv_s;
+                        result = move(rv_s);
                     }
+                    break;
                 }
                 default:
                     if (is_binary(op())) {
@@ -266,6 +292,11 @@ namespace archetype {
                                           Keywords::instance().Operators.get(op()));
                     }
             }
+            if (IExpression::Debug) {
+                debug_expr(*this, result);
+            }
+            assert(result);
+            return result;
         }
 
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
@@ -456,6 +487,7 @@ namespace archetype {
         }
 
         virtual Value evaluate() const {
+            Value result;
             // Sort evaluations by "signature"
             switch (op()) {
                 case Keywords::OP_CONCAT:
@@ -463,30 +495,34 @@ namespace archetype {
                     Value lv_s = left_->evaluate()->stringConversion();
                     Value rv_s = right_->evaluate()->stringConversion();
                     if (lv_s->isDefined() and rv_s->isDefined()) {
-                        return eval_ss(op(), lv_s->getString(), rv_s->getString());
+                        result = eval_ss(op(), lv_s->getString(), rv_s->getString());
                     } else {
-                        return Value{new UndefinedValue};
+                        result = Value{new UndefinedValue};
                     }
+                    break;
                 }
                 case Keywords::OP_LEFTFROM:
                 case Keywords::OP_RIGHTFROM: {
                     Value lv_s = left_->evaluate()->stringConversion();
                     Value rv_n = right_->evaluate()->numericConversion();
                     if (lv_s->isDefined() and rv_n->isDefined()) {
-                        return eval_sn(op(), lv_s->getString(), rv_n->getNumber());
+                        result = eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
-                        return Value{new UndefinedValue};
+                        result = Value{new UndefinedValue};
                     }
+                    break;
                 }
                 case Keywords::OP_AND: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
-                    return Value{new BooleanValue{lv->isTrueEnough() and rv->isTrueEnough()}};
+                    result = Value{new BooleanValue{lv->isTrueEnough() and rv->isTrueEnough()}};
+                    break;
                 }
                 case Keywords::OP_OR: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
-                    return Value{new BooleanValue{lv->isTrueEnough() or rv->isTrueEnough()}};
+                    result = Value{new BooleanValue{lv->isTrueEnough() or rv->isTrueEnough()}};
+                    break;
                 }
                 case Keywords::OP_PLUS:
                 case Keywords::OP_MINUS:
@@ -496,10 +532,11 @@ namespace archetype {
                     Value lv_n = left_->evaluate()->numericConversion();
                     Value rv_n = right_->evaluate()->numericConversion();
                     if (lv_n->isDefined() and rv_n->isDefined()) {
-                        return eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
+                        result = eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
                     } else {
-                        return Value{new UndefinedValue};
+                        result = Value{new UndefinedValue};
                     }
+                    break;
                 }
 
                 case Keywords::OP_C_PLUS:
@@ -517,7 +554,8 @@ namespace archetype {
                     } else {
                         rv_c = Value{new UndefinedValue};
                     }
-                    return lv_a->assign(std::move(rv_c));
+                    result = lv_a->assign(std::move(rv_c));
+                    break;
                 }
 
                 case Keywords::OP_C_CONCAT: {
@@ -532,8 +570,8 @@ namespace archetype {
                     } else {
                         rv_c = Value{new UndefinedValue};
                     }
-                    return lv_a->assign(std::move(rv_c));
-
+                    result = lv_a->assign(std::move(rv_c));
+                    break;
                 }
 
                 case Keywords::OP_EQ:
@@ -542,30 +580,33 @@ namespace archetype {
                 case Keywords::OP_LE:
                 case Keywords::OP_GE:
                 case Keywords::OP_GT:
-                    return as_boolean_value(eval_compare(op(),
+                    result = as_boolean_value(eval_compare(op(),
                                                          left_->evaluate()->valueConversion(),
                                                          right_->evaluate()->valueConversion()));
+                    break;
 
                 case Keywords::OP_ASSIGN: {
                     Value lv_a = left_->evaluate()->attributeConversion();
                     Value rv_v = right_->evaluate()->valueConversion();
-                    return lv_a->assign(std::move(rv_v));
+                    result = lv_a->assign(std::move(rv_v));
+                    break;
                 }
 
                 case Keywords::OP_DOT: {
                     Value lv_o = left_->evaluate()->objectConversion();
                     if (not lv_o->isDefined()) {
-                        return Value{new UndefinedValue};
+                        result = Value{new UndefinedValue};
                     } else {
                         int object_id = lv_o->getObject();
                         const IdentifierNode* id_node = dynamic_cast<const IdentifierNode*>(right_.get());
                         if (id_node) {
                             int attribute_id = id_node->id();
-                            return Value(new AttributeValue(object_id, attribute_id));
+                            result = Value(new AttributeValue(object_id, attribute_id));
                         } else {
                             throw logic_error("Non-identifier node on right-hand-side of OP_DOT");
                         }
                     }
+                    break;
                 }
 
                 case Keywords::OP_SEND:
@@ -573,16 +614,18 @@ namespace archetype {
                     Value lv_v = left_->evaluate()->valueConversion();
                     Value rv_o = right_->evaluate()->objectConversion();
                     if (not rv_o->isDefined()) {
-                        return rv_o;
-                    }
-                    ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
-                    if (not recipient) {
-                        return Value{new UndefinedValue};
-                    } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
-                        return Object::pass(recipient, std::move(lv_v));
+                        result = move(rv_o);
                     } else {
-                        return Object::send(recipient, std::move(lv_v));
+                        ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
+                        if (not recipient) {
+                            result = Value{new UndefinedValue};
+                        } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
+                            result = Object::pass(recipient, std::move(lv_v));
+                        } else {
+                            result = Object::send(recipient, std::move(lv_v));
+                        }
                     }
+                    break;
                 }
 
                 default:
@@ -594,6 +637,11 @@ namespace archetype {
                                           Keywords::instance().Operators.get(op()));
                     }
             }
+            if (IExpression::Debug) {
+                debug_expr(*this, result);
+            }
+            assert(result);
+            return result;
         }
 
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
@@ -631,28 +679,40 @@ namespace archetype {
     }
 
     Value ReservedWordNode::evaluate() const {
+        Value result;
         switch (word_) {
             case Keywords::RW_SELF:
-                return Value{new ObjectValue{Universe::instance().currentContext().selfObject->id()}};
+                result = Value{new ObjectValue{Universe::instance().currentContext().selfObject->id()}};
+                break;
             case Keywords::RW_SENDER:
-                return Value{new ObjectValue{Universe::instance().currentContext().senderObject->id()}};
+                result = Value{new ObjectValue{Universe::instance().currentContext().senderObject->id()}};
+                break;
             case Keywords::RW_MESSAGE:
-                return Universe::instance().currentContext().messageValue->clone();
+                result = Universe::instance().currentContext().messageValue->clone();
+                break;
             case Keywords::RW_EACH:
-                return Value{new ObjectValue{Universe::instance().currentContext().eachObject->id()}};
+                result = Value{new ObjectValue{Universe::instance().currentContext().eachObject->id()}};
+                break;
             case Keywords::RW_READ:
-                return Value{new StringValue{Universe::instance().input()->getLine()}};
+                result = Value{new StringValue{Universe::instance().input()->getLine()}};
+                break;
             case Keywords::RW_KEY: {
                 char key = Universe::instance().input()->getKey();
                 if (key == '\0') {
-                    return Value{new StringValue{""}};
+                    result = Value{new StringValue{""}};
                 } else {
-                    return Value{new StringValue{string{key}}};
+                    result = Value{new StringValue{string{key}}};
                 }
+                break;
             }
             default:
                 throw logic_error("Attempt to evaluate reserved word which is not a lambda");
         }
+        if (IExpression::Debug) {
+            debug_expr(*this, result);
+        }
+        assert(result);
+        return result;
     }
 
     Expression get_scalar(TokenStream& t) {

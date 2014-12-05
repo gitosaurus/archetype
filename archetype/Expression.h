@@ -28,6 +28,8 @@ namespace archetype {
     protected:
         IExpression() { }
     public:
+        static bool Debug;
+        
         IExpression(const IExpression&) = delete;
         IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }

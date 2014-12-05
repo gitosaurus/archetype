@@ -22,6 +22,8 @@ namespace archetype {
     protected:
         IStatement() { }
     public:
+        static bool Debug;
+
         IStatement(const IStatement&) = delete;
         IStatement& operator=(const IStatement&) = delete;
         virtual ~IStatement() { }

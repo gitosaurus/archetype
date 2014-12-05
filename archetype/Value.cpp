@@ -287,7 +287,16 @@ namespace archetype {
                 return;
             }
         }
-        out << "<object " << objectId_ << '>';
+        out << "<object " << objectId_ << ", type ";
+        ObjectPtr obj = Universe::instance().getObject(objectId_);
+        ObjectPtr parent = obj->parent();
+        if (parent) {
+            ObjectValue parentValue{parent->id()};
+            parentValue.display(out);
+        } else {
+            out << "null";
+        }
+        out << '>';
     }
 
     void ObjectValue::write(Storage& out) const {

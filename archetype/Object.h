@@ -31,6 +31,7 @@ namespace archetype {
         std::map<int, Statement> methods_;
     public:
         static const int INVALID = -1;
+        static bool Debug;
 
         Object(int parent_id = INVALID):
         parentId_{parent_id},

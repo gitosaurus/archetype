@@ -9,6 +9,7 @@
 #include <iostream>
 #include <limits>
 #include <cassert>
+#include <sstream>
 
 #include "Object.h"
 #include "Universe.h"
@@ -18,6 +19,8 @@ using namespace std;
 namespace archetype {
 
     const int DefaultMethod = numeric_limits<int>::max();
+
+    bool Object::Debug = false;
 
     ObjectPtr Object::parent() const {
         if (parentId_ < 0) {
@@ -73,10 +76,28 @@ namespace archetype {
         Value absence{new AbsentValue};
         Value result{new AbsentValue};
         if (defined_message->isDefined()) {
+            if (Debug) {
+                ostringstream out;
+                out << "dispatching ";
+                defined_message->display(out);
+                out << " to ";
+                ObjectValue target{id()};
+                target.display(out);
+                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->endLine();
+            }
             int message_id = defined_message->getMessage();
             result = executeMethod(message_id);
         }
         if (result->isSameValueAs(absence)) {
+            if (Debug) {
+                ostringstream out;
+                out << "dispatching default method to ";
+                ObjectValue target{id()};
+                target.display(out);
+                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->endLine();
+            }
             result = executeDefaultMethod();
         }
         return result;

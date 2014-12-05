@@ -29,6 +29,8 @@ namespace archetype {
         OUTPUT
     };
 
+    bool IStatement::Debug = false;
+
     void CompoundStatement::read(Storage& in) {
         int count;
         in >> count;
@@ -168,8 +170,16 @@ namespace archetype {
     Value IfStatement::execute() const {
         Value conditionValue = condition_->evaluate();
         if (conditionValue->isTrueEnough()) {
+            if (IStatement::Debug) {
+                Universe::instance().output()->put("if-condition true; choosing then-branch");
+                Universe::instance().output()->endLine();
+            }
             return thenBranch_->execute();
         } else if (elseBranch_){
+            if (IStatement::Debug) {
+                Universe::instance().output()->put("if-condition false; choosing else-branch");
+                Universe::instance().output()->endLine();
+            }
             return elseBranch_->execute();
         } else {
             return Value{new UndefinedValue};
@@ -272,10 +282,25 @@ namespace archetype {
         for (auto const& case_pair : cases_) {
             Value case_value = case_pair.match->evaluate()->valueConversion();
             if (eval_compare(Keywords::OP_EQ, value, case_value)) {
+                if (IStatement::Debug) {
+                    ostringstream out;
+                    value->display(out);
+                    out << " matched case ";
+                    case_value->display(out);
+                    Universe::instance().output()->put(out.str());
+                    Universe::instance().output()->endLine();
+                }
                 return case_pair.action->execute();
             }
         }
         if (defaultCase_) {
+            if (IStatement::Debug) {
+                ostringstream out;
+                out << "default case; nothing matched ";
+                value->display(out);
+                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->endLine();
+            }
             return defaultCase_->execute();
         }
         return Value{new UndefinedValue};
@@ -325,8 +350,17 @@ namespace archetype {
         ObjectPtr object{Universe::instance().defineNewObject(typeId_)};
         Value object_v{new ObjectValue{object->id()}};
         Value result{object_v->clone()};
-        Value target = target_->evaluate()->attributeConversion();
+        Value target{target_->evaluate()->attributeConversion()};
         target->assign(move(object_v));
+        if (IStatement::Debug) {
+            ostringstream out;
+            out << "created new instance ";
+            result->display(out);
+            out << " assigned to ";
+            target->display(out);
+            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->endLine();
+        }
         // Intentionally return a clone of the object value, not the target, in order not to
         // leak an l-value out to the caller.
         return result;
@@ -351,6 +385,13 @@ namespace archetype {
     Value DestroyStatement::execute() const {
         Value victim_v{victim_->evaluate()->objectConversion()};
         if (victim_v->isDefined()) {
+            if (IStatement::Debug) {
+                ostringstream out;
+                out << "destroyed ";
+                victim_v->display(out);
+                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->endLine();
+            }
             Universe::instance().destroyObject(victim_v->getObject());
         }
         return Value{new UndefinedValue};
@@ -480,6 +521,15 @@ namespace archetype {
             Value selection = selection_->evaluate();
             if (selection->isTrueEnough()) {
                 result = action_->execute();
+                if (IStatement::Debug) {
+                    ostringstream out;
+                    out << "for ";
+                    selection->display(out);
+                    out << " is defined, resulting in ";
+                    result->display(out);
+                    Universe::instance().output()->put(out.str());
+                    Universe::instance().output()->endLine();
+                }
                 if (result->isSameValueAs(break_v)) {
                     // The for-loop "consumes" the break so it doesn't keep breaking outer loops
                     result.reset(new UndefinedValue);
@@ -521,6 +571,15 @@ namespace archetype {
                 break;
             }
             result = action_->execute();
+            if (IStatement::Debug) {
+                ostringstream out;
+                out << "while ";
+                condition->display(out);
+                out << " is defined; resulting in ";
+                result->display(out);
+                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->endLine();
+            }
             if (result->isSameValueAs(break_v)) {
                 // The while-loop "consumes" the break so it doesn't keep breaking outer loops
                 result.reset(new UndefinedValue);
