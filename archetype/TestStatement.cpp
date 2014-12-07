@@ -22,14 +22,6 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestStatement);
 
-    inline Statement make_stmt_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
-        TokenStream token_stream(src);
-        Statement stmt = make_statement(token_stream);
-        return stmt;
-    }
-
     void TestStatement::testConstruction_() {
         Statement stmt1 = make_stmt_from_str("{}");
         ARCHETYPE_TEST(stmt1 != nullptr);

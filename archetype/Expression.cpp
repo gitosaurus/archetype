@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <random>
 
 #include "Expression.h"
 #include "Keywords.h"
@@ -266,8 +267,10 @@ namespace archetype {
                 case Keywords::OP_RANDOM: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined() and rv_n->getNumber() > 0) {
-                        double r = drand48();
-                        int r_i = static_cast<int>(r * rv_n->getNumber()) + 1;
+                        random_device rd;
+                        mt19937 gen(rd());
+                        uniform_int_distribution<> dis(1, rv_n->getNumber());
+                        int r_i = dis(gen);
                         result = Value{new NumericValue{r_i}};
                     } else {
                         result = Value{new UndefinedValue};

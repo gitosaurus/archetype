@@ -29,12 +29,6 @@ namespace archetype {
         return SourceFilePtr(new SourceFile(name, in));
     }
 
-    inline Statement make_stmt_from_str(string src_str) {
-        TokenStream token_stream(make_source_from_str("test", src_str));
-        Statement stmt = make_statement(token_stream);
-        return stmt;
-    }
-
     void TestSystemObject::testSorting_() {
         Universe::destroy();
 

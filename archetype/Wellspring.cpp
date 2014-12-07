@@ -18,17 +18,15 @@ using namespace std;
 
 namespace archetype {
     SourceFilePtr Wellspring::primarySource(string file_path) {
-        char full_path_c[4096];
-        if (not realpath(file_path.c_str(), full_path_c)) {
-            throw invalid_argument(file_path + " does not exist");
+        string::size_type last_slash = file_path.rfind('/');
+        string basename = file_path.substr(0, last_slash + 1);
+        if (basename.empty()) {
+            basename = "./";
         }
-        string full_path(full_path_c);
-        string::size_type last_slash = full_path.rfind('/');
-        string basename = full_path.substr(0, last_slash);
         paths_.push_front(basename);
         // Run the filename alone through the regular search now, since that
         // will also supply the default extension.
-        return open(full_path.substr(last_slash + 1));
+        return open(file_path.substr(last_slash + 1));
     }
 
     SourceFilePtr Wellspring::open(string source_name) {

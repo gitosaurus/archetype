@@ -33,5 +33,8 @@ Wellspring.o \
 WrappedOutput.o
 
 CXXFLAGS=-std=c++0x
-archetype : $(OBJECTS)
+archetype: $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $@
+
+clean:
+	$(RM) -f $(OBJECTS) archetype archetype.exe
