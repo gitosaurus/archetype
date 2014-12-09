@@ -26,7 +26,7 @@ namespace archetype {
             return ch;
         } else {
             linePos_++;
-            while (linePos_ >= lineBuffer_.size()) {
+            while (linePos_ >= int(lineBuffer_.size())) {
                 if (file_->eof()) {
                     return 0;
                 }

@@ -62,7 +62,7 @@ namespace archetype {
             remaining += SafetyMargin;
         }
 
-        while (s.size() > remaining) {
+        while (int(s.size()) > remaining) {
             // Walk backward to find a breaking point.
             auto cut_p = s.begin() + remaining;
             while (not isspace(*cut_p) and cut_p != s.begin()) {
@@ -76,7 +76,7 @@ namespace archetype {
              the entire string; i.e. print nothing, finish the line and go on.
              */
 
-            if (cut_p == s.begin() and s.size() > maxColumns_) {
+            if (cut_p == s.begin() and int(s.size()) > maxColumns_) {
                 cut_p = s.begin() + remaining;
             }
 

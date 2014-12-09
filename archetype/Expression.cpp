@@ -124,8 +124,8 @@ namespace archetype {
             case Keywords::OP_C_CONCAT: return 1;
             case Keywords::OP_ASSIGN: return 1;
 
-            case Keywords::NumOperators:
-                throw logic_error("Attempt to look up precedence of NumOperators");
+            default:
+                throw logic_error("Attempt to look up precedence of nonexistent operator");
                 break;
         }
     }
