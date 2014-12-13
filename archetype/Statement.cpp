@@ -168,22 +168,38 @@ namespace archetype {
     }
 
     Value IfStatement::execute() const {
-        Value conditionValue = condition_->evaluate();
-        if (conditionValue->isTrueEnough()) {
-            if (IStatement::Debug) {
-                Universe::instance().output()->put("if-condition true; choosing then-branch");
-                Universe::instance().output()->endLine();
+        Value condition_value = condition_->evaluate();
+        bool true_enough = condition_value->isTrueEnough();
+        if (IStatement::Debug) {
+            ostringstream out;
+            out << "if ";
+            condition_->prefixDisplay(out);
+            out << " => ";
+            condition_value->display(out);
+            if (true_enough) {
+                out << "then-branch";
+            } else {
+                out << "else-branch";
             }
-            return thenBranch_->execute();
-        } else if (elseBranch_){
-            if (IStatement::Debug) {
-                Universe::instance().output()->put("if-condition false; choosing else-branch");
-                Universe::instance().output()->endLine();
-            }
-            return elseBranch_->execute();
-        } else {
-            return Value{new UndefinedValue};
+            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->endLine();
         }
+        Value result;
+        if (true_enough) {
+            result = thenBranch_->execute();
+        } else if (elseBranch_){
+            result = elseBranch_->execute();
+        } else {
+            result = Value{new UndefinedValue};
+        }
+        if (IExpression::Debug) {
+            ostringstream out;
+            out << "if-result => ";
+            result->display(out);
+            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->endLine();
+        }
+        return result;
     }
 
     void CaseStatement::read(Storage& in) {
@@ -278,13 +294,13 @@ namespace archetype {
     }
 
     Value CaseStatement::execute() const {
-        Value value = testExpression_->evaluate()->valueConversion();
+        Value test_value = testExpression_->evaluate()->valueConversion();
         for (auto const& case_pair : cases_) {
             Value case_value = case_pair.match->evaluate()->valueConversion();
-            if (eval_compare(Keywords::OP_EQ, value, case_value)) {
+            if (eval_compare(Keywords::OP_EQ, test_value, case_value)) {
                 if (IStatement::Debug) {
                     ostringstream out;
-                    value->display(out);
+                    test_value->display(out);
                     out << " matched case ";
                     case_value->display(out);
                     Universe::instance().output()->put(out.str());
@@ -297,7 +313,7 @@ namespace archetype {
             if (IStatement::Debug) {
                 ostringstream out;
                 out << "default case; nothing matched ";
-                value->display(out);
+                test_value->display(out);
                 Universe::instance().output()->put(out.str());
                 Universe::instance().output()->endLine();
             }
@@ -518,24 +534,38 @@ namespace archetype {
             }
             ContextScope c;
             c->eachObject = each_object;
-            Value selection = selection_->evaluate();
-            if (selection->isTrueEnough()) {
+            Value selectionValue = selection_->evaluate();
+            if (selectionValue->isTrueEnough()) {
                 result = action_->execute();
                 if (IStatement::Debug) {
                     ostringstream out;
-                    out << "for ";
-                    selection->display(out);
-                    out << " is defined, resulting in ";
-                    result->display(out);
+                    out << "for each = ";
+                    ObjectValue each_value{object_id};
+                    each_value.display(out);
+                    out << "; ";
+                    selection_->prefixDisplay(out);
+                    out << " => ";
+                    selectionValue->display(out);
                     Universe::instance().output()->put(out.str());
                     Universe::instance().output()->endLine();
                 }
                 if (result->isSameValueAs(break_v)) {
+                    if (IExpression::Debug) {
+                        Universe::instance().output()->put("break for");
+                        Universe::instance().output()->endLine();
+                    }
                     // The for-loop "consumes" the break so it doesn't keep breaking outer loops
                     result.reset(new UndefinedValue);
                     break;
                 }
             }
+        }
+        if (IStatement::Debug) {
+            ostringstream out;
+            out << "for-result => ";
+            result->display(out);
+            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->endLine();
         }
         return result;
     }
@@ -566,25 +596,43 @@ namespace archetype {
         Value break_v{new BreakValue};
         Value result{new UndefinedValue};
         for (;;) {
-            Value condition = condition_->evaluate();
-            if (not condition->isTrueEnough()) {
-                break;
-            }
-            result = action_->execute();
+            Value condition_value = condition_->evaluate();
+            bool true_enough = condition_value->isTrueEnough();
             if (IStatement::Debug) {
                 ostringstream out;
                 out << "while ";
-                condition->display(out);
-                out << " is defined; resulting in ";
-                result->display(out);
+                condition_->prefixDisplay(out);
+                out << " => ";
+                condition_value->display(out);
+                out << "; ";
+                if (true_enough) {
+                    out << "continuing";
+                } else {
+                    out << "leaving";
+                }
                 Universe::instance().output()->put(out.str());
                 Universe::instance().output()->endLine();
             }
+            if (not true_enough) {
+                break;
+            }
+            result = action_->execute();
             if (result->isSameValueAs(break_v)) {
+                if (IExpression::Debug) {
+                    Universe::instance().output()->put("break while");
+                    Universe::instance().output()->endLine();
+                }
                 // The while-loop "consumes" the break so it doesn't keep breaking outer loops
                 result.reset(new UndefinedValue);
                 break;
             }
+        }
+        if (IStatement::Debug) {
+            ostringstream out;
+            out << "while-result => ";
+            result->display(out);
+            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->endLine();
         }
         return result;
     }
@@ -592,7 +640,7 @@ namespace archetype {
     /**
      @param t (IN/OUT)             -- the token stream
 
-     @return A pointer to the statment; or nullptr if (the statement was not syntactically
+     @return A pointer to the statement; or nullptr if (the statement was not syntactically
      correct.
 
      BNF:

@@ -326,8 +326,9 @@ namespace archetype {
         obj_v->display(out);
         out << '.';
         out << Universe::instance().Identifiers.get(attributeId_);
-        out << " : ";
+        out << "(";
         dereference_()->display(out);
+        out << ")";
     }
 
     void AttributeValue::write(Storage& out) const {
