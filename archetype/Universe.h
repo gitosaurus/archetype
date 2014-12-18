@@ -11,6 +11,7 @@
 
 #include <string>
 #include <map>
+#include <set>
 #include <memory>
 #include <stack>
 #include <stdexcept>
@@ -26,6 +27,13 @@
 
 namespace archetype {
 
+    enum IdentifierKind_e {
+        OBJECT_ID,
+        ATTRIBUTE_ID,
+        KEYWORD_ID,
+        UNKNOWN_ID
+    };
+
     class QuitGame : public std::runtime_error {
     public:
         QuitGame(): runtime_error("Exiting.") { }
@@ -33,9 +41,11 @@ namespace archetype {
 
     typedef IdIndex<ObjectPtr> ObjectIndex;
     typedef std::map<int, int> IdentifierMap;
+    typedef std::map<int, IdentifierKind_e> IdentifierKindMap;
 
     class Universe {
     public:
+
         static const int NullObjectId = 0;
         static const int SystemObjectId = 1;
         static const int UserObjectsBeginAt = 2;
@@ -67,6 +77,8 @@ namespace archetype {
         UserOutput output() const { return output_; }
         void setOutput(UserOutput output) { output_ = output; }
 
+        void classify(TokenStream& t, int identifier, IdentifierKind_e kind);
+
         int objectCount() const;
         ObjectPtr getObject(int object_id) const;
         ObjectPtr getObject(std::string identifier) const;
@@ -93,6 +105,8 @@ namespace archetype {
         std::stack<Context> context_;
         UserInput  input_;
         UserOutput output_;
+
+        IdentifierKindMap kinds_;
 
         static Universe* instance_;
 

@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <sstream>
 #include <cassert>
 #include <limits>
 
@@ -83,6 +84,36 @@ namespace archetype {
         context_.push(context);
     }
 
+    ostream& operator<< (ostream& out, IdentifierKind_e kind) {
+        switch (kind) {
+            case OBJECT_ID:
+                out << "an object";
+                break;
+            case ATTRIBUTE_ID:
+                out << "an attribute";
+                break;
+            case KEYWORD_ID:
+                out << "a keyword";
+                break;
+            case UNKNOWN_ID:
+                out << "an unknown identifier";
+                break;
+        }
+        return out;
+    }
+
+    void Universe::classify(TokenStream& t, int identifier, IdentifierKind_e kind) {
+        auto existing_p = kinds_.find(identifier);
+        if (existing_p == kinds_.end()) {
+            kinds_[identifier] = kind;
+        } else if (existing_p->second != kind) {
+            ostringstream out;
+            out << "Identifier '" << Identifiers.get(identifier);
+            out << "' is already the name of " << existing_p->second << " but is used here as " << kind;
+            t.errorMessage(out.str());
+        }
+    }
+
     int Universe::objectCount() const {
         return objects_.count();
     }
@@ -153,6 +184,7 @@ namespace archetype {
                 return nullptr;
             }
             int attribute_id = t.token().number();
+            Universe::instance().classify(t, attribute_id, ATTRIBUTE_ID);
             t.insistOn(Token(Token::PUNCTUATION, ':'));
             Expression expr = make_expr(t);
             if (not expr) {
@@ -192,6 +224,7 @@ namespace archetype {
             t.expectGeneral("name of new object");
             return nullptr;
         }
+        Universe::instance().classify(t, t.token().number(), OBJECT_ID);
         ObjectPtr obj = Universe::instance().defineNewObject();
         // "null" is allowed as an instance identifier which allows the instance to be
         // anonymous.  Don't bind the identifier in this case.
@@ -209,6 +242,7 @@ namespace archetype {
             t.expectGeneral("name of new type");
             return nullptr;
         }
+        Universe::instance().classify(t, t.token().number(), OBJECT_ID);
         ObjectPtr obj = Universe::instance().defineNewObject();
         obj->setPrototype(true);
         Universe::instance().assignObjectIdentifier(obj, t.token().number());
@@ -253,17 +287,13 @@ namespace archetype {
                             t.errorMessage("Must follow \"keyword\" with one or more identifiers");
                             return false;
                         } else {
-                            // TODO:  Return here to complete 'keyword' feature
-                            /*
-                             success = classify_as(source, source.tnum,
-                             ENUMERATE_ID, nullptr) != 0;
-                             */
                             while (t.token().type() == Token::IDENTIFIER and
                                    t.fetch() and t.token() == Token(Token::PUNCTUATION, ',')) {
                                 if (not t.fetch()) {
                                     t.expectGeneral("identifier of keyword");
                                     return false;
                                 }
+                                classify(t, t.token().number(), KEYWORD_ID);
                             }
                             t.didNotConsume();
                         }

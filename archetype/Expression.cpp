@@ -449,38 +449,42 @@ namespace archetype {
         }
 
         virtual bool verify(TokenStream& t) const override {
+            bool result = true;
             if (not (left_->verify(t) and right_->verify(t))) {
-                return false;
-            }
-
-            switch (op()) {
-                case Keywords::OP_DOT:
-                    if (not dynamic_cast<const IdentifierNode*>(right_.get())) {
-                        t.errorMessage("Right-hand side of \".\" must be an identifier");
-                        return false;
-                    }
-                    break;
-                case Keywords::OP_ASSIGN:
-                case Keywords::OP_C_CONCAT:
-                case Keywords::OP_C_DIVIDE:
-                case Keywords::OP_C_MINUS:
-                case Keywords::OP_C_MULTIPLY:
-                case Keywords::OP_C_PLUS:
-                    if (dynamic_cast<const IdentifierNode*>(left_.get())) {
-                        return true;
-                    } else if (const BinaryOperator* binary = dynamic_cast<const BinaryOperator*>(left_.get())) {
-                        if (binary->op() != Keywords::OP_DOT) {
-                            t.errorMessage("Left-hand side of assignment must be an attribute");
-                            return false;
+                result = false;
+            } else {
+                switch (op()) {
+                    case Keywords::OP_DOT:
+                        if (auto id_node = dynamic_cast<const IdentifierNode*>(right_.get())) {
+                            Universe::instance().classify(t, id_node->id(), ATTRIBUTE_ID);
+                        } else {
+                            t.errorMessage("Right-hand side of \".\" must be an identifier");
+                            result = false;
                         }
-                    } else {
-                        return false;
+                        break;
+                    case Keywords::OP_ASSIGN:
+                    case Keywords::OP_C_CONCAT:
+                    case Keywords::OP_C_DIVIDE:
+                    case Keywords::OP_C_MINUS:
+                    case Keywords::OP_C_MULTIPLY:
+                    case Keywords::OP_C_PLUS: {
+                        if (auto id_node = dynamic_cast<const IdentifierNode*>(left_.get())) {
+                            Universe::instance().classify(t, id_node->id(), ATTRIBUTE_ID);
+                        } else if (auto binary = dynamic_cast<const BinaryOperator*>(left_.get())) {
+                            if (binary->op() != Keywords::OP_DOT) {
+                                t.errorMessage("Left-hand side of assignment must be an attribute");
+                                result = false;
+                            }
+                        } else {
+                            result = false;
+                        }
+                        break;
                     }
-                    break;
-                default:
-                    return true;
+                    default:
+                        result = true;
+                }
             }
-            return true;
+            return result;
         }
 
         virtual void write(Storage& out) const override {
