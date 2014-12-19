@@ -375,7 +375,7 @@ namespace archetype {
         }
 
         // If one side or the other is UNDEFINED, only ~= is possible to be true.
-        if ((not lv->isDefined()) ^ (not rv->isDefined())) {
+        if ((not lv->isDefined()) xor (not rv->isDefined())) {
             return op == Keywords::OP_NE;
         }
 

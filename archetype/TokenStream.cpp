@@ -74,21 +74,14 @@ namespace archetype {
     void TokenStream::expectGeneral(std::string required) {
         if (keepLooking_) {
             source_->showPosition(cout);
-            cout << "Expected ";
-            cout  << required << "; found ";
-            cout << token_;
-            cout << endl;
+            cout << "Expected " << required << "; found " << token_ << endl;
         }
     }
 
     void TokenStream::expected(Token required) {
         if (keepLooking_) {
             source_->showPosition(cout);
-            cout << "Expected ";
-            cout << required;
-            cout << "; found ";
-            cout << token_;
-            cout << endl;
+            cout << "Expected " << required << "; found " << token_ << endl;
         }
 
     }
@@ -125,8 +118,8 @@ namespace archetype {
             }
         }
 
-        state      = START;
-        s          = "";
+        state = START;
+        s     = "";
 
         while (state != STOP) {
 
@@ -174,10 +167,10 @@ namespace archetype {
                     break; // case
 
                 case WHITE:
-                    while ((state == WHITE) and (TypeCheck.isWhite(next_ch))) {
-                        if ((next_ch == '\n') and isNewlineSignificant()) {
+                    while (state == WHITE and TypeCheck.isWhite(next_ch)) {
+                        if (next_ch == '\n' and isNewlineSignificant()) {
                             token_ = Token(Token::NEWLINE, '\n');
-                            state   = STOP;
+                            state  = STOP;
                         }
                         else
                             next_ch = source_->readChar();
@@ -194,7 +187,7 @@ namespace archetype {
                 case COMMENT:
                 case QUOTE:
                     s = "";
-                    while ((next_ch = source_->readChar()) and (next_ch != '\n')) {
+                    while ((next_ch = source_->readChar()) != '\n') {
                         s += next_ch;
                     }
                     if (state == COMMENT) {
@@ -207,7 +200,7 @@ namespace archetype {
                         source_->unreadChar(next_ch);           // leave \n for the next guy
                         token_ = Token(Token::QUOTE_LITERAL,
                                        Universe::instance().TextLiterals.index(s));
-                        state      = STOP;
+                        state  = STOP;
                     }
                     break;
 
