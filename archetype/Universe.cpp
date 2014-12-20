@@ -70,12 +70,14 @@ namespace archetype {
         // But it's a special object, one that has no parent.
         nullObject_->setParentId(Object::INVALID);
         assert(nullObject_->id() == NullObjectId);
+        kinds_[nullObject_->id()] = OBJECT_ID;
 
         systemObject_ = ObjectPtr{new SystemObject};
         int system_id = objects_.index(std::move(systemObject_));
         systemObject_->setId(system_id);
         assert(system_id == SystemObjectId);
         assignObjectIdentifier(systemObject_, "system");
+        kinds_[systemObject_->id()] = OBJECT_ID;
 
         Context context;
         context.selfObject = nullObject_;
@@ -89,8 +91,11 @@ namespace archetype {
             case OBJECT_ID:
                 out << "an object";
                 break;
-            case ATTRIBUTE_ID:
-                out << "an attribute";
+            case DEFINED_ATTRIBUTE_ID:
+                out << "a defined attribute";
+                break;
+            case REFERENCED_ATTRIBUTE_ID:
+                out << "an attribute in an expression";
                 break;
             case KEYWORD_ID:
                 out << "a keyword";
@@ -106,11 +111,30 @@ namespace archetype {
         auto existing_p = kinds_.find(identifier);
         if (existing_p == kinds_.end()) {
             kinds_[identifier] = kind;
-        } else if (existing_p->second != kind) {
+        } else if (kind != UNKNOWN_ID and existing_p->second == UNKNOWN_ID) {
+            kinds_[identifier] = kind;
+        } else if (existing_p->second == REFERENCED_ATTRIBUTE_ID and kind == DEFINED_ATTRIBUTE_ID) {
+            kinds_[identifier] = kind;
+        } else if (existing_p->second == DEFINED_ATTRIBUTE_ID and kind == REFERENCED_ATTRIBUTE_ID) {
+            // no-op
+        } else if (kind != UNKNOWN_ID and existing_p->second != kind) {
             ostringstream out;
             out << "Identifier '" << Identifiers.get(identifier);
             out << "' is already the name of " << existing_p->second << " but is used here as " << kind;
             t.errorMessage(out.str());
+        }
+    }
+
+    void Universe::reportUndefinedIdentifiers() const {
+        for (auto const& p : kinds_) {
+            if (p.second == UNKNOWN_ID or p.second == REFERENCED_ATTRIBUTE_ID) {
+                ostringstream out;
+                out << "Identifier \"";
+                out << Identifiers.get(p.first);
+                out << "\" was never defined";
+                output()->put(out.str());
+                output()->endLine();
+            }
         }
     }
 
@@ -184,7 +208,7 @@ namespace archetype {
                 return nullptr;
             }
             int attribute_id = t.token().number();
-            Universe::instance().classify(t, attribute_id, ATTRIBUTE_ID);
+            Universe::instance().classify(t, attribute_id, DEFINED_ATTRIBUTE_ID);
             t.insistOn(Token(Token::PUNCTUATION, ':'));
             Expression expr = make_expr(t);
             if (not expr) {

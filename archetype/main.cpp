@@ -95,6 +95,7 @@ int main(int argc, const char* argv[]) {
             if (not Universe::instance().make(tokens)) {
                 return 1;
             }
+            Universe::instance().reportUndefinedIdentifiers();
             ObjectPtr main_object = Universe::instance().getObject("main");
             if (not main_object) {
                 throw invalid_argument("No 'main' object");

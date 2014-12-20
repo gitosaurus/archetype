@@ -456,7 +456,7 @@ namespace archetype {
             switch (op()) {
                 case Keywords::OP_DOT:
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(right_.get())) {
-                        Universe::instance().classify(t, id_node->id(), ATTRIBUTE_ID);
+                        Universe::instance().classify(t, id_node->id(), REFERENCED_ATTRIBUTE_ID);
                     } else {
                         t.errorMessage("Right-hand side of \".\" must be an identifier");
                         result = false;
@@ -469,7 +469,7 @@ namespace archetype {
                 case Keywords::OP_C_MULTIPLY:
                 case Keywords::OP_C_PLUS: {
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(left_.get())) {
-                        Universe::instance().classify(t, id_node->id(), ATTRIBUTE_ID);
+                        Universe::instance().classify(t, id_node->id(), REFERENCED_ATTRIBUTE_ID);
                     } else if (auto binary = dynamic_cast<const BinaryOperator*>(left_.get())) {
                         if (binary->op() != Keywords::OP_DOT) {
                             t.errorMessage("Left-hand side of assignment must be an attribute");
@@ -734,9 +734,12 @@ namespace archetype {
             case Token::NUMERIC:
                 scalar.reset(new ValueExpression{Value{new NumericValue{t.token().number()}}});
                 break;
-            case Token::IDENTIFIER:
-                scalar.reset(new IdentifierNode{t.token().number()});
+            case Token::IDENTIFIER: {
+                int id = t.token().number();
+                Universe::instance().classify(t, id, UNKNOWN_ID);
+                scalar.reset(new IdentifierNode{id});
                 break;
+            }
             case Token::RESERVED_WORD: {
                 // Some reserved words are like zero-argument functions, others are constant values
                 Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());

@@ -28,10 +28,11 @@
 namespace archetype {
 
     enum IdentifierKind_e {
+        UNKNOWN_ID,
         OBJECT_ID,
-        ATTRIBUTE_ID,
-        KEYWORD_ID,
-        UNKNOWN_ID
+        DEFINED_ATTRIBUTE_ID,
+        REFERENCED_ATTRIBUTE_ID,
+        KEYWORD_ID
     };
 
     class QuitGame : public std::runtime_error {
@@ -78,6 +79,7 @@ namespace archetype {
         void setOutput(UserOutput output) { output_ = output; }
 
         void classify(TokenStream& t, int identifier, IdentifierKind_e kind);
+        void reportUndefinedIdentifiers() const;
 
         int objectCount() const;
         ObjectPtr getObject(int object_id) const;
