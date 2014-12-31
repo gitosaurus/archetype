@@ -42,19 +42,37 @@ void usage() {
     cout
         << "Usage: " << endl
         << endl
-        << " --help             Print this message and exit." << endl
-        << " --test             Run all test suites." << endl
-        << " --repl             Enter the REPL (Read-Eval-Print Loop)" << endl
-        << " --source=file.ach  Read, compile, and run the given program." << endl
-        << " --load=file.acx    Load the saved binary file and resume running it." << endl
+        << " --help                  Print this message and exit." << endl
+        << " --test                  Run all test suites." << endl
+        << " --repl                  Enter the REPL (Read-Eval-Print Loop)" << endl
+        << " --source=file.ach       Read, compile, and run the given program." << endl
+        << "   --create[=file.acx]   Write the program given with --source to a binary file." << endl
+        << " --perform=file.acx      Load the saved binary file and send 'START' -> main." << endl
     ;
+}
+
+Value run_universe() {
+    const string message = "START";
+    ObjectPtr main_object = Universe::instance().getObject("main");
+    if (not main_object) {
+        throw invalid_argument("No 'main' object");
+    }
+    int start_id = Universe::instance().Messages.index(message);
+    Value start{new MessageValue{start_id}};
+    Value result = Object::send(main_object, move(start));
+    if (result->isSameValueAs(Value{new AbsentValue})) {
+        throw invalid_argument("No method for '" + message + "' on main object");
+    }
+    return result;
 }
 
 int main(int argc, const char* argv[]) {
     list<string> args(argv + 1, argv + argc);
     map<string, string> opts;
-    for (auto a = args.begin(); a != args.end(); ++a) {
-        if (a->find("--") == 0) {
+    for (auto a = args.begin(); a != args.end();) {
+        if (a->find("--") != 0) {
+            ++a;
+        } else {
             auto iequal = find(a->begin(), a->end(), '=');
             string opt_name(a->begin() + 2, iequal);
             string opt_value;
@@ -96,15 +114,25 @@ int main(int argc, const char* argv[]) {
                 return 1;
             }
             Universe::instance().reportUndefinedIdentifiers();
-            ObjectPtr main_object = Universe::instance().getObject("main");
-            if (not main_object) {
-                throw invalid_argument("No 'main' object");
-            }
-            int start_id = Universe::instance().Messages.index("START");
-            Value start{new MessageValue{start_id}};
-            Value result = Object::send(main_object, move(start));
-            if (result->isSameValueAs(Value{new AbsentValue})) {
-                throw runtime_error("No 'START' method on main");
+            if (not opts.count("create")) {
+                run_universe();
+            } else {
+                string filename_out = opts["create"];
+                if (filename_out.empty()) {
+                    auto iext = source_path.rfind('.');
+                    filename_out = source_path.substr(0, iext);
+                    filename_out += ".acx";
+                    if (source_path == filename_out) {
+                        throw invalid_argument("Cannot use " + filename_out + " as output");
+                    }
+                }
+                OutFileStorage save_file(filename_out);
+                if (save_file.ok()) {
+                    save_file << Universe::instance();
+                    cout << "Created " + filename_out << endl;
+                } else {
+                    throw runtime_error("Could not write to " + filename_out);
+                }
             }
         } catch (const archetype::QuitGame& quit_game) {
             finish();
@@ -116,42 +144,28 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    if (opts.count("load")) {
-        string filename = opts["load"];
+    if (opts.count("perform")) {
+        string filename = opts["perform"];
+        if (filename.rfind('.') == string::npos) {
+            filename += ".acx";
+        }
         InFileStorage in(filename);
         if (not in.ok()) {
             cerr << "Cannot open " << filename << endl;
             return 1;
         }
         in >> Universe::instance();
-        ObjectPtr main_object = Universe::instance().getObject("main");
-        if (not main_object) {
-            cout << "ERROR:  No 'main' object" << endl;
-            return 1;
-        } else {
-            try {
-                int resume_id = Universe::instance().Messages.index("RESUME");
-                Value resume{new MessageValue{resume_id}};
-                Value result = Object::send(main_object, move(resume));
-                if (result->isSameValueAs(Value{new AbsentValue})) {
-                    cerr << "No 'RESUME' method on main; sending 'START'" << endl;
-                    int start_id = Universe::instance().Messages.index("START");
-                    Value start{new MessageValue{start_id}};
-                    result = Object::send(main_object, move(start));
-                    if (result->isSameValueAs(Value{new AbsentValue})) {
-                        throw runtime_error("No 'START' method on main");
-                    }
-                }
-            } catch (const archetype::QuitGame& quit_game) {
-                finish();
-                return 0;
-            } catch (const std::exception& e) {
-                finish();
-                cerr << "ERROR: " << e.what() << endl;
-                return 1;
-            }
+        try {
+            run_universe();
+        } catch (const archetype::QuitGame& quit_game) {
+            finish();
             return 0;
+        } catch (const std::exception& e) {
+            finish();
+            cerr << "ERROR: " << e.what() << endl;
+            return 1;
         }
+        return 0;
     }
 }
 

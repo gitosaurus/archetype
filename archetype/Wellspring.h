@@ -36,7 +36,7 @@ namespace archetype {
         SourceFilePtr primarySource(std::string file_path);
 
         // Adds the given path to the list of paths to search for include files.
-        // It is will be searched after all the paths that have been added via this call so far.
+        // It will be searched after all the paths that have been added via this call so far.
         void addSearchPath(std::string directory_path);
 
         bool hasNeverBeenOpened(std::string source_name) const;
