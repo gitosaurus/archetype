@@ -1,0 +1,157 @@
+# UTILITY.ACH
+#
+# Generally useful class definitions.
+
+# Hollow objects.  These are objects that can double as rooms.
+
+class hollow_object based on object
+
+  IsAhollow_object : TRUE
+
+  proximity   : "in"
+  visited     : FALSE
+
+  intro       : "I can see"
+  empty_intro : "There is nothing of interest " & proximity & " " &
+                ('DEF' -> self) & "."
+
+  open        : UNDEFINED
+methods
+
+  'ACCESS' : ('ACCESS' --> object) or player.location = self
+
+  'exit' :
+    if location then {
+      if player.location ~= self then
+        write "I'm not ", proximity, " ", 'DEF' -> self, "."
+      else {
+        player.location := location
+        'MOVE' -> player
+        }
+      }
+    else
+      write "I can't leave ", 'DEF' -> self, "."
+
+  'leave' : 'exit'
+
+  'look' :
+    >>It looks roomy enough to enter.
+
+  'look in' :
+    if 'TRANSPARENT' -> self then {
+      writes "I look inside.  "
+      'INVENTORY'
+      }
+    else
+      write "I can't look inside that."
+
+  'enter' :
+    if player.location = self then
+      write "I'm already ", proximity, " ", 'DEF' -> self, "."
+    else if location = player.location then {
+      if open = FALSE then
+        >>It's closed at the moment.
+      else {
+        player.location := self
+        'MOVE' -> player
+        }
+      }
+    else if location = player then
+      write "I cannot enter something that I'm carrying."
+    else
+      write "I can't enter ", 'DEF' -> self, " because ",
+            pronoun, " isn't here."
+
+  'go'    : 'enter'
+  'go to' : 'enter'
+  'go in' : 'enter'
+
+  'get' :
+    if player.location = self then
+      write "I can't pick up something that I'm ", proximity, "."
+    else
+      message --> object
+
+  'BRIEF' :
+    write "I am ", proximity, " ", 'DEF' -> self, "."
+
+  'LONGDESC' : 'BRIEF'
+
+# The following is an example of how a kind of multiple inheritance
+# can be accomplished in Archetype.  This only "inherits" the messages,
+# however, not the attributes.  Be careful to pass only
+# non-verb messages to the room object.
+
+  default : {
+    if not (message -> compass) and message -> verb_filter then
+      ABSENT
+    else
+      message --> room
+   }
+
+end  # hollow_object
+
+
+
+# Furniture class.  This is the sort of object that is so much a part
+# of the room that it really inherits the exits of the room that it is
+# in; it it also possible to "leave" it and remain in the same
+# room.
+
+class furniture based on hollow_object
+
+  IsAfurniture : TRUE
+
+  proximity    : "on"
+
+methods
+
+  'TRANSPARENT' : TRUE
+  'HORIZON'     : location
+
+  default : {
+    if message -> compass then
+      message -> location
+    else if message -> verb_filter then
+      ABSENT
+    else
+      message --> room
+    }
+
+end  # furniture
+
+
+
+# container
+#
+# Simply fill in the "holder" and "contents" attributes with descriptive
+# strings; the rest is taken care of.
+
+class container based on object
+
+  IsAcontainer : TRUE
+
+  holder    : "can"
+  contents  : "stuff"
+  desc      : 'DESC' -> self
+  syn       : holder & "|" & contents & " " & holder
+
+  filled    : TRUE
+
+methods
+
+  'look' :
+    if filled then
+      write "The ", holder, " is full of ", contents, "."
+    else
+      write "The ", holder, " is empty."
+
+  'DESC' : if filled then
+             holder & " of " & contents
+           else
+             "empty " & holder
+
+end
+
+
+

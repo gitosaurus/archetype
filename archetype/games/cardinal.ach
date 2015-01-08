@@ -1,0 +1,38 @@
+############################################################################
+#
+# CARDINAL.ACH
+#
+# The "normal", cardinal directions of the compass.
+#
+############################################################################
+
+direction  null        full: 'north'                    end
+direction  null        full: 'south'                    end
+direction  null        full: 'east'                     end
+direction  null        full: 'west'                     end
+direction  null        full: 'northeast'   syn: 'ne'    end
+direction  null        full: 'northwest'   syn: 'nw'    end
+direction  null        full: 'southeast'   syn: 'se'    end
+direction  null        full: 'northeast'   syn: 'sw'    end
+
+direction null
+
+  full : 'up'
+
+methods
+
+  'IN THE DIRECTION' : "directly above"
+
+end
+
+
+direction null
+
+  full : 'down'
+
+methods
+
+  'IN THE DIRECTION' : "directly below"
+
+end
+

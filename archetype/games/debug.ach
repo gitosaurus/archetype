@@ -1,0 +1,70 @@
+# DEBUG.ACH
+#
+# Objects to be included which respond to the 'debug' verb.
+
+lex null full : 'debug'    end
+
+class debug_object based on null
+
+  IsAobject : TRUE          # to be parseable
+  IsAnoun : TRUE          # to be parseable
+
+methods
+
+  'ACCESS' : TRUE
+
+end
+
+
+debug_object messages_d
+
+methods
+
+  'NAME' : 'messages' -> system
+  'debug' : 'DEBUG MESSAGES' -> system
+
+end
+
+
+debug_object memory_d
+
+  monitor : FALSE
+  mem     : 0
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+  'AFTER'   : if monitor then {
+    'DEBUG MEMORY' -> system
+    write "Change since last monitor: ", ('FREE MEMORY' -> system) - mem
+    mem := 'FREE MEMORY' -> system
+    }
+
+  'NAME' : 'memory' -> system
+
+  'debug':
+    monitor := not monitor
+
+  'look' : 'DEBUG MEMORY' -> system
+
+end
+
+
+debug_object expr_d
+
+methods
+
+  'NAME' : { 'expressions' -> system; 'expr' -> system }
+  'debug' : 'DEBUG EXPRESSIONS' -> system
+
+end
+
+
+debug_object stmt_d
+
+methods
+
+  'NAME' : { 'statements' -> system; 'stmt' -> system }
+  'debug' : 'DEBUG STATEMENTS' -> system
+
+end

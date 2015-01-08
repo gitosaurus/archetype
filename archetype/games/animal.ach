@@ -1,0 +1,108 @@
+# The ANIMAL game in Archetype.  A neat demo!  The ability to save total
+# object state in Archetype is used to painlessly and transparently save
+# the question/answer database.  Because of this, the initial database is
+# stored directly within the code!  Showcases some unusual features
+# of Archetype.
+#
+# Author:  DTJ  11/26/94
+
+null main
+
+  branch      : UNDEFINED
+  alternative : UNDEFINED
+  key_pressed : UNDEFINED
+  response    : UNDEFINED
+
+methods
+
+  'AFFIRM' : {
+    response := ( ((key_pressed := key) leftfrom 1) within "yY" )
+    write key_pressed
+    response
+    }
+
+  'START' : {
+    writes "Load old game? "
+    if 'AFFIRM' -> main then {
+      writes "Name of file? "
+      'LOAD STATE' -> system
+      read -> system
+    }
+    while TRUE do {
+      'PLAY'
+      writes "Another game [y/n] ? "
+      if not 'AFFIRM' -> main then {
+        writes "Save this game? "
+        if 'AFFIRM' -> main then {
+          writes "Save to file: "
+          'SAVE STATE' -> system
+          read -> system
+        }
+        stop "Thanks for playing."
+      }
+    }
+  }
+
+  'PLAY' : {
+    write "Think of an animal; hit any key when ready."; key
+    branch := beginning
+    while alternative := 'QUESTION' -> branch do
+      branch := alternative
+    write "You were thinking of... ", 'ANSWER' -> branch, "!"
+    writes "Am I right? "
+    if 'AFFIRM' -> main then
+      write "I knew it!"
+    else
+      'EXTEND' -> branch
+    }
+
+end
+
+class question based on null
+
+  IfYes : UNDEFINED
+  IfNo  : UNDEFINED
+  Q     : UNDEFINED
+  A     : UNDEFINED
+
+methods
+
+  'QUESTION' :
+    if Q then {
+      writes Q & " "
+      if 'AFFIRM' -> main then IfYes else IfNo
+    }
+
+  'ANSWER'   : A
+
+  'EXTEND'   : {
+    create question named IfYes
+    writes "What were you thinking of? "
+    IfYes.A := read
+    write "What question could I ask to distinguish \"", A, "\" from \"",
+            IfYes.A, "\" ? "
+    Q := read
+    create question named IfNo
+    IfNo.A := A
+    writes "So if I ask \"", Q, "\", the right answer is \"", IfYes.A, "\" ? "
+    if not 'AFFIRM' -> main then {
+      A := IfNo.A
+      IfNo.A := IfYes.A
+      IfYes.A := A
+    }
+    A := UNDEFINED
+  }
+
+end
+
+# To get things started:  one question with a yes and no answer
+question beginning
+
+  IfYes : whale
+  IfNo  : dog
+  Q     : "Does it live in the water?"
+
+end
+
+question whale          A : "a whale"       end
+question dog            A : "a dog"         end

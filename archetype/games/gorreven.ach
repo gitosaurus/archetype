@@ -1,0 +1,2437 @@
+# GORREVEN.ACH
+#
+# The Gorreven Papers
+#
+# by Derek T. Jones
+#
+# Copyright 1995 Derek T. Jones
+
+include "standard"
+include "gorreven.lex"
+include "gorreven.typ"
+include "debug"
+
+
+################################## The Hinter ###############################
+
+keyword wait_on_guard, use_disguise, get_on_with_it,
+        try_mop, try_dustpan, put_in_food, now_escape, power_off,
+        check_broom
+
+lex hinter
+
+  full      : 'hint'
+  hint      : wait_on_guard
+  hints     : 0
+
+  interpret : TRUE
+
+methods
+
+  'INTERPRET' : {
+    case hints +:= 1 of {
+      5 : write "Not very sure of yourself, are you?  That's ", hints,
+          " hints you've asked for.\n"
+     10 : write "You've pretty much given up trying to figure this out ",
+                "yourself, haven't you?"
+      }
+    case hint of {
+      wait_on_guard : {
+>>You should probably wait to do anything suspicious until the guard
+>>isn't watching you.  (Hitting RETURN by itself is "waiting".)
+        }
+      use_disguise :  write "You're going to be awfully conspicuous.  ",
+                       "Can you think of some way to disguise yourself?"
+      get_on_with_it : write "Now you're ready to operate under cover!  ",
+                        "Go find the Papers!"
+      try_mop : write "So you can't get the Papers with your bare hands.  ",
+                "Isn't there anything in, say, the broom closet, of a ",
+                "sufficient length to reach them?"
+      check_broom : write "Didn't you notice something strange about the ",
+                "broom in the broom closet?  Perhaps you should ",
+                "investigate that."
+      try_dustpan : write "You twit!  Do I have to tell you everything? ",
+                "How on earth did you think you were going to use the bare ",
+                "end of a mop to manuever a folder of papers across the ",
+                "moat?  BALANCE them?  If you'd looked at the dustpan, ",
+                "you would have seen that you could put it on the end of ",
+                "the mop handle, and had yourself a long-handled shovel ",
+                "with which you could have safely retrieved the papers.  ",
+                "Rather too late now, though, don't you think?"
+      put_in_food : {
+                    write "Now think about this.  How could you make the ",
+                    "best use of that poison?  How about putting it in their ",
+                    "food or something?"
+                    'MENTION SELF' -> poison
+                    }
+      now_escape : write "You got the Gorreven Papers!  Excellent!  Now you ",
+                    "simply have to escape with them."
+      power_off  : write "That's too bad about those electrified fences.  ",
+                    "You should probably locate a circuit breaker panel ",
+                    "somewhere and just turn all the switches off.  Circuit ",
+                    "breaker panels are usually simple hinged metal panels ",
+                    "flush with the wall; just open the panel and you can ",
+                    "turn the switches on or off."
+      }  # case
+    }  # INTERPRET
+
+end
+
+
+
+############################################################################
+########################### First Level ####################################
+############################################################################
+
+room cell
+
+  desc      : "bare cell"
+
+methods
+
+  'INITIAL' : 'START HERE' -> player
+
+  'BRIEF'   : >>Back in the bare cell.
+
+  'FIRSTDESC' : {
+>>This should never have happened.
+>>
+>>I've told myself that a thousand times.  I am our most intrepid agent.
+>>If anyone could retrieve the Gorreven Papers, I could.
+>>
+>>What other precautions could have I taken?  Some places just aren't built
+>>to be broken into.
+>>
+>>Or out of.
+>>
+>>I have become intimately familiar with the four bare walls of my cell and
+>>the dirty yellow light bulb that glares down from the ceiling.  My cell
+>>has no door, but an alert guard blocks the doorway twenty-four hours a
+>>day - or at least as far as I can tell.  I have to sleep sometimes.  They
+>>leave the guard in a doorless doorway so that he will constantly remain
+>>alert.  No napping on the other side of a supposedly secure steel door.
+>>It doesn't surprise me; if I wanted to keep myself prisoner I would have
+>>done the same.
+>>
+>>I was brought in here blindfolded after a good beating.  It gives me
+>>headaches just trying to remember any of the turns I took on the way in.
+>>But now I'm on the inside of this complex.  On the same side of those
+>>electric fences as the Gorreven Papers.  The Gorreven Papers!  To
+>>think of them was unspeakable; to speak of them was unthinkable.  If I
+>>can't get out of here with the papers, I'm not going out at all, because
+>>my life won't be worth a fake dollar bill.  None of our lives will.
+>>
+>>
+>>                         Derek Jones Presents...
+>>
+>>                        an Archetype Adventure
+>>
+>>                         "The Gorreven Papers"
+>>
+>>
+    }  # FIRSTDESC
+
+  'LONGDESC' :
+    >>I'm standing in a small bare cell with four bare walls.
+
+  'north' : if guard.alive then foiled_escape else hall
+
+end  # cell
+
+
+
+wearable prison_coveralls
+
+  location : player
+  desc     : "prison coveralls"
+  wearing  : TRUE
+  pronoun  : "them"
+
+methods
+
+  'INDEF' : desc
+
+  'look' : {
+>>It's a one-piece drab gray pair of coveralls with an enormous neon orange
+>>triangle on the chest; probably to indicate my special status.
+    }
+
+  'wear' : if uniform.wearing = TRUE then
+             write "But I'm already wearing ", 'DEF' -> uniform, "."
+           else
+             message --> wearable
+
+end
+
+
+
+# foiled_escape
+#
+# A dummy "room" which represents an attempt to escape from the cell
+# with the guard alive.
+
+room foiled_escape
+
+methods
+
+  'ENTERED' : {
+    writes "I try to brush past the guard.  "
+    if guard.alert then {
+      'Funny Business' -> guard
+      player.location := cell
+      'MOVE' -> player
+      }
+    else {
+      writes "Since he is looking down the north hall, I am hard not to "
+      writes "notice as I move into that very same hall.  "
+      'Impatient Fury' -> guard
+      }
+    }
+
+end
+
+
+
+sit_furniture cot
+
+  desc     : "dingy cot"
+  location : cell
+
+  proximity : "on"
+
+methods
+
+  'look' : {
+>>It is a dingy, ill-maintained cot with a thin and moth-eaten mattress.
+>>The Marriott this isn't.
+    }
+
+  'get' :
+    if player.location ~= self then
+      >>It's too clumsy and bulky.
+    else
+      message --> sit_furniture
+
+end
+
+
+object cot_fragment
+
+  desc      : "sharp piece of metal"
+  name      : desc & "|sharp metal|piece of metal|metal"
+  location  : cot
+
+  broken_off : FALSE
+  breaks_glass : TRUE
+
+methods
+
+  'look' :
+    if broken_off then
+>>It makes a nice informal knife; just about the right size and very sharp.
+    else {
+>>It is a piece of the cot's frame, about the length of my hand, sticking
+>>off to the side a little.  The cot is not in good shape and this is one
+>>reason.  It is already almost completely broken off and is only barely
+>>connected to the cot at one end.  One side of it is very sharp and
+>>dangerous.
+      }
+
+  'get' :
+    if broken_off then
+      message --> object
+    else
+      >>It's part of the frame of the cot, but it is a little loose.
+
+  'break' :
+    if broken_off then
+      >>I can't break that.
+    else
+      >>I don't know if I could break it, but maybe I could break it OFF...
+
+  'break_off'        : 'break off'
+
+  'break off...from' : 'break...off of'
+  'break...off of' :
+    if broken_off then
+      >>It's not part of anything anymore.
+    else if main.dobj = cot then
+      'break off'
+    else
+      write "It's not part of ", 'DEF' -> main.dobj, "."
+
+  'break off' :
+    if broken_off then
+      >>It's not on the cot anymore.
+    else {
+      writes "I give the piece of metal a hard yank and twist and it breaks "
+      writes "off suddenly with a soft popping sound.  "
+      broken_off := TRUE
+      if guard.alert then {
+        writes "The guard has been watching the entire operation.  "
+        writes "\"Murderous scheming dog,\" he snarls.  "
+        'Impatient Fury' -> guard
+        }
+      else {
+        writes "Immediately I palm the incriminating evidence in my "
+        writes "other hand.  "
+        location := player; 'MOVE'
+        writes "However, the sound alerts the guard, who whirls around "
+        writes "with his gun drawn.  "
+        'Become Alert' -> guard
+        >>"What was that noise?" he demands.
+>>
+>>"I hurt my hand on the cot," I grumble, holding up the hand I
+>>just used.  Fortunately it is sporting a small trickle of blood, incurred
+>>when the metal came loose.  "I wanna doctor."  It is of course the very
+>>last thing I want but it is important that I project an image of whining
+>>helplessness.
+>>
+>>He snorts and returns his gun to its holster.  "You're barely important
+>>enough to be kept alive.  Forget the doctor."  I wonder what he has been
+>>told about me.  It is true that I am too dangerous to be kept alive at
+>>much expense.
+        }
+      }
+
+end
+
+
+################################# The Guard ##############################
+
+keyword under_cot
+
+object guard
+
+  desc    : 'Desc' -> self
+  pronoun : "him"
+  location : cell
+
+  alert   : TRUE
+  alive   : TRUE
+
+# Counters indicating the guard's patience with respect to various actions
+
+  maxalert  : 4 + ?4      # between four and eight times
+  alertness : UNDEFINED   # how frequently he looks down the hall;
+                          #   first set in 'INITIAL' below.
+  bha       : 3           # Bare Hands - Alert
+  stare     : 4           # how many times you can stare at the guard before
+                          # he loses it
+
+  never_put_on : FALSE
+
+methods
+
+  'INITIAL' : {
+    'REGISTER' -> after
+    alertness := maxalert
+    }
+
+  'AFTER' :
+    if alive then
+      case alertness -:= 1 of {
+        1 : {
+          >>The guard looks out down the north hall.
+          alert := FALSE
+          'MENTION' -> main
+          }
+        0 : {
+          >>The guard returns his steely gaze to me.
+          'Become Alert'
+          'MENTION' -> main
+          }
+        }  # case
+
+  'Become Alert' : {
+    alert := TRUE
+    alertness := maxalert
+    }
+
+  'Desc' :
+    if alive then {
+      if alert then "alert guard" else "guard"
+      }
+    else
+      "dead guard"
+
+  'get' :
+    if alive then
+      >>Sure.  I'll just pick him up and carry him like a baby.
+    else
+      >>I don't want to burden myself with that.
+
+  'look' :
+    if alert then {
+      writes "He is blocking the doorway to the north.  "
+      writes "He is staring coldly back at me.  "
+      'Become Alert'
+      case stare -:= 1 of {
+        3 : >>"What are you looking at?" he snarls.  "Face the other wall."
+        2 : {
+          writes "Fingering his pistol, he lets me know in no uncertain "
+          writes "terms that I am not to cast my loving gaze on him again "
+          write "or I will certainly receive punishment."
+          }
+        1 : {
+          writes "He pistol-whips me around my head and neck until I lose "
+          writes "consciousness.  It is some time before I reawaken, staring "
+          write "up at the single light bulb in the ceiling."
+          }
+        0 : 'Impatient Fury'
+        }
+      }
+    else {
+      writes "He doesn't seem to be paying attention"
+      if alive then
+        write " to me at the moment."
+      else
+        write ".  This is probably because he's quite dead."
+      }
+
+  'kill...with' :
+    if not alive then
+      write "He's already dead."
+    else if main.dobj ~= cot_fragment then
+      >>That isn't going to make much of a weapon.
+    else if cot_fragment.location ~= player then
+      write "I don't have ", 'DEF' -> main.dobj, "."
+    else if alert then {
+      writes "It might have been a good idea if it hadn't been right "
+      writes "under his eyes.  "
+      'Impatient Fury'
+      }
+    else {
+>>I come up swiftly behind him and plunge the sharp metal into the
+>>back of his neck, through his carotid artery and out the front of his
+>>throat.  This prevents him from screaming but not from fighting back.
+>>I hang onto his back like a pit bull, waiting for him to expend his
+>>last few seconds of life; he fires his gun twice but both shots are
+>>wild.  I am safe.  In a moment more he is growing cold in a pool of
+>>his own blood.
+      alert := alive := FALSE
+      hinter.hint := use_disguise
+      for each.location = self do {
+        each.location := player.location
+        'MOVE' -> each
+        }
+      }
+
+  'Funny Business' : {
+    case bha -:= 1 of {
+      2 : {
+        writes "He laughs an unpleasant laugh and plants a booted foot "
+        writes "in my gut.  The force sends me bouncing back across the "
+        writes "room.  "
+        alertness := maxalert
+        }
+      1 : {
+        writes "He is not as amused this time.  He produces a pistol and "
+        writes "beats me about the face with it.  \"Keep that up,\" he "
+        writes "promises, \"and you'll learn about the other end of this "
+        writes "gun!\"  "
+        alertness := maxalert
+        }
+      0 : 'Impatient Fury'
+      }       # case Bare Hands - Alert
+      write
+    }
+
+  'kill' :
+    if not alive then
+      write "He's already dead."
+    else {
+      writes "I lunge at him, my bare hands grasping for a hold on his "
+      writes "throat.  "
+      if alert then
+        'Funny Business'      # trying some funny business
+      else {
+        writes "He is not paying attention at the moment and I manage to get "
+        writes "a grip on the back of his thick neck.  His response is "
+        writes "immediate; he slams backward into the wall, crushing me "
+        writes "against it, then wrenches me off his back, throwing me with "
+        writes "one swift motion onto the floor.  "
+        'Impatient Fury'
+        }
+      }
+
+  'Impatient Fury' : {
+    writes "His face twists into a mask of rage; his pistol is "
+    writes "suddenly in his hand and he uses it to drill a .38 caliber "
+    writes "hole through my skull.  The black curtain of death falls "
+    stop "with merciful speed."
+    }
+
+
+  'put...under' :
+    if main.dobj = cot then {
+>>With some effort I manage to drag him over to the cot and push him
+>>under it.  I wonder how long he'll stay hidden under there.
+      guard.location := under_cot
+      'MOVE'
+      }
+    else
+      >>What will that accomplish?  Nothing.
+
+  'put...on' :
+    if alive then
+      write "He's not going to let me do that."
+    else if main.dobj = cot then {
+      if never_put_on then {
+>>Pushing and grunting, I manage to get him over to the cot and,
+>>somehow, on top of it.  I arrange the body so it faces away from the
+>>door in a sleeping posture.  There is some blood on the floor now but
+>>that is nothing new around here.  My own beating wounds are just
+>>starting to scab.
+        never_put_on := FALSE
+        }
+      else
+        >>I heave and push and get the guard back on the cot.
+      location := cot; 'MOVE'
+      }
+    else
+      >>There's no good reason to do that.
+
+  'pull' : 'push'
+  'push' :
+    if not alive then
+      write "Nothing happens."
+    else {
+      writes "I ", main.verb, " ", 'DEF' -> self, ".  This was probably ",
+             "unwise."
+      'Impatient Fury'
+      }
+
+end
+
+
+
+room hall
+
+  desc      : "long dark hallway"
+
+methods
+
+  'south' : cell
+  'north' : stairwell
+
+  'LONGDESC' : {
+>>I am in a long, dark hallway.  The lighting is minimal; there is only
+>>one dull blue light recessed into the wall midway down its length.  There
+>>is a wet odor and I can see a few dark puddles gleaming randomly on the
+>>floor.
+    }
+
+end
+
+
+
+############################# Guard's Possessions ###########################
+
+object gun
+
+  desc      : "gun"
+  name      : "gun|pistol|revolver"
+
+  location  : guard
+
+  bullets   : 4
+  breaks_glass : TRUE
+
+methods
+
+  'DEF'     : "the guard's gun"
+
+  'look' :
+    if bullets = 1 then
+      write "There is only one bullet left."
+    else
+      write "There are ", bullets, " bullets left."
+
+end
+
+
+
+wearable uniform
+
+  desc      : "guard's uniform"
+  syn       : "his uniform"
+
+  location  : guard
+  wearing   : guard
+
+  first_worn : TRUE
+
+methods
+
+  'get' :
+    if wearing = guard then
+      >>The guard is still wearing it.
+    else
+      message --> object
+
+  'wear' : {
+    if prison_coveralls.wearing = TRUE then
+      write "But I'm already wearing ", 'DEF' -> prison_coveralls, "."
+    else {
+      message --> wearable
+      if wearing = TRUE and first_worn then {
+        first_worn := FALSE
+        hinter.hint := get_on_with_it
+>>We are roughly the same height.  He was considerably larger at the middle,
+>>so the uniform bags somewhat, but by tightening the belt, I look passable.
+>>It is unfortunate for the guard that it had to come to this but that is
+>>what happens to obstacles.  I can still smell his odor on the collar and
+>>armpits.  Blood is spattered down the front which is very annoying but
+>>there isn't much I can do about that.
+        }
+      }
+    }
+
+  'remove' :
+    if wearing = guard then {
+      main.dobj := guard
+      'take...off'
+    }
+    else
+      message --> wearable
+
+  'remove...from' : 'take...off'
+  'take...off of' : 'take...off'
+  'get...off'     : 'take...off'
+  'get...off of'  : 'take...off'
+  'take...off' :
+    if main.dobj ~= guard then
+      write "It isn't on ", 'DEF' -> main.dobj, "."
+    else {
+>>Struggling, I manage to get the guard's uniform off of his fat, sweaty -
+>>and increasingly cold - body.
+      wearing := FALSE
+      'get'
+      }
+
+end
+
+
+object IDcard
+
+  desc     : "ID card"
+  syn      : "I.D.|ID"
+  location : guard
+  proper   : FALSE
+
+methods
+
+  'look' : {
+    writes "There's a picture of the guard I killed, with the name "
+    writes "\"S. Krugnik\" beneath it.  On the other side is a magnetic "
+    write "stripe."
+    }
+
+  'put...in' : {
+    if main.dobj ~= vault_door then
+      'NORMAL' -> PutInto
+    else {
+      writes "I slip the ID card into the slit in the door.  "
+      'Unlock' -> vault_door
+      }
+
+    }  # put in
+
+end
+
+################################# End of Guard's Possessions ############
+
+
+room stairwell
+
+  desc      : "spiral stairwell"
+
+methods
+
+  'LONGDESC' : {
+>>I'm at the top of a stairwell containing a spiral staircase.  The stairs
+>>are metal with a little peeling grip tape at the edges.  It is rather dark
+>>at the top; a harshly buzzing blue light burns away fiercely about halfway
+>>down.  There are pipes nearby and one of them is dripping steadily.
+>>There is a damp metal smell everywhere.
+    }
+
+  'down'    : stairwell2
+  'south'   : hall
+
+end
+
+
+room stairwell2
+
+  desc      : "spiral stairwell"
+
+methods
+
+  'LONGDESC' : {
+>>I am halfway down a spiral staircase.  There is a bright blue light set
+>>into the wall next to me.  I can see a littering of dead bugs on the
+>>stairs below.
+    }
+
+  'down' : stairwell3
+  'up'   : stairwell
+
+end
+
+
+room stairwell3
+
+  desc      : "spiral stairwell"
+
+methods
+
+  'LONGDESC' : {
+>>I am standing at the bottom of a spiral staircase.  Halfway up, the blue
+>>light burns and buzzes.  It is fairly dark here but I can see the outline
+>>of a doorway to the east.
+    }
+
+  'east'    : dark_hall
+  'up'      : stairwell2
+
+end
+
+
+
+room dark_hall
+
+  desc      : "dark hallway"
+
+methods
+
+  'FIRSTDESC' :
+    >>I have to stop a moment and let my eyes adjust to the darkness.
+
+  'LONGDESC' : {
+>>I'm standing in a rather dark hallway, but I can see in the darkness
+>>that a wide corridor extends to the south, with some light coming from its
+>>far end.  To the west is the stairwell.  There is a bad smell coming from
+>>a narrower passage that continues to the east.
+    }
+
+  'west'    : stairwell3
+  'east'    : stinky_hall
+  'south'   : L_shaped_hall  # to wide_corridor
+
+end
+
+
+
+room stinky_hall
+
+  desc      : "filthy corridor"
+
+methods
+
+  'FIRSTDESC' : {
+>>As I enter the narrower passage, I have to stop and adjust to the rank
+>>smell... something is rotting or decaying.
+>>I find myself in a filthy corridor that runs through what appears to be
+>>a number of jail cells.  They lack the individual light bulb that my cell
+>>had.  I suppose I should consider myself honored.
+    }
+
+  'LONGDESC' : {
+>>I am standing between cells on both sides.  A flickering flourescent
+>>light with a broken cover illuminates the area in a way that seems
+>>surreal.
+    }
+
+  'west' : dark_hall
+
+end
+
+
+scenery cells
+
+  desc      : "rows of cells"
+  location  : stinky_hall
+
+methods
+
+  'INDEF' : desc
+  'Desc' : {
+>>I peer into the cells.  Most of the occupants are... not alive.  Those
+>>that are, I am half-inclined to put out of their misery.
+    if first_seen then {
+>>I squint deeper into the darkness.  All of the cells have a little
+>>doorbell-like device.  Above each one is a sign that reads, "RING WHEN
+>>READY TO COOPERATE."
+>>Now that is sad.  Really sad.
+      }
+    }
+
+end
+
+
+object human_arm
+
+  desc      : "long lumpy shape"
+  syn       : desc & "|lumpy shape|shape|arm|human arm|bone|human bone"
+  location  : stinky_hall
+
+  never_seen : TRUE
+  broken_off : FALSE
+
+methods
+
+  'look' : {
+    if never_seen then {
+      writes "It's on the floor, extending out under the bars of one of "
+      writes "the cells.  I bend lower to take a better look... "
+      writes "Ugh.  It's a decaying human arm.  "
+      never_seen := FALSE
+      desc       := "human arm"
+      }
+    writes "It makes my usually strong stomach twist a little just to "
+    writes "look at it.  "
+    if not broken_off then {
+      writes "It seems to be connected to a lumpy shape inside the cell.  "
+      writes "I can guess what THAT might be.  "
+      }
+    write
+    }
+
+  'get' : {
+    if not broken_off then {
+>>I pull at it gingerly; there is some resistance but then it suddenly
+>>breaks free.  The motion stirs up the still air and I nearly gag with the
+>>strength of the smell.
+      broken_off := TRUE
+      }
+    message --> object
+    }
+
+end
+
+
+room L_shaped_hall
+
+  desc  : "gently inclined hallway"
+
+methods
+
+  'LONGDESC' :
+    >>I'm in an L-shaped hallway that inclines gently to the west.
+
+  'north' : dark_hall
+  'west'  : wide_corridor
+
+end
+
+room wide_corridor
+
+  desc  : "wide corridor"
+
+methods
+
+  'east'  : L_shaped_hall
+  'south' : if vault_door.open then elevator
+
+  'LONGDESC' : {
+>>I'm in a wide corridor, well lit by recessed flourescent lighting.  To
+>>the south is an enormous vault door.
+    }
+
+end
+
+
+object vault_door
+
+  desc : "enormous vault door"
+  syn  : "slit"
+  never_taken : TRUE
+  open        : FALSE
+  location    : wide_corridor
+
+  tries       : 0
+
+methods
+
+  'get' : {
+    if never_taken then {
+      writes "Do you try these things just to see if I'm paying attention?  "
+      writes "Of course "
+      never_taken := FALSE
+      }
+    write "I can't do that."
+    }
+
+  'look' : {
+    writes "It is huge and looks like it's made of steel.  Shoot, for that "
+    writes "size it could be made of tin and it would be just as secure.  "
+    writes "It is "
+    if open then write "standing open." else write "closed tight."
+    }
+
+  'enter' :
+    if not open then
+      write "It isn't open."
+    else {
+      player.location := elevator; 'MOVE' -> player
+      }
+
+  'open' :
+    if open then
+      write "It's already open."
+    else {
+      case tries +:= 1 of {
+        1 : {
+          writes "As I get closer to the door, I can see a thin slit in the "
+          writes "center, but no handle, knob, button, or any means of opening "
+          writes "the door.  "
+          if vault_guard.alive then
+            writes "I am reluctant to ask the guard for help, to say the least.  "
+          else {
+            writes "I don't think the guard is going to give me any help, "
+            writes "being dead as he is.  "
+            }
+          write
+          }
+        2 : {
+          writes "I press around the door, looking for hidden panels or "
+          write  "buttons, but all I encounter is the one center slit."
+          }
+        default : {
+          writes "Still can't seem to do it.  "
+          'Grow Wary' -> vault_guard
+          write
+          }
+        }  # case
+      }  # else
+
+  'open...with' :
+    if open then 'open'
+    else if main.dobj = IDcard then 'Unlock'
+    else write "I'm afraid ", 'DEF' -> main.dobj, " isn't working."
+
+  'Unlock' : {
+    writes "There is a clicking sound within the door and then the loud "
+    writes "sound of huge steel bolts being drawn back.  It takes a good "
+    writes "five seconds for the monster to open.  The door swings wide, "
+    write "opening to the south."
+    open := TRUE
+    }
+
+end
+
+
+guard_type vault_guard
+
+  location : wide_corridor
+
+methods
+
+  'Grow Wary' :
+    if alive then {
+      writes "The guard seems troubled by my obvious inexperience with the "
+      writes "vault door.  \"Having trouble with the door?\" he asks "
+      writes "suspiciously, trying to get a better look at my face.  "
+      suspicious := 8
+      }
+
+end
+
+
+################################## The Elevator ###########################
+
+room elevator
+
+  level     : 1
+  desc      : "elevator"
+
+  never_rode : TRUE
+  time_delay : 0
+  waiting_at : UNDEFINED
+  player_here : FALSE
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+
+  'north' :
+    case level of {
+      1 : wide_corridor
+      2 : elev_alcove
+      3 : dingy_hall
+      4 : guard_tower
+      default : cell            # take out later
+      }
+
+  'FIRSTDESC' :
+    write "The enormous vault door grinds shut behind me."
+
+  'LONGDESC' : {
+    writes "I'm standing in what looks like a stainless steel elevator.  "
+    writes "To say that it looks \"heavy-duty\" is an understatement.  "
+    writes "There is a panel of buttons on the wall labeled 1 through 4.  "
+    write  "Button number ", 'Name' -> elev_button, " is currently lit."
+    }
+
+# When the elevator is called from another floor, there is a random number
+# of turns that the player must wait before the elevator arrives.
+# The sender of this message is always an elev_call_button, and sender.level
+# is the requested level.
+
+  'Calling Elevator' : {
+    time_delay := ? 4
+    waiting_at := sender
+    }
+
+  'AFTER' :
+    if waiting_at and (time_delay -:= 1) <= 0 then {
+      elevator.level := waiting_at.level
+      if player.location = waiting_at.location then {
+        writes "There is a quiet bell sound and the elevator slides into "
+        write  "view.  The light on the button goes off."
+        }
+      waiting_at := UNDEFINED
+      }
+    else if player.location = self then
+      player_here := TRUE
+    else {                              # player NOT here
+      if player_here and (?4) = 4 then {
+        if player.location.IsAelevator_hall and
+           player.location.level = level then
+          write "Behind me there is a roaring sound as the elevator ",
+                "rushes away."
+        level := 0
+        player_here := FALSE
+        }
+    }
+
+end
+
+
+elev_button null level : 1 end
+elev_button null level : 2 end
+elev_button null level : 3 end
+elev_button null level : 4 end
+
+
+############################################################################
+########################### Second Level ###################################
+############################################################################
+
+elevator_hall elev_alcove
+
+  desc : "hallway near the elevator"
+  level : 2
+
+methods
+
+  'east'  : closet_hall
+
+  'LONGDESC' : {
+    writes "I'm in a fresh-smelling, well-lit, carpeted hallway near the "
+    writes "elevator.  "
+    'Elevator Desc'
+    write
+    }
+
+end
+
+elev_call_button null   location : elev_alcove    level : 2 end
+
+
+
+room closet_hall
+
+  desc  : "hall with the broom closet"
+
+methods
+
+  'west'  : elev_alcove
+  'south' : if bc_door.open then broom_closet
+  'north' : Velchnys_office
+
+  'BRIEF' : >>Back near Velchny's office and the broom closet.
+
+  'LONGDESC' : {
+>>I'm standing in a carpeted hallway that has a broom closet to the south
+>>and a wide office door to the north, with the name "Commandant Velchny"
+    writes "stenciled on the door.  "
+    if ? 4 = 1 then writes "A cockroach scuttles under the closet door.  "
+    write
+    }
+
+end
+
+
+keyword Forever
+
+openable bc_door
+
+  desc  : "broom closet door"
+  syn   : "broom closet|closet"
+  location : closet_hall
+  locked   : TRUE
+  open     : FALSE
+
+methods
+
+  'get' : >>I can't do that!
+  'open' :
+    if locked then
+      write "It appears to be locked."
+    else
+      message --> openable
+
+  'look' : {
+    writes "The door is in the south wall and sports a heavy-duty lock ",
+           "which is currently "
+    if locked then writes "locked.  " else writes "unlocked.  "
+    writes "The door itself is currently "
+    if open then write "open, making an exit to the south."
+            else write "closed."
+    }
+
+  'open...with' :
+    if not locked then {
+      writes  "I don't need ", 'DEF' -> main.dobj, " to open the door; it ",
+              "isn't locked.  "
+      'open'
+      }
+    else
+      case main.dobj of {
+        keys :
+          if locked = Forever then
+            write "Because the lock is shot, the keys aren't working."
+          else {
+            writes "The keys seem to do the trick.  "
+            locked := FALSE
+            'open' --> openable
+            }
+        gun :
+          if gun.bullets > 0 then {
+            gun.bullets -:= 1
+            write "I shoot the lock of the door point-blank.  It makes a ",
+                  "terrible noise but the door stays locked.  I'm not sure if ",
+                  "even the right keys would open it now."
+            locked := Forever
+            }
+          else
+            write "I beat on the lock with my unloaded gun but nothing happens."
+        cot_fragment :
+          write "I try to use the piece of metal as a lockpick but it doesn't ",
+                "do the trick."
+        default :
+          write "I try but ", 'DEF' -> main.dobj, " doesn't help."
+        }  # case
+
+  'enter' :
+    if not open then
+      write "The door isn't open."
+    else {
+      write "I enter the broom closet, closing the door behind me."
+      open := FALSE
+      player.location := broom_closet; 'MOVE' -> player
+      }
+
+end
+
+
+############################## Velchny's Office #########################
+
+room Velchnys_office
+
+  desc   : "Commandant Velchny's office"
+
+methods
+
+  'south' : closet_hall
+
+  'BRIEF'    : write "In ", desc, "."
+  'LONGDESC' :
+    write "I'm standing in a comfortable, well-furnished office, tastefully ",
+          "decorated with creeping green plants, exotic wall hangings, ",
+          "and portraits of Hitler, Stalin, and Idi Amin."
+
+end
+
+
+# Commandant Velchny is based on the guard_type.  However, he is not your
+# average guard.  He has steelier nerves, and if you bound in wearing either
+# your prison uniform or your birthday suit, he is nonplussed either way
+# and shoots you immediately.  However, if you're wearing Krugnik's
+# uniform, he is thrown off for exactly one turn.
+#
+# Also, he is of a stouter physical constitution.  After one shot he falls
+# bleeding to the ground; his eyes belie the file cabinet.  But if you leave
+# him after the single shot, he shoots you.  He requires two shots.
+
+guard_type Velchny
+
+  location : Velchnys_office
+
+  times    : 0
+  shot     : 0
+  will_chase : FALSE
+
+methods
+
+  'Desc' :
+    if alive then
+      "Commandant Velchny"
+    else
+      "the late Commandant Velchny"
+
+  'DEF' : 'INDEF'
+  'INDEF' : desc
+
+  'AFTER' :
+    if alive then {
+      if 'ACCESS' -> self then
+        'Encounter'
+      else if will_chase then {
+        location := player.location; 'MOVE'
+        if shot = 0 then
+          writes "Velchny leaps over his desk and chases me, furious!  "
+        else
+          writes "I hear Velchny's office door creak open behind me.  "
+        'Encounter'
+        }
+      }   # if alive
+
+  'Encounter' :
+    if not uniform.wearing then
+      stop "Before I have the door open even halfway, I can see that Velchny ",
+           "already knows who I am.  \"You are somewhat more resourceful than ",
+           "I had expected,\", he admits, pointing the barrel of his huge ",
+           "hand-held cannon at my head.  \"Unfortunately for you, this now ",
+           "makes you much more of a liability than an asset.  Goodbye, my ",
+           "foolish little spy.\"  And with that the cannon in his hand roars ",
+           "my death knell."
+    else {                          # in Krugnik's uniform
+      case times +:= 1 of {
+        1 : { write "Velchny is sitting at his desk and glances up, annoyed.  ",
+              "\"How many times,\" he begins, \"must I tell you drooling ",
+              "Neanderthal peons to KNOCK before...\"  He suddenly sees my ",
+              "face.  \"You - you - \" he chokes, groping for his weapon."
+              'MENTION SELF'
+              will_chase := TRUE
+            }
+        default :
+          if shot = 0 then
+            stop  "Velchny has recovered himself and is holding his massive ",
+                "revolver.  \"You've just made yourself worthless!\" he snarls, ",
+                "and shoots me multiple times through the heart."
+          else if times > 2 then
+            'Revenge'
+        }           # how many times he encounters the player
+      }             # if player is wearing uniform
+
+  'Revenge' :
+    stop  "Suddenly I hear Velchny laughing softly, his voice choked ",
+    "with blood.  \"Do you think I am so weak as that?\" he asks.  ",
+    "\"Foolish decadent American!  Now you are going to die.\"  ",
+    "I hear the roar of his hand-held cannon; it is my death knell."
+
+# Modified messages from guard_type
+
+  'Kill With Knife' :
+    case shot of {
+      0 : stop "Although I leap upon him with the agility of a cat, it's ",
+               "a simple physical fact that his gun is the superior weapon.  ",
+               "It is all over in a moment; my last thoughts are that I have ",
+               "lost completely."
+      1 : { write "For some reason I don't think he's completely dead.  I leap ",
+               "upon him, wielding my sharp piece of metal like a knife.  In ",
+               "fact he is alive, but too weak to fight me off.  It takes ",
+               "longer than I would expect - Velchny has a strong physical ",
+               "constitution - but eventually I am the victor."
+          alive := FALSE
+          }
+      }  # case
+
+  'Kill With Gun' : {
+    gun.bullets -:= 1
+    case shot +:= 1 of {
+      1 : write "He isn't ready and I am; I shoot him through the upper ",
+                "right part of his chest.  He spins around, clutching the ",
+                "wound, and then falls to his knees.  \"Though you kill me, ",
+                "spy,\" he manages, \"you'll never get... the Gorreven ",
+                "Papers!\"  But his eyes flicker toward the filing cabinet.  ",
+                "He groans once more and then crashes to the ground."
+      2 : { write "Just for insurance, I plug him again, this time with a ",
+                "little more accuracy:  directly through the heart.  He ",
+                "utters one final scream of despair, convulses, and lies ",
+                "still.  I wait patiently for all signs of life to cease ",
+                "before I am satisfied that he is dead."
+            alive := FALSE
+            }
+      }  # case
+    }  # Kill With Gun
+
+end
+
+#### Other appointments of Velchny's office
+
+sit_furniture chair
+  desc     : "executive chair"
+  location : Velchnys_office
+end
+
+sitat_furniture desk
+  desc      : "large mahogany desk"
+  location  : Velchnys_office
+end
+
+object keys
+  desc      : "ring of keys"
+  pronoun   : "them"
+  location  : desk
+end
+
+openable filing_cabinet
+  desc      : "filing cabinet"
+  location  : Velchnys_office
+methods
+  'TRANSPARENT' : open
+  'search' : {
+    if not open then 'open'
+    'look in'
+    }
+  'look in' :
+    if open then {
+      write "There are dozens of manila folders packed inside.  I thumb ",
+      "quickly through them.  One leaps to my attention:  a folder containing ",
+      "the Gorreven Papers!"
+      'MENTION SELF' -> fake_papers
+      }
+    else write "It's closed right now."
+end
+
+object fake_papers
+  desc      : "Gorreven Papers"
+  syn       : "folder"
+  pronoun   : "them"
+  proper    : FALSE
+  location  : filing_cabinet
+methods
+  'INDEF' : 'DEF'
+  'look'  : write "It's just a plain manila folder with the words ",
+            "\"The Gorreven Papers\" on the outside."
+  'get'   : {
+>>I snatch at the manila folder.  At last!  The object of my quest.  As I
+>>pull it out from the rest, I notice that it seems curiously light.  In
+>>fact, in my haste the folder falls open, and a single sheet of typing
+>>paper flutters to the floor.  Curious, I retrieve it and read what is
+>>written:
+>>
+>>                Congratulations, treacherous fool!  So you
+>>                think you have the Gorreven Papers, eh?  You
+>>                think you can violate the paramount sanctity
+>>                of my personal office and lay your filthy
+>>                hands on the papers that will decide the destiny
+>>                of nations?  I'm afraid you're about to learn
+>>                a little lesson.  Unfortunately the price is
+>>                your own miserable life.  This piece of paper
+>>                you are now holding is saturated with a
+>>                powerful neurotoxin that is absorbed through
+>>                the skin.  By this time you have already
+>>                assimilated a fatal dose - even if you are a
+>>                very fast reader.  Ha!  Ha!  Know as you die
+>>                that you have been outsmarted by the inimitable
+>>                Commandant Velchny!
+>>
+>>I try to release the paper but the neurotoxin has already done its work...
+>>I cannot unclench my fingers.  I try to cry out but my jaw is frozen.
+>>Breathing is becoming difficult; I try to run but my legs only jerk
+>>feebly and I topple over, crashing to the floor like a tin soldier.
+>>My last fervent hope as my heart succumbs to the paralysis is that
+stop "Velchny will burn in hell... and that I will not be there with him..."
+  }
+
+end
+
+########################## End Velchny's Office #########################
+
+
+room broom_closet
+
+  desc : "broom closet"
+
+methods
+
+  'north'  : closet_hall
+  'south'  : if broom.shifted then chamber
+
+  'BRIEF' : >>Back in the cramped broom closet.
+
+  'FIRSTDESC' : {
+    write "I enter the broom closet and close the door carefully behind me.  ",
+          "It is pitch dark for a moment; after a moment of fumbling, I ",
+          "turn on the light.  One dull yellow light bulb illuminates the ",
+          "cramped confines of the closet.  A cockroach scuttles by on the ",
+          "floor.  The broom catches my eye; there's something unusual ",
+          "about it."
+    hinter.hint := check_broom
+    write
+    }
+
+  'LONGDESC' : {
+    writes "I'm standing awkwardly in the broom closet, blinking in the dull ",
+           "yellow light.  "
+    }
+
+end
+
+
+
+object pail location : broom_closet desc : "pail"  breaks_glass : TRUE  end
+
+thin_handled mop  location : broom_closet desc : "mop"  breaks_glass : TRUE end
+
+object vc   location : broom_closet desc : "vacuum cleaner"  breaks_glass : TRUE end
+object rags
+  location : broom_closet     desc : "dirty rags"     pronoun : "them"
+methods
+  'NEG INDEF' : "any " & desc
+  'INDEF'     : "some " & desc
+end
+
+object dustpan
+
+  desc     : "dustpan"
+  location : broom_closet
+  breaks_glass : TRUE
+
+methods
+
+  'INVENTORY NAME' :
+    if location = mop or location = broom then
+      ('INDEF' -> self) & " (stuck on the end of " & ('DEF' -> location) & ")"
+    else
+      ('INDEF' -> self)
+
+  'look' : {
+    writes "It's an ordinary dustpan.  The handle at the end "
+    if location = mop then
+      write "is stuck onto the top of the mop."
+    else
+      write "is hollow and about as big around as a broom or mop handle."
+    }
+
+  'put...on' :
+    if main.dobj = mop or main.dobj = broom then {
+      location := main.dobj; 'MOVE'
+      write "I twist it snugly onto the end of ", 'DEF' -> main.dobj, "."
+      }
+    else
+      write "It won't fit on ", 'INDEF' -> main.dobj, "."
+
+  'remove...from' : 'take...off'
+  'take...off' :
+    if location ~= main.dobj then
+      write "It isn't on ", 'DEF' -> main.dobj, "."
+    else {
+      location := player.location; 'MOVE'
+      write "I took it off of ", 'DEF' ->main.dobj, "."
+      }
+end
+
+thin_handled broom
+
+  location : broom_closet
+  desc     : "broom"
+  moved    : FALSE
+  shifted  : FALSE
+  breaks_glass : TRUE
+  first_look : TRUE
+
+methods
+
+  'look' : {
+    if first_look then {
+      first_look := FALSE
+      writes "I don't know what it is about that broom.  I guess it's ",
+             "that the "
+      }
+    else
+      writes "The "
+    write "broom is standing rather conspicuously upright while the other ",
+          "implements are leaning at various angles into the corners."
+    if is_shovel then message --> thin_handled
+    }
+
+  'pull' :
+    if shifted then {
+      writes "I pull the broom back toward me and I hear it click again.  "
+      writes "The rear wall of the closet appears again and once more I am "
+      write  "standing in a cramped, ill-lit room."
+      shifted := FALSE
+      }
+    else if moved then
+      write "Nothing happens."
+    else {
+      writes "I pull on the broom but nothing happens; "
+      'Tried to Pull'
+      }
+
+  'push' :
+    if shifted then
+      write "The broom is already pushed over."
+    else if moved then {
+      writes "I give the broom a brisk push.  It "
+      'Pushed Broom'
+      }
+    else {
+      writes "I give the broom a push, expecting it to fall over into a "
+      writes "corner like the others.  Instead it "
+      'Pushed Broom'
+      }
+
+  'get' :
+    if moved then
+      write "You know I can't get it.  Try pushing or pulling it."
+    else {
+      writes "I reach for the broom, expecting it to come away easily into "
+      writes "my hand.  Instead "
+      'Tried to Pull'
+      }
+
+  'Tried to Pull' : {
+      writes "it resists, sticking upright out of the "
+      writes "floor, apparently fastened by its bristles.  Annoyed, "
+      'push'
+      }
+
+  'Pushed Broom' : {
+    if moved then
+      write "moves as before toward the west while the south wall drops away."
+    else {
+      writes "moves smoothly toward the west wall.  I hear a loud clicking "
+      writes "noise and the broom closet's rear wall drops into the floor, "
+      writes "leaving a new exit to the south.  I gape, amazed, into the "
+      write  "chamber beyond."
+      moved := TRUE
+      }
+    shifted := TRUE
+    }
+
+end
+
+
+room chamber
+
+  desc : "enormous octagonal chamber"
+
+methods
+
+  'north' : broom_closet
+  'BRIEF' : >>Back in the Gorreven Chamber.
+
+  'LONGDESC' : {
+    writes "I'm standing in a ", desc, ", floodlit with half a dozen halogen "
+    writes "lights, in contrast to the dingy broom closet.  The walls are "
+    writes "smooth; there seems to be no exit besides back through the "
+    writes "closet.  The primary feature is the huge pedestal in the center "
+    writes "of the room, surrounded by a moat filled with a pungent, steaming "
+    write  "liquid of some kind."
+    }
+
+end
+
+
+hollow_object pedestal
+
+  desc      : "steel pedestal"
+  proximity : "at"
+  never_seen : TRUE
+  location   : chamber
+
+methods
+
+# The folder is accessible (sort of)
+  'TRANSPARENT' : TRUE
+
+  'get' : >>I can't do that.
+  'look on' : 'look'
+  'look in' : 'look'
+  'look' : {
+    writes "It's sitting in the center of the moat, covered in wide yellow ",
+           "and black stripes, with the words \"GORREVEN PAPERS - DO NOT ",
+           "TOUCH\" emblazoned on it in red.  "
+    if never_seen then {
+      writes "Evidently the person who designed this setup never read ",
+             "Poe's \"The Purloined Letter\".  "
+      never_seen := FALSE
+      }
+    if GorrevenPapers.location = self then
+      writes "On the top, nearly at eye level, I can see the folder that ",
+             "apparently contains the Gorreven Papers."
+    write
+    }
+
+  'enter' :
+    write "I can't get any closer than the edge of the moat.  In fact, ",
+          "as I get close to the moat, I strongly suspect that it's filled ",
+          "with sulfuric acid.  Not good at all."
+
+end
+
+
+object GorrevenPapers
+
+  desc   : "Gorreven Papers"
+  syn    : "folder"
+  proper : FALSE
+  location : pedestal
+  tries    : 0
+  pronoun  : "them"
+
+methods
+
+  'INDEF' : 'DEF'
+  'look' :
+    if location ~= player then
+      >>How can I?  I don't even have them.
+    else
+      case tries +:= 1 of {
+        1 : >>Most unthinkable!
+        2 : >>Absolutely unspeakable!
+        3 : write "Oh, very well.  I flip open the manila folder and - ",
+                  "no, I can't do this.  It wouldn't be right."
+        4 : write "Fine!  Fine!  I open the folder and take a peek.  ",
+                  "It's all pretty much unintelligible technical gibberish ",
+                  "to me, I'm afraid.  I'll bet it could be tremendously ",
+                  "powerful in the right hands, but I'm definitely the ",
+                  "wrong hands."
+        default :
+          write "The papers are still in the folder.  Everything's fine."
+        }
+
+  'get' :
+    if location ~= pedestal then
+      message --> object
+    else {
+      write "I stretch and reach but my fingers can't even reach the ",
+            "edge of the pedestal, since I have to stand on the safe side of ",
+            "the moat.  I can't get it that way."
+      hinter.hint := try_mop
+      }
+
+  'get...with' :
+    if main.dobj ~= mop then
+      write "Holding ", 'DEF' -> main.dobj, " at arm's length, I strain and ",
+            "stretch but still cannot touch the folder.  I need something ",
+            "longer."
+    else if mop.is_shovel then {
+      write "Pretty clever if I do say so myself.  The dustpan-mop ",
+            "combination, looking like a long-handled shovel, works like ",
+            "a charm, and in moments I hold in my hands the glorious ",
+            "Gorreven Papers."
+      location := player; 'MOVE'
+      hinter.hint := now_escape
+      }
+    else {
+      write "Now that I actually am trying to snag the papers with this ",
+            "mop, I feel less sure about the wisdom of this idea than I did ",
+            "in the beginning.  I can reach them but I'm not sure how to ",
+            "grasp them.  Let me try the mop end.  No, that's no good.  The ",
+            "handle end?  Maybe... let's see... almost got them... uh..."
+      write; write "Oh no."; write
+      write "The... the Gorreven Papers... fell into the moat... they ",
+            "dissolved before I had a chance to react.  They're GONE.  I'm ",
+            "dead meat.  Standard vulture diet.  I have more than half a ",
+            "reason just to fall into the moat myself.  Not good.  NOT GOOD."
+      location := UNDEFINED; 'MOVE'
+      hinter.hint := try_dustpan
+      }
+
+end
+
+
+
+object moat
+
+  desc : "moat"
+  location : chamber
+
+methods
+
+  'get'  : >>I can't do that.
+
+  'look' :
+    write "It's almost certainly filled with sulfuric acid.  It's about six ",
+          "feet wide and completely surrounds the pedestal."
+
+# We get this message from the 'put...in' verb if something is to be put in
+# the moat.
+  'Drop Subj In' : {
+    write "I put ", 'DEF' -> main.subj, " into the moat; it dissolves in ",
+          "a few moments."
+    main.subj.location := UNDEFINED; 'MOVE' -> main.subj
+    }
+
+  'go'    : 'enter'
+  'go in' : 'enter'
+  'enter' :
+    if GorrevenPapers.location then
+      write "No way!  I've got too much to live for yet."
+    else
+      stop "With the Gorreven Papers gone, it seems like a pretty good ",
+           "idea.  I plunge headfirst into the steaming sulfuric acid, ",
+           "letting the temporary pain of my body dissolving distract me ",
+           "from the unbearable anguish of having lost the Gorreven Papers."
+
+end
+
+
+############################################################################
+############################ Third Level ###################################
+############################################################################
+
+
+elevator_hall dingy_hall
+
+  desc : "dingy hallway"
+  level : 3
+
+methods
+
+  'west'     : warehouse
+  'east'     : barracks
+
+  'LONGDESC' : {
+    writes "I'm standing in a dingy hallway that smells somewhat of stale ",
+           "beer and sweat.  The dirty and worn carpet is peeling away from ",
+           "the floor in several places and one or two cockroaches regard ",
+           "me studiously.  "
+    'Elevator Desc'
+    }
+
+end
+
+elev_call_button null   location : dingy_hall    level : 3 end
+
+
+room warehouse
+  desc      : "small warehouse"
+methods
+  'east'    : dingy_hall
+  'LONGDESC' : write "I'm in a ", desc, " that smells of various chemicals.  ",
+               "I can also smell rusty metal and oil.  As I look around I see ",
+               "that this is a warehouse of torture implements."
+end
+
+
+# Contents of the warehouse
+container poison
+
+  location : warehouse
+  holder   : "can"
+  contents : "poison"
+
+methods
+
+  'put...in' :
+    if not filled then
+      write "But the ", holder, " is empty."
+    else if main.dobj = dog_food then {
+      write "I dump the ", contents, " into ", 'DEF' -> dog_food, "."
+      dog_food.poisoned := TRUE
+      filled := FALSE
+      }
+
+end
+
+object thumbscrews
+  location : warehouse
+  desc     : "thumbscrews"
+methods
+  'INDEF' : desc
+end
+
+object barbed_wire
+  location : warehouse
+  desc     : "barbed wire"
+methods
+  'INDEF' : "some " & desc
+  'get' : >>Ouch!  I can't pick that up.
+end
+
+object cattle_prod
+  location : warehouse
+  desc     : "electric cattle prod"
+  breaks_glass : TRUE
+end
+
+object iron_maiden
+  location : warehouse
+  desc     : "Iron Maiden"
+  proper   : FALSE
+methods
+  'get' : >>It's too heavy.
+  'look' : >>Looks like someone is nostalgic about the Bad Old Days.
+end
+
+object bear_trap
+  location : warehouse
+  desc     : "early American bear trap"
+methods
+  'look' : >>Yikes!  Wonder what they do with this?
+end
+
+
+openable power
+
+  desc     : "wall panel"
+  location : warehouse
+  syn      : "switches"
+  off      : FALSE
+  never_open : TRUE
+  pronoun  : 'Pronoun' -> self
+  times    : 0
+
+methods
+
+  'Pronoun' : if open then "them" else "it"
+  'look in' : {
+    if not open then 'open'
+    if open then 'look' else write "I can't look inside it."
+    }
+  'look'   :
+    if not open then
+      write "It's a closed panel, flush with the wall, with a hinge on the side."
+    else {
+      writes "The switches are all set to "
+      if off then write "OFF." else write "ON."
+      }
+
+  'open' : {
+    message --> openable
+    if never_open then {
+      never_open := FALSE
+      write "Behind the panel is a row of circuit breaker switches."
+      }
+    }
+
+  'turn_off' : 'turn off'
+  'turn_on'  : 'turn on'
+  'turn off' :
+    if not open then
+      'NORMAL' -> Turn
+    else if off then
+      write "They're already off."
+    else {
+      power.off := TRUE
+      write "With a sweep of my hand I turn all of the switches off.  ",
+      "There is pitch darkness; then a few feeble emergency lights flicker ",
+      "on.  \"Where's the power?\" roars a distant voice.  \"The spy's ",
+      "escaping!\" shrieks another.  \"Release the hounds!\" bellows a ",
+      "commanding voice."
+      'Release' -> dogs
+      }
+
+  'turn on' :
+    if not open then
+      'NORMAL' -> Turn
+    else if off then {
+      if (times +:= 1) = 1 then
+        write "Why?  You already asked me to turn them off.  I'm leaving them ",
+              "off.  It's time to escape.  Do you hear me?  Escape NOW!  Why ",
+              "else did you ask me to turn them off?  Do you have ANY idea ",
+              "what you're doing?"
+      else
+        write "I'm not going to discuss this any more."
+      }
+    else
+      write "They're already on."
+
+end
+
+################# End Warehouse Contents
+
+
+room barracks
+  desc   : "guards' barracks"
+methods
+
+  'west'  : dingy_hall
+  'north' : courtyard
+  'east'  : kennels
+
+  'LONGDESC' : {
+    writes "I'm standing in what looks like the guards' barracks.  It smells ",
+    "even more strongly of beer and sweat.  "
+    if power.off then
+      write "The place is in an uproar; guards are scrambling to their feet, ",
+            "grabbing their guns and shouting.  I keep my head low."
+    else
+      write "Several guards are sleeping on ",
+      "their cots - I'm gratified to see that their cots are not much more ",
+      "luxurious than the one I had in my cell.  Periodically a guard enters ",
+      "or leaves.  The light is low; in one corner I can hear a couple of ",
+      "guards gambling."
+    }
+
+end
+
+guard_type whittler
+
+  desc     : 'Desc' -> self
+  location : barracks
+
+methods
+
+  'Desc' :
+    if not alive then
+      "dead guard"
+    else if power.off then
+      "alert guard"
+    else
+      "idle guard"
+
+  'look' :
+    if not alive then
+      write "He's not doing much of anything."
+    else if power.off then
+      write "He's staring vigilantly around in the darkness, fingering his ",
+            "weapon."
+    else
+      write "He's sitting on the edge of his bed, idly whittling something."
+
+  'AFTER' : {
+    if alive and 'ACCESS' -> self then 'Encounter'
+    if not alive and player.location = barracks then
+      stop "Killing the guard seems to have been an extremely unwise move.  ",
+      "\"What happened?\" shouts someone.  \"There's the murderer!\" yells ",
+      "another voice.  \"Kill him!\" screams a guard, and his advice is taken ",
+      "gladly by his compatriots.  Within minutes I am perforated by a dozen ",
+      "different bullet wounds; the last sounds I hear are the continued ",
+      "firing of angry guns."
+    }
+
+end
+
+
+
+############## The Dog Kennels
+
+room kennels
+
+  desc        : "attack dog kennels"
+
+methods
+
+  'west'      : barracks
+  'FIRSTDESC' : { write "As I enter the room I have to duck because the ",
+                "ceiling is only five and a half feet tall.  Clearly this ",
+                "is an area not often entered by humans.  All around me ",
+                "hideous demonic dogs - Rottweilers, Dobermans, pit bulls, ",
+                "and German Shepherds - are snarling and biting the bars of ",
+                "their cages.  They're looking at me with bloodlust in ",
+                "their eyes; they already know there's something wrong about ",
+                "me.  Maybe they've already been taught my scent."
+                 write
+                 }
+  'LONGDESC' : { write "I'm crouching within the low-roofed ", desc, ".  Down ",
+               "the north side of the kennels are rows of cages containing ",
+               "vicious dogs.  The dogs are all fed automatically; ducts ",
+               "extend from the big hopper on the east side of the kennels ",
+               "into each dog's dish in its cage.  The cages all have doors ",
+               "on the north side, leading out into the courtyard.  ",
+               "Presumably this is for quickly releasing the demonic dogs ",
+               "if an intruder gets in."
+               write; write "Or gets out.  Something to think ",
+               "about when I'm trying to escape." }
+end
+
+
+hollow_object cages
+
+  desc      : "rows of cages"
+  location  : kennels
+  pronoun   : "them"
+
+methods
+
+  'TRANSPARENT' : TRUE
+
+  'get'   : >>I can't.
+  'INDEF' : 'DEF'
+  'open'  : {
+    writes "They don't open from this side.  "
+    if dogs.alive then write "Thank God." else write
+    }
+  'enter' : {
+    writes "I can't get in from this side.  "
+    if dogs.alive then write "Thank God." else write
+    }
+  'look in' : 'look'
+  'look' : {
+    writes "I look inside the cages at the dogs.  "
+    message --> dogs
+    }
+
+end
+
+
+object dogs
+
+  desc     : 'Desc' -> self
+  pronoun  : "them"
+  location : cages
+  alive    : TRUE
+  released : FALSE
+  time_to_catch : 4
+
+methods
+
+  'Desc' : if alive then "pack of dogs" else "pack of dead dogs"
+
+  'INITIAL' : 'REGISTER' -> before
+  'BEFORE' :
+    if alive and released then
+      case time_to_catch -:= 1 of {
+      2 : write "I hear the distant baying of dogs."
+      1 : {
+        location := player; 'MOVE'
+        write "A pack of snarling hounds is suddenly converging upon me!"
+        }
+      0 : stop "I cannot run fast enough; they are upon me.  Within seconds ",
+               "I am buried under a snarling, salivating canine chaos; they ",
+               "all want a piece of me and it seems like that's just what's ",
+               "happening.  The pain and fear is tremendous and my only ",
+               "consolation is that it does not last long."
+      }
+
+  'kill'   : {
+    if gun.location = player then
+      main.dobj := gun
+    else if cot_fragment.location = player then
+      main.dobj := cot_fragment
+    else if cattle_prod.location = player then
+      main.dobj := cattle_prod
+    else if bear_trap.location = player then
+      main.dobj := bear_trap
+    else
+      main.dobj := UNDEFINED
+    'kill...with'
+    }
+
+  'kill...with' :
+    if not alive then
+      write "They're already all dead."
+    else if main.dobj = poison and poison.filled then {
+      write "Now that's not a bad idea.  But kill them how?  By throwing ",
+            "the poison at them?  That doesn't seem very sound."
+      'MENTION SELF' -> poison
+      hinter.hint := put_in_food
+      }
+    else if main.dobj = UNDEFINED then
+      write "With my bare hands?  Oh sure."
+    else {
+      if main.dobj := gun then {
+        if gun.bullets > 0 then {
+          writes "I pump my remaining ammunition into the pack.  "
+          gun.bullets := 0
+          }
+        else
+          writes "I beat at the dogs' heads with the butt of my unloaded gun.  "
+        }
+      else
+        writes "I lay into the pack with ", 'DEF' -> main.dobj, ".  "
+      if location = cages then {
+        if main.dobj = gun then
+          write "But it only kills a few.  There are far too many others ",
+                "left alive, and the deaths do not subdue them but rather ",
+                "make them all the more furious."
+        else
+          write "But I can't quite reach them through the bars of the cages.  ",
+                "They all retreat to the far corners of their cages and snarl ",
+                "at me."
+        }
+      else
+        stop  "But it's just not enough.  The pack overwhelms me, tearing out ",
+              "chunks of my flesh, crunching my bones... fortunately it does ",
+              "not last long."
+      }
+
+  'get'    :
+    if alive then
+      write "Not likely!"
+    else
+      write "That's too much to carry."
+
+  'look'   :
+    if alive then
+      write "They are snarling furiously, saliva dripping from their jaws."
+    else
+      write "They are all lying stiffly in various contorted poses.  All dead."
+
+  'Release' : released := TRUE
+
+end
+
+
+
+object dog_food
+
+  desc      : "dog food hopper"
+  syn       : "dog food|food"
+  location  : kennels
+  poisoned  : FALSE
+  filled    : TRUE
+
+methods
+
+  'get'     : >>It's fastened to the floor.
+  'look in' : 'look'
+  'look'    : {
+    if filled then {
+      writes "It's full of dry dog food"
+      if poisoned then
+        writes " with poison sprinkled on top.  "
+      else
+        writes ".  "
+      }
+    else
+      writes "It's empty with a little dry dusting of dry dog food on the ",
+             "inside.  "
+    write "There's a button on the side of the hopper."
+    }
+
+end
+
+
+object button
+
+  desc      : "big red button"
+  location  : kennels
+  visible   : FALSE
+
+methods
+
+  'push' :
+    if not dog_food.filled then
+      write "Machinery grinds noisily but nothing happens; the hopper ",
+            "is empty."
+    else {
+      dog_food.filled := FALSE
+      writes "There is a clanking sound of machinery; the level of dog food ",
+            "in the hopper drops as the dog food pours into the individual ",
+            "dishes in the kennels.  The dogs forget me and start eating ",
+            "ravenously.  "
+      if dog_food.poisoned then {
+        write "It's pretty potent poison; within minutes they ",
+              "are all dead.  All of them."
+        dogs.alive := FALSE
+        }
+      else
+        write "Gee.  I don't know what possessed me to do that.  Even ",
+              "after a nice treat they still look like they want to kill ",
+              "me.  Why, I wonder if it would have been a good idea to, ",
+              "say, put some POISON in the food or something first!  Gads."
+      }
+
+  'look' : write "Beneath it, stenciled in the metal it reads:  \"PUSH TO ",
+                 "FEED\"."
+
+end
+
+
+############################################################################
+############################ Fourth Level ##################################
+############################################################################
+
+
+elevator_hall guard_tower
+
+  desc : "guard tower"
+  level : 4
+
+methods
+
+  'LONGDESC' : {
+    writes "I'm standing in the top of a tall guard tower that overlooks ",
+    "the entire complex, at least the part that's above ground.  There are ",
+    "wide windows in all four directions.  "
+    'Elevator Desc'
+    }
+
+end
+
+
+elev_call_button null   location : guard_tower   level : 4 end
+
+object searchlight
+
+  location : guard_tower
+  desc     : "powerful searchlight"
+  syn      : "light"
+  broken   : FALSE
+
+methods
+
+  'get'  : >>It's fastened to the floor.
+  'look' : {
+    writes "It's fastened to the floor, made so that it can swivel around ",
+          "and shine its powerful light out any one of the windows (none ",
+          "of which have any glass in them)."
+    if broken then writes "  It also happens to be broken beyond any simple ",
+                          "repair."
+    write
+    }
+
+  'Guard Notices?' :
+    if tower_guard.alive and 'ACCESS' -> tower_guard then {
+      writes "The tower guard whirls around.  \"What do you think you're ",
+      "doing?\" he demands.  He suddenly looks me right in the eye.  "
+      'Found Out' -> tower_guard
+      }
+    else
+      write
+
+  'break' :
+    if broken then
+      write "It's already broken."
+    else {
+      writes "I pound the glass of the searchlight with my bare fist.  The ",
+             "glass reverberates, but nothing else happens.  "
+      'Guard Notices?'
+      }
+
+  'break...with' :
+    if broken then
+      'break'
+    else {
+      if main.dobj = gun and gun.bullets > 0 then {
+        writes "I fire at the searchlight with the gun.  The glass and the ",
+               "bulb shatter into fragments which go flying everywhere.  "
+        gun.bullets -:= 1
+        broken := TRUE
+        }
+      else if main.dobj.breaks_glass then {
+        writes "I pound the searchlight with ", 'DEF' -> main.dobj, "; with ",
+               "a few strokes the glass and the bulb are shattered.  "
+        broken := TRUE
+        }
+      else
+        writes "I pound on the searchlight with ", 'DEF' -> main.dobj, ", but ",
+               "nothing really happens.  "
+      'Guard Notices?'
+      }
+
+end
+
+
+guard_type tower_guard
+
+  location : guard_tower
+
+end
+
+object windows
+
+  desc : "guard tower windows"
+  location : guard_tower
+  syn  : "window"
+
+methods
+
+  'look out of' : 'look'
+  'look out' : 'look'
+  'look'     : {
+    write "I look out of ", 'DEF' -> self, " and see the following:"
+    'View'
+    }
+  'get' :
+    write "I can't get these windows!  Why, they don't even have any glass!"
+
+  'View' : {
+    write "I can see a twelve-foot chain-link fence extending all around the ",
+          "perimeter of the above-ground part of the complex.  Beyond the ",
+          "fence, to the north only, is a dense woods.  If I could get into ",
+          "that woods they would never catch me."
+
+    write  "To the south I see a guarded entrance.  ",
+           "Beyond it there is a wide ",
+           "expanse of gently rolling ground and a paved road.  I'd have to ",
+           "go a long ways ",
+           "before being able to hide myself if I escape that way."
+
+    write  "To the east I can see what appear to be ",
+           "kennels, probably for attack dogs.  Closer to the guard tower ",
+           "itself is a structure that I take to be the guards' barracks.  ",
+           "Beyond the east fence is a wide flat plain.  It would be a long run ",
+           "to safety if I take that way out."
+
+    write  "Beyond the west fence I see a muddy, shallow river that seems ",
+           "to issue from the woods to the north.  Beyond the river there is ",
+           "only flat, open ground.  If I escape to the west I'd be easy ",
+           "to spot for a long time.  The woods to the north look more ",
+           "promising.  Next to the guard tower is a building which looks ",
+           "like it could be a warehouse of some sort."
+
+    }
+
+
+end
+
+
+
+############################### The Courtyard ##############################
+############################### and the Outside ############################
+
+room courtyard
+
+  desc : "courtyard"
+
+methods
+
+  'south'    : barracks
+  'north'    : north_fence
+  'east'     : east_fence
+  'west'     : west_fence
+
+  'FIRSTDESC': write "I'm outside, standing under a starry night lit only ",
+               "by a thin crescent moon.  It takes a moment for my eyes ",
+               "to adjust to the thin light, but I can see by it.\n"
+  'LONGDESC' : {
+    writes "I'm standing outside of the barracks.  "
+    if searchlight.broken then
+      writes "With the searchlight in the guard tower broken, the night is ",
+             "likely to remain as dark as it is.  A good cover for me.  "
+    else
+      writes "Periodically the searchlight in the guard tower blinks on and ",
+             "sweeps in the direction of some night noise.  That's going to ",
+             "put a cramp in my style if I try to escape.  "
+    write "Far away I can see the chain-link fence glinting in the moonlight."
+    }
+
+end
+
+
+
+room north_fence
+
+  desc       : "north courtyard"
+
+methods
+
+  'south'    : courtyard
+
+  'LONGDESC' : write "I'm standing by the north fence.  Beyond is a ",
+                    "thick woods.  If I can just get over this fence ",
+                    "I can hide myself in those woods so they'll never ",
+                    "find me.  I'll be home free."
+
+end
+
+
+room west_fence     desc : "west courtyard" methods
+
+  'east'     : courtyard
+  'south'    : south_fence
+
+  'LONGDESC' : write "I'm at the west end of the courtyard, by the ",
+               "west fence.  Beyond the fence there is only a wasteland.  ",
+               "Not much to hide behind."
+
+end
+
+
+room east_fence     desc : "east courtyard" methods
+
+  'west'     : courtyard
+  'south'    : south_fence
+
+  'LONGDESC' : write "I'm at the east end of the courtyard, by the ",
+               "east fence.  Beyond the fence there is only a wasteland; ",
+               "I'll be easy to spot trying to escape there."
+
+end
+
+
+room south_fence   desc  : "south courtyard" methods
+
+  'west'    : west_fence
+  'east'    : east_fence
+
+  'LONGDESC': {
+    writes "I'm in the south courtyard.  Directly in the middle ",
+           "of the south fence is a guard station.  "
+    if power.off then
+      writes "The guards are milling around, suspicious and trigger-happy ",
+             "because the power is off.  "
+    else
+      writes "The guards are vigilantly guarding the south entrance.  "
+    write "There'll be no exit to the south."
+    }
+
+end
+
+
+fence nfence     location : north_fence    otherside : north_woods end
+fence efence     location : east_fence     otherside : wasteland   end
+fence wfence     location : west_fence     otherside : wasteland   end
+fence sfence     location : south_fence    otherside : got_killed  end
+
+
+room wasteland   desc     : "wasteland"    methods
+
+  'ENTERED' : stop "I run a short ways out into the wasteland at top ",
+                   "speed.  It is a valiant effort - if somewhat quixotic.  ",
+                   "I'm barely a hundred yards away when I'm spotted and ",
+                   "a rifle shot sends me stumbling to the ground.  The ",
+                   "shots that follow push me painfully into oblivion."
+
+end
+
+
+room north_woods
+
+  desc  : "north woods"
+
+methods
+
+  'ENTERED' : {
+    writes "The north woods are just ",
+           "ahead and I slip away into their depths.  They will never catch ",
+           "me.  "
+    if GorrevenPapers.location = player then {
+      write "And I have the Gorreven Papers!  I've done it!  Escaped from ",
+           "their compound, taking the Papers right from out under their ",
+           "noses!  I have saved the free world... again, I might add."
+           write
+           stop "After I lose myself a little in the woods, I straighten up ",
+           "and walk more slowly, enjoying the smell of the pines and the ",
+           "feel of the Papers secure in my hand.  It is a wonderful night."
+      }
+    else {
+      writes "But there's something that mars my victory.  I don't have the ",
+             "Gorreven Papers.  "
+      if not GorrevenPapers.location then
+        stop "Of course, they don't either, so that's some consolation.  ",
+              "I trudge quietly into the woods, grim and dejected."
+      else
+        stop "And they still do.  I've escaped, but with what?  My miserable ",
+             "life - which, now, may not be worth the trouble I took to ",
+             "save it.  I slink, shameful, into the woods, like a rat or a ",
+             "weasel, trying desperately to think of other things."
+      }
+    }   # ENTERED
+
+end
+
+
+room got_killed
+methods
+  'ENTERED' : stop "But as I drop over the other side, it is too late.  The ",
+                   "nearby guards at the entrance have spotted me and my ",
+                   "furtive actions make me the immediate target of ",
+                   "suspicion - and a target, anyway.  The crescendoing ",
+                   "pain lancing through my body is mercifully short-lived."
+end
+
+

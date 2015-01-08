@@ -1,0 +1,49 @@
+# LEXICON.ACH
+#
+# Archetype's baseline lexicon.
+
+Verb lookV full : 'look'    syn : 'look at'       end
+
+lex null full : 'under'     end
+lex null full : 'in'        syn : 'inside|into'   end
+lex null full : 'at'        end
+
+Verb null full : 'pick'     end
+
+# "take" is not made the simple synonym of "get" because "take" can be
+# combined with prepositions like "off" to make entirely different verbs.
+
+Verb getV  full : 'get'      end
+Verb null  full : 'take'     end
+Verb dropV full : 'drop'     syn : 'put down'      end
+Verb putV  full : 'put'      end
+
+lex null full : 'on'       end
+lex null full : 'off'      end
+lex null full : 'off of'   end
+lex null full : 'out'      end
+
+lex null full  : 'with'     end
+
+Verb enterV full : 'enter'    end
+
+Verb exitV  full : 'exit'     syn : 'leave|get out|get out of' end
+
+Verb goV  full : 'go'       syn  : 'walk' end
+lex  null full : 'to'       end
+
+Verb sayV full : 'say'      end
+
+Verb inventoryV
+  full : 'inventory'
+  syn  : 'i'
+end
+
+lex null full : 'around'       end
+
+Verb quitV full : 'quit'     end
+Verb saveV full : 'save'     end
+Verb loadV full : 'load'     end
+Verb helpV full : 'help'     end
+
+########################### End of LEXICON.ACH ########################

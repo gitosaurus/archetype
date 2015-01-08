@@ -1,0 +1,933 @@
+#########################################################################
+#
+# INTRPTR.ACH
+#
+# The classes and objects making up the main interpreter and parser.
+#
+# Copyright 1995 Derek T. Jones
+#
+# For use with Archetype version 1.02
+#
+# Modifications:
+#   version 1.02  8/15/95  force vocabulary reassembly following
+#                          the loading of a game state
+#
+#########################################################################
+
+class pronoun_object based on null
+
+  IsApronoun : TRUE
+  IsAnoun    : TRUE
+  referent   : UNDEFINED
+
+methods
+
+  'NAME' : referent.pronoun -> system
+
+end
+
+
+
+class lex based on null
+
+  IsAlex : TRUE
+
+  full  : UNDEFINED
+  syn   : UNDEFINED
+
+  on_menu   : TRUE
+
+methods
+
+  'NAME' : {
+    full -> system
+    if syn then syn -> system
+    }
+
+end
+
+
+
+class Verb based on lex
+
+  IsAVerb   : TRUE
+
+  disabled  : UNDEFINED
+  interpret : UNDEFINED
+  normal    : FALSE
+
+methods
+
+  'DISABLED'  : if disabled then write disabled
+  'INTERPRET' : if 'ACCESS' -> interpret then
+                  full -> interpret
+                else
+                  write "But ", 'DEF' -> interpret, " isn't here."
+  'NORMAL'    : if normal then write normal
+
+end
+
+
+
+# main
+#
+# This is the adventure interpreter; it prompts the player and does
+# a good bit of parsing.  A given object may reference the verb,
+# subject, preposition, and direct object of the last sentence as
+# main.verb, main.subj, main.prep, and main.dobj, respectively.
+#
+# The last subject of a sentence is "it" (or that object's pronoun) for
+# the next sentence.  If some object wishes to be "it" instead, it
+# must send the 'MENTION' message to main.
+
+null main
+
+  prompt       : "\nWhat should I do now? "
+  wait_message : "I wait patiently."
+
+# Parsing attributes
+
+  command    : UNDEFINED
+  match      : UNDEFINED
+  lex_stream : UNDEFINED
+  send_to    : UNDEFINED
+
+# Elements of the last sentence
+
+  verb       : UNDEFINED
+  prep       : UNDEFINED
+  subj       : UNDEFINED
+  dobj       : UNDEFINED
+
+# Last mentioned object
+
+  it         : UNDEFINED
+  mentioned  : FALSE
+
+# The verbmsg is the specially formatted verb/prep, with the following
+# meanings:
+#   1) "verb"             a single verb phrase with single subject
+#   2) "verb_prep"        verb phrase, subject, trailing preposition
+#   3) "verb...prep"      verb phrase, subject, preposition, direct object
+
+  verbmsg   : UNDEFINED
+
+methods
+
+'START' : {
+
+# The INITIAL and ASSEMBLE messages are broadcast separately because
+# the ASSEMBLEs may depend on things set up by INITIAL.
+  for each do 'INITIAL'   -> each
+
+  writes "Assembling objects..."
+  for each do 'ASSEMBLE'  -> each
+  write "done."
+
+  'ASSEMBLE VOCABULARY'
+
+  'ENTERED' -> player.location
+
+# Main command loop
+
+  while TRUE do {
+
+    'UPDATE' -> player
+
+    'ROLL CALL' -> system
+    'ANNOUNCE MEMBERS' -> player
+    'ANNOUNCE MEMBERS' -> player.location
+    'ANNOUNCE SELF'    -> player.location
+
+  # Prompt for input and parse
+    writes prompt
+    command := read
+    write
+
+    'PLAYER CMD' -> system
+    command -> system
+
+    'SEND EVENT' -> before
+
+    if 'NORMALIZE' -> system = " " then
+      write "I wait patiently."
+    else {
+      mentioned := FALSE
+      'PARSE' -> system
+      'INTERPRET'
+      }
+
+    if not mentioned and subj.IsAobject then
+      'MENTION SELF' -> subj
+
+    'SEND EVENT' -> after
+
+    }  # end of primary command loop
+
+  }  # START
+
+
+ 'INTERPRET' : {
+
+   send_to  := UNDEFINED
+
+   verb := subj := prep := dobj := UNDEFINED
+
+   verb := 'NEXT LEX' -> self
+
+   if not verb then
+     >>I can't find a verb in that sentence.
+   else {
+     verbmsg := verb
+     if match.IsApronoun then
+       subj := match.referent
+     else
+       subj := match          # left over from 'NEXT LEX'
+     if not subj then {                     # single verb
+       send_to := player
+       }
+     else if not subj.IsAobject then
+       write "I don't know what \"", subj, "\" refers to."
+     else {
+       send_to := subj
+       prep := 'NEXT LEX' -> self
+       if prep then {
+         if match.IsApronoun then
+           dobj := match.referent
+         else
+           dobj := match      # left over from 'NEXT LEX'
+         if not dobj then
+           verbmsg := verb & "_" & prep
+         else if not dobj.IsAobject then {
+           write "I don't know what \"", dobj, "\" refers to."
+           send_to := FALSE
+           }
+         else
+           verbmsg := verb & "..." & prep
+         }     # there is a prep
+       }     # there is a valid subject
+     }     # there is a valid verb
+
+# Does the verb alone have an interpretation?  If not, then what about the
+# verbmsg as a whole?  Do not check any of this if send_to is UNDEFINED;
+# that means that there was a parse error.
+
+# Also be sure, before sending, to see if verbmsg is defined ANYWHERE
+# as a message.
+
+   if send_to then {
+     'WHICH OBJECT' -> system
+     if (match := verb -> system).interpret then
+       'INTERPRET' -> match
+     else if match.disabled then
+       'DISABLED' -> match
+     else {
+       'WHICH OBJECT' -> system
+       if (match := verbmsg -> system).interpret then
+         'INTERPRET' -> match
+       else if match.disabled then
+         'DISABLED' -> match
+       else if not verbmsg -> verb_filter then {
+         writes "I don't know how to ", verb, " anything"
+         if prep then writes " ", prep
+         write "."
+         }
+       else {
+         if 'NOUNS PRESENT' -> self then
+# Now it's time to actually send the message.  If who we're sending to has
+# an ABSENT method, give the appropriate error messages.
+           if verbmsg -> send_to = ABSENT then {
+             'WHICH OBJECT' -> system
+             if (match := verbmsg -> system) and match.normal then
+               { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
+             else {                            # try the verb alone
+               'WHICH OBJECT' -> system
+               if (match := verb -> system).IsAVerb and match.normal then
+                 { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
+               else
+                 'Semantic Error'
+               }
+             }  # no method defined for the verb message
+         }     # no special interpretation for verb message
+       }     # no special interpretation for verb alone
+     }     # there was no parse error
+
+   }  # INTERPRET
+
+  'NOUNS PRESENT' :
+    if main.subj and not 'ACCESS' -> main.subj then {
+      write "I don't see ", 'NEG INDEF' -> main.subj, " here."
+      FALSE
+      }
+    else if main.dobj and not 'ACCESS' -> main.dobj then {
+      write "I don't see ", 'NEG INDEF' -> main.dobj, " here."
+      FALSE
+      }
+    else
+      TRUE
+
+  'Semantic Error' : {
+    writes "I don't know how to ", verb, " ", 'INDEF' -> send_to
+    if prep then write " ", prep, " anything." else write "."
+    }
+
+# Utility methods
+
+  'NEXT LEX' : {
+    lex_stream := ""
+    while (match := 'NEXT OBJECT' -> system).IsAlex do
+      lex_stream &:= " " & match.full
+    if length lex_stream = 0 then
+      lex_stream := UNDEFINED
+    else
+      lex_stream := lex_stream rightfrom 2
+    lex_stream
+    }
+
+  'MENTION' : {
+    mentioned := TRUE
+    'WHICH OBJECT' -> system
+    if it := sender.pronoun -> system then
+      it.referent := sender
+    else {
+      create pronoun_object named it
+      it.referent := sender
+      'OPEN PARSER'  -> system
+      'NOUN LIST'    -> system
+      'NAME'         -> it
+      'CLOSE PARSER' -> system
+      }
+    }
+
+  'ASSEMBLE VOCABULARY' : {
+
+    writes "Assembling vocabulary..."
+
+    'INIT PARSER' -> system
+    'VERB LIST' -> system
+    for each.IsAlex do 'NAME' -> each
+    'NOUN LIST' -> system
+    for each.IsAnoun do 'NAME' -> each
+    'NAME' -> everything
+    'CLOSE PARSER' -> system
+    write "done.  ", 'FREE MEMORY' -> system, " bytes available."
+
+    }
+
+end
+
+
+
+############################### Event Lists ############################
+#
+# The event lists are the 'BEFORE' and 'AFTER' handlers.  In order
+# to have an event message sent to it, an object has to send the
+# 'REGISTER' message to the right event handler.
+
+class node based on null
+
+  next : UNDEFINED
+  data : UNDEFINED
+
+end
+
+class event_handler based on null
+
+  head : UNDEFINED
+  tail : UNDEFINED
+  temp : UNDEFINED
+
+  event : 'EVENT'
+
+methods
+
+  'REGISTER' : {
+    create node named temp
+    temp.data := sender
+    if tail then
+      tail.next := temp
+    else
+      head := temp
+    tail := temp
+    }
+
+  'SEND EVENT' : {
+    temp := head
+    while temp do {
+      event -> temp.data
+      temp := temp.next
+      }
+    }
+
+end
+
+
+event_handler before        event : 'BEFORE'        end
+event_handler after         event : 'AFTER'         end
+
+
+
+######################### Inventory Types #################################
+#
+# An inventory_item object can be in the inventory of an inventoried
+# object; since an inventoried object is descended from an inventory_item,
+# objects which have inventories may also be in other objects' inventories.
+# This whole scheme assumes that an inventory_item may belong to the
+# inventory of only ONE inventoried object at a time.
+
+class inventory_item based on null
+
+  prev_ : UNDEFINED
+  next_ : UNDEFINED
+
+  location      : UNDEFINED
+  last_location : UNDEFINED
+
+methods
+
+  'ANNOUNCE SELF' : 'PRESENT' -> system
+
+  'ASSEMBLE' : {
+    last_location := UNDEFINED
+    'MOVE'
+    }
+
+  'MOVE' :
+    if location ~= last_location then {
+      'DROP SELF' -> last_location
+      'ADD SELF' -> location
+      last_location := location
+      }
+
+end
+
+
+
+class inventoried based on inventory_item
+
+  intro       : "This object contains"
+  empty_intro : "There is nothing in this object."
+
+  members_ : UNDEFINED
+  temp_    : UNDEFINED
+
+methods
+
+  'ANNOUNCE MEMBERS' : {
+    temp_ := members_
+    while temp_ do {
+      'ANNOUNCE SELF' -> temp_
+      if 'TRANSPARENT' -> temp_ then
+        'ANNOUNCE MEMBERS' -> temp_
+      temp_ := temp_.next_
+      }
+    }
+
+  'ADD SELF' : {
+    if members_ then members_.prev_ := sender
+    sender.next_ := members_
+    members_ := sender
+    members_.prev_ := UNDEFINED
+    }
+
+  'DROP SELF' : {
+    if sender = members_ then {      # don't leave the main list ptr. hanging
+      members_ := members_.next_
+      if members_ then members_.prev_ := UNDEFINED
+      }
+    if sender.prev_ then sender.prev_.next_ := sender.next_
+    if sender.next_ then sender.next_.prev_ := sender.prev_
+    sender.prev_ := UNDEFINED
+    sender.next_ := UNDEFINED
+    }
+
+  'INVENTORY' : message -> list_inventory
+
+end
+
+
+
+# Writes a comma-separated inventory to the screen.  It is its own
+# object just to make sure that its variables are global (shared).
+
+null list_inventory
+
+  number  : 0
+  temp    : UNDEFINED
+  last    : UNDEFINED
+
+methods
+
+  'INVENTORY' : {
+
+    number  := 0
+    temp    := sender.members_
+    last    := UNDEFINED
+
+    while temp do {
+      if 'INVENTORY NAME' -> temp then {      # we may proceed
+        number +:= 1
+        if not last then
+          writes sender.intro
+        else {
+          if number > 2 then writes ","
+          writes " ", last
+          }
+        last := 'INVENTORY NAME' -> temp
+        }
+      temp := temp.next_
+      }
+    if number = 0 then
+      write sender.empty_intro
+    else {
+      if number > 2 then writes ","
+      if number > 1 then writes " and"
+      write " " & last & "."
+      }
+
+    }  # INVENTORY
+
+end
+
+
+############################## Directions ###############################
+#
+# The direction class is defined here in INTRPTR.ACH, since its methods
+# and attributes are depended on by the interpreter.  The directions
+# themselves can be defined in another file.  The direction is inherited
+# from the inventory_item so that the compass can be inventoried and
+# we can get a comma-separated list for the "obvious exits".
+
+class direction based on inventory_item
+
+  IsAlex       : TRUE               # so that it gets a verb response
+  IsAdirection : TRUE
+
+  full : UNDEFINED
+  syn  : full leftfrom 1
+
+  location    : compass
+  destination : UNDEFINED
+
+  interpret   : TRUE
+
+methods
+
+  'NAME'  : {
+    "go " & full -> system
+    message --> lex
+    }
+
+  'DEF'   : 'INDEF'                       # in order to be object-like
+  'INDEF' : "the direction " & full
+  'IN THE DIRECTION' : "to the " & full
+
+  'INVENTORY NAME' :
+    if full -> player.location then full
+
+  'go' : 'MOVE PLAYER'
+
+  'INTERPRET'   : 'MOVE PLAYER'
+  'MOVE PLAYER' :
+    if not (destination := full -> player.location) then
+      >>I can't go that way.
+    else {
+      player.location := destination
+      'MOVE' -> player
+      }
+
+end
+
+
+
+# The "compass" below helps with treating the set of directions as a whole.
+# It can either list all the directional messages that the sender has,
+# or act as a tester: if sent any message, it returns TRUE if it describes
+# a direction; FALSE otherwise.  It is actually where the directions
+# "reside".
+
+inventoried compass
+
+  intro       : "I can exit"
+  empty_intro : "There are no visible exits."
+
+  exitstr : "|"
+
+methods
+
+  'ADD SELF' : {
+    exitstr &:= sender.full & "|" & sender.syn & "|"
+    message --> inventoried
+    }
+
+  default :
+    ("|" & message & "|") within exitstr
+
+end
+
+
+
+################################## Rooms ###############################
+
+class room based on inventoried
+
+  IsAroom   : TRUE
+  visited   : FALSE
+  desc      : "nondescript room"
+
+  intro       : "I can see"
+  empty_intro : "There is nothing of interest here."
+
+methods
+
+  'ENTERED' :
+    if lookV.disabled then
+      'DISABLED' -> lookV
+    else if visited then
+      'BRIEF'
+    else {
+      'ROOMVIEW'
+      visited := TRUE
+      }
+
+  'ROOMVIEW' : {
+>>-----------------------------------------------------------------------------
+    if not visited then 'FIRSTDESC'
+    'LONGDESC'
+    'INVENTORY'
+    'INVENTORY' -> compass
+>>-----------------------------------------------------------------------------
+    }  # ROOMVIEW
+
+  'BRIEF' :
+    write "In the ", desc, "."
+
+  'LONGDESC' :
+    write "I'm in the ", desc, "."
+
+end  # room
+
+
+
+################################## Objects ###############################
+
+
+# namesakes
+#
+# A utility object which generates a vertical-bar separated list of
+# names (suitable for parsing) from the sender's description.
+# It assumes that the description consists of a string
+# of adjectives followed by a noun, as in "alert security guard".  In
+# the above case it would generate
+#   'alert security guard|security guard|guard'.
+#
+# Unfortunately it would NOT generate 'alert guard'.
+
+null namesakes
+
+  d     : UNDEFINED
+  names : UNDEFINED
+  i     : UNDEFINED
+
+methods
+
+  'GENERATE' : {
+    d := sender.desc
+    names := d
+    while (i := " " within d) ~= UNDEFINED do {
+      d := d rightfrom i + 1
+      if d leftfrom 3 ~= "of " then names &:= "|" & d
+      }
+    names             # "return" this
+    }
+
+end    # namesakes
+
+
+
+# object
+#
+# This is the general object class for objects in the adventure.
+#
+
+class object based on inventoried
+
+  IsAobject : TRUE
+  IsAnoun   : TRUE
+
+  full      : UNDEFINED
+  syn       : UNDEFINED
+
+  proper    : (desc leftfrom 1) within "ABCDEFGHIJKLMNOPQRSTUVWXYZ"
+
+  desc      : "nondescript object"
+  visible   : TRUE
+  location  : UNDEFINED
+  pronoun   : "it"
+
+  size      : 1
+  capacity  : UNDEFINED
+
+methods
+
+# Internal messages
+
+  'NAME' : {
+    if full then
+      full -> system
+    else
+      'GENERATE' -> namesakes -> system
+    if syn then syn -> system
+    }
+
+  'TRANSPARENT' : FALSE
+  'ACCESS' : location = player or
+             location = player.location or
+             'TRANSPARENT' -> location and 'ACCESS' -> location or
+             location = 'HORIZON' -> player.location
+  'HORIZON' : FALSE
+
+  'MENTION SELF' : 'MENTION' -> main
+
+  'GO TO PLAYER' : {
+    location := player
+    'MOVE'
+    }
+
+  'INVENTORY NAME' :
+    if visible then 'INDEF'
+
+  'NEG INDEF' : "any " & desc
+  'INDEF' :
+    if proper then
+      desc
+    else if (desc leftfrom 1) within "AEIOUaeiou" then
+      "an " & desc
+    else
+      "a " & desc
+  'DEF' :
+    if proper then
+      desc
+    else
+      "the " & desc
+
+  'INCREMENT VOCABULARY' : {
+    'OPEN PARSER' -> system
+    'NOUN LIST' -> system
+    'NAME'
+    'CLOSE PARSER' -> system
+    }
+
+# The code for 'MOVE' here is nearly the same as the original definition
+# except that it takes care of capacities.
+
+  'MOVE' :
+    if location ~= last_location then {
+      if last_location.capacity then last_location.capacity +:= size
+      'DROP SELF' -> last_location
+      'ADD SELF' -> location
+      if location.capacity then location.capacity -:= size
+      last_location := location
+      }
+
+# Verb responses
+
+  'look' :
+    write "Nothing strikes me as unusual about ", 'DEF' -> self, "."
+
+  'get' :
+    if location = player then
+      write "I've already got ", 'DEF' -> self, "."
+    else if size > player.capacity then
+      >>I can't carry that much.
+    else {
+      location := player; 'MOVE'
+      write "I picked up ", 'DEF' -> self, "."
+      }
+
+  'pick up' : 'get'
+  'pick_up' : 'get'
+  'take'    : 'get'
+
+  'drop' :
+    if location ~= player then
+      write "I don't have ", 'DEF' -> self, "."
+    else {
+      location := player.location; 'MOVE'
+      write "I put down ", 'DEF' -> self, "."
+      }
+
+  'put down' : 'drop'
+  'put_down' : 'drop'
+
+end   # object class
+
+
+
+###########################################################################
+#
+# The player.  This object does not so much model the actual instantiation
+# of the player in the adventure as much as it acts as the handler of
+# all important one-word commands.
+
+inventoried player
+
+  intro       : "I am carrying"
+  empty_intro : "I am empty-handed."
+
+  capacity     : 8      # default maximum number of items player can hold
+  match        : UNDEFINED
+
+methods
+
+  'ASSEMBLE' : 'MOVE' --> inventory_item
+
+  'UPDATE' : 'MOVE'
+
+  'MOVE' :
+    if last_location ~= location then {
+      'MOVE' --> inventory_item
+      'ENTERED' -> location
+      }
+
+  'START HERE' : location := sender
+
+  'inventory' :
+    if lookV.disabled then
+      'DISABLED' -> lookV
+    else
+      'INVENTORY'
+
+  'look around' : 'look'
+  'look' : 'ROOMVIEW' -> location
+
+  'save' : {
+    writes "Save current state to what file? "
+    'SAVE STATE' -> system
+    if read -> system then
+      write "Game saved."
+    else
+      write "Could not save game."
+    }
+
+  'load' : {
+    writes "Load game from what file? "
+    'LOAD STATE' -> system
+    if read -> system then
+      write "Game loaded."
+    else
+      write "Could not load game."
+    'ASSEMBLE VOCABULARY' -> main
+  }
+
+  'help' : {
+    writes "I know at least the following verbs and prepositions:  "
+    'INIT SORTER' -> system
+    for each.IsAlex and each.on_menu do
+      each.full -> system
+    'CLOSE SORTER' -> system
+    while match := 'NEXT SORTED' -> system do
+      writes "\"" & match & "\"" & "  "
+    write
+    }
+
+  'quit' : {
+    writes "Are you sure you want to quit now? "
+    if (read leftfrom 1) within "Yy" then
+      stop "Goodbye; thanks for playing."
+    }
+
+  default :
+    if message -> verb_filter then
+      if location.IsAhollow_object then
+        message -> location
+      else
+        write "I don't understand what \"", main.verb,
+              "\" means all by itself."
+
+end
+
+
+
+############################## Various Utilities ###########################
+
+# everything
+#
+
+object everything
+
+  size     : 0
+
+  full     : 'everything'
+  syn      : 'all'
+
+  visible  : FALSE
+
+methods
+
+  'ACCESS' : TRUE
+
+  'look' : message -> player
+
+  'get' :
+    for each.location = player.location and
+        each.IsAobject and each.visible
+    do {
+      writes "(", 'DEF' -> each, ") "
+      'get' -> each
+      }
+
+  'drop' :
+    for each.location = player and
+        each.IsAobject and each.visible
+    do {
+      writes "(", 'DEF' -> each, ") "
+      'drop' -> each
+      }
+
+  default :
+    if message -> verb_filter then
+      for each.IsAobject and each.visible and
+          (each.location = player or each.location = player.location)
+      do {
+        writes "(", 'DEF' -> each, ") "
+        if each ~= self then
+          message -> each
+        }
+
+end
+
+
+
+# verb_filter
+#
+# Returns UNDEFINED if the given message begins with an uppercase letter;
+# otherwise returns the given message.  Filters out messages which are
+# definitely used by the system.
+#
+
+null verb_filter
+
+methods
+
+# The few messages defined below are there for speed - the system
+# won't have to constantly convert them.
+
+  'INITIAL'  : UNDEFINED
+  'ASSEMBLE' : UNDEFINED
+  'NAME'     : UNDEFINED
+  'MOVE'     : UNDEFINED
+  'INDEF'    : UNDEFINED
+  'DEF'      : UNDEFINED
+
+  default :
+    if (message leftfrom 1) within "ABCDEFGHIJKLMNOPQRSTUVWXYZ" then
+      UNDEFINED
+    else
+      message
+
+end
+
+
+
+############################ End INTRPTR.ACH ################################

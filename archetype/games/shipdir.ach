@@ -1,0 +1,12 @@
+# SHIPDIR.ACH
+#
+# Directions within the starship.
+
+direction  null        full: 'fore'                     end
+direction  null        full: 'aft'                      end
+direction  null        full: 'port'                     end
+direction  null        full: 'starboard'                end
+direction  null        full: 'up'                       end
+direction  null        full: 'down'                     end
+
+

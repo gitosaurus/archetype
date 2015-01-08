@@ -1,0 +1,335 @@
+# BARER.ACH
+#
+# A bare-bones "adventure" written in Archetype for demonstration purposes.
+# Many comments removed in order to show flow-of-code better.
+# See BARE.ACH for complete annotation.  The adventure code is identical.
+#
+# Author:  Derek T. Jones
+#
+#
+
+include "standard"          # must be included for normal operation
+include "utility"           # "extras" for types like furniture
+
+################################## Lexicon
+
+Verb null
+  full  : 'put...in'
+  normal : TRUE             # it has a normal, or default interpretation
+methods
+  'NORMAL' :
+    if main.dobj.location = main.subj then
+      write "But ", 'DEF' -> main.subj, " is already inside ",
+                    'DEF' -> main.dobj, "."
+    else if main.dobj.open = FALSE then
+      write "I can't; ", 'DEF' -> main.dobj, " isn't open."
+    else if main.subj = main.dobj then
+      write "I can't put something inside itself!"
+    else if main.subj.stationary then
+      write "I can't move ", 'DEF' -> main.subj, "."
+    else {
+      main.subj.location := main.dobj; 'MOVE' -> main.subj
+      write "I put ", 'DEF' -> main.subj, " inside ", 'DEF' -> main.dobj, "."
+      }
+end
+
+
+
+################################## The Starting Room ####################
+
+room start_room
+
+  desc      : "starting room"
+
+methods
+
+  'INITIAL' : 'START HERE' -> player        # this defines the starting room
+
+  'FIRSTDESC' : write "Welcome to the demonstration adventure!  What you ",
+                "are seeing here is the 'FIRSTDESC' method.  Although in ",
+                "this case there is only some writing, there is no problem ",
+                "with putting other executable statements here as well."
+
+  'LONGDESC' : write "I'm standing in a room that has the word 'START' ",
+                "painted on the ceiling in neon pink.  The room is fairly ",
+                "bare otherwise."
+
+  'south'    : bedroom
+  'down'     : if trapdoor.open then basement
+
+end
+
+
+
+Verb null
+  full : 'push'
+  syn  : 'push down|push on'
+  normal : "Nothing happens."
+end
+
+object trapdoor
+
+  desc  : "trapdoor"
+  syn   : "door"
+  location : start_room
+  open      : FALSE
+
+  stationary : TRUE
+
+methods
+
+  'get' : >>It's attached to the floor.
+  'look' :
+    if open then
+      write "It opens downward into a yawning abyss below."
+    else
+      write "It is closed but it looks like a slight push ",
+            "would make it open."
+
+  'push' :
+    if open then
+      >>I already did.
+    else {
+      open := TRUE
+      write "I push the trapdoor and it swings downward and out, leaving ",
+            "a hole in the floor."
+      }
+
+end
+
+
+
+############################### The Bedroom ##########################
+
+room bedroom
+
+  desc      : "bedroom"
+
+methods
+
+  'north'   : start_room
+
+  'LONGDESC' : write "I'm standing in a tastefully decorated bedroom."
+
+end
+
+
+
+furniture bed
+
+  desc      : "brass bed"
+  location  : bedroom
+
+  stationary : TRUE
+
+methods
+
+  'look'    : write "It's a nice four-poster brass bed.  The feet have ",
+                    "that amusing little claw-and-ball construction."
+
+  'get'     : write "It's too bulky."
+
+  'get in'  : 'enter'
+
+end
+
+
+
+lex null full : 'open'  end
+lex null full : 'close' syn : 'shut' end
+
+
+class openable based on furniture
+
+  open      : FALSE
+  proximity : "in"
+
+methods
+
+  'TRANSPARENT' : open
+
+  'look' : {
+    writes "It is presently "
+    if open then write "open." else write "closed."
+    }
+
+
+  'open' :
+    if open then
+      >>It's already open.
+    else {
+      open := TRUE
+      write "I opened ", 'DEF' -> self, "."
+    }
+
+  'close' :
+    if open then {
+      open := FALSE
+      write "I closed ", 'DEF' -> self, "."
+      }
+    else
+      write "It's already closed."
+
+end
+
+
+openable closet
+
+  desc      : "closet"
+  location  : bedroom
+
+  stationary : TRUE
+
+methods
+
+  'get' : >>I don't think so.
+
+end
+
+
+class plural based on object
+
+  pronoun  : "them"
+
+methods
+
+  'INDEF' : "some " & desc
+
+end
+
+
+plural games  desc : "board games"  location : closet   end
+plural books  desc : "books"        location : closet   end
+object coat   desc : "winter coat"  location : closet   end
+
+
+openable chest
+  desc : "small chest"
+  location : bedroom
+methods
+  'enter' : ABSENT
+end
+
+object necklace  desc : "diamond necklace"   location : chest   end
+
+
+openable drawers
+
+  desc      : "dresser drawers"
+  location  : bedroom
+  pronoun   : "them"
+
+  stationary : TRUE
+
+methods
+
+  'INDEF' : "a set of " & desc
+
+  'get' : >>Too heavy!
+  'enter' : ABSENT
+
+end
+
+
+
+############################### The Basement ########################
+
+room basement
+
+  desc  : "basement"
+
+methods
+
+  'up'  : if rope.connected then start_room
+
+  'FIRSTDESC' : {
+>>AAAAAAAAAAAAAAaaaaa
+>>                   iiii
+>>                       eeee
+>>                           eey
+>>                              i
+>>                               i
+>>                                kes
+>>
+>>                                   THUMP!
+>>
+        write "I've landed on my rear in the bottom of a dank and musty ",
+              "basement.  The smell of mildew is overpowering.  I look ",
+              "up but the ceiling is very high; the open trapdoor is a ",
+              "tiny square of light and I cannot reach it.  Oh boy."
+>>
+    }
+
+  'LONGDESC' : write "I'm standing in the bottom of a wet basement.  It is ",
+                "rather cold and gloomy down here."
+
+end
+
+
+
+lex null full : 'throw'   syn : 'toss|fling'  end
+
+object rope
+
+  desc  : "coil of rope with a hook on the end"
+  full  : "coil of rope"
+  syn   : "coil|rope|rope coil|hook"
+
+  location : basement
+
+  connected : FALSE
+
+methods
+
+  'get' :
+    if connected then
+      write "It's already hooked onto the side of the trapdoor."
+    else
+      message --> object
+
+  'throw_up' : 'throw up'
+  'throw up' :
+    if connected then
+      write "I can't; it's hooked onto the side of the trapdoor."
+    else if player.location ~= basement then
+      write "Nothing happens."
+    else {
+      write "I throw the rope up in the air; the hook catches on the side ",
+            "of the trapdoor above and holds."
+      connected := TRUE
+      }
+
+end
+
+
+
+object  rats
+
+  desc  : "pack of rats"
+  location : basement
+  pronoun : "them"
+  curious : 0
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+
+  'get' : stop "I reach out towards them but that was a bad move; they ",
+               "come swarming over me and chew me to pieces."
+
+  'look' : write "They're staring at me with menacing beady red eyes."
+
+  'AFTER' :
+    if 'ACCESS' -> self then {
+      case curious +:= 1 of {
+        1 : write "The rats seem to be regarding me with some interest."
+        2 : write "The rats are moving forward slowly, overcoming their ",
+                  "shyness."
+        3 : write "The rats are advancing; the floor is full of them!  ",
+                  "They're starting to hiss and snarl!"
+        4 : stop  "The rats leap upon me and chew me to pieces.  Argh!"
+        }
+      'MENTION' -> main
+      }
+
+end  # rats

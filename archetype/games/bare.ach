@@ -1,0 +1,496 @@
+# BARE.ACH
+#
+# A bare-bones "adventure" written in Archetype for demonstration purposes.
+#
+# Author:  Derek T. Jones
+#
+#
+
+include "standard"          # must be included for normal operation
+include "utility"           # "extras" for types like furniture
+
+# The first thing you've probably noticed is the # sign.  The # sign,
+# and anything following it up to the end of the line, is ignored
+# by the CREATE program and never seen by the PERFORM program.
+# It's used to leave comments for yourself or anyone else.
+
+
+################################## Lexicon
+
+# Although STANDARD.ACH includes a default lexicon, sometimes there is
+# a need to define special verbs for the adventure.
+
+# Here, we're going to define the special combination 'put...in'.  Whenever
+# a verb phrase and prepositional phrase are separated by an ellipsis (...)
+# it means that both a subject and a direct object were found.  We don't
+# want to have to define this action for every object so we're defining
+# it here.  That way it works "backwards" even on objects that do not have
+# this method defined in their lineage.
+
+Verb null           # we won't need its name
+  full  : 'put...in'
+  normal : TRUE             # it has a normal, or default interpretation
+methods
+  'NORMAL' :             # and here it is.  Note please that we cannot
+                         # use "self" to refer to the subject since
+                         # "self" refers here to the Verb itself.
+    if main.dobj.location = main.subj then
+      write "But ", 'DEF' -> main.subj, " is already inside ",
+                    'DEF' -> main.dobj, "."
+    else if main.dobj.open = FALSE then
+      write "I can't; ", 'DEF' -> main.dobj, " isn't open."
+    else if main.subj = main.dobj then
+      write "I can't put something inside itself!"
+    else if main.subj.stationary then
+      write "I can't move ", 'DEF' -> main.subj, "."
+    else {
+      main.subj.location := main.dobj; 'MOVE' -> main.subj
+      write "I put ", 'DEF' -> main.subj, " inside ", 'DEF' -> main.dobj, "."
+      }
+end
+
+
+
+################################## The Starting Room ####################
+
+# A declaration is always a class name (e.g. "room") followed by a unique
+# identifier or the word "null".  You should almost always use an identifier;
+# the only reason you will ever want to use "null" is if you never have
+# to refer to the object declared within your program directly.  One example
+# of this is lexicon entries, which are usually not accessed by program
+# statements.
+
+room start_room
+
+# Following the declaration are attributes, defined by the name of the
+# attribute, a colon, and its initial value.
+#
+# For any object or room, you must define the "desc" attribute.  This is
+# its "screen name"; the way it is talked about on the screen, and, for
+# objects, is used to derive the words that the player can use to refer
+# to them.
+  desc      : "starting room"
+
+# After all attributes are finished, use the word "methods" to indicate that
+# you are ready to define methods.  These consist of a message, a colon,
+# and a simple or compound statement.
+
+methods
+
+# The 'INITIAL' method is sent only once, at the very beginning.
+  'INITIAL' : 'START HERE' -> player        # this defines the starting room
+
+# The FIRSTDESC message is sent only the very first time that the player
+# is in the room.  Note the use of the write statement:  just one string
+# after the other is printed with no regard to margins.  This is OK because
+# it will wrap the words automatically.
+  'FIRSTDESC' : write "Welcome to the demonstration adventure!  What you ",
+                "are seeing here is the 'FIRSTDESC' method.  Although in ",
+                "this case there is only some writing, there is no problem ",
+                "with putting other executable statements here as well."
+
+# The LONGDESC message is sent when the player first sees the room and also
+# whenever they type "look" by itself at the prompt.
+  'LONGDESC' : write "I'm standing in a room that has the word 'START' ",
+                "painted on the ceiling in neon pink.  The room is fairly ",
+                "bare otherwise."
+
+# The "visible exits" of the room are defined here.  The message is simply
+# the full name of the direction; the method is the room to which it opens.
+
+  'south'    : bedroom
+
+# It is important for the method to return the name of a destination.  But
+# this return may be dependent on something.
+
+  'down'     : if trapdoor.open then basement
+
+end
+
+
+
+Verb null
+  full : 'push'
+  syn  : 'push down|push on'
+  normal : "Nothing happens."
+end
+
+object trapdoor
+
+  desc  : "trapdoor"
+  syn   : "door"
+  location : start_room
+  open      : FALSE
+
+  stationary : TRUE
+
+methods
+
+  'get' : >>It's attached to the floor.
+  'look' :
+    if open then
+      write "It opens downward into a yawning abyss below."
+    else
+      write "It is closed but it looks like a slight push ",
+            "would make it open."
+
+  'push' :
+    if open then
+      >>I already did.
+    else {
+      open := TRUE
+      write "I push the trapdoor and it swings downward and out, leaving ",
+            "a hole in the floor."
+      }
+
+end
+
+
+
+############################### The Bedroom ##########################
+
+room bedroom
+
+  desc      : "bedroom"
+
+methods
+
+# Unless the exit from the start_room to here was one-way, the bedroom
+# has to define the exit going the other direction.
+  'north'   : start_room
+
+  'LONGDESC' : write "I'm standing in a tastefully decorated bedroom."
+
+end
+
+
+
+furniture bed
+
+# No matter what other attributes get defined for an object, ALWAYS
+# define "desc" and "location".  Without "location", your object is
+# in limbo and will not appear anywhere in the adventure.  Without
+# "desc", it has no name on screen and no way for the player to refer
+# to it.
+
+  desc      : "brass bed"
+  location  : bedroom
+
+  stationary : TRUE
+
+methods
+
+# For an object, such as this bed, the methods section contains methods
+# for verb messages.
+
+  'look'    : write "It's a nice four-poster brass bed.  The feet have ",
+                    "that amusing little claw-and-ball construction."
+
+  'get'     : write "It's too bulky."
+
+# The 'enter' method is already defined; you can already enter the bed
+# because it's of class furniture.  But for a bed, it also makes sense to
+# say 'get in the bed', so we alias it to the already-defined 'enter'
+# message.
+#
+# Note that we do not have to make a separate lexical entry for 'get in'
+# because it is a compound verb formed by two other verbs already in the
+# lexicon:  'get' and 'in'.  Since 'in' has the synonyms 'inside' and 'into',
+# if the player types 'get into the bed' or 'get inside the bed', the
+# message will still come here.
+
+  'get in'  : 'enter'
+
+end
+
+
+
+# We're going to define a class of furniture that is "openable".  This
+# requires the definition of the verbs "open" and "close" as well.
+# Notice here that Archetype takes no notice of the end of the line
+# for anything except comments (#) and quote-me's (>>).
+#
+# The "syn" attribute works for objects as well as lexicon entries;
+# it is a list of other synonyms for the same thing.  If there were
+# more than one synonym, they would be separated by vertical bars.
+# See the entry for 'in' in LEXICON.ACH for an example.
+
+lex null full : 'open'  end
+lex null full : 'close' syn : 'shut' end
+
+
+class openable based on furniture
+
+  open      : FALSE
+  proximity : "in"
+
+methods
+
+# The TRANSPARENT method determines whether or not the player can access
+# objects within this one without being actually inside the "openable"
+# object.  Note that for openable furniture, the transparency depends on
+# the state of the "open" attribute.
+
+  'TRANSPARENT' : open
+
+# Note the "writes" statement below.  "writes" writes its arguments but
+# does not finish the line.
+
+  'look' : {
+    writes "It is presently "
+    if open then write "open." else write "closed."
+    }
+
+
+# Note below the 'DEF' message sent to self.  All objects have a
+# 'DEF' and 'INDEF' methods, meaning "definite" and "indefinite".
+# 'DEF' is usually "the <object>" and 'INDEF', "a <object>" or "an <object>".
+# It's better to use these because some objects may change their 'INDEF'
+# or 'DEF' messages; this is more portable.  Take a look at the "drawers"
+# object.
+
+  'open' :
+    if open then
+      >>It's already open.
+    else {
+      open := TRUE
+      write "I opened ", 'DEF' -> self, "."
+    }
+
+  'close' :
+    if open then {
+      open := FALSE
+      write "I closed ", 'DEF' -> self, "."
+      }
+    else
+      write "It's already closed."
+
+end
+
+
+openable closet
+
+  desc      : "closet"
+  location  : bedroom
+
+  stationary : TRUE
+
+methods
+
+  'get' : >>I don't think so.
+
+end
+
+
+class plural based on object
+
+# This attribute is defined in the object class to be "it", but we need
+# to change it for this class.
+
+  pronoun  : "them"
+
+methods
+
+# It wouldn't make sense for plural nouns to be referred to as "a games",
+# for example.  They need to be "some "... when indefinite
+
+  'INDEF' : "some " & desc
+
+end
+
+
+plural games  desc : "board games"  location : closet   end
+plural books  desc : "books"        location : closet   end
+object coat   desc : "winter coat"  location : closet   end
+
+
+openable chest
+  desc : "small chest"
+  location : bedroom
+methods
+
+# Now, openable is derived from furniture, and furniture objects can
+# be entered.  But we don't want to be able to enter this chest.  So
+# we prohibit it by making the 'enter' method ABSENT.  If a method
+# returns this word it is just as if it were never defined.  This is
+# slightly different than returning UNDEFINED, which indicates that
+# a method did exist and was executed but simply had an UNDEFINED return
+# value.
+
+  'enter' : ABSENT
+
+end
+
+object necklace  desc : "diamond necklace"   location : chest   end
+
+
+openable drawers
+
+  desc      : "dresser drawers"
+  location  : bedroom
+  pronoun   : "them"
+
+  stationary : TRUE
+
+methods
+
+  'INDEF' : "a set of " & desc
+
+  'get' : >>Too heavy!
+  'enter' : ABSENT
+
+end
+
+
+
+############################### The Basement ########################
+
+room basement
+
+  desc  : "basement"
+
+methods
+
+  'up'  : if rope.connected then start_room
+
+# Here, for the first time in this adventure, we need to follow a message
+# with a method that is more than one statement.  This is done by declaring
+# a compound statment:  a left curly brace, {, followed by any number of
+# statements (even zero), and right curly brace, }, to finish them off.
+#
+# The other new thing is the >> operator.  Like a comment, it is active
+# all the way to the end of the line.  Unlike a comment, instead of meaning
+# "ignore this", it means "quote this"; it will be printed on screen
+# exactly the way you wrote it.  Useful for when you want text formatted
+# a particular way rather than just wrapped around.  Remember each >> is
+# a separate statement.
+
+  'FIRSTDESC' : {
+>>AAAAAAAAAAAAAAaaaaa
+>>                   iiii
+>>                       eeee
+>>                           eey
+>>                              i
+>>                               i
+>>                                kes
+>>
+>>                                   THUMP!
+>>
+        write "I've landed on my rear in the bottom of a dank and musty ",
+              "basement.  The smell of mildew is overpowering.  I look ",
+              "up but the ceiling is very high; the open trapdoor is a ",
+              "tiny square of light and I cannot reach it.  Oh boy."
+>>
+    }
+
+  'LONGDESC' : write "I'm standing in the bottom of a wet basement.  It is ",
+                "rather cold and gloomy down here."
+
+end
+
+
+
+lex null full : 'throw'   syn : 'toss|fling'  end
+
+object rope
+
+# Note the complicated description.  If we let the Archetype system
+# derive usable names from this, it will get:
+# coil of rope with hook on end
+# of rope with hook on end
+# rope with hook on end
+# with hook on end
+# hook on end
+# on end
+# end
+#
+# And nowhere in there is the word "rope" alone, which is probably how
+# the player will use it.  If the "full" attribute is defined, meaning
+# "full name", then "desc" is not used to derive the name; "full" and "syn"
+# are the only definitions.
+
+  desc  : "coil of rope with a hook on the end"
+  full  : "coil of rope"
+  syn   : "coil|rope|rope coil|hook"
+
+  location : basement
+
+  connected : FALSE
+
+methods
+
+# Note an important technique here.  Before letting the player 'get'
+# the object as always, we want to check for a particular condition.
+# But afterward we want to do just what was defined before.  How is
+# this possible since we "overwrote" the inherited 'get' message from
+# object?  By passing the message back to the pristine class.
+
+  'get' :
+    if connected then
+      write "It's already hooked onto the side of the trapdoor."
+    else
+      message --> object
+
+  'throw_up' : 'throw up'
+  'throw up' :
+    if connected then
+      write "I can't; it's hooked onto the side of the trapdoor."
+    else if player.location ~= basement then
+      write "Nothing happens."
+    else {
+      write "I throw the rope up in the air; the hook catches on the side ",
+            "of the trapdoor above and holds."
+      connected := TRUE
+      }
+
+end
+
+
+
+# A final fun surprise.  Some rats which get gradually more curious
+# about the player if he's fallen in the dungeon.  Makes him have to
+# work quickly to get out.  Done by registering the object with the
+# "after" event handler; every turn, after the player has made his move,
+# the 'AFTER' message is sent to the object.
+
+object  rats
+
+  desc  : "pack of rats"
+  location : basement
+  pronoun : "them"
+  curious : 0
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+
+  'get' : stop "I reach out towards them but that was a bad move; they ",
+               "come swarming over me and chew me to pieces."
+
+  'look' : write "They're staring at me with menacing beady red eyes."
+
+# Note that the interesting part of the AFTER method is only done if
+# the rats are ACCESSible to the player.  For most objects 'ACCESS' -> self
+# is TRUE if the player is in the same room or if the player is carrying it.
+# However there are sometimes special conditions so 'ACCESS' is safer.
+
+  'AFTER' :
+    if 'ACCESS' -> self then {
+      case curious +:= 1 of {
+        1 : write "The rats seem to be regarding me with some interest."
+        2 : write "The rats are moving forward slowly, overcoming their ",
+                  "shyness."
+        3 : write "The rats are advancing; the floor is full of them!  ",
+                  "They're starting to hiss and snarl!"
+        4 : stop  "The rats leap upon me and chew me to pieces.  Argh!"
+        }
+      'MENTION' -> main
+      }
+
+# Note the 'MENTION' method above.  That allows the sending object to be
+# referred to by its pronoun, even though it was not the object last used
+# as the subject of the player's sentence.  This is useful when the 'AFTER'
+# method may cause some message to pop out of nowhere.
+
+end  # rats
+

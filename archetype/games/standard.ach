@@ -1,0 +1,13 @@
+# STANDARD.ACH
+#
+# Author: Derek T. Jones
+#
+# The standard adventure game library.  By including this file at
+# the very top of a program, the programmer can quickly and easily
+# create complex adventure games.
+#
+
+include "intrptr"
+include "cardinal"
+include "lexicon"
+

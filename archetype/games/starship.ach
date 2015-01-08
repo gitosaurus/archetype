@@ -1,0 +1,2662 @@
+# STARSHIP.ACH
+#
+# "Starship Solitaire"  by Derek T. Jones
+#
+# Copyright 1995 Derek T. Jones
+#
+# Synopsis:  The player awakes alone in a cryogenic freezer; he has been
+# awakened by the computer in order to correct the course of the ship.
+# But his memory suffers and he has to repair the ship before he can do so.
+# This is the hidden objective.
+
+include "intrptr"
+include "lexicon"
+include "shipdir"
+
+include "starship.typ"
+include "starship.lex"
+
+keyword Windexed, Filthy
+
+
+################################## The Hinter ###############################
+
+keyword GetOut, OpenIt, LookForLatch, CallItLift, SayTheNumbers
+
+lex hinter
+
+  full      : 'hint'
+  hint      : GetOut
+  hints     : 0
+
+  interpret : TRUE
+
+methods
+
+  'INTERPRET' : {
+    case hints +:= 1 of {
+      5 : write "Not very sure of yourself, are you?  That's ", hints,
+          " hints you've asked for.\n"
+     10 : write "You've pretty much given up trying to figure this out ",
+                "yourself, haven't you?"
+      }
+    case hint of {
+      GetOut :  write "Remember what the instructions said?  When there are ",
+        "no visible exits, try typing \"leave\" or \"get out\"."
+      OpenIt :  write "You'll have to open that cover before you can get out."
+      LookForLatch : write "The game seems to imply that there is a latch ",
+        "preventing the cover from opening.  Why don't you look for it?  ",
+        "Whenever you suspect a change in your surroundings, type \"look\" ",
+        "by itself to look around again.  Be curious!"
+      CallItLift : write "You can call the elevator a \"lift\" for short."
+      SayTheNumbers : write "Are you stuck here?  Well, what did the ",
+      "elevator say?  It said \"announce\" destination, right?  No other ",
+      "controls.  Probably it operates on voice command.  If \"announce\" ",
+      "is not a recognized verb, type \"help\" to see what is.  What looks ",
+      "closest?  Probably \"say\".  So try \"say five\" or something."
+      }  # case
+    }  # INTERPRET
+
+end
+
+
+
+################################ The Freezer ###############################
+
+
+large_structure coffin
+
+  desc      : "glass coffin"
+  location  : freezer
+
+  why_not   : PartOfFloor
+
+  times     : 3
+
+methods
+
+  'INITIAL' : {
+    'START HERE' -> player
+    player.capacity := 3
+    }
+
+  'FIRSTDESC' : {
+>>I am awake.
+>>
+>>There is nothing to see; my eyes cannot focus on anything.
+>>Something is happening around me - happening to me.  I feel sharp,
+>>prickling pains along my arms and in my neck, and the sound of tiny
+>>motors, a sense of something withdrawing from my body.
+>>
+>>The ceiling is too near to be a ceiling; the walls too close to be
+>>walls. My breath comes faster and makes a mist on the glass cover
+>>close to my face. What is this?  I feel it pressing against my back,
+>>my sides, my feet. I can barely move.  I cannot remember anything.
+>>The tiny space is filled with the smell of my own perspiration.
+>>
+>>Who am I...?
+>>
+>>                       Derek Jones Presents
+>>
+>>                      an Archetype Adventure
+>>
+>>                       STARSHIP  SOLITAIRE
+>>
+>>
+    }  # FIRSTDESC
+
+  'LONGDESC' : {
+>>I'm in some kind of glass coffin.  Along the inner walls are dozens of
+>>tiny, motor-driven needles and catheters which seem to be presently
+>>withdrawn.
+    }
+
+  'look' :
+    >>It's a glass coffin, sealed securely to the floor.
+
+  'get out of' : 'exit'
+  'get out'    : 'exit'
+  'climb out of' : 'exit'
+  'climb out'    : 'exit'
+  'get up'       : 'exit'
+  'open'         : message -> glass_cover
+
+  'exit' :
+    if glass_cover.open then
+      message --> large_structure
+    else {
+      case times of {
+        3 : {
+>>I try to get out and hit my head against the tight glass cover.  OUCH!
+          hinter.hint := OpenIt
+          'MENTION SELF' -> glass_cover
+          }
+        2 : {
+>>Before hitting my head again, I gingerly push against the cover.
+          'push' -> glass_cover
+          if glass_cover.open then 'exit'
+          'MENTION SELF' -> glass_cover
+          }
+      -1 : {
+  >>Would you QUIT FOOLING AROUND and get me OUT of here?  I feel like
+  >>I'm going to go crazy if I stay in here any longer!
+          }
+        default : {
+>>No thanks, I don't feel like cracking my skull again.  I'll wait till
+>>I find some way to open that cover.
+          'MENTION SELF' -> glass_cover
+          }
+        }               # case
+      times -:= 1
+      }            # else
+
+end
+
+
+
+visible_part glass_cover
+
+  desc      : "glass cover"
+  location  : coffin
+  open      : FALSE
+
+  part_of   : coffin
+
+methods
+
+  'look' : {
+    writes "It is presently "
+    if open then writes "open." else writes "closed."
+    if not latch.visible then {
+      writes "  There's ", 'INDEF' -> latch,
+             " on the side of the cover that I "
+      writes "hadn't noticed before."
+      'MENTION' -> latch
+      }
+    write
+    }
+
+  'push' : 'open'
+  'push on' : 'push'
+  'push against' : 'push'
+
+  'open' :
+    if open then
+      >>It is already open.
+    else if latch.open then {
+      >>I push on the cover and open it.
+      open := TRUE
+      }
+    else {
+>>I push on the cover but it won't budge.  It rattles but won't give.
+>>Like it's latched or something.
+      hinter.hint := LookForLatch
+      latch.visible := TRUE
+      }
+
+end
+
+
+
+visible_part latch
+
+  part_of   : glass_cover
+
+  desc      : "simple latch"
+  location  : coffin
+  visible   : FALSE
+  open      : FALSE
+
+methods
+
+  'look' : {
+    writes "It is presently "
+    if open then write "open." else write "closed."
+    }
+
+  'DEF' : {
+    visible := TRUE
+    "the " & desc
+    }
+
+  'INDEF' : {
+    visible := TRUE
+    "a " & desc
+    }
+
+  'open'  : message --> openable
+  'close' : message --> openable
+
+end
+
+
+
+room freezer
+
+  desc      : "cryogenic freezer"
+
+methods
+
+  'fore'  : decontaminant
+
+  'FIRSTDESC' : {
+>>I step shakily onto the floor, which feels very cold.  My feet are
+>>tender and weak.
+>>
+>>The air is very still; I can smell the old dust.  The light is dim.
+>>In the ceiling above, the main lights are out and so the only light
+>>comes from little strips along the junctions between the walls and
+>>floor.
+>>
+    }
+  'LONGDESC' : {
+>>I am standing in the middle of a cavernous cryogenic freezer. There
+>>are other glass coffins coming up out of the floor, just like mine.
+>>From what I can tell by the tiny indicator lights along the sides, the
+>>coffins are operating normally.  Inside each one is a naked human
+>>form, the skin alabaster white and hairy with ice crystals.
+    }
+
+end
+
+
+########################### The Decontaminant Chamber #####################
+
+room decontaminant
+
+  desc      : "decontaminant chamber"
+
+methods
+
+  'aft'   : freezer
+
+  'FIRSTDESC' : hinter.hint := CallItLift
+  'LONGDESC' : {
+>>I'm in a small windowless anteroom that has very airtight doors and a
+>>number of vents along the sides.  It is about as big as a shower.  In
+>>faded letters along one wall it reads "DECONTAMINATION".
+    }
+
+end
+
+
+
+visible_part button
+
+  desc      : "big red button"
+  location  : decontaminant
+
+methods
+
+  'look' :
+>>Stenciled on it in white letters are the words "PUSH TO DECONTAMINATE".
+
+  'push on' : 'push'
+  'push' : {
+>>With a loud hissing roar steam and antiseptic-smelling gases come
+>>pouring out of the vents in the walls, scouring me off.  When it
+>>finishes I feel distinctly cleaner and fresher.
+    if elevator.locked then {
+      elevator.locked := FALSE
+>>I hear a quiet clicking sound, and the display above the elevator
+>>changes from "LOCKED" to "UNLOCKED".
+      }
+    }
+
+end
+
+
+large_structure elevator
+
+  why_not : Impossible
+
+  desc  : "turbolift elevator"
+  syn   : "turbolift|lift|elev|turbo"
+  level : 6
+  locked : TRUE
+  location : decontaminant
+
+methods
+
+  'look' : {
+    writes "There is a display above the door that reads \""
+    if not locked then writes "UN"
+    writes "LOCKED\".  Next to its door, on the side, is another display "
+    writes "that reads: \"LEVEL "
+    case level of {
+      1 : writes "ONE"
+      2 : writes "TWO"
+      3 : writes "THREE"
+      4 : writes "FOUR"
+      5 : writes "FIVE"
+      6 : writes "SIX"
+      default : writes "<out of order>"
+      }
+    write "\"."
+    }
+
+  'get into' : 'enter'
+
+  'enter' :
+    if locked then {
+>>I move up to the doors but all that happens is that the display above
+>>the elevator flashes "LOCKED" and there is a quiet beep.
+      }
+    else
+      message --> hollow_object
+
+  'exit' :
+    if location.without_air then
+>>A voice says calmly, "Cannot open doors; no atmosphere at this level."
+    else
+      'exit' --> hollow_object
+
+  'FIRSTDESC' : hinter.hint := SayTheNumbers
+  'BRIEF' : {
+>>The doors swish shut.  A polite automated voice says, "Please announce
+>>destination level one through six."
+    }
+
+  'LONGDESC' : {
+>>I step into the turbolift elevator.
+  'BRIEF'
+>>There are no visible controls or buttons of any kind.
+    }
+
+end
+
+
+# Numbers.  These are the numbers spoken by the player in the elevator;
+# they only have effect when the player is in the elevator.
+
+class spoken_number based on object
+
+  visible  : FALSE
+  intangible : TRUE
+
+  value    : 0
+  full     : "zero"
+  syn      : value
+
+  level    : UNDEFINED
+
+methods
+
+  'ACCESS' : TRUE
+
+  'say' :
+    if player.location ~= elevator then
+      >>Nothing happens.
+    else if level = elevator.level then
+      write "The polite computer voice murmurs, \"You are already on level ",
+            full, ".\""
+    else {
+      >>There is a lurch and short whooshing sound.
+      elevator.level := value
+      elevator.location := level
+      'MOVE' -> elevator
+      }
+
+  'look' : 'get'
+  'get' : 'drop'
+  'drop' : >>That doesn't make any sense.
+
+end
+
+spoken_number one    value : 1   full : "one"   level : bridge         end
+spoken_number two    value : 2   full : "two"   level : briefing_room  end
+spoken_number three  value : 3   full : "three" level : hall1          end
+spoken_number four   value : 4   full : "four"  level : hall2          end
+spoken_number five   value : 5   full : "five"  level : hall5          end
+spoken_number six    value : 6   full : "six"   level : decontaminant  end
+
+
+
+############################ Level Five ####################################
+
+
+room hall5
+
+  desc      : "L-shaped hallway"
+
+methods
+
+  'starboard' : doctors_quarters
+  'aft'       : hall6
+
+  'BRIEF'     : >>In the elevator alcove on level five.
+  'LONGDESC'  : {
+>>I'm standing in a small alcove by the elevator.  A large number "5"
+>>is stenciled by the doors.  The lighting here, as elsewhere, is minimal.
+    }
+
+end
+
+
+room doctors_quarters
+
+  desc      : "doctor's quarters"
+
+methods
+
+  'port' : hall5
+
+  'LONGDESC' : {
+>>I'm standing in the doctor's quarters, if the nameplate on the door is
+>>correct.  Dust covers everything.
+    }
+
+end
+
+
+
+sit_furniture bed
+
+  desc      : "bed"
+  proximity : "on"
+  location  : doctors_quarters
+
+methods
+
+  'look' : write "It's bolted to the floor but is not flush with it; ",
+            "there's a little space under the bed."
+  'get'  : >>It's bolted to the floor.
+
+  'look under' : {
+    if player.location = self then
+      writes "I bend over the side and look under the bed.  "
+    if page.location = UNDEFINED then {
+      write "Aha!  I find and pick up a single page."
+      'GO TO PLAYER' -> page
+      'MENTION SELF' -> page
+      }
+    else
+      write "I can't find anything."
+    }
+
+end
+
+
+
+readable diary
+
+  desc      : "diary"
+  location  : bed
+
+methods
+
+  'read' : {
+    if not viewed then {
+>>The diary seems to belong to the doctor; he has kept extensive notes
+>>on his patients - which are of course the crewmembers.  The paper is
+>>old by now and crackles when I turn the pages.  I am struck by the
+>>fact that it has probably been many years since all of us went into
+>>those glass coffins. Most of the entries are personal and I feel like
+>>a voyeur, knowing that the writer is frozen asleep in his own glass
+>>coffin, unable to stop me from reading his secrets.  The last entry is
+>>less personal:
+>>
+    viewed := TRUE
+    }
+>>  "May 17, 2321 - This morning we made the last of the preparations
+>>  before Nap Time, as we have started to refer to the upcoming cryogenic
+>>  suspension.  All ship's stores have been removed to the far end of the
+>>  ship and sealed off until arrival.  The navigator has laid in our
+>>  course; it should not change for the next two hundred years.  It seems
+>>  like so much can go wrong.  The captain assured me that someone will
+>>  be awakened prematurely if any emergency arises.
+>>
+>>  "I have warned the crew that when we awaken, our worst enemy will be
+>>  the memory loss, not the muscle atrophy.  I have kept copious journal
+>>  notes to help me remember who I am; I have urged the rest of the crew
+>>  to do the same, but not everyone has taken me seriously.  I spoke with
+>>  the engineer in order to ensure that the medical couch will be
+>>  activated along with the rest of the environmental systems in the
+>>  event of an emergency; whoever gets awakened can use it by simply
+>>  lying on it.
+>>
+>>  "Enough chatter.  I am delaying.  I have shut everyone else into their
+>>  coffins and have watched each of them in turn close their eyes and
+>>  grow cold.  The same awaits myself.  I must go now.  'Screw my courage
+>>  to the sticking point' etc.  See you in a couple of centuries."
+  if page.found then {
+    >>The diary is missing its third page; I think it's the page I found
+    >>under his bed.
+    }
+  else if notes.viewed then
+    >>I search the diary for page three... Crap!  It's missing.
+  }
+
+end
+
+
+readable page
+
+  desc      : "single page"
+  location  : UNDEFINED
+  combo     : UNDEFINED
+  found     : FALSE
+
+methods
+
+  'look' : >>It seems to be page three of something.
+
+  'read' : {
+    writes "Near the bottom are the digits "
+    if not combo then combo := ?9 & ?9 & "-" & ?9 & ?9 & "-" & ?9 & ?9
+    write combo, "."
+    }
+
+end
+
+
+
+large_structure closet
+
+  why_not   : PartOfRoom
+
+  desc      : "closet"
+  location  : doctors_quarters
+
+methods
+
+  'TRANSPARENT' : TRUE
+
+  'look' : {
+>>It looks big enough to walk into.  The door seems to be broken and
+>>hangs open.
+    }
+
+end
+
+
+object geiger_counter
+
+  desc      : "Geiger counter"
+  proper    : FALSE                 # though it starts with uppercase
+  location  : closet
+
+  activated : FALSE
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+  'AFTER' :
+    if activated then {
+      if (location = uranium.location or
+          location.location = uranium.location) and
+         'ACCESS' -> self
+      then
+        >>The Geiger counter is ticking loudly.
+      }
+
+  'look' :
+    if activated then
+      if location = uranium.location or
+         location.location = uranium.location
+      then
+        >>A large red light is flashing on it!
+      else
+        >>The light on the front is green.
+    else
+      >>It isn't turned on.
+
+  'turn on' : 'turn_on'
+  'turn_on' :
+    if activated then
+      >>It's already on.
+    else {
+      >>I turn it on.
+      activated := TRUE
+      }
+
+  'turn off' : 'turn_off'
+  'turn_off' :
+    if activated then {
+      >>I turn it off.
+      activated := FALSE
+      }
+    else
+      >>It isn't on.
+
+end
+
+
+readable repair_kit
+
+  desc      : "bicycle repair kit"
+  location  : closet
+
+methods
+
+  'read' : write "On the side it says that the kit is good for repairing ",
+           "heavy-duty bicycle tires and other rubber or vinyl products."
+
+end
+
+
+
+room hall6
+
+  desc      : "L-shaped hallway"
+
+methods
+
+  'starboard' : sickbay
+  'fore'      : hall5
+
+  'BRIEF' : >>In an L-shaped hallway.
+  'LONGDESC' : {
+>>I'm standing in an L-shaped hallway.  It is fairly narrow, made more
+>>so by a number of half-buried pipes running along the aft side.
+    }
+
+end
+
+
+room sickbay
+
+  desc      : "Sickbay"
+
+methods
+
+  'port'      : hall6
+  'starboard' : laboratory
+
+  'LONGDESC' : {
+>>I find myself in Sickbay.  Yellowed anatomy charts are hanging on the
+>>wall as well as some better-preserved med school diplomas behind
+>>glass.  But the most prominent feature is the couch in the middle of
+>>the room.
+    }
+
+end
+
+
+sit_furniture medical_couch
+
+  desc      : "automated medical couch"
+  location  : sickbay
+
+  found_ailment : FALSE
+
+  blindness : FALSE
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+
+  'AFTER' : {
+    if blindness then
+      lookV.disabled := "I'm blind... I can't see!"
+    else if helmet.wearing and helmet.dirty then
+      case helmet.dirty of {
+        Filthy :
+          lookV.disabled :=
+            "The faceplate is covered with dust... I can't see!"
+        Windexed :
+          lookV.disabled :=
+            "There's muddy Windex and dust on the faceplate... I can't see!"
+        }
+    else
+      lookV.disabled := UNDEFINED
+    if player.location = self then {
+      found_ailment := FALSE
+      writes "A bright blue light from the ceiling runs up and down over me."
+      writes "  Presently a quiet voice says, \"Diagnosing patient."
+      if uranium.poison > 0 then {
+        writes "  Patient is suffering from radiation cell damage.  Repairing "
+        writes "damaged cells."
+        uranium.poison := 0
+        found_ailment := TRUE
+        }
+      if blindness then {
+        writes "  Patient is suffering from blindness due to damaged retinal "
+        writes "cells.  Repairing and regenerating damaged cells."
+        blindness := FALSE
+        found_ailment := TRUE
+        }
+      if not found_ailment then
+        writes "  Patient is not experiencing any cell damage."
+      writes "  Continuing diagnosis.\"  The vinyl mattress begins to hum "
+      writes "busily.  Presently the voice says:  \"Results:"
+      if gatorade.filled then {
+        writes "  Patient suffering from mild amnesia due to lack of "
+        writes "monopotassium phosphate.  Current supply of phosphates is "
+        writes "exhausted; cannot cure."
+        found_ailment := TRUE
+        }
+      if player.capacity < 5 then {
+        writes "  Patient's muscles appear to be atrophied from lack of use.  "
+        writes "No specific cell damage; cannot cure.  Recommend exercise."
+        found_ailment := TRUE
+        }
+      if not found_ailment then
+        writes "  Patient appears to be in good health."
+      write "\""
+      }
+    }
+
+  'lay on'  : 'sit on'
+  'lie on'  : 'sit on'
+  'lie down on' : 'sit on'
+  'lay down on' : 'sit on'
+
+end
+
+
+room laboratory
+
+  desc      : "medical laboratory"
+
+methods
+
+  'port'    : sickbay
+
+  'LONGDESC' : {
+>>I am standing in what appears to be the medical laboratory, in an
+>>adjoining room off of Sickbay.
+    }
+
+end
+
+
+furniture lab_bench
+
+  why_not   : PartOfFloor
+  location  : laboratory
+  desc      : "laboratory bench"
+
+  proximity : "at"
+
+methods
+
+  'get' : >>It's bolted to the floor.
+
+  'look' :
+    if player.location = self then
+      message --> furniture
+    else {
+      write "I walk up to it to get a closer look."
+      'enter'
+      }
+
+end
+
+
+container gunk_beaker
+
+  contents  : "gunk"
+  holder    : "beaker"
+  location  : lab_bench
+
+  filled    : TRUE
+
+methods
+
+  'drink' :
+    if filled then {
+>>I drink down the gunk... Hm... OUCH!  OW!  AAAaaaarrgghh... I feel like
+>>my body is exploding... oof... urgh... every muscle in my body feels
+>>like it's on fire...
+>>The sensation subsides.
+>>Suddenly I feel about three times stronger...
+      player.capacity := 9 - (3 - player.capacity)
+      filled := FALSE
+      }
+    else
+      >>It's empty.
+
+  'look' :
+    if filled then
+      >>It's filled with some kind of noxious gunk.
+    else
+>>It's empty but appears to have a sickening blue residue around the inside.
+
+end
+
+
+readable notes
+
+  desc      : "scribbled notes"
+  location  : lab_bench
+
+methods
+
+  'INDEF' : "some " & desc
+
+  'read' : {
+>>The notes are illegible in most cases.  They do seem to indicate that
+>>the gunk in the beaker is some sort of experimental muscle
+>>regenerator.  The paper crackles as I turn it; a page or two
+>>crumples into flakes of yellowed confetti.  Near the end is a quick
+>>scribble that seems to say "Combination on p. 3 of diary".
+     viewed := TRUE
+     }
+
+end
+
+
+large_structure locker
+
+  desc      : "locker"
+  location  : laboratory
+
+  open      : FALSE
+  locked    : TRUE
+
+methods
+
+  'TRANSPARENT' : open
+
+  'look' : {
+    writes "It's a large steel locker with a door about the size of ",
+           "a closet door; it is probably big enough to enter.  The door ",
+           "has a combination lock set into the center.  "
+    message --> openable
+    }
+
+  'open' :
+    if locked then {
+      writes "It has a combination lock.  What's the combination? "
+      if read = page.combo then {
+        >>That did it!
+        locked := FALSE
+        message --> openable
+        }
+      else {
+        >>That's not working.
+        if notes.viewed and not page.found then
+          >>Guess I'd better find page three of that diary, huh?
+        }
+      }
+    else
+      message --> object
+
+  'close' : {
+    message --> object
+    if not locked then {
+      >>As the door swings shut, I hear the lock click.
+      locked := TRUE
+      }
+    }
+
+  'exit' :
+    if locked then
+      >>There's no handle on the inside!
+    else
+      message --> hollow_object
+
+end
+
+
+wearable lead_coveralls
+
+  desc      : "pair of lead-lined coveralls"
+  location  : locker
+  pronoun   : "them"
+
+  size      : 5
+
+methods
+
+  'look' : {
+>>They are bright yellow with a big black radiation symbol on the front;
+>>they look pretty heavy.
+    }
+
+end
+
+
+object soldering_iron
+
+  desc      : "soldering iron"
+  location  : locker
+
+end
+
+
+################################# Level Four ###############################
+
+room hall2
+
+  desc      : "L-shaped hallway"
+
+methods
+
+  'starboard' : hall3
+  'aft'       : hall4
+
+  'BRIEF' : >>I'm in the L-shaped elevator alcove on level four.
+
+  'LONGDESC' : {
+>>I am standing in a very dusty L-shaped hallway; the number "4" is
+>>stenciled just outside the doors.
+    }
+
+end
+
+
+room hall3
+
+  desc      : "narrow circular curving hallway"
+
+methods
+
+  'port'    : hall2
+  'aft'     : antechamber
+
+  'LONGDESC': {
+>>I am halfway through a narrow, circular hallway that reminds me of a
+>>hamster tube.  There are rungs on the side which are inconveniently
+>>placed at the present but which could be useful during zero gravity.
+    }
+
+end
+
+
+room hall4
+
+  desc      : "long, tall hexagonal hallway"
+
+methods
+
+  'fore'      : hall2
+  'starboard' : storage_room
+  'aft'       : engine_room
+
+  'LONGDESC' : {
+>>I'm in the middle of a hallway that is hexagonal in shape except that
+>>it is stretched vertically.  The walls, ceiling and floor are made out
+>>of a metal grid whose holes are loose enough for me to hook my fingers
+>>into. Beyond the grid I can see that this hallway is enclosed in a
+>>larger circular tube; thick bundled wires run lengthwise through the
+>>spaces between the tube and the grid.  The lighting, which comes from
+>>bright flourescent tubes beneath the floor of the grid, is harsh and
+>>casts a wobbly shadow above me.
+  }
+
+end
+
+
+readable sign
+
+  desc      : "sign"
+  location  : storage_room
+
+methods
+
+  'read' :
+    >>It reads, "DANGEROUS RADIATION LEVELS".
+
+  'get' :
+    >>Not quite possible; it's painted onto the wall.
+
+end
+
+
+room storage_room
+
+  desc      : "storage room"
+
+methods
+
+  'port' : hall4
+  'LONGDESC' : write "I'm standing in a small storage room.  The lighting ",
+               "is red and there are wide yellow and black stripes painted ",
+               "all over the walls."
+
+end
+
+
+gravhalf uranium
+
+  desc      : "huge block of uranium"
+  location  : storage_room
+  size      : 100
+
+  poison    : 0
+
+methods
+
+  'INITIAL' : 'REGISTER' -> before
+  'BEFORE' :
+    if (location = player.location or location = player) and
+       not lead_coveralls.wearing
+    then {
+      poison +:= 1
+      case poison of {
+        2 : >>I feel kind of warm...
+        4 : >>Ugh... I'm feeling a little nauseated...
+        6 : >>Something... is definitely wrong here... my skin is blistering...
+        7 : >>I feel wobbly on my feet... my gums are bleeding...
+        9 : {
+>>Whatever is wrong with me has gone on too long... I cannot stand...
+>>Blood is dripping from my gums and lips... I crumple to the ground,
+stop "overcome... my last sensations are of pain and heat."
+          }
+        }
+      }
+
+end
+
+
+object screwdriver
+
+  desc      : "Phillips screwdriver"
+  proper    : FALSE
+  location  : storage_room
+
+end
+
+
+plural_noun sheet_metal
+
+  size      : 4
+  desc      : "large sheets of metal"
+  syn       : "metal|sheets"
+  location  : storage_room
+  pronoun   : "them"
+  welded    : FALSE
+
+methods
+
+  'get' :
+    if welded then
+      >>They're welded down; I can't pry them loose!
+    else
+      message --> object
+
+  'look' :
+    if welded then
+      >>The sheet metal is welded securely over the hole in the hull.
+    else
+      >>It's powerful but light for its size; hull-quality material.
+
+  'Become Welded' :
+    if location = player then {
+      welded := TRUE
+      location := player.location; 'MOVE'
+      }
+
+end
+
+
+
+room engine_room
+
+  desc      : "engine room"
+
+methods
+
+  'fore'    : hall4
+
+  'LONGDESC' : {
+>>I'm in what appears to be the engine room.  Complicated tangles of
+>>wires and gauges cover the wall; the only thing that looks simple
+>>enough for me is a panel mounted on the far wall.
+    }
+
+end
+
+
+
+powersource antimatter_cell
+
+  desc      : "small antimatter cell"
+  location  : hand_blaster
+
+end
+
+
+
+needs_batteries hand_blaster
+
+  desc      : "hand held blaster"
+  location  : engine_room
+
+  is_a_welder : battery.location = self and not open
+  is_a_weapon : antimatter_cell.location = self and not open
+
+  open        : FALSE
+
+methods
+
+  'Open Or Close' :
+    if main.dobj = screwdriver then
+      main.verb --> needs_batteries
+    else
+      write "I don't think ", 'DEF' -> main.dobj, " is working."
+
+  'open...with'  : 'Open Or Close'
+
+  'close...with' :
+    'Open Or Close'
+
+  'open' :
+    if not open then {
+      >>I try to pick it apart, but it won't come open.  I look at it:
+      'look'
+      }
+
+  'close' :
+    if open then
+      >>I try to close it, but the hinge springs it back open again.
+    else
+      >>It's already closed.
+
+  'look' : {
+    writes "This seems to be a standard issue personal weapon.  "
+    writes "It is presently "
+    if open then {
+      writes "sprung open, held together at one end "
+      writes "by a small hinge.  "
+      message --> needs_batteries
+      }
+    else
+      write "held shut by several Phillip's head screws."
+    }
+
+  'shoot...at' : {
+    main.subj := main.dobj
+    'shoot'
+    }
+
+  'shoot...with' :
+    if main.dobj ~= self then
+      write "I don't think ", 'DEF' -> main.dobj, " works as a weapon."
+    else
+      'shoot'
+
+  'shoot' :
+    if not 'ACCESS' -> self then
+      write "I don't have anything to shoot ", 'DEF' -> main.subj, " with."
+    else if not is_a_weapon then
+      write "The blaster doesn't have enough power to shoot anything."
+    else if main.dobj = self then
+      write "Randomly?  I don't think so."
+    else if main.subj.intangible then
+      write "That's not something I can shoot."
+    else {
+      write "BZZAP!  The blaster evaporates ", 'DEF' -> main.subj, "."
+      if main.subj.wearing then {
+        write "YOWCH!  That left some blisters!"
+        main.subj.wearing := FALSE
+      }
+      if main.subj.InBulkhead then
+        stop "What a bad idea!  The ragged hole left in the bulkhead ",
+             "provides a violent escape for all of the air in the ",
+             "starship.  I am propelled helplessly toward the twisted ",
+             "metal edges of the blast hole.  I am torn to pieces just ",
+             "before being ejected into the deadly vacuum of space..."
+      else if player.location = main.subj then {
+        player.location := player.location.location
+        'MOVE' -> player
+      }
+      case main.subj of {
+        sheet_metal :
+          if sheet_metal.welded then {
+            write "Sadly this completely destroys the patch."
+            gaping_hole.location := sheet_metal.location
+            'MOVE' -> gaping_hole
+            bridge.without_air := TRUE
+            }
+        }
+      main.subj.location := UNDEFINED; 'MOVE' -> main.subj
+      }
+
+end
+
+
+visible_part panel
+
+  desc      : "control panel"
+  location  : engine_room
+
+  engine_started : FALSE
+
+methods
+
+  'look' : {
+    writes "There is a status screen that reads, \"ENGINES "
+    if engine_started then writes "STARTED" else writes "STOPPED"
+    write "\".  There are also two buttons:  a red one and a ",
+    "green one."
+    }
+
+end
+
+
+invisible_part start_button
+
+  desc      : "green button"
+  location  : engine_room
+
+methods
+
+  'push' :
+    if panel.engine_started then
+      >>A voice says, "Engines are already started."
+    else if uranium.location ~= reactor then {
+      writes "A voice mumurs, \"Cannot start engines; "
+      if lead_waste.location = reactor then
+        >>inert matter in reactor."
+      else
+        >>no material in reactor."
+      }
+    else {
+      writes "There is a shuddering roar that I can feel through the floor "
+      writes "and walls"
+      if reactor.open then {
+        writes " - but like an idiot I have left the reactor open!  Blazing "
+        writes "lethal radiation pours out over me and cooks me like a "
+        stop "microwave dinner."
+        }
+      else {
+        writes "; the lights brighten visibly.  The initial roar dies away "
+        write "but a persistent thrumming remains."
+        panel.engine_started := TRUE
+        }
+      }
+
+end
+
+
+invisible_part stop_button
+
+  desc      : "red button"
+  location  : engine_room
+
+methods
+
+  'push' :
+    if panel.engine_started then {
+      panel.engine_started := FALSE
+>>I hear the deep bass throbbing die away, leaving a conspicuous silence.
+      }
+    else
+      >>A quiet voice says, "Engines are not started."
+
+end
+
+
+large_structure reactor
+
+  why_not   : PartOfFloor
+
+  desc      : "reactor chamber"
+  syn       : "reactor"
+  location  : engine_room
+  open      : FALSE
+
+methods
+
+  'open'  : message --> openable
+  'close' : message --> openable
+
+  'TRANSPARENT' : open
+
+  'look' : { message --> hollow_object; message --> openable }
+
+  'LONGDESC' : write "I'm standing in the small ", desc, ".  Huge lenses, ",
+                "vents, and rods cover the walls.  The room is hexagonal ",
+                "and barely large enough to stand in."
+
+end
+
+
+gravhalf lead_waste
+
+  desc      : "enormous block of lead"
+  location  : reactor
+
+  size      : 100
+
+end
+
+
+
+room antechamber
+
+  desc      : "small antechamber"
+
+methods
+
+  'fore'    : hall3
+
+  'LONGDESC' : {
+>>I'm in a small antechamber about the size of a walk-in closet.  There
+>>is some graffitti on the wall, barely readable:  "I've started
+>>breathing and I can't stop!"
+    }
+
+end
+
+
+wearable helmet
+
+  location  : antechamber
+  desc      : "space helmet"
+  dirty     : Filthy
+
+methods
+
+  'look' : {
+    writes "This seems to be a space helmet in pretty good condition.  "
+    if dirty then {
+      writes "However it is covered with "
+      if dirty = Windexed then
+        writes "a muddy mixture of dust and Windex "
+      else
+        writes "a greasy layer of dirt "
+      writes "which makes it impossible to see through the visor."
+      }
+    else
+      writes "The faceplate is nice and clean."
+    write
+    }
+
+end
+
+
+wearable spacesuit
+
+  location  : antechamber
+  desc      : "spacesuit"
+  syn       : "suit"
+
+  patched   : FALSE
+
+methods
+
+  'look' :
+    if patched then
+      >>There's a sturdy vinyl patch over the knee.
+    else
+      write "Right at the knee there is a gaping hole.  Not big but ",
+            "still fatal in space.  If I had a rubber patch I could probably ",
+            "fix it."
+
+  'patch' :
+    if patched then
+      >>It's already fixed.
+    else
+      write "I can't do much with my bare hands.  Why don't I patch it ",
+            "\"with\" something?"
+
+  'patch...with' :
+    if patched then
+      >>It's already fixed.
+    else if main.dobj = repair_kit then {
+      patched := TRUE
+      >>I put a sturdy patch over the hole in the knee; it seems to fit well.
+      }
+    else
+      write "I don't think ", 'DEF' -> main.dobj, " is working."
+
+end
+
+
+visible_part viewport
+
+  desc      : "viewport"
+  location  : antechamber
+
+  InBulkhead : TRUE
+
+  seen      : 0
+
+methods
+
+  'look out' : 'look'
+  'look' :
+    case seen +:= 1 of {
+      1 : {
+>>I stare out the viewport into the breathtaking beauty of space.  It is
+>>so magnificently deep and beautiful.  I press my face against the
+>>quartz, trying to take the splendor into my eyes that seem too
+>>inadequate to behold properly.
+        }
+      2 : >>The big black space.  Yeah, yeah.  Seen it, done that.
+      3 : >>What?  You've seen one star, you've seen 'em all.
+      4 : >>No, that is boring.
+      5 : >>No!
+      default : >>I steadfastly refuse.
+      }
+
+end
+
+
+large_structure airlock
+
+  why_not   : PartOfRoom
+
+  location  : antechamber
+  desc      : "airlock"
+
+  InBulkhead : TRUE
+
+  without_air : FALSE
+  open      : TRUE
+
+methods
+
+  'TRANSPARENT' : open
+
+  'INITIAL' : 'REGISTER' -> after
+
+  'open'  : message --> openable
+  'close' : message --> openable
+
+  'AFTER' :
+    if player.location.without_air then {
+      if not spacesuit.wearing then {
+>>I'm standing in a total vacuum without wearing a spacesuit!  My blood
+>>boils; the cells of my skin rupture; my bleeding lungs can inhale
+>>nothing.
+        stop "I die painfully."
+        }
+      else if not helmet.wearing then {
+>>I'm not wearing a helmet!  The air rushes out through the neck of my
+>>open spacesuit, blowing my hair upwards in a life-giving but very
+>>brief wind; afterwards there is nothing left to do but suffocate and
+        stop "die with a silent scream on my lips."
+        }
+      else if not scuba_tanks.wearing then {
+>>My spacesuit and helmet are on, and are tightly fastened.  But the very
+>>small supply of air in the helmet and suit itself escapes out the back
+>>of my neck where some kind of air tanks should have been connected.
+>>Before my hands can reach the airlock lever I have drawn my last
+>>breath...
+        stop "I die painfully."
+        }
+      else if scuba_tanks.minutes <= 0 then {
+>>I seem to have everything in place for a successful journey through
+>>the void of vacuum... except any spare oxygen.  The scuba tanks give
+>>one short pitiful wheeze of stale air, and then there is nothing to
+>>breathe... I reach for the lever, my vision marred by blotches of
+>>colored pain...
+        stop "I never make it."
+        }
+      else if not spacesuit.patched then {
+>>Everything seems to be in order except for a draft near my knee... I
+>>reach down to discover that all my air is escaping through a ragged
+>>hole in the left knee of my spacesuit!  Before I have time to
+>>straighten back up, all the air is gone...
+        stop "I perish with a scream frozen on my face."
+        }
+      }
+
+  'Evacuate' : {
+    airlock.without_air := TRUE
+>>There is a thrumming noise; the air evacuates from the chamber.  I hear
+>>heavy bolts slam shut within the inner door.
+    'AFTER'     # check things
+>>Cautiously I take a few experimental breaths.  The only sound I hear is
+>>the puttering of the air regulator on the scuba tanks.  The patch on
+>>the knee of the spacesuit seems to be holding.
+    scuba_tanks.using := TRUE
+>>Silently the outer door of the airlock opens.
+    airlock.open := TRUE
+    }
+
+  'Repressurize' : {
+>>There is a gushing wind; my pressure suit goes limp.  I hear the grinding
+>>sound of bolts being drawn back within the inner door; presently it opens.
+      airlock.without_air := FALSE
+      scuba_tanks.using := FALSE
+      airlock.open := TRUE
+    }
+
+  'exit' :
+    if not open then
+      >>I can't leave; I haven't opened the airlock.
+    else {
+      writes "I leave through the "
+        if without_air then {
+          writes "outer"
+          location := ledge
+          }
+        else {
+          writes "inner"
+          location := antechamber
+          }
+      'MOVE'
+      write " airlock door."
+      'exit' --> hollow_object
+      }
+
+end
+
+
+keyword Down, Up
+
+visible_part airlock_lever
+
+  location : airlock
+  desc     : "large two-handed lever"
+  position : Up
+
+methods
+
+  'look' : {
+    writes "The lever is currently in the "
+    if position = Down then writes "down" else writes "up"
+    write " position."
+    >>Faded letters above read "ATMOSPHERE"; below, they read "EVACUATE".
+    }
+
+  'pull down' : 'pull_down'
+  'push down' : 'pull_down'
+  'pull up'   : 'push_up'
+  'push up'   : 'push_up'
+
+  'pull_down' : 'pull'
+  'push_up'   : 'push'
+
+  'pull' :
+    if position = Down then
+      >>The lever is already pulled down.
+    else if airlock.open then {
+>>A tinny automated voice says, "Airlock must be closed before atmospheric
+>>evacuation."
+      }
+    else {
+      position := Down
+      'Evacuate' -> airlock
+      }
+
+  'push' :
+    if position = Up then
+      >>The lever is already pushed up.
+    else if airlock.open then {
+>>A voice inside my helmet murmurs, "Airlock must be closed before
+>>repressurization."
+      }
+    else {
+      position := Up
+      'Repressurize' -> airlock
+      }
+
+end
+
+
+class outer_room based on room
+
+  without_air : TRUE
+
+end
+
+
+
+outer_room ledge
+
+  desc      : "narrow metal ledge"
+
+methods
+
+  'port'    : airlock
+  'up'      : level_3_hull
+
+  'LONGDESC' : {
+>>I'm standing outside the starship on a metal ledge.  The airlock is to
+>>port. There are metal rungs set into the hull of the ship.  The words
+>>"LEVEL FOUR" are painted on the hull; they are somewhat scarred by
+>>meteorites.  The rungs extend upward and downward.
+    }
+
+end
+
+
+
+############################### Level Three ################################
+
+
+outer_room level_3_hull
+
+  desc      : "outside of level three"
+
+methods
+
+  'down'    : ledge
+  'up'      : level_2_hull
+
+  'LONGDESC' : {
+>>I'm clinging to the metal rungs set into the hull; to my left I can
+>>see the letters "LEVEL THREE" painted on the outside.  There is no
+>>entrance into the ship here.
+    }
+
+end
+
+
+
+room hall1
+
+  desc      : "L-shaped elevator alcove on level three"
+
+methods
+
+  'starboard' : kitchenette
+  'aft'       : captains_quarters
+
+  'LONGDESC' : {
+    write "I'm standing in the ", desc, "."
+>>I can tell it's level three because of the enormous numeral "3" painted
+>>just outside the elevator doors.
+    }
+
+end
+
+
+room captains_quarters
+
+  desc      : "captain's quarters"
+
+methods
+
+  'fore'    : hall1
+
+end
+
+
+sit_furniture desk
+
+  desc      : "desk"
+  proximity : "at"
+  location  : captains_quarters
+
+methods
+
+  'sit at' : 'enter'
+
+end
+
+
+needs_batteries calculator
+
+  desc      : "scientific calculator"
+  syn       : "calc"
+  location  : desk
+
+methods
+
+  'look' : {
+>>There is a little snap-on cover on the back; the left side of the cover
+>>has a thin slot.
+     }
+
+  'open' :
+    if open then
+      >>It's already open.
+    else
+      >>I pick at the back with my fingers but can't get it open.
+
+  'open...with' :
+    if open then
+      >>It's already open.
+    else if main.dobj = quarter then {
+      writes "I wedge the coin into the thin slot, twist, and... "
+      write "the back pops off."
+      open := TRUE
+      }
+    else if main.dobj = screwdriver then
+      write "If it were a flat-head screwdriver, it might work."
+    else
+      write "I try ", 'DEF' -> main.dobj, ", but I still can't open it."
+
+end
+
+
+powersource battery
+
+  desc      : "nine-volt battery"
+  location  : calculator
+
+end
+
+
+sit_furniture captains_bed
+
+  desc      : "captain's bed"
+  proximity : "on"
+  location  : captains_quarters
+
+end
+
+
+wearable pants
+
+  desc      : "pair of pants"
+  syn       : 'pockets'         # I believe I can get away with this!
+  pronoun   : "them"
+  location  : captains_bed
+  proximity : "in"
+
+  wearing    : FALSE
+  never_worn : TRUE
+
+  stuff_in_pockets : FALSE
+
+methods
+
+  'get in' : 'enter'
+  'get on' : 'enter'
+
+  'look' :
+    if stuff_in_pockets then
+      >>There seem to be some bulges in the pockets.
+    else
+      message --> wearable
+
+  'look through' : 'look in'
+  'look in' : {
+    writes "I'm looking... "
+    stuff_in_pockets := FALSE
+    for each.location = self do {
+      stuff_in_pockets := TRUE
+      break
+      }
+    if not stuff_in_pockets then
+      write "Nothing in the pants."
+    else {
+      write "The following objects fall out:"
+      for each.location = self do {
+        each.location := player.location
+        'MOVE' -> each
+        write 'INDEF' -> each
+        }   # for
+      }   # else
+    }   # 'look in'
+
+  'wear' : {
+    message --> wearable
+    if wearing and never_worn then {
+      >>The pants give me an exaggerated sense of my own importance.
+      never_worn := FALSE
+      }
+    }
+
+end
+
+
+
+object quarter
+
+  desc      : "quarter"
+  syn       : "coin"
+  location  : pants
+
+methods
+
+  'put...in' :
+    if main.dobj = vending_machine then
+      'Insert Me' -> vending_machine
+    else
+      message --> object
+
+end
+
+
+plural_noun keys
+
+  desc      : "keys"
+  location  : pants
+
+end
+
+
+object wallet
+
+  desc      : "wallet"
+  location  : pants
+
+  open      : FALSE
+
+end
+
+
+object captains_ID
+
+  desc      : "captain's ID card"
+  location  : wallet
+
+end
+
+
+room kitchenette
+
+  desc      : "small kitchenette"
+
+methods
+
+  'port'    : hall1
+  'aft'     : rec_room
+
+end
+
+
+big_furniture table
+
+  desc      : "small table"
+  proximity : "at"
+  location  : kitchenette
+
+end
+
+
+
+object vending_machine
+
+  desc      : "vending machine"
+  location  : kitchenette
+
+methods
+
+  'get' : >>It's way too heavy; not to mention bulky.
+
+  'Insert Me' :
+    if sender ~= quarter then
+      >>Only quarters fit.
+    else {
+      sender.location := self; 'MOVE' -> sender
+      >>Balunga-CLUNK!  A can pops out of the machine.
+      gatorade.location := location; 'MOVE' -> gatorade
+      'MENTION SELF' -> gatorade
+      }
+
+end
+
+
+
+container gatorade
+
+  contents  : "Gatorade"
+  holder    : "can"
+  proper    : FALSE
+
+  location  : vending_machine
+
+methods
+
+  'look' : >>There's some writing on it.
+  'read' : {
+>>It reads:  "INGREDIENTS:  WATER, GLUCOSE, SUCROSE, CITRIC ACID, SALT,
+>>            SODIUM CITRATE, MONOPOTASSIUM PHOSPHATE, ESTER GUM, RED 40."
+    }
+
+  'drink' :
+    if filled then {
+>>I gulp down the contents of the can.  The fog in my head seems to
+>>clear... WHOA!  My memory is coming back, pieces falling into place...
+>>I know who it is I am!  What I'm supposed to do!
+>>
+writes "I'm the pilot, and I was to be awakened in the event of a serious "
+writes "course deviation.  "
+      if player.location = pilots_console then {
+        write
+        'ENTERED' -> pilots_console
+        }
+      else {
+        write "I have to get to the pilot's console on the bridge ",
+              "on level one RIGHT AWAY!"
+        }
+      filled := FALSE
+      }
+    else
+      >>Unfortunately it's empty.
+
+end
+
+
+large_structure janitors_closet
+
+  desc      : "janitor's closet"
+  location  : kitchenette
+  open      : FALSE
+
+methods
+
+  'TRANSPARENT' : open
+
+  'close...with' : 'close'
+  'close' : message --> openable
+  'open' :
+    if open then
+      >>It's already open.
+    else
+      >>I yank at the doors but they appear to be locked.
+
+  'open...with' :
+    if open then
+      >>It's already open.
+    else if main.dobj = keys then
+      'open' --> openable
+    else
+      write "I'm afraid ", 'DEF' -> main.dobj, " isn't working."
+
+end
+
+
+object windex
+
+  desc      : "Windex"
+  proper    : FALSE
+  location  : janitors_closet
+
+methods
+
+  'INDEF' : "some " & desc
+
+end
+
+
+container gasoline
+
+  holder    : "can"
+  contents  : "gas"
+  location  : janitors_closet
+
+methods
+
+  'put...in' : {
+    if main.dobj = air_compressor then {
+      main.dobj := self
+      'fill...with' -> air_compressor
+      }
+    }
+
+end
+
+
+
+room rec_room
+
+  desc      : "recreation room"
+
+methods
+
+  'fore'    : kitchenette
+  'port'    : pool
+
+end
+
+
+wearable scuba_tanks
+
+  desc      : "scuba tanks"
+  pronoun   : "them"
+  location  : rec_room
+
+  minutes   : 0
+  using     : FALSE
+
+methods
+
+  'INDEF' : "some " & desc
+
+  'INITIAL' : 'REGISTER' -> before
+  'BEFORE'  :
+    if using then {
+      case minutes of {
+       10 : >>A warning tone sounds from the scuba tanks.
+        5 : >>The air is getting rather stale.
+        3 : >>I am running out of air.  I can feel it.
+        2 : {
+>>My breath comes in ragged, saw-edged gasps.  The air regulator on the
+>>tanks sputters ominously.
+          }
+        1 :
+>>I have GOT to get some AIR right NOW!!!
+        0 : {
+>>There is no more air left.  My lungs are bloody.  Fiery blotches of
+>>color mar my vision.  My limbs are numb, my eyes bulge... I cough on
+>>my own carbon dioxide...
+          stop "the end comes mercifully."
+          }
+      }                           # case
+      minutes -:= 1
+    }                   # if using
+
+  'fill' :
+    >>Fill them with what?  By blowing air into them with my mouth?
+
+  'fill...with' :
+    if main.dobj = air_compressor then
+      'Fill Me' -> air_compressor
+    else
+      write "I don't think ", 'DEF' -> main.dobj, " will work."
+
+  'look' :
+    write "A gauge on the tanks says there are ", minutes,
+          " minutes remaining."
+
+end
+
+
+object air_compressor
+
+  desc      : "air compressor"
+  syn       : "air"
+  location  : rec_room
+
+  started   : FALSE
+  fueled    : FALSE
+  kicked    : FALSE
+  trials    : 0
+
+methods
+
+  'look' : {
+    writes "It looks like it runs on gas.  "
+    if started then
+      write "It's chugging along merrily."
+    else
+      write "It's not started up yet."
+    }
+
+  'get' : >>It's fastened to the floor.
+
+  'Fill Me' :
+    if not started then
+      >>The compressor isn't started yet.
+    else {
+      write "I fill up ", 'DEF' -> sender, " with 30 minutes of air."
+      sender.minutes := 30
+      }
+
+  'start up' : 'start'
+  'start' :
+    if started then
+      >>It's already started.
+    else if not fueled then
+      >>The engine grinds drily.
+    else if not kicked then {
+      >>It turns over once or twice but won't catch.
+      trials +:= 1
+      if trials >= 3 then {
+        >>I've HAD it with this stupid machine!
+        'kick'
+        'start'
+        }
+      }
+    else {
+      >>It starts with a roar!
+      started := TRUE
+      }
+
+  'kick' : {
+    writes "I give the compressor a brisk kick.  "
+    if kicked then
+      >>Nothing really happens.
+    else {
+      >>It sounds like something inside just fell into place.
+      kicked := TRUE
+      }
+    }
+
+  'fill' : >>With what?  Nothing?
+  'fill...with' :
+    if main.dobj ~= gasoline then
+      write "I don't think ", 'DEF' -> main.dobj, " will do the trick."
+    else if not gasoline.filled then
+      write "The gas can is empty."
+    else {
+      >>I fill the compressor with gasoline.
+      gasoline.filled := FALSE
+      fueled := TRUE
+      }
+
+end
+
+
+
+room pool
+
+  desc      : "swimming pool"
+
+methods
+
+  'up'      : rec_room
+
+end
+
+
+object towel
+
+  desc      : "towel"
+  location  : pool
+
+end
+
+
+wearable sunglasses
+
+  desc      : "very dark sunglasses"
+  location  : pool
+  pronoun   : "them"
+
+  wearing   : FALSE
+
+methods
+
+  'INDEF' : "some " & desc
+
+  'wear' :
+    if helmet.wearing then {
+>>Clack!  I bang the sunglasses against the helmet.  Looks like that was a
+>>bad plan, huh?
+      }
+    else
+      message --> wearable
+
+  'remove' :
+    if helmet.wearing then {
+>>I scrabble uselessly at the helmet I'm wearing, but the sunglasses
+>>aren't coming off because they're inside.
+      }
+    else
+      message --> wearable
+
+end
+
+
+
+################################ Level Two #############################
+
+
+outer_room level_2_hull
+
+  desc      : "outside the hull on level two"
+
+methods
+
+  'down'    : level_3_hull
+  'up'      : level_1_hull
+
+  'LONGDESC' : {
+>>I'm outside the hull at level two.  There is an enormous quartz plate
+>>here; I can see through it to the observation lounge on the inside of
+>>the starship.
+    }
+
+end
+
+
+
+room briefing_room
+
+  desc      : "briefing room"
+
+methods
+
+  'fore'    : observation_deck
+  'aft'     : library
+
+end
+
+
+room observation_deck
+
+  desc      : "observation deck"
+
+methods
+
+  'aft'     : briefing_room
+
+end
+
+
+needs_batteries gravlifter
+
+  desc      : "gravlifter"
+  syn       : "grav|lifter"
+  location  : observation_deck
+  powered   : antimatter_cell.location = self and not open
+
+methods
+
+  'ACCESS' : ('ACCESS' -> needs_batteries) or
+             (('ACCESS' -> location) and location.IsAgravhalf)
+
+  'look' : {
+    writes "It's a small handheld device with a five-pronged plug.  "
+    if powered then
+      >>A light on the side indicates that it is powered.
+    else
+      >>The power seems to be off.
+    message --> needs_batteries
+    }
+
+  'turn on' : 'turn_on'
+  'turn_on' : 'turn off'
+  'turn off': 'turn_off'
+  'turn_off': >>There's no power switch.
+
+  'get' :
+    if location.IsAgravhalf then {
+      write "I assume you mean trying to get ", 'DEF' -> location, "."
+      message -> location
+      }
+    else
+      message --> needs_batteries
+
+  'plug...in' : {
+    if location.IsAgravhalf then 'Unplug From' -> location
+    if main.dobj.IsAgravhalf then
+      'Plug Into' -> main.dobj
+    else
+      write "I can't plug ", 'DEF' -> self, " into ",
+            'INDEF' -> main.dobj, "."
+    }
+
+  'unplug' :
+    if location.IsAgravhalf then
+      'Unplug From' -> location
+    else
+      write "It's not plugged into anything."
+
+  'unplug...from' :
+    if main.dobj.IsAgravhalf then
+      'Unplug From' -> location
+    else
+      write "It's not plugged into ", 'DEF' -> main.dobj, "."
+
+end
+
+
+
+room library
+
+  desc      : "technical library"
+
+methods
+
+  'fore'    : briefing_room
+
+  'LONGDESC' : {
+>>I'm standing in the ship's technical library.  The walls are lines with
+>>thousands of cartridges; an enormous screen set into one wall reads
+>>"INDEX" in large letters across its screen; there is smaller writing
+>>beneath that.
+    }
+
+end
+
+
+readable tech_index
+
+  desc      : "technical index"
+  location  : library
+
+  never_read : TRUE
+
+methods
+
+  'look' : >>There's some writing on the screen.
+
+  'read' : {
+    if never_read then
+      >>Reading the instructions, I discover the following:
+    else
+      >>Once again:
+    write "I can \"look up\" any object in the index; ",
+          "if the library contains information ",
+          "on it, the entry will be displayed on this screen."
+    }
+
+  'look up' :
+    if main.dobj and main.dobj ~= self then
+      write "I don't know how to look up anything in ",
+            'INDEF' -> main.dobj, "."
+    else {
+      write "The entry for ", 'DEF' -> main.subj, " appears on the screen."
+      case main.subj of {
+        medical_couch :
+          write "The automated medical couch located in Sickbay is a ",
+          "sophisticated device capable of diagnosing and curing a wide ",
+          "range of commonly recognized ailments.  Its primary function ",
+          "is to detect and repair cell damage; it can recognize other ",
+          "ailments but cannot always cure them - there is no substitute ",
+          "for a knowledgeable physican."
+        coffin :
+          write "The cryogenic suspension cell, or \"coffin\", as it is ",
+          "commonly called because of its appearance, is used for ",
+          "keeping the occupant alive and monitoring their health.  ",
+          "It performs the functions of initial freezing, ",
+          "maintenance, and thawing of the suspended individual.  These ",
+          "functions are tied into the main computer so that a given ",
+          "individual can be awakened should the computer determine that ",
+          "their specialty is required."
+        spacesuit : write "Standard out-of-ship equipment is comprised ",
+                    "primarily of this rubber and vinyl spacesuit.  The ",
+                    "suit is one piece all the way through the gloves and ",
+                    "boots; the only separate pieces are the helmet and ",
+                    "air tanks."
+        gravlifter :
+          write "The anti-gravitational gravlifter, or \"lifter\", ",
+          "is a device ",
+          "which temporarily neutralizes the ",
+          "ship's artifical gravity over a small region.  ",
+          "The portable hand-held unit is only half of the ",
+          "device; the other half is a tray with an outlet that fits the ",
+          "hand-held unit's plug.  The tray generally covers the entire ",
+          "lower surface of the object to be lifted. The hand-held unit ",
+          "contains all the power and must be supplied with an ",
+          "antimatter cell in order to work."
+        hand_blaster :
+          write "Apparently its primary feature is the power focusing crystal ",
+          "in the barrel; it is normally powered with an antimatter cell ",
+          "so that it acts as a destructive weapon, but when powered ",
+          "with a much weaker source, it can act as either a light, a ",
+          "surgical instrument, or even an arc welder, depending on the ",
+          "strength of the power cell.  A power source as weak ",
+          "as a calculator battery is usually sufficient for ",
+          "arc welding."
+       default :
+         write "Unfortunately the entry seems to be corrupted; ",
+               "I can't make it out."
+       }        # case
+     }      # else
+
+end
+
+
+
+################################ Level One #############################
+
+
+outer_room level_1_hull
+
+  desc      : "hull exterior on the first level"
+
+methods
+
+  'down'    : level_2_hull
+
+  'LONGDESC' : {
+>>I'm at the very top of the starship; I can look over the top of the
+>>bridge. Not that there is much to see except stars.  I can go no
+>>higher.
+    }
+
+end
+
+
+object gaping_hole
+
+  desc      : "ragged gaping hole"
+  location  : level_1_hull
+  other     : bridge                                # where it leads to
+
+methods
+
+  'get'     : >>Oh sure.
+
+  'patch'   :
+    >>Hey!  Cop a clue!  My bare hands won't cover this hole!
+
+  'patch...with' :
+    if      main.dobj ~= sheet_metal then
+      write "I'm afraid ", 'DEF' -> main.dobj, " won't fit across the hole."
+    else if not (hand_blaster.location = player and
+                 hand_blaster.is_a_welder) then {
+>>It won't stay unless I have something which can help me to weld the
+>>metal to the hull.
+      }
+    else if not battery.powered then {
+>>The hand blaster turned welder glows faintly; but no go.  There's not
+>>enough power left in the battery to operate it.
+      }
+    else {
+      location := UNDEFINED; 'MOVE'
+      airlock.location := antechamber; 'MOVE' -> airlock
+>>I patch the hole securely with the sheet metal, using the altered
+>>hand blaster as an arc welder.
+      'Become Welded' -> sheet_metal
+      battery.powered := FALSE
+      if not sunglasses.wearing then {
+>>But unfortunately my eyes are not protected in any way, and the
+>>brilliant light of the hand blaster acting as a welder BLINDS me!  I
+>>can't see!!!
+        medical_couch.blindness := TRUE
+        }
+      }
+
+# When you enter the hole, it "follows" you through.
+
+  'enter' : {
+    if location = level_1_hull then
+      other := bridge
+    else
+      other := level_1_hull
+    write "I step through the gaping hole to the ", other.desc, "."
+    location := other; 'MOVE'
+    player.location := other; 'MOVE' -> player
+    }
+
+end
+
+
+
+room bridge
+
+  desc        : "bridge"
+  without_air : TRUE
+
+methods
+
+  'LONGDESC' : {
+>>I'm standing on the bridge of the starship.  A fine thin coating of
+>>meteor dust covers everything.  The room is small and simple.
+  if gaping_hole.location then
+>>I can see stars though the ragged hole at the front of the bridge.
+  else
+>>The bridge seems smaller and more confined now that the hole is patched.
+    }
+
+end
+
+
+class bridge_furniture based on sit_furniture
+
+  location    : bridge
+  without_air : location.without_air
+
+methods
+
+  'TRANSPARENT' : TRUE
+  'HORIZON'     : location
+  'sit at' : 'enter'
+
+end
+
+
+
+bridge_furniture captains_chair
+
+  desc      : "captain's chair"
+  meteor_seen : FALSE
+
+methods
+
+  'LONGDESC' : {
+>>I'm sitting in the captain's chair - sort of.  There is an enormous
+>>meteor in the way, smashed directly into the center of the chair.
+    meteor_seen := TRUE
+    }
+
+end
+
+
+bridge_furniture computer_console
+
+  desc      : "computer console"
+  syn       : "computer"
+  proximity : "at"
+
+end
+
+
+
+class computer_button based on visible_part
+
+  desc      : "small button"
+  location  : computer_console
+  part_of   : location
+
+methods
+
+  'look'    : message --> readable
+  'read'    : message --> readable
+
+end
+
+
+computer_button null
+
+  desc     : "wide yellow button"
+  pushed   : FALSE
+
+methods
+
+  'read'    : >>It reads, "GRAVITY".
+  'push'    :
+    if not pushed then {
+      write "As soon as I push it, my stomach flip-flops because ",
+                    "there is no more gravity.  Panicked, I manage to slap ",
+                    "the ", desc, " again and I crash to the floor."
+      pushed := TRUE
+      }
+    else
+      write "No thanks.  We already know what that one does."
+
+end
+
+
+
+computer_button self_destruct
+
+  desc      : "small red button"
+  viewed    : FALSE
+
+methods
+
+  'read'    : {
+     writes "It reads \"IRREVOCABLE SELF DESTRUCT\".  "
+     if not viewed then {
+       viewed := TRUE
+       write "Gee.  You'd think it would at least have a little ",
+             "plastic cover over it."
+       }
+     else
+       write
+     }
+
+  'push' : stop "A computerized voice says, \"Beginning irrevocable self ",
+                "destruct.  Countdown in five seconds.\"  It is just long ",
+                "enough for me to wonder if that was a wise idea; then the ",
+                "ship blows violently apart."
+
+end
+
+
+
+computer_button null
+
+  desc      : "big blue button"
+
+methods
+
+  'read'    : >>It reads "STATUS".
+  'push'    : write "As soon as I push it the screen starts filling up with ",
+                    "incomprehensible status reports and flickering ",
+                    "technical diagrams.  Boring."
+
+end
+
+
+
+computer_button life_support_switch
+
+  desc      : "small green button"
+
+methods
+
+  'read' : >>It reads "LIFE SUPPORT".
+
+  'push'    :
+    if gaping_hole.location then {
+>>A voice in my helmet says, "Cannot restore life support; hull is
+>>breached."
+      }
+    else {
+      elevator.location := bridge; 'MOVE' -> elevator
+>>There is a hissing sound; the lights brighten and my suit goes limp.
+      bridge.without_air := FALSE
+      scuba_tanks.using  := FALSE
+      }
+
+end
+
+
+
+computer_button null
+
+  desc  : "flat purple switch"
+
+methods
+
+  'read' : >>It reads "CHAIR ADJUST".
+  'push' : write "The console chair I'm sitting in slides up and down as I ",
+                 "push one side and then the other of the switch."
+
+end
+
+
+
+bridge_furniture pilots_console
+
+  desc      : "pilot's console"
+  proximity : "at"
+
+methods
+
+  'ENTERED' : {
+    message --> bridge_furniture
+    if gatorade.filled then {
+>>I am confronted by a bewildering array of instruments and indicators;
+>>none of them make any sense to me.  I... I feel like I ought to know
+>>what to do here.  There is something annoyingly familiar about the
+>>look of them.  But the fog in my brain that has been plaguing me since
+>>I woke up prevents me from fully remembering.
+      }
+    else {
+>>Ah!  This is familiar territory.  Standard Meinsch controls and a full
+>>navigational array.  Looks like there was a slight course deviation
+      writes "three years ago"
+      if captains_chair.meteor_seen then
+        writes " - probably that meteor sitting in the captain's chair -"
+      writes " that has been steadily getting worse.  "
+      if panel.engine_started then {
+        writes "Deftly I make the corrections, feeling the floor vibrate "
+        write "with the exertion.  The ship is back on course."
+        >>
+>>                            *    *    *
+>>
+>>You have succeeded!  The ship is fueled and headed the right way.
+        stop "Congratulations!"
+        }
+      else {
+        writes "Unfortunately the fuel indicator shows that there is nothing "
+        writes "in the reactor but inert matter.  I can't make any course "
+        writes "corrections without engine power."
+        }
+      write
+      }
+    }
+
+end
+
+
+########################## End Starship Solitaire ##########################
