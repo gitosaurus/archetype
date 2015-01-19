@@ -310,7 +310,7 @@ methods
     for each.IsAnoun do 'NAME' -> each
     'NAME' -> everything
     'CLOSE PARSER' -> system
-    write "done.  ", 'FREE MEMORY' -> system, " bytes available."
+    write "done."
 
     }
 

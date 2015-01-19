@@ -311,6 +311,7 @@ namespace archetype {
                             t.errorMessage("Must follow \"keyword\" with one or more identifiers");
                             return false;
                         } else {
+                            classify(t, t.token().number(), KEYWORD_ID);
                             while (t.token().type() == Token::IDENTIFIER and
                                    t.fetch() and t.token() == Token(Token::PUNCTUATION, ',')) {
                                 if (not t.fetch()) {
