@@ -1,0 +1,697 @@
+#########################################################################
+#
+# AUTHOR.ACH
+#
+# Testing the ability to author new persistent objects directly from
+# within the Archetype environment, using the Archetype 1.02 INTRPTR.ACH.
+#
+# Copyright 1995  Derek T. Jones
+#
+# Creation Date:  8/13/95
+#
+#########################################################################
+
+include "standard.ach"
+
+
+##################################################### Scoring
+
+object score
+
+  desc : "scoreboard"
+
+  visible : FALSE
+  value : 0
+
+methods
+
+  'ACCESS' : TRUE
+
+  'look' : write "Current score: ", value
+
+end
+
+
+
+object player_status
+
+  desc : "myself"
+  syn  : "yourself"
+
+  visible : FALSE
+
+  orig_health : 100
+  health : orig_health
+
+methods
+
+  'RESET' : health := orig_health
+
+  'ACCESS' : TRUE
+
+  'UPDATE STATUS' : {
+    if health < 0 then
+      stop "I have become too weakened.  I am dead."
+  }
+
+
+  'look' : {
+    write "Health points: ", health
+  }
+
+end
+
+
+
+##################################################### Verb definitions
+
+Verb null
+
+  full : 'reset'
+  interpret : TRUE
+
+methods
+
+  'INTERPRET' : {
+    write "Resetting all objects:"
+    for each do 'RESET' -> each
+    write "Reset finished."
+  }
+
+end
+
+
+
+Verb null
+
+  full      : 'score'
+  interpret : TRUE
+
+methods
+
+  'INTERPRET' : 'look' -> score
+
+end
+
+
+
+Verb null
+
+  full : 'status'
+  interpret : TRUE
+
+methods
+
+  'INTERPRET' : 'look' -> player_status
+
+end
+
+
+
+Verb null full : 'create' end
+
+
+
+Verb null
+
+  full : 'modify'
+  interpret : TRUE
+  resp      : UNDEFINED
+
+methods
+
+  'INTERPRET' : {
+    'MODIFY' -> main.subj
+    write "The object is presently still accessible by its old name ",
+          "as well as its new one, and will remain so until a reload.  ",
+          "You can re-assemble the vocabulary now in order to drop the ",
+          "old name.  Re-assemble vocabulary? ", resp := key
+    if resp within "yY" then 'ASSEMBLE VOCABULARY' -> main
+    }
+
+end                                 # the 'modify' verb
+
+
+
+Verb null
+
+  full : 'destroy'
+  interpret : TRUE
+  resp      : UNDEFINED
+
+methods
+
+  'INTERPRET' : {
+    write "About to destroy ", 'DEF' -> main.subj, ".  Continue? ", resp := key
+    if resp within "yY" then {
+      main.subj.location := UNDEFINED
+      'MOVE' -> main.subj
+      destroy main.subj
+      main.subj := UNDEFINED
+      write "Done.  Vocabulary must be re-assembled."
+      'ASSEMBLE VOCABULARY' -> main
+      }
+    }
+
+end                             # the 'destroy' verb
+
+
+
+Verb null full : 'open'  end
+Verb null full : 'close' end
+
+
+##################################################### Type definitions
+
+class authorable_object based on object
+
+  unhappy  : TRUE
+  resp     : UNDEFINED
+  attrname : UNDEFINED
+  attr     : UNDEFINED
+
+methods
+
+  # Programmer should fill in 'attrname' with a string description of the
+  # attribute to interview the user about, and 'attr' with its current value.
+  # When this method is finished, 'attr' will contain the new value approved
+  # by the user.
+
+  'INTERVIEW USER' : {
+    write "Current ", attrname, ": \"", attr, "\""
+    unhappy := TRUE
+    while unhappy do {
+      writes "New ", attrname, "? "
+      resp := read
+      if length resp = 0 then {
+        write "Keeping old value."
+        unhappy := FALSE
+      }
+      else {
+        attr := resp
+        writes "New ", attrname, " = \"", attr, "\":  Accept? "
+        unhappy := not ((resp := key) within "yY")
+        write resp
+      }
+    }
+  }
+
+
+
+  'MODIFY' : {
+    attr := desc
+    attrname := "object description"
+    'INTERVIEW USER'
+    desc := attr
+  }
+
+end                                 # authorable_object
+
+
+
+class concept based on object
+
+  desc    : "abstract concept"
+  syn     : "new " & desc
+  visible : FALSE
+
+  pronoun : "another"           # so you can say "create another"
+  newborn : UNDEFINED
+
+methods
+
+  'ACCESS' : TRUE
+  'get' : write "I can't get ", 'INDEF' -> self, "."
+
+  'create' : {
+    if not ('FACTORY' --> self) then
+      write "Cannot create ", 'INDEF' -> self, "."
+    else {
+# Need to mention ourselves (the concept) here, before the created
+# object is mentioned.  This permits the system to keep track of
+# two separate pronouns, so that the user can naturally immediately
+# refer to the new created object and then, just as naturally, say
+# "create another".
+      'MENTION' -> main
+      write "Creating a new ", desc, "."
+      'INITIAL' -> newborn
+      'Update New Object'
+      }
+    }
+
+  'Update New Object' : {
+>>=====================================================================
+    'MODIFY' -> newborn
+    'INCREMENT VOCABULARY' -> newborn
+    newborn.location := player.location
+    'MOVE' -> newborn
+    'MENTION SELF' -> newborn
+>>=====================================================================
+    write "There suddenly exists ", 'INDEF' -> newborn, "."
+  }
+
+end                                 # concept
+
+
+
+# Each dynamically createable class needs two classes:  an actual class,
+# with a 'MODIFY' method, and an instantiation of a specific concept
+# with a 'FACTORY' method.  All that this 'FACTORY' method needs to do
+# is to create a new object of the proper class named newborn.
+
+############################# Basic Concepts
+
+class authorable_room based on room
+
+  IsAnoun   : TRUE                  # so we can be named, like objects
+
+  northExit : UNDEFINED
+  southExit : UNDEFINED
+  eastExit  : UNDEFINED
+  westExit  : UNDEFINED
+  upExit    : UNDEFINED
+  downExit  : UNDEFINED
+
+  from_room      : UNDEFINED
+  from_room_name : ""
+  exit_name      : ""
+  the_exit       : UNDEFINED
+  resp           : ""
+
+methods
+
+# The various exits.
+
+  'north' : if northExit then northExit else ABSENT
+  'south' : if southExit then southExit else ABSENT
+  'east'  : if eastExit  then eastExit  else ABSENT
+  'west'  : if westExit  then westExit  else ABSENT
+  'up'    : if upExit    then upExit    else ABSENT
+  'down'  : if downExit  then downExit  else ABSENT
+
+# No special "full" and "syn" attributes; just generate typical names
+# so the author can get a handle on the rooms later.
+
+ 'NAME' : 'GENERATE' -> namesakes -> system
+
+
+# Initially, a room will not be bound to an exit.  In order to be
+# connected to the rest of the adventure, at least this much must be
+# done.
+
+  'INITIAL' : {
+    writes "Description for new room (no definite articles) : "
+    desc := read
+    from_room := player.location
+    writes "Exit from here to the ", desc, "? "
+    exit_name := read
+    'WHICH OBJECT' -> system
+    if the_exit := exit_name -> system then {
+      case the_exit.full of {
+        "north" : from_room.northExit := self
+        "south" : from_room.southExit := self
+        "east"  : from_room.eastExit  := self
+        "west"  : from_room.westExit  := self
+        "up"    : from_room.upExit    := self
+        "down"  : from_room.downExit  := self
+        default : { write "That is not a direction."; from_room := UNDEFINED }
+      }                 # case
+    }                 # if it is a valid exit
+    else {
+      write "That is not a valid direction name."
+      from_room := UNDEFINED
+    }
+    if from_room then {
+      write "Does this exit lead back the other way? ", resp := key
+      if resp within "yY" then {
+        case the_exit.full of {
+          "north" : southExit := from_room
+          "south" : northExit := from_room
+          "east"  : westExit  := from_room
+          "west"  : eastExit  := from_room
+          "up"    : downExit  := from_room
+          "down"  : upExit    := from_room
+        }                 # case
+      }                       # exit is 2-way
+    }                         # source exit exists
+  }                                 # 'INITIAL'
+
+
+  'RESET' : visited := FALSE
+
+
+# Limited "multiple inheritance".
+
+  'INCREMENT VOCABULARY' : message --> authorable_object
+  'INDEF'                : message --> authorable_object
+  'DEF'                  : message --> authorable_object
+
+
+end                                 # authorable_room
+
+
+
+concept roomFactory
+
+  desc : "room"
+
+methods
+
+  'FACTORY' : create authorable_room named newborn
+
+  'Update New Object' : {
+    'INCREMENT VOCABULARY' -> newborn
+    write "There suddenly exists ", 'INDEF' -> newborn, " ",
+          'IN THE DIRECTION' -> newborn.the_exit, "."
+  }
+
+end
+
+
+
+########################################################### Treasures
+
+class treasure based on authorable_object
+
+  value  : 0
+  found  : FALSE
+  eureka : ""
+  initial_location : UNDEFINED
+
+methods
+
+  'RESET' : {
+    if found then {
+      found := FALSE
+      location := initial_location; 'MOVE'
+      score.value -:= value
+    }
+  }
+
+
+  'MODIFY' : {
+
+    message --> authorable_object
+
+    attr := value
+    attrname := "value of treasure"
+    'INTERVIEW USER'
+    value := attr
+
+    attr := eureka
+    attrname := "what to say when the player finds this"
+    'INTERVIEW USER'
+    eureka := attr
+  }
+
+
+  'look' : {
+    writes "I see that ", 'DEF' -> self, " is worth "
+    case value of {
+      0 : write "nothing."
+      1 : write "one point."
+      default : write value, " points."
+    }
+  }
+
+
+  'get' : {
+    if not found then initial_location := location
+    message --> authorable_object
+    if not found and location = player then {
+      found := TRUE
+      write eureka
+      score.value +:= value
+    }
+  }
+
+
+end                                 # treasure
+
+
+
+concept treasureFactory
+
+  desc : "treasure"
+
+methods
+
+  'FACTORY' : create treasure named newborn
+
+end
+
+
+
+####################################################### Traps
+
+class trap based on authorable_object
+
+  desc : "a suspicious trap"
+  damage : 0
+  init_springs : 1
+  springs : -1
+  trapquote : "The trap is sprung!"
+  victim : player_status
+  trigger : UNDEFINED
+  exhausted : "The trap is all worn out."
+
+methods
+
+  'INITIAL' : 'REGISTER' -> after
+
+  'AFTER' :
+    if 'ACCESS' -> self  and  'Triggered' -> self then 'Spring Trap'
+
+  'RESET' : {
+    springs := init_springs
+  }
+
+  'MODIFY' : {
+
+    attr := desc
+    attrname := "description of the trap"
+    'INTERVIEW USER'
+    desc := attr
+
+    attr := damage
+    attrname := "amount of damage the trap inflicts (pts)"
+    'INTERVIEW USER'
+    damage := attr
+
+    attr := trigger.desc
+    attrname := "object whose possession triggers the trap"
+    'INTERVIEW USER'
+    'WHICH OBJECT' -> system
+    trigger := attr -> system
+    if not trigger then write attr, " is not a defined object."
+
+    attr := springs
+    attrname := "number of times the trap can spring (-1 = infinite)"
+    'INTERVIEW USER'
+    springs := attr
+    init_springs := springs
+
+    if springs > 0 then {
+      attr := exhausted
+      attrname := "what to say when the trap is exhausted"
+      'INTERVIEW USER'
+      exhausted := attr
+    }
+
+    attr := trapquote
+    attrname := "what to say when the trap is sprung"
+    'INTERVIEW USER'
+    trapquote := attr
+
+  }                                 # 'MODIFY'
+
+
+  # Various verbs
+
+  'get'  : write "Oh, I think NOT."
+  'look' : write "I think ", 'DEF' -> self, " is a trap of some sort."
+
+
+  'Triggered' : {
+    if trigger.location = player then TRUE else FALSE
+  }
+
+
+  'Spring Trap' : {
+    if springs ~= 0 then {
+      springs -:= 1
+      write trapquote
+      write damage, " points of damage are inflicted."
+      victim.health -:= damage
+      'UPDATE STATUS' -> victim
+      if springs = 0 then
+        write exhausted
+    }
+  }                                 # 'Spring Trap'
+
+end
+
+
+concept trapFactory
+
+  desc : "trap"
+
+methods
+
+  'FACTORY' : create trap named newborn
+
+end
+
+
+
+#################################################### Starting place & objects
+
+
+############################### Wizard's Grotto ############################
+
+authorable_room    wizards_grotto
+
+  desc  : "wizard's grotto"
+  northExit : UNDEFINED
+
+methods
+
+  'north' : if oaken_door.open and northExit then northExit else ABSENT
+  'south' : dimly_lit_alcove
+
+  'INITIAL'  : {
+    'START HERE' -> player
+  }
+
+  'LONGDESC' : {
+
+>>I am standing in the center of the wizard's grotto.  The domed ceiling
+>>rises to near-darkness above.  Candlelight casts ominous shadows on the
+>>walls as they slope upward into the ceiling.  Iridescent specks in the
+>>stone of the walls glitter in the flickering light.
+>>
+>>A rolltop desk stands against the east wall of the grotto.  A skull,
+>>topped with a fat, guttering candle, provides the inconstant light.
+>>
+>>To the south is a dimly light alcove veiled with a tattered length of
+>>velvet.
+>>
+>>To the north is a massive oaken door.  The iron bands that bind the
+>>wooden planks together are thick and rusted with age.
+>>
+
+  }                                 # 'LONGDESC'
+
+end                                 # wizards_grotto
+
+
+
+object oaken_door
+
+  desc : "thick oaken door"
+  location : wizards_grotto
+
+  open : FALSE
+
+  sights : 0            # sights of the terrifying void
+
+methods
+
+  'RESET' : open := FALSE
+
+  'open' :
+    if not open then {
+      write "I opened the door."
+      open := TRUE
+    }
+    else
+      write "It's already open."
+
+
+
+  'close' :
+    if open then {
+      write "I closed the door."
+      open := FALSE
+    }
+    else
+      write "It's already closed."
+
+
+
+  'get' : write "It is securely fastened by bolts the size of my arm ",
+                "to the cavern's wall."
+
+
+
+  'look' : {
+    writes "It is presently "
+    if open then writes "open.  " else writes "closed.  "
+    if open then {
+      writes "Beyond I can see "
+      if 'north' -> location then
+        write "into the ", ('north' -> location).desc, "."
+      else {
+        writes "nothing!  "
+        'See Horrifying Void'
+      }
+    }
+    else {                  # closed
+      if location.northExit then
+        write
+      else
+        write "Through the crack between the bottom of the door and the ",
+                "floor, some unnatural color coruscates."
+    }
+  }                                 # 'look'
+
+
+
+  'See Horrifying Void' : {
+    case sights +:= 1 of {
+      1:  write "A terrifying miasma tears at my eyes, at my brain!  ",
+          "There is nothing that can be seen!  I am staring into the ",
+          "heart of Chaos, into the undulating undefined unsane ",
+          "universe of That Which Is Not and That Which Is Yet To Be; ",
+          "a sight which tears a scream unbidden from my throat.  A ",
+          "fantastic vertigo beckons me into it, but my soul, huddling ",
+          "stricken within me, begs to turn away... with an effort I ",
+          "close my eyes and stagger back from the precipice."
+      default:  write "I avert my eyes quickly before imperiling my ",
+                      "sanity again."
+    }       # case
+  }                 # See Horrifying Void
+
+
+
+end                                 # oaken_door
+
+
+
+################################### Dimly Lit Alcove ######################
+
+
+room dimly_lit_alcove
+
+  desc : "dimly lit alcove"
+
+methods
+
+  'north' : wizards_grotto
+
+  'FIRSTDESC' : {
+>>I push aside the remains of what used to be a curtain; pieces fall away
+>>under the pressure of my hand as I enter the alcove.
+>>
+  }
+
+  'LONGDESC' : {
+
+>>Although the grotto seems for the most part to be a natural formation,
+>>this alcove is clearly not, carved directly into the grotto's south
+>>wall.  There is not much room in here.
+>>
+
+  }
+
+end                                 # dimly_lit_alcove
