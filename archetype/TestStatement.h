@@ -18,6 +18,7 @@ namespace archetype {
         void testConstruction_();
         void testExecution_();
         void testLoopBreaks_();
+        void testForEach_();
         void testSerialization_();
     protected:
         virtual void runTests_() override;

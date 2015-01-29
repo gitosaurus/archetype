@@ -529,7 +529,7 @@ namespace archetype {
         int object_count = Universe::instance().objectCount();
         for (int object_id = Universe::UserObjectsBeginAt; object_id < object_count; ++object_id) {
             ObjectPtr each_object = Universe::instance().getObject(object_id);
-            if (not each_object or each_object->id() == Object::INVALID) {
+            if (not each_object or each_object->id() == Object::INVALID or each_object->isPrototype()) {
                 continue;
             }
             ContextScope c;

@@ -113,6 +113,29 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(val->getNumber(), 6);
     }
 
+    static char program_prototypes[] =
+    "type parent_type based on null\n"
+    "  name : UNDEFINED\n"
+    "methods\n"
+    "  'INITIAL' : write \"I'm a \", name\n"
+    "end\n"
+    "parent_type ball name : \"ball\" end\n"
+    "parent_type cube name : \"cube\" end\n"
+    ;
+
+    void TestStatement::testForEach_() {
+        Universe::destroy();
+        TokenStream t{make_source_from_str("prototypes", program_prototypes)};
+        Universe::instance().make(t);
+        Capture capture;
+        Statement for_stmt{make_stmt_from_str("for each do 'INITIAL' -> each")};
+        ARCHETYPE_TEST(for_stmt != nullptr);
+        for_stmt->execute();
+        string actual = capture.getCapture();
+        string expected = "I'm a ball\nI'm a cube\n";
+        ARCHETYPE_TEST_EQUAL(actual, expected);
+    }
+
     void TestStatement::testSerialization_() {
         list<pair<string, string>> statements = {
             {
@@ -151,6 +174,7 @@ namespace archetype {
         testConstruction_();
         testExecution_();
         testLoopBreaks_();
+        testForEach_();
         testSerialization_();
     }
 }

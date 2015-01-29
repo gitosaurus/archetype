@@ -24,16 +24,6 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestUniverse);
 
-    inline SourceFilePtr make_string_source(string name, string contents) {
-        unique_ptr<istream> in_ptr(new istringstream(contents));
-        return SourceFilePtr(new SourceFile(name, in_ptr));
-    }
-
-    inline SourceFilePtr make_source_from_str(string name, string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        return SourceFilePtr(new SourceFile(name, in));
-    }
-
     static char program_basic_1[] =
     "null vase\n"
     "  desc: \"vase\"\n"
@@ -170,7 +160,7 @@ namespace archetype {
     void TestUniverse::testInclusion_() {
         Universe::destroy();
 
-        Wellspring::instance().put("snack.ach", make_string_source("snack.ach", program_basic_2));
+        Wellspring::instance().put("snack.ach", make_source_from_str("snack.ach", program_basic_2));
         TokenStream t3(make_source_from_str("program_inclusion", program_inclusion));
         ARCHETYPE_TEST(Universe::instance().make(t3));
         Capture capture;

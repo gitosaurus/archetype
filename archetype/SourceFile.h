@@ -34,6 +34,8 @@ namespace archetype {
     };
 
     typedef std::shared_ptr<SourceFile> SourceFilePtr;
+
+    SourceFilePtr make_source_from_str(std::string name, std::string src_str);
 }
 
 #endif /* defined(__archetype__SourceFile__) */

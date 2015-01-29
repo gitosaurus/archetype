@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <sstream>
+
 #include "SourceFile.h"
 
 using namespace std;
@@ -51,4 +53,10 @@ namespace archetype {
         }
         out << '^' << endl;
     }
+
+    SourceFilePtr make_source_from_str(string name, string src_str) {
+        stream_ptr in(new istringstream(src_str));
+        return SourceFilePtr(new SourceFile(name, in));
+    }
+
 }

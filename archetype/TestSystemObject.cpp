@@ -24,11 +24,6 @@ using namespace std;
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSystemObject);
 
-    inline SourceFilePtr make_source_from_str(string name, string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        return SourceFilePtr(new SourceFile(name, in));
-    }
-
     void TestSystemObject::testSorting_() {
         Universe::destroy();
 
