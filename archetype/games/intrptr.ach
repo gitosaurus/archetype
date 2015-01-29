@@ -150,7 +150,7 @@ methods
     'SEND EVENT' -> before
 
     if 'NORMALIZE' -> system = " " then
-      write "I wait patiently."
+      write wait_message
     else {
       mentioned := FALSE
       'PARSE' -> system
