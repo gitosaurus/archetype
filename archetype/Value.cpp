@@ -29,7 +29,8 @@ namespace archetype {
         STRING,
         IDENTIFIER,
         OBJECT,
-        ATTRIBUTE
+        ATTRIBUTE,
+        PAIR
     };
 
     std::ostream& operator<<(std::ostream& out, const Value& value) {
@@ -388,6 +389,45 @@ namespace archetype {
         }
     }
 
+    bool PairValue::isSameValueAs(const Value &other) const {
+        if (const PairValue* other_p = dynamic_cast<const PairValue*>(other.get())) {
+            return head_->isSameValueAs(other_p->head_) and tail_->isSameValueAs(other_p->tail_);
+        } else {
+            return false;
+        }
+    }
+
+    void PairValue::display(ostream &out) const {
+        const PairValue* tail_p = dynamic_cast<const PairValue*>(tail_.get());
+        if (tail_->isDefined() and not tail_p) {
+            out << '(';
+            head_->display(out);
+            out << " @ ";
+            tail_->display(out);
+            out << ')';
+        } else {
+            out << '[';
+            head_->display(out);
+            while (tail_p) {
+                out << ' ';
+                tail_p->head_->display(out);
+                if (const PairValue* next_p = dynamic_cast<const PairValue*>(tail_p->tail_.get())) {
+                    tail_p = next_p;
+                } else {
+                    if (tail_p->tail_->isDefined()) {
+                        tail_p->tail_->display(out);
+                    }
+                    break;
+                }
+            }
+            out << ']';
+        }
+    }
+
+    void PairValue::write(Storage &out) const {
+        out << PAIR << head_ << tail_;
+    }
+
     Storage& operator<<(Storage& out, const Value& v) {
         v->write(out);
         return out;
@@ -458,6 +498,12 @@ namespace archetype {
                 int object_id, attribute_id;
                 in >> object_id >> attribute_id;
                 v = Value(new AttributeValue(object_id, attribute_id));
+                break;
+            }
+            case PAIR: {
+                Value head, tail;
+                in >> head >> tail;
+                v = Value{new PairValue{move(head), move(tail)}};
                 break;
             }
         }

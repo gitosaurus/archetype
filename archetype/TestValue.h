@@ -17,6 +17,7 @@ namespace archetype {
     class TestValue : public ITestSuite {
         void testSerialization_();
         void testConversion_();
+        void testPairs_();
     protected:
         virtual void runTests_() override;
     public:

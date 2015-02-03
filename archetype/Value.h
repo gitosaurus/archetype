@@ -231,6 +231,25 @@ namespace archetype {
         virtual Value assign(Value new_value) override;
     };
 
+    class PairValue : public IValue {
+        Value head_;
+        Value tail_;
+    public:
+        PairValue(Value head, Value tail):
+        head_(move(head)),
+        tail_(move(tail))
+        { }
+        
+        virtual bool isSameValueAs(const Value& other) const override;
+        virtual Value clone() const override {
+            return Value{new PairValue{head_->clone(), tail_->clone()}};
+        }
+
+        virtual void display(std::ostream& out) const override;
+        virtual void write(Storage& out) const override;
+
+    };
+
     Storage& operator<<(Storage& out, const Value& v);
     Storage& operator>>(Storage& in, Value& v);
 

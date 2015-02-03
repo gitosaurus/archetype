@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include <sstream>
 #include <string>
 
 #include "TestValue.h"
@@ -19,6 +20,12 @@ using namespace std;
 
 namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestValue);
+
+    string display(const Value& v) {
+        ostringstream out;
+        v->display(out);
+        return out.str();
+    }
 
     void TestValue::testSerialization_() {
         auto samples = {
@@ -67,8 +74,28 @@ namespace archetype {
         // set up objects, identifiers, messages
     }
 
+    void TestValue::testPairs_() {
+        Value a{new NumericValue{1}};
+        Value b{new NumericValue{2}};
+        Value ab{new PairValue{move(a), move(b)}};
+        string actual = display(ab);
+        string expected = "(1 @ 2)";
+        ARCHETYPE_TEST_EQUAL(actual, expected);
+
+        // Now create a couple of short lists
+        Value node1{new PairValue{move(Value{new StringValue{"world"}}), move(Value{new UndefinedValue})}};
+        actual = display(node1);
+        expected = "[\"world\"]";
+        ARCHETYPE_TEST_EQUAL(actual, expected);
+        Value node2{new PairValue{move(Value{new StringValue{"hello"}}), move(node1)}};
+        actual = display(node2);
+        expected = "[\"hello\" \"world\"]";
+        ARCHETYPE_TEST_EQUAL(actual, expected);
+    }
+
     void TestValue::runTests_() {
         testSerialization_();
         testConversion_();
+        testPairs_();
     }
 }
