@@ -64,6 +64,7 @@ namespace archetype {
         RESERVE(RW_WRITE, "write");
         RESERVE(RW_WRITES, "writes");
 
+        OPERATOR(OP_PAIR, "@");
         OPERATOR(OP_CONCAT, "&");
         OPERATOR(OP_C_CONCAT, "&:=");
         OPERATOR(OP_MULTIPLY, "*");

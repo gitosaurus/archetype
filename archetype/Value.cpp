@@ -415,6 +415,7 @@ namespace archetype {
                     tail_p = next_p;
                 } else {
                     if (tail_p->tail_->isDefined()) {
+                        out << " @ ";
                         tail_p->tail_->display(out);
                     }
                     break;

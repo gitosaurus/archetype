@@ -34,7 +34,7 @@ namespace archetype {
 
     TypeChecker::TypeChecker():
     longOpers_({'<', '>', ':', '+', '-', '*', '/', '&', '~'}),
-    opers_({'=', '.', '^', '?'})
+    opers_({'=', '.', '^', '?', '@'})
     {
         for (auto oper : longOpers_) {
             opers_.insert(oper);

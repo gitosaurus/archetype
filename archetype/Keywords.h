@@ -56,6 +56,7 @@ namespace archetype {
         };
 
         enum Operators_e {
+            OP_PAIR,
             OP_CONCAT,
             OP_C_CONCAT,
             OP_MULTIPLY,

@@ -72,6 +72,7 @@ namespace archetype {
             case Keywords::OP_C_MINUS:
             case Keywords::OP_C_CONCAT:
             case Keywords::OP_ASSIGN:
+            case Keywords::OP_PAIR:
                 return true;
             default:
                 return not is_binary(op);
@@ -116,6 +117,9 @@ namespace archetype {
             case Keywords::OP_NOT: return 4;
             case Keywords::OP_AND: return 3;
             case Keywords::OP_OR: return 2;
+
+            // TODO:  What's the right precedence here?
+            case Keywords::OP_PAIR: return 2;
 
             case Keywords::OP_C_MULTIPLY: return 1;
             case Keywords::OP_C_DIVIDE: return 1;
@@ -496,6 +500,12 @@ namespace archetype {
             Value result;
             // Sort evaluations by "signature"
             switch (op()) {
+                case Keywords::OP_PAIR: {
+                    Value lv_v = left_->evaluate()->valueConversion();
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    result = Value{new PairValue{move(lv_v), move(rv_v)}};
+                    break;
+                }
                 case Keywords::OP_CONCAT:
                 case Keywords::OP_WITHIN: {
                     Value lv_s = left_->evaluate()->stringConversion();
