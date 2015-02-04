@@ -97,5 +97,7 @@ namespace archetype {
         OPERATOR(OP_RIGHTFROM, "rightfrom");
         OPERATOR(OP_STRING, "string");
         OPERATOR(OP_WITHIN, "within");
+        OPERATOR(OP_HEAD, "head");
+        OPERATOR(OP_TAIL, "tail");
     }
 }

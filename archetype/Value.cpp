@@ -78,6 +78,14 @@ namespace archetype {
         return Value{new UndefinedValue};
     }
 
+    Value IValue::head() const {
+        return Value{new UndefinedValue};
+    }
+
+    Value IValue::tail() const {
+        return Value{new UndefinedValue};
+    }
+
     Value IValue::assign(Value new_value) {
         return Value{new UndefinedValue};
     }
@@ -395,6 +403,14 @@ namespace archetype {
         } else {
             return false;
         }
+    }
+
+    Value PairValue::head() const {
+        return head_->clone();
+    }
+
+    Value PairValue::tail() const {
+        return tail_->clone();
     }
 
     void PairValue::display(ostream &out) const {

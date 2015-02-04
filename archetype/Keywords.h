@@ -89,6 +89,8 @@ namespace archetype {
             OP_RIGHTFROM,
             OP_STRING,
             OP_WITHIN,
+            OP_HEAD,
+            OP_TAIL,
             NumOperators,
 
             // Kept outside of the range of valid operators, but

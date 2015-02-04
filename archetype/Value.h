@@ -52,6 +52,9 @@ namespace archetype {
         virtual Value attributeConversion() const;
         virtual Value valueConversion() const { return clone(); }
 
+        virtual Value head() const;
+        virtual Value tail() const;
+
         virtual Value assign(Value new_value);
     };
 
@@ -244,6 +247,9 @@ namespace archetype {
         virtual Value clone() const override {
             return Value{new PairValue{head_->clone(), tail_->clone()}};
         }
+
+        virtual Value head() const override;
+        virtual Value tail() const override;
 
         virtual void display(std::ostream& out) const override;
         virtual void write(Storage& out) const override;

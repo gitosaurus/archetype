@@ -53,6 +53,8 @@ namespace archetype {
             case Keywords::OP_STRING:
             case Keywords::OP_RANDOM:
             case Keywords::OP_LENGTH:
+            case Keywords::OP_HEAD:
+            case Keywords::OP_TAIL:
                 return false;
             default:
                 return true;
@@ -118,8 +120,10 @@ namespace archetype {
             case Keywords::OP_AND: return 3;
             case Keywords::OP_OR: return 2;
 
-            // TODO:  What's the right precedence here?
+            // TODO:  What's the right precedence here?  LISP never has to decide
             case Keywords::OP_PAIR: return 2;
+            case Keywords::OP_HEAD: return 2;
+            case Keywords::OP_TAIL: return 2;
 
             case Keywords::OP_C_MULTIPLY: return 1;
             case Keywords::OP_C_DIVIDE: return 1;
@@ -288,6 +292,16 @@ namespace archetype {
                     } else {
                         result = move(rv_s);
                     }
+                    break;
+                }
+                case Keywords::OP_HEAD: {
+                    Value rv_v = rv->valueConversion();
+                    result = rv_v->head();
+                    break;
+                }
+                case Keywords::OP_TAIL: {
+                    Value rv_v = rv->valueConversion();
+                    result = rv_v->tail();
                     break;
                 }
                 default:
