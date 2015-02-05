@@ -12,6 +12,7 @@
 #include <sstream>
 #include <cmath>
 #include <random>
+#include <stack>
 
 #include "Expression.h"
 #include "Keywords.h"
@@ -467,10 +468,10 @@ namespace archetype {
         }
 
         virtual bool verify(TokenStream& t) const override {
-            if (not (left_->verify(t) and right_->verify(t))) {
-                return false;
-            }
             bool result = true;
+            if (not (left_->verify(t) and right_->verify(t))) {
+                result = false;
+            }
             switch (op()) {
                 case Keywords::OP_DOT:
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(right_.get())) {
@@ -804,6 +805,28 @@ namespace archetype {
         return scalar;
     }
 
+    Expression form_list_expr(TokenStream& t) {
+        // Called when the list has already begun, with an opening '{'.
+        stack<Expression> elements;
+        while (t.fetch() and t.token() != Token(Token::PUNCTUATION, '}')) {
+            if (t.token() != Token(Token::PUNCTUATION, ';')) {
+                t.didNotConsume();
+            }
+            if (Expression element = form_expr(t)) {
+                elements.push(tighten(move(element)));
+            } else {
+                return nullptr;
+            }
+        }
+        Expression list_expr{new ValueExpression{Value{new UndefinedValue}}};
+        while (not elements.empty()) {
+            list_expr = Expression{new BinaryOperator{move(elements.top()), Keywords::OP_PAIR, move(list_expr)}};
+            elements.pop();
+        }
+        // Ensure that everything inside the braces is grouped together
+        return Expression{new UnaryOperator{Keywords::OP_LPAREN, move(list_expr)}};
+    }
+
     Expression get_operand_node(TokenStream& t) {
         switch (t.token().type()) {
             case Token::PUNCTUATION:
@@ -817,6 +840,9 @@ namespace archetype {
                         } else {
                             return nullptr;
                         }
+                    case '{':
+                        return form_list_expr(t);
+                        break;
                     default:
                         return nullptr;
                 }  /* switch t.token().number() */
