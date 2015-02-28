@@ -468,10 +468,10 @@ namespace archetype {
         }
 
         virtual bool verify(TokenStream& t) const override {
-            bool result = true;
             if (not (left_->verify(t) and right_->verify(t))) {
-                result = false;
+                return false;
             }
+            bool result = true;
             switch (op()) {
                 case Keywords::OP_DOT:
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(right_.get())) {

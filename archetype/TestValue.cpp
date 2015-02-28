@@ -85,11 +85,11 @@ namespace archetype {
         // Now create a couple of short lists
         Value node1{new PairValue{move(Value{new StringValue{"world"}}), move(Value{new UndefinedValue})}};
         actual = display(node1);
-        expected = "[\"world\"]";
+        expected = "{\"world\"}";
         ARCHETYPE_TEST_EQUAL(actual, expected);
         Value node2{new PairValue{move(Value{new StringValue{"hello"}}), move(node1)}};
         actual = display(node2);
-        expected = "[\"hello\" \"world\"]";
+        expected = "{\"hello\" \"world\"}";
         ARCHETYPE_TEST_EQUAL(actual, expected);
     }
 
