@@ -842,7 +842,6 @@ namespace archetype {
                         }
                     case '{':
                         return form_list_expr(t);
-                        break;
                     default:
                         return nullptr;
                 }  /* switch t.token().number() */
