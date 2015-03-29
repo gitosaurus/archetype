@@ -333,8 +333,7 @@ end
 
 class event_handler based on null
 
-  head : UNDEFINED
-  tail : UNDEFINED
+  subscribers : { }
   temp : UNDEFINED
 
   event : 'EVENT'
@@ -342,20 +341,14 @@ class event_handler based on null
 methods
 
   'REGISTER' : {
-    create node named temp
-    temp.data := sender
-    if tail then
-      tail.next := temp
-    else
-      head := temp
-    tail := temp
+    subscribers := sender @ subscribers
     }
 
   'SEND EVENT' : {
-    temp := head
+    temp := subscribers
     while temp do {
-      event -> temp.data
-      temp := temp.next
+      event -> (head temp)
+      temp := tail temp
       }
     }
 
