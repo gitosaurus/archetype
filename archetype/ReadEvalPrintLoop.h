@@ -14,8 +14,6 @@
 
 #include "Universe.h"
 
-using namespace std;
-
 namespace archetype {
     // Enter the read-eval-print loop.  Return error status:  zero for no
     // errors, nonzero for a problem.

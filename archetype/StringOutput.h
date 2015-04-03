@@ -21,6 +21,7 @@ namespace archetype {
         virtual ~StringOutput() { }
         virtual void put(const std::string& line) override { stream_ << line; }
         virtual void endLine() override { stream_ << std::endl; }
+        virtual void banner(char ch) override { for (int i = 0; i < 80; ++i) { stream_ << ch; } endLine(); }
 
         std::string getOutput() const { return stream_.str(); }
     };

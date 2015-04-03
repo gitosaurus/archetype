@@ -25,6 +25,7 @@ namespace archetype {
         virtual void put(const std::string& line) override;
         virtual void endLine() override;
         virtual void resetPager() override;
+        virtual void banner(char ch) override;
 
         // Get and set the rows of text available in the console.
         // Zero is a special value meaning that the rows are

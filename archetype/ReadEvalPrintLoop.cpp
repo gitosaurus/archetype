@@ -43,12 +43,10 @@ namespace archetype {
 
     int repl() {
         int errors = 0;
-            UserInput in(new ConsoleInput);
-            UserOutput out(new ConsoleOutput);
-            Universe::instance().setInput(in);
-        Universe::instance().setOutput(out);
         for (;;) {
             try {
+                UserInput in = Universe::instance().input();
+                UserOutput out = Universe::instance().output();
                 out->put("> ");
                 string command = in->getLine();
                 if (in->atEOF() or command == "exit") {

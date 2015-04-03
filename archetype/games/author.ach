@@ -240,13 +240,13 @@ methods
     }
 
   'Update New Object' : {
->>=====================================================================
+    'BANNER' -> system; '=' -> system
     'MODIFY' -> newborn
     'INCREMENT VOCABULARY' -> newborn
     newborn.location := player.location
     'MOVE' -> newborn
     'MENTION SELF' -> newborn
->>=====================================================================
+    'BANNER' -> system; '=' -> system
     write "There suddenly exists ", 'INDEF' -> newborn, "."
   }
 

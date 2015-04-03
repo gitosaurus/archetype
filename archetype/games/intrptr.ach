@@ -584,12 +584,12 @@ methods
       }
 
   'ROOMVIEW' : {
->>-----------------------------------------------------------------------------
+    'BANNER' -> system; '-' -> system
     if not visited then 'FIRSTDESC'
     'LONGDESC'
     'INVENTORY'
     'INVENTORY' -> compass
->>-----------------------------------------------------------------------------
+    'BANNER' -> system; '-' -> system
     }  # ROOMVIEW
 
   'BRIEF' :

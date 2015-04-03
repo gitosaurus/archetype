@@ -20,6 +20,7 @@ namespace archetype {
         virtual void put(const std::string& line) = 0;
         virtual void endLine() = 0;
         virtual void resetPager() { }
+        virtual void banner(char ch) = 0;
     private:
         IUserOutput(const IUserOutput&) = delete;
         IUserOutput& operator=(const IUserOutput&) = delete;

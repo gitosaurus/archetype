@@ -105,4 +105,13 @@ namespace archetype {
         rows_ = 0;
         cursor_ = 0;
     }
+
+    void WrappedOutput::banner(char ch) {
+        if (cursor_ != 0) {
+            endLine();
+        }
+        string banner_str(maxColumns_, ch);
+        output_->put(banner_str);
+        endLine();
+    }
 }

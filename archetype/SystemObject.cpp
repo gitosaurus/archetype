@@ -29,7 +29,8 @@ namespace archetype {
         "ROLL CALL", "PRESENT", "PARSE", "NEXT OBJECT",
         "DEBUG MESSAGES", "DEBUG EXPRESSIONS",
         "DEBUG STATEMENTS",
-        "SAVE STATE", "LOAD STATE"
+        "SAVE STATE", "LOAD STATE",
+        "BANNER"
     };
 
     SystemObject::SystemObject():
@@ -91,6 +92,10 @@ namespace archetype {
 
                         case PLAYER_CMD:
                             // Nothing new; remain in this state
+                            break;
+
+                        case BANNER:
+                            // Nothing new; remain in this state (for banner character)
                             break;
 
                         case ROLL_CALL:
@@ -224,6 +229,19 @@ namespace archetype {
                 if (message_str->isDefined()) {
                     return parser_->whichObject(message_str->getString());
                 }
+                break;
+            }
+            case BANNER: {
+                state_ = IDLING;
+                char banner_ch = '-';
+                Value message_str = message->stringConversion();
+                if (message_str->isDefined()) {
+                    string s = message_str->getString();
+                    if (not s.empty()) {
+                        banner_ch = s[0];
+                    }
+                }
+                Universe::instance().output()->banner(banner_ch);
                 break;
             }
             case SAVE_STATE: {

@@ -30,7 +30,8 @@ namespace archetype {
             ROLL_CALL, PRESENT, PARSE, NEXT_OBJECT,
             DEBUG_MESSAGES, DEBUG_EXPRESSIONS,
             DEBUG_STATEMENTS,
-            SAVE_STATE, LOAD_STATE
+            SAVE_STATE, LOAD_STATE,
+            BANNER
         };
 
 
