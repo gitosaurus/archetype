@@ -121,11 +121,14 @@ int main(int argc, const char* argv[]) {
                 if (filename_out.empty()) {
                     auto iext = source_path.rfind('.');
                     filename_out = source_path.substr(0, iext);
-                    filename_out += ".acx";
-                    if (source_path == filename_out) {
-                        throw invalid_argument("Cannot use " + filename_out + " as output");
-                    }
-                }
+		}
+		string acx = ".acx";
+		if (filename_out.rfind(acx) != filename_out.length() - acx.length()) {
+		  filename_out += acx;
+		}
+		if (source_path == filename_out) {
+		  throw invalid_argument("Cannot use " + filename_out + " as output");
+		}
                 OutFileStorage save_file(filename_out);
                 if (save_file.ok()) {
                     save_file << Universe::instance();
