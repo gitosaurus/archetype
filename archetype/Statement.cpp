@@ -9,6 +9,7 @@
 #include <memory>
 #include <stdexcept>
 #include <sstream>
+#include <cctype>
 
 #include "Statement.h"
 #include "Universe.h"
@@ -26,7 +27,8 @@ namespace archetype {
         DESTROY,
         FOR,
         WHILE,
-        OUTPUT
+        OUTPUT,
+        PARAGRAPH_OUTPUT
     };
 
     bool IStatement::Debug = false;
@@ -463,7 +465,7 @@ namespace archetype {
         return true;
     }
 
-    void OutputStatement::display(std::ostream &out) const {
+    void OutputStatement::display(std::ostream& out) const {
         out << Keywords::instance().Reserved.get(writeType_);
         if (not expressions_.empty()) {
             out << ' ';
@@ -499,6 +501,86 @@ namespace archetype {
             throw QuitGame();
         }
         return last_value;
+    }
+
+    void ParagraphOutputStatement::read(Storage& in) {
+        int entries;
+        in >> entries;
+        vector<int> v(entries);
+        for (int i = 0; i < entries; ++i) {
+            int q;
+            in >> q;
+            v[i] = q;
+        }
+        quoteLiterals_.swap(v);
+    }
+
+    void ParagraphOutputStatement::write(Storage& out) const {
+        out << PARAGRAPH_OUTPUT;
+        int entries = static_cast<int>(quoteLiterals_.size());
+        out << entries;
+        for (int i = 0; i < entries; ++i) {
+            int q = quoteLiterals_[i];
+            out << q;
+        }
+    }
+
+    bool ParagraphOutputStatement::make(TokenStream& t) {
+        quoteLiterals_.clear();
+        while (t.fetch()) {
+            if (t.token().type() != Token::QUOTE_LITERAL) {
+                t.didNotConsume();
+                break;
+            }
+            quoteLiterals_.push_back(t.token().number());
+        }
+        vector<int>(quoteLiterals_).swap(quoteLiterals_);
+        return true;
+    }
+
+    void ParagraphOutputStatement::display(std::ostream& out) const {
+        for (int q : quoteLiterals_) {
+            out << ">>" << Universe::instance().TextLiterals.get(q) << endl;
+        }
+    }
+
+    Value ParagraphOutputStatement::execute() const {
+        string prev;
+        string line;
+        bool in_paragraph = false;
+        for (int q : quoteLiterals_) {
+            line = Universe::instance().TextLiterals.get(q);
+            bool was_in_paragraph = in_paragraph;
+            in_paragraph = line.size() > 0 and not isspace(*(line.begin()));
+            if (was_in_paragraph) {
+                if (in_paragraph) {
+                    // Prevent a trimmed end-of-wiki line from being glued closely onto a next line.
+                    auto final = *(prev.rbegin());
+                    switch (final) {
+                        case '.': case ':': case '!': case '?':
+                            Universe::instance().output()->put("  ");
+                            break;
+                        default:
+                            if (not isspace(final)) {
+                                Universe::instance().output()->put(" ");
+                            }
+                            break;
+                    } // switch
+                } else {
+                    Universe::instance().output()->endLine();
+                }
+            }
+            Universe::instance().output()->put(line);
+            if (not in_paragraph) {
+                Universe::instance().output()->endLine();
+            }
+            prev = line;
+        }
+        // This is the end of the series of quote-lines.  Close out any dangling paragraph.
+        if (in_paragraph) {
+            Universe::instance().output()->endLine();
+        }
+        return Value{new StringValue{line}};
     }
 
     void ForStatement::read(Storage& in) {
@@ -665,7 +747,7 @@ namespace archetype {
             the_stmt.reset(new CompoundStatement);
         } else if (t.token().type() == Token::QUOTE_LITERAL) {
             t.didNotConsume();
-            the_stmt.reset(new OutputStatement{Keywords::RW_WRITE});
+            the_stmt.reset(new ParagraphOutputStatement);
         } else if (t.token().type() != Token::RESERVED_WORD) {
             t.didNotConsume();
             the_stmt.reset(new ExpressionStatement);
@@ -749,6 +831,9 @@ namespace archetype {
                 break;
             case OUTPUT:
                 stmt.reset(new OutputStatement);
+                break;
+            case PARAGRAPH_OUTPUT:
+                stmt.reset(new ParagraphOutputStatement);
                 break;
         }
         stmt->read(in);

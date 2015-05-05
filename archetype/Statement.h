@@ -11,6 +11,7 @@
 
 #include <memory>
 #include <list>
+#include <vector>
 
 #include "TokenStream.h"
 #include "Expression.h"
@@ -145,6 +146,16 @@ namespace archetype {
         std::list<Expression> expressions_;
     public:
         OutputStatement(Keywords::Reserved_e write_type = Keywords::RW_WRITE): writeType_(write_type) { }
+        virtual void read(Storage& in) override;
+        virtual void write(Storage& out) const override;
+        virtual bool make(TokenStream& t) override;
+        virtual void display(std::ostream& out) const override;
+        virtual Value execute() const override;
+    };
+
+    class ParagraphOutputStatement : public IStatement {
+        std::vector<int> quoteLiterals_;
+    public:
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;

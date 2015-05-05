@@ -9,6 +9,7 @@
 #include <set>
 #include <deque>
 #include <sstream>
+#include <cctype>
 
 #include "TokenStream.h"
 #include "Universe.h"

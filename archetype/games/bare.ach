@@ -84,16 +84,16 @@ methods
 # is in the room.  Note the use of the write statement:  just one string
 # after the other is printed with no regard to margins.  This is OK because
 # it will wrap the words automatically.
-  'FIRSTDESC' : write "Welcome to the demonstration adventure!  What you ",
-                "are seeing here is the 'FIRSTDESC' method.  Although in ",
-                "this case there is only some writing, there is no problem ",
-                "with putting other executable statements here as well."
+  'FIRSTDESC' : >>Welcome to the demonstration adventure!
+                >>What you are seeing here is the 'FIRSTDESC' method.
+                >>Although in this case there is only some writing, there is no problem
+                >>with putting other executable statements here as well.
 
 # The LONGDESC message is sent when the player first sees the room and also
 # whenever they type "look" by itself at the prompt.
-  'LONGDESC' : write "I'm standing in a room that has the word 'START' ",
-                "painted on the ceiling in neon pink.  The room is fairly ",
-                "bare otherwise."
+  'LONGDESC' : >>I'm standing in a room that has the word 'START'
+               >>painted on the ceiling in neon pink.  The room is fairly
+               >>bare otherwise.
 
 # The "visible exits" of the room are defined here.  The message is simply
 # the full name of the direction; the method is the room to which it opens.

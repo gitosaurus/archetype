@@ -45,14 +45,14 @@ methods
 
   'INITIAL' : 'START HERE' -> player        # this defines the starting room
 
-  'FIRSTDESC' : write "Welcome to the demonstration adventure!  What you ",
-                "are seeing here is the 'FIRSTDESC' method.  Although in ",
-                "this case there is only some writing, there is no problem ",
-                "with putting other executable statements here as well."
+  'FIRSTDESC' : >>Welcome to the demonstration adventure!
+                >>What you are seeing here is the 'FIRSTDESC' method.
+                >>Although in this case there is only some writing, there is no problem
+                >>with putting other executable statements here as well.
 
-  'LONGDESC' : write "I'm standing in a room that has the word 'START' ",
-                "painted on the ceiling in neon pink.  The room is fairly ",
-                "bare otherwise."
+  'LONGDESC' : >>I'm standing in a room that has the word 'START'
+               >>painted on the ceiling in neon pink.  The room is fairly
+               >>bare otherwise.
 
   'south'    : bedroom
   'down'     : if trapdoor.open then basement

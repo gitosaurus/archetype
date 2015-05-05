@@ -52,6 +52,7 @@ namespace archetype {
             RW_WHILE,
             RW_WRITE,
             RW_WRITES,
+            RW_WRITE_PARAGRAPH,
             NumReserved
         };
 

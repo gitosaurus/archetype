@@ -29,7 +29,7 @@ namespace archetype {
         IExpression() { }
     public:
         static bool Debug;
-        
+
         IExpression(const IExpression&) = delete;
         IExpression& operator=(const IExpression&) = delete;
         virtual ~IExpression() { }

@@ -20,7 +20,7 @@ namespace archetype {
     public:
         Capture();
         ~Capture();
-        
+
         Capture(const Capture&) = delete;
         Capture& operator=(const Capture&) = delete;
 

@@ -95,6 +95,35 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(val5->getString(), string("Now, this is a \"quote\"."));
         string actual5 = capture5.getCapture();
         ARCHETYPE_TEST_EQUAL(actual5, string("Now, this is a \"quote\".\n"));
+
+        Statement stmt6 = make_stmt_from_str(">>Now hear this,\n>>followed by that.");
+        ARCHETYPE_TEST(stmt6 != nullptr);
+        Capture capture6;
+        Value val6 = stmt6->execute()->stringConversion();
+        ARCHETYPE_TEST_EQUAL(val6->getString(), string("followed by that."));
+        string actual6 = capture6.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual6, string("Now hear this, followed by that.\n"));
+
+        Statement stmt7 = make_stmt_from_str(">>And he said:\n>>Play the best song in the world");
+        ARCHETYPE_TEST(stmt7 != nullptr);
+        Capture capture7;
+        stmt7->execute();
+        string actual7 = capture7.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual7, string("And he said:  Play the best song in the world\n"));
+
+        Statement stmt8 = make_stmt_from_str(">>And he said,\n>>play whatever you like.");
+        ARCHETYPE_TEST(stmt8 != nullptr);
+        Capture capture8;
+        stmt8->execute();
+        string actual8 = capture8.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual8, string("And he said, play whatever you like.\n"));
+
+        Statement stmt9 = make_stmt_from_str(">>Here's a poem:\n>> Roses are red\n>> Violets are blue\n>>\n>>The end.");
+        ARCHETYPE_TEST(stmt9 != nullptr);
+        Capture capture9;
+        stmt9->execute();
+        string actual9 = capture9.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual9, string("Here's a poem:\n Roses are red\n Violets are blue\n\nThe end.\n"));
     }
 
     void TestStatement::testLoopBreaks_() {

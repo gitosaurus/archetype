@@ -243,7 +243,7 @@ namespace archetype {
         head_(move(head)),
         tail_(move(tail))
         { }
-        
+
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override {
             return Value{new PairValue{head_->clone(), tail_->clone()}};
