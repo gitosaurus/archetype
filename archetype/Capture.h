@@ -17,11 +17,13 @@ namespace archetype {
     class Capture {
         UserOutput previous_;
         UserOutput output_;
-        Capture(const Capture&) = delete;
-        Capture& operator=(const Capture&) = delete;
     public:
         Capture();
         ~Capture();
+        
+        Capture(const Capture&) = delete;
+        Capture& operator=(const Capture&) = delete;
+
         std::string getCapture() const;
     };
 }

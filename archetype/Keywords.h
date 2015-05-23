@@ -102,6 +102,7 @@ namespace archetype {
         StringIdIndex Operators;
 
         static Keywords& instance();
+        static void destroy();
 
     private:
         static Keywords* instance_;
@@ -109,6 +110,7 @@ namespace archetype {
         Keywords();
         Keywords(const Keywords&) = delete;
         Keywords& operator=(const Keywords&) = delete;
+        ~Keywords();
     };
 }
 

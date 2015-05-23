@@ -11,7 +11,7 @@
 using namespace std;
 
 namespace archetype {
-    TestRegistry* TestRegistry::instance_ = 0;
+    TestRegistry* TestRegistry::instance_ = nullptr;
 
     TestRegistry& TestRegistry::instance() {
         if (not instance_) {
@@ -26,6 +26,9 @@ namespace archetype {
     }
 
     TestRegistry::TestRegistry() {
+    }
+
+    TestRegistry::~TestRegistry() {
     }
 
     void TestRegistry::registerSuite(ITestSuite* suite) {

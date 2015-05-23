@@ -45,8 +45,13 @@ namespace archetype {
         { }
 
     public:
-        std::ostream& out() { return *out_; }
+        ITestSuite(const ITestSuite&) = delete;
+        ITestSuite& operator=(const ITestSuite&) = delete;
+        virtual ~ITestSuite() {
+            out_ = nullptr;
+        }
 
+        std::ostream& out() { return *out_; }
         std::string name() const { return name_; }
         bool runTests(std::ostream& output_for_suite) {
             errorCount_ = 0;

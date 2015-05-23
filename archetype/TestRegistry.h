@@ -26,9 +26,11 @@ namespace archetype {
         bool runAllTestSuites(std::ostream& out);
     private:
         static TestRegistry* instance_;
+
         TestRegistry();
         TestRegistry(const TestRegistry&) = delete;
         TestRegistry& operator=(const TestRegistry) = delete;
+        ~TestRegistry();
     };
 }
 

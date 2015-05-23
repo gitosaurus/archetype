@@ -86,6 +86,9 @@ namespace archetype {
         context_.push(context);
     }
 
+    Universe::~Universe() {
+    }
+
     ostream& operator<< (ostream& out, IdentifierKind_e kind) {
         switch (kind) {
             case OBJECT_ID:

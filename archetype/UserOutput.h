@@ -16,14 +16,14 @@ namespace archetype {
     class IUserOutput {
     public:
         IUserOutput() { }
+        IUserOutput(const IUserOutput&) = delete;
+        IUserOutput& operator=(const IUserOutput&) = delete;
         virtual ~IUserOutput() { }
+
         virtual void put(const std::string& line) = 0;
         virtual void endLine() = 0;
         virtual void resetPager() { }
         virtual void banner(char ch) = 0;
-    private:
-        IUserOutput(const IUserOutput&) = delete;
-        IUserOutput& operator=(const IUserOutput&) = delete;
     };
     typedef std::shared_ptr<IUserOutput> UserOutput;
 }

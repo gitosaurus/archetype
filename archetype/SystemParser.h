@@ -25,6 +25,8 @@ namespace archetype {
         typedef std::pair<std::list<Value>, int> PhraseMatch;
 
         SystemParser();
+        SystemParser(const SystemParser&) = delete;
+        SystemParser& operator=(const SystemParser&) = delete;
 
         void setMode(Mode_e mode) { mode_ = mode; }
 
@@ -73,9 +75,6 @@ namespace archetype {
 
         void matchVerbs_(std::list<Value>& wordValues);
         void matchNouns_(std::list<Value>& wordValues);
-
-        SystemParser(const SystemParser&) = delete;
-        SystemParser& operator=(const SystemParser&) = delete;
     };
 }
 

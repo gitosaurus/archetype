@@ -29,6 +29,7 @@ namespace archetype {
         IValue() { }
         IValue(const IValue&) = delete;
         IValue& operator=(const IValue&) = delete;
+        virtual ~IValue() { }
 
         virtual bool isDefined() const        { return true; }
 

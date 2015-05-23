@@ -27,6 +27,7 @@ namespace archetype {
         std::map<std::string, SourceFilePtr> sources_;
     public:
         static Wellspring& instance();
+        static void destroy();
 
         // Given the path to a source file, prioritize the path to the directory
         // in which it resides, searching it before all other search paths,
@@ -50,6 +51,7 @@ namespace archetype {
         Wellspring();
         Wellspring(const Wellspring&) = delete;
         Wellspring& operator=(const Wellspring&) = delete;
+        ~Wellspring();
     };
 }
 

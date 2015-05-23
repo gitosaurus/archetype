@@ -22,6 +22,11 @@ namespace archetype {
         return *instance_;
     }
 
+    void Keywords::destroy() {
+        delete instance_;
+        instance_ = nullptr;
+    }
+
 #define RESERVE(key, str) if (Reserved.index(str) != key) \
         throw logic_error("Reserved word " #str " did not map to " #key)
 #define OPERATOR(key, str) if (Operators.index(str) != key) \
@@ -99,5 +104,8 @@ namespace archetype {
         OPERATOR(OP_WITHIN, "within");
         OPERATOR(OP_HEAD, "head");
         OPERATOR(OP_TAIL, "tail");
+    }
+
+    Keywords::~Keywords() {
     }
 }

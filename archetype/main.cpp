@@ -19,20 +19,28 @@
 #include "SourceFile.h"
 #include "TokenStream.h"
 #include "Universe.h"
+#include "Keywords.h"
 #include "FileStorage.h"
 #include "Wellspring.h"
 
 namespace archetype {
     static const char VersionString[] = "2.0";
 
-    inline void finish() {
-        UserOutput output = Universe::instance().output();
-        output->endLine();
-        output->put("Archetype ");
-        output->put(VersionString);
-        output->endLine();
-        Universe::destroy();
-    }
+    class Session {
+    public:
+        ~Session() {
+            UserOutput output = Universe::instance().output();
+            output->endLine();
+            output->put("Archetype ");
+            output->put(VersionString);
+            output->endLine();
+            TestRegistry::destroy();
+            Universe::destroy();
+            Wellspring::destroy();
+            Keywords::destroy();
+        }
+    };
+
 }
 
 using namespace std;
@@ -67,6 +75,7 @@ Value run_universe() {
 }
 
 int main(int argc, const char* argv[]) {
+    Session session;
     list<string> args(argv + 1, argv + argc);
     map<string, string> opts;
     for (auto a = args.begin(); a != args.end();) {
@@ -98,7 +107,6 @@ int main(int argc, const char* argv[]) {
     }
     if (opts.count("repl")) {
         int errors = repl();
-        finish();
         return errors;
     }
 
@@ -138,10 +146,8 @@ int main(int argc, const char* argv[]) {
                 }
             }
         } catch (const archetype::QuitGame& quit_game) {
-            finish();
             return 0;
         } catch (const std::exception& e) {
-            finish();
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
@@ -161,10 +167,8 @@ int main(int argc, const char* argv[]) {
         try {
             run_universe();
         } catch (const archetype::QuitGame& quit_game) {
-            finish();
             return 0;
         } catch (const std::exception& e) {
-            finish();
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }

@@ -24,13 +24,12 @@ namespace archetype {
         char lastChar_;
     public:
         SourceFile(std::string source, stream_ptr& in);
+        SourceFile(const SourceFile&) = delete;
+        SourceFile& operator=(const SourceFile&) = delete;
         virtual ~SourceFile() { }
         char readChar();
         void unreadChar(char ch);
         void showPosition(std::ostream& out);
-    private:
-        SourceFile(const SourceFile&) = delete;
-        SourceFile& operator=(const SourceFile&) = delete;
     };
 
     typedef std::shared_ptr<SourceFile> SourceFilePtr;

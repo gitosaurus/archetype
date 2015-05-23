@@ -78,9 +78,13 @@ namespace archetype {
         sources_.clear();
     }
 
-    Wellspring* Wellspring::instance_ = 0;
+    Wellspring* Wellspring::instance_ = nullptr;
 
     Wellspring::Wellspring() {
+    }
+
+    Wellspring::~Wellspring() {
+        closeAll();
     }
 
     Wellspring& Wellspring::instance() {
@@ -88,5 +92,10 @@ namespace archetype {
             instance_ = new Wellspring;
         }
         return *instance_;
+    }
+
+    void Wellspring::destroy() {
+        delete instance_;
+        instance_ = nullptr;
     }
 }
