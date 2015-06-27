@@ -956,6 +956,7 @@ methods
 
   'INITIAL' : 'REGISTER' -> after
 
+  'exit' : 'north'
   'north' :
     case level of {
       1 : wide_corridor
@@ -2239,6 +2240,7 @@ object windows
 
 methods
 
+  'INDEF' : 'DEF'
   'look out of' : 'look'
   'look out' : 'look'
   'look'     : {
