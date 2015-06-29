@@ -791,6 +791,8 @@ methods
     else
       'INVENTORY'
 
+  'wait' : write main.wait_message
+
   'look around' : 'look'
   'look' : 'ROOMVIEW' -> location
 

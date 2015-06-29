@@ -2,7 +2,7 @@
 #
 # Archetype's baseline lexicon.
 
-Verb lookV full : 'look'    syn : 'look at'       end
+Verb lookV full : 'look'    syn : 'look at|x|examine'       end
 
 lex null full : 'under'     end
 lex null full : 'in'        syn : 'inside|into'   end
@@ -34,10 +34,8 @@ lex  null full : 'to'       end
 
 Verb sayV full : 'say'      end
 
-Verb inventoryV
-  full : 'inventory'
-  syn  : 'i'
-end
+Verb inventoryV  full : 'inventory'  syn : 'i'  end
+Verb waitV       full : 'wait'       syn : 'z' end
 
 lex null full : 'around'       end
 
