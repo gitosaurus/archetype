@@ -50,6 +50,8 @@ namespace archetype {
         std::unique_ptr<SystemParser> parser_;
 
         bool figureState_(const Value& message);
+        void resetSystem_();
+
     };
 }
 

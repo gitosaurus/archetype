@@ -267,6 +267,7 @@ namespace archetype {
                     InFileStorage load_file(filename);
                     if (load_file.ok()) {
                         load_file >> Universe::instance();
+                        resetSystem_();
                         return Value{new BooleanValue{true}};
                     } else {
                         return Value{new BooleanValue{false}};
@@ -298,4 +299,12 @@ namespace archetype {
         }
         return Value{new UndefinedValue};
     }
+
+    void SystemObject::resetSystem_() {
+        stateByMessage_.clear();
+        sorter_.reset(new SystemSorter);
+        parser_.reset(new SystemParser);
+        state_ = IDLING;
+    }
+
 }
