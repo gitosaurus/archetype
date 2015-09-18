@@ -251,7 +251,7 @@ namespace archetype {
             out << op_as_int << right_;
         }
 
-        virtual Value evaluate() const {
+        virtual Value evaluate() const override {
             Value rv = right_->evaluate()->valueConversion();
             Value result;
             switch (op()) {
@@ -321,17 +321,17 @@ namespace archetype {
             return result;
         }
 
-        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
+        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) override {
             right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
         }
 
-        virtual int nodeCount() const { return 1 + right_->nodeCount(); }
-        virtual Expression anyFewerNodeEquivalent() {
+        virtual int nodeCount() const override { return 1 + right_->nodeCount(); }
+        virtual Expression anyFewerNodeEquivalent() override {
             right_ = tighten(move(right_));
             return op() != Keywords::OP_LPAREN ? nullptr : move(right_);
         }
 
-        virtual void prefixDisplay(ostream& out) const {
+        virtual void prefixDisplay(ostream& out) const override {
             if (op() == Keywords::OP_LPAREN) {
                 right_->prefixDisplay(out);
             } else {
@@ -511,7 +511,7 @@ namespace archetype {
             out << op_as_int << left_ << right_;
         }
 
-        virtual Value evaluate() const {
+        virtual Value evaluate() const override {
             Value result;
             // Sort evaluations by "signature"
             switch (op()) {
@@ -675,18 +675,18 @@ namespace archetype {
             return result;
         }
 
-        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) {
+        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) override {
             right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
         }
 
-        virtual int nodeCount() const { return 1 + left_->nodeCount() + right_->nodeCount(); }
-        virtual Expression anyFewerNodeEquivalent() {
+        virtual int nodeCount() const override { return 1 + left_->nodeCount() + right_->nodeCount(); }
+        virtual Expression anyFewerNodeEquivalent() override {
             left_ = move(tighten(move(left_)));
             right_ = move(tighten(move(right_)));
             return nullptr;
         }
 
-        virtual void prefixDisplay(ostream& out) const {
+        virtual void prefixDisplay(ostream& out) const override {
             out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';
             if (left_) {
                 left_->prefixDisplay(out);

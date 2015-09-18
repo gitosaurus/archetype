@@ -105,8 +105,8 @@ namespace archetype {
         virtual void write(Storage& out) const override;
 
         virtual bool isTrueEnough() const override { return value_; }
-        virtual Value stringConversion() const;
-        virtual Value numericConversion() const;
+        virtual Value stringConversion() const override;
+        virtual Value numericConversion() const override;
     };
 
     class MessageValue : public IValue {
