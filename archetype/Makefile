@@ -38,3 +38,4 @@ archetype: $(OBJECTS)
 
 clean:
 	$(RM) -f $(OBJECTS) archetype archetype.exe
+	$(RM) -f *~
