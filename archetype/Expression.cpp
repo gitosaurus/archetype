@@ -380,7 +380,7 @@ namespace archetype {
             case Keywords::OP_MINUS:    result = lv_n - rv_n;     break;
             case Keywords::OP_MULTIPLY: result = lv_n * rv_n;     break;
             case Keywords::OP_DIVIDE:   result = lv_n / rv_n;     break;
-            case Keywords::OP_POWER:    result = pow(lv_n, rv_n); break;
+            case Keywords::OP_POWER:    result = static_cast<int>(pow(lv_n, rv_n)); break;
             default:
                 throw logic_error("number-op-number attempted on this operator");
         }

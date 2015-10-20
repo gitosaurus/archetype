@@ -9,11 +9,13 @@
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
-#include <termios.h>
-#include <unistd.h>
+
+#ifdef _XOPEN_VERSION
+#  include <termios.h>
+#  include <unistd.h>
+#endif
 
 #include "Universe.h"
-
 #include "ConsoleInput.h"
 
 using namespace std;
@@ -21,6 +23,7 @@ using namespace std;
 namespace archetype {
     char ConsoleInput::getKey() {
         cout.flush();
+#ifdef _XOPEN_VERSION
         struct termios term;
         if (tcgetattr(0, &term) < 0) {
             throw runtime_error("Could not get terminal settings: " + string(strerror(errno)));
@@ -40,6 +43,11 @@ namespace archetype {
         } else {
             return key;
         }
+#else
+		char key;
+		cin >> key;
+#endif
+		return key;
     }
 
     string ConsoleInput::getLine() {

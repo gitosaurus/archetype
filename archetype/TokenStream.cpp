@@ -28,8 +28,8 @@ namespace archetype {
         bool isIDStart(char c) const        { return isalpha(c) or c == '_'; }
         bool isIDChar(char c) const         { return isIDStart(c) or isDigit(c); }
         bool isDigit(char c) const          { return isdigit(c); }
-        bool isOperator(char c) const       { return opers_.count(c); }
-        bool isLongOperator(char c) const   { return longOpers_.count(c); }
+        bool isOperator(char c) const       { return opers_.count(c) > 0; }
+        bool isLongOperator(char c) const   { return longOpers_.count(c) > 0; }
     } TypeCheck;
 
     TypeChecker::TypeChecker():
@@ -215,7 +215,6 @@ namespace archetype {
                             switch (next_ch) {
                                 case 't' : next_ch = '\t'; break;
                                 case 'b' : next_ch = '\b'; break;
-                                case 'e' : next_ch = '\e'; break;
                                 case 'n' : next_ch = '\n'; break;
                                 case '"' : next_ch = '"'; break;
                                 default: {

@@ -6,8 +6,12 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+// For Windows
+#define _SCL_SECURE_NO_WARNINGS
+
 #include <stdexcept>
 #include <algorithm>
+#include <iterator>
 #include <sstream>
 
 #include "Serialization.h"
@@ -27,7 +31,7 @@ namespace archetype {
         }
         Byte byte;
         read(&byte, sizeof(byte));
-        bool more = (byte & MoreBit);
+        bool more = static_cast<bool>(byte & MoreBit);
         byte &= ~MoreBit;
         // The sign bit is the very first bit deserialized.
         // Note it for this number and shift if off.
@@ -42,7 +46,7 @@ namespace archetype {
             int next_part = (byte & PayloadBits);
             next_part <<= bits;
             result |= next_part;
-            more = (byte & MoreBit);
+            more = static_cast<bool>(byte & MoreBit);
             bits += 7;
         }
         return negative ? -result : result;

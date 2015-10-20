@@ -8,8 +8,11 @@
 
 #include <string>
 #include <cctype>
-#include <sys/ioctl.h>
-#include <unistd.h>
+
+#ifdef _XOPEN_VERSION
+#  include <sys/ioctl.h>
+#  include <unistd.h>
+#endif
 
 #include "WrappedOutput.h"
 #include "Universe.h"
@@ -26,6 +29,7 @@ namespace archetype {
     maxColumns_{80},
     rows_{0},
     cursor_{0} {
+#ifdef _XOPEN_VERSION
         struct winsize w;
         if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) < 0) {
             perror("ioctl call to get terminal size");
@@ -33,6 +37,7 @@ namespace archetype {
             maxRows_ = w.ws_row;
             maxColumns_ = w.ws_col;
         }
+#endif
         maxColumns_ = max(0, maxColumns_ - WrapMargin);
     }
 
