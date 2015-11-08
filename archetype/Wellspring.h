@@ -41,7 +41,7 @@ namespace archetype {
         void addSearchPath(std::string directory_path);
 
         bool hasNeverBeenOpened(std::string source_name) const;
-        void put(std::string source_name, SourceFilePtr);
+        void put(std::string source_name, SourceFilePtr source);
         SourceFilePtr open(std::string source_name);
         void close(SourceFilePtr source);
         void closeAll();

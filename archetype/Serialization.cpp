@@ -34,7 +34,7 @@ namespace archetype {
         bool more = static_cast<bool>(byte & MoreBit);
         byte &= ~MoreBit;
         // The sign bit is the very first bit deserialized.
-        // Note it for this number and shift if off.
+        // Note it for this number and shift it off.
         bool negative = (byte & SignBit);
         byte >>= 1;
         int bits = 6;
