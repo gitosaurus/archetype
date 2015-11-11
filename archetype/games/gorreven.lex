@@ -10,6 +10,10 @@ Verb null
   normal : "That's not the kind of thing I can kill."
 end
 
+Verb null
+  full   : 'face'
+  normal : "I set my shoulders and face " & ('DEF' -> main.subj) & "."
+end
 
 Verb null
   full   : 'break'

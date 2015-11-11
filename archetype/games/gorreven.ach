@@ -301,6 +301,23 @@ end
 
 keyword under_cot
 
+scenery wall
+  desc     : "the other wall"
+  location : cell
+methods
+  'face' : write "I face the wall.  It makes me feel beaten."
+end
+
+scenery bulb
+  desc     : "solitary dim bulb"
+  location : cell
+  visible  : FALSE
+methods
+  'get'   : write "It's too high up."
+  'break' : 'get'
+  'look'  : write "Fixed in the center of the ceiling, the solitary dim bulb glares back dully at me."
+end
+
 object guard
 
   desc    : 'Desc' -> self
@@ -361,6 +378,7 @@ methods
     else
       >>I don't want to burden myself with that.
 
+  'face' : 'look'
   'look' :
     if alert then {
       writes "He is blocking the doorway to the north.  "

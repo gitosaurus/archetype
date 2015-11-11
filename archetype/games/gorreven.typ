@@ -233,24 +233,6 @@ writes "glancing up and making eye contact.  "
 end
 
 
-# scenery:  these are objects which are really part of the surroundings,
-# but will yield more information on a closer look.
-
-type scenery based on object
-
-  first_seen : TRUE
-
-methods
-
-  'get' : >>I can't do that.
-  'look' : {
-    'Desc'
-    first_seen := FALSE
-    }
-
-end
-
-
 type openable based on object
 
   open  : FALSE

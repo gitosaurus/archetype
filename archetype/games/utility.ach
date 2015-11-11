@@ -2,6 +2,24 @@
 #
 # Generally useful class definitions.
 
+# scenery:  these are objects which are really part of the surroundings,
+# but will yield more information on a closer look.
+
+type scenery based on object
+
+  first_seen : TRUE
+  visible    : FALSE
+
+methods
+
+  'get' : >>I can't do that.
+  'look' : {
+    'Desc'
+    first_seen := FALSE
+    }
+
+end
+
 # Hollow objects.  These are objects that can double as rooms.
 
 class hollow_object based on object
