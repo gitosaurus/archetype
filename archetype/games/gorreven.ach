@@ -133,6 +133,7 @@ methods
 
   'LONGDESC' :
     >>I'm standing in a small bare cell with four bare walls.
+    >>A dirty yellow light bulb glares down from the ceiling.
 
   'north' : if guard.alive then foiled_escape else hall
 
@@ -309,7 +310,7 @@ methods
 end
 
 scenery bulb
-  desc     : "solitary dim bulb"
+  desc     : "dirty yellow light bulb"
   location : cell
   visible  : FALSE
 methods
