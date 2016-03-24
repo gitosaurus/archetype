@@ -145,7 +145,7 @@ int main(int argc, const char* argv[]) {
                     throw runtime_error("Could not write to " + filename_out);
                 }
             }
-        } catch (const archetype::QuitGame& quit_game) {
+        } catch (const archetype::QuitGame&) {
             return 0;
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
@@ -166,7 +166,7 @@ int main(int argc, const char* argv[]) {
         in >> Universe::instance();
         try {
             run_universe();
-        } catch (const archetype::QuitGame& quit_game) {
+        } catch (const archetype::QuitGame&) {
             return 0;
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;

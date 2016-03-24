@@ -134,7 +134,7 @@ namespace archetype {
         methods_[message_id] = std::move(stmt);
     }
 
-    void Object::write(Storage &out) {
+    void Object::write(Storage& out) {
         out << parentId_ << id_ << static_cast<int>(prototype_);
         out << static_cast<int>(attributes_.size());
         for (auto const& attribute : attributes_) {
@@ -146,7 +146,7 @@ namespace archetype {
         }
     }
 
-    void Object::read(Storage &in) {
+    void Object::read(Storage& in) {
         int is_prototype;
         in >> parentId_ >> id_ >> is_prototype;
         prototype_ = static_cast<bool>(is_prototype);
