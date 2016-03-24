@@ -32,7 +32,7 @@ Verb exitV  full : 'exit'     syn : 'leave|get out|get out of' end
 Verb goV  full : 'go'       syn  : 'walk' end
 lex  null full : 'to'       end
 
-Verb sayV full : 'say'      end
+Verb sayV full : 'say'      syn  : 'announce' end
 
 Verb inventoryV  full : 'inventory'  syn : 'i'  end
 Verb waitV       full : 'wait'       syn : 'z' end
