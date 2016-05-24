@@ -204,8 +204,15 @@ methods
 
   'look' : {
 >>It is a dingy, ill-maintained cot with a thin and moth-eaten mattress.
->>The Marriott this isn't.
-    }
+>>The Marriott this isn't.  The thin mattress is spotted with stains of
+>>sweat and blood and sits atop a creaky metal frame that is on the
+>>verge of coming apart.
+>>
+    if cot_fragment.broken_off then
+>>One corner sags, the worse for wear since you broke off a piece of its support.
+    else
+>>In one corner a piece of metal that forms the flange has begun to detach.
+  }
 
   'get' :
     if player.location ~= self then
@@ -219,7 +226,7 @@ end
 object cot_fragment
 
   desc      : "sharp piece of metal"
-  name      : desc & "|sharp metal|piece of metal|metal"
+  name      : desc & "|sharp metal|piece of metal|metal|flange|metal flange"
   location  : cot
 
   broken_off : FALSE
