@@ -102,7 +102,7 @@ namespace archetype {
                 auto match_end = match;
                 advance(match_end, vp->first.size());
                 wordValues.erase(match, match_end);
-                wordValues.insert(match_end, Value(new ObjectValue(vp->second)));
+                wordValues.insert(match_end, Value{new ObjectValue{vp->second}});
             }
         }
     }
@@ -131,7 +131,7 @@ namespace archetype {
                     }
                 }
                 wordValues.erase(match, match_end);
-                wordValues.insert(match_end, Value(new ObjectValue(matched_obj_id)));
+                wordValues.insert(match_end, Value{new ObjectValue{matched_obj_id}});
             }
         }
     }

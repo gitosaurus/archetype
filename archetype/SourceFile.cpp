@@ -56,7 +56,7 @@ namespace archetype {
 
     SourceFilePtr make_source_from_str(string name, string src_str) {
         stream_ptr in(new istringstream(src_str));
-        return SourceFilePtr(new SourceFile(name, in));
+        return SourceFilePtr{make_shared<SourceFile>(name, in)};
     }
 
 }

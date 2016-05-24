@@ -27,13 +27,13 @@ namespace archetype {
 
     inline TokenStream tokens_from_str(string src_str) {
         stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
+        SourceFilePtr src{make_shared<SourceFile>("test", in)};
         return TokenStream(src);
     }
 
     inline Expression form_expr_from_str(string src_str) {
         stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
+        SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Expression expr = form_expr(token_stream);
         return expr;
@@ -57,14 +57,14 @@ namespace archetype {
         string actual1 = as_prefix(expr1);
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
         int node_count_1 = expr1->nodeCount();
-        Expression tight_expr1 = move(tighten(move(expr1)));
+        Expression tight_expr1 = tighten(move(expr1));
         string tight_actual1 = as_prefix(tight_expr1);
         ARCHETYPE_TEST_EQUAL(tight_actual1, expected1);
         int node_count_2 = tight_expr1->nodeCount();
         ARCHETYPE_TEST(node_count_1 > node_count_2);
         SHOW(node_count_1);
         SHOW(node_count_2);
-        tight_expr1 = move(tighten(move(tight_expr1)));
+        tight_expr1 = tighten(move(tight_expr1));
         int node_count_3 = tight_expr1->nodeCount();
         SHOW(node_count_3);
         ARCHETYPE_TEST_EQUAL(node_count_2, node_count_3);
@@ -187,7 +187,7 @@ namespace archetype {
 
         string src_str = "null scratch x : 0 methods 'hello' : x +:= 1 end";
         stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("scratch", in));
+        SourceFilePtr src{make_shared<SourceFile>("scratch", in)};
         TokenStream token_stream(src);
         ARCHETYPE_TEST(Universe::instance().make(token_stream));
         list<pair<string, IValue*>> testing_pairs = {

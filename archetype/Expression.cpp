@@ -193,7 +193,7 @@ namespace archetype {
                 // Next:  an object in the Universe
                 auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
                 if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
-                    result = Value(new ObjectValue(id_obj_p->second));
+                    result = Value{new ObjectValue{id_obj_p->second}};
                 }
             }
             // Finally:  just a keyword value
@@ -322,7 +322,7 @@ namespace archetype {
         }
 
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) override {
-            right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
+            right_ = tie_on_rside(move(right_), op, move(rightSide));
         }
 
         virtual int nodeCount() const override { return 1 + right_->nodeCount(); }
@@ -676,13 +676,13 @@ namespace archetype {
         }
 
         virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) override {
-            right_ = move(tie_on_rside(move(right_), op, move(rightSide)));
+            right_ = tie_on_rside(move(right_), op, move(rightSide));
         }
 
         virtual int nodeCount() const override { return 1 + left_->nodeCount() + right_->nodeCount(); }
         virtual Expression anyFewerNodeEquivalent() override {
-            left_ = move(tighten(move(left_)));
-            right_ = move(tighten(move(right_)));
+            left_ = tighten(move(left_));
+            right_ = tighten(move(right_));
             return nullptr;
         }
 
@@ -1018,8 +1018,8 @@ namespace archetype {
     }
 
     Expression make_expr_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
-        SourceFilePtr src(new SourceFile("test", in));
+        stream_ptr in{new istringstream{src_str}};
+        SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Expression expr = make_expr(token_stream);
         return expr;

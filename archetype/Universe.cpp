@@ -175,7 +175,7 @@ namespace archetype {
     }
 
     ObjectPtr Universe::defineNewObject(int parent_id) {
-        ObjectPtr obj(new Object(parent_id));
+        ObjectPtr obj{make_shared<Object>(parent_id)};
         int object_id = objects_.index(std::move(obj));
         obj->setId(object_id);
         return objects_.get(object_id);

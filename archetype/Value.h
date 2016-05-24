@@ -196,7 +196,7 @@ namespace archetype {
         ObjectValue(int object_id): objectId_(object_id) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new ObjectValue(objectId_)); }
+        virtual Value clone() const override { return Value{new ObjectValue{objectId_}}; }
         virtual void display(std::ostream& out) const override;
         virtual void write(Storage& out) const override;
 

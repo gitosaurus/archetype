@@ -49,7 +49,7 @@ namespace archetype {
             if (input->is_open()) {
                 // Now that it's been tested for openness, move it to a higher abstraction
                 stream_ptr source_stream{input.release()};
-                SourceFilePtr source{new SourceFile{try_path, source_stream}};
+                SourceFilePtr source{make_shared<SourceFile>(try_path, source_stream)};
                 sources_[try_path] = source;
                 return source;
             }

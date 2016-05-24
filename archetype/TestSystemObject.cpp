@@ -97,9 +97,9 @@ namespace archetype {
         list<Value> expected;
         int take_obj_id = Universe::instance().getObject("take")->id();
         int money_obj_id = Universe::instance().getObject("money")->id();
-        expected.push_back(Value(new ObjectValue(take_obj_id)));
-        expected.push_back(Value(new StringValue("all")));
-        expected.push_back(Value(new ObjectValue(money_obj_id)));
+        expected.push_back(Value{new ObjectValue{take_obj_id}});
+        expected.push_back(Value{new StringValue{"all"}});
+        expected.push_back(Value{new ObjectValue{money_obj_id}});
         bool are_equal = equal(parsed.begin(), parsed.end(), expected.begin(),
                                [](const Value& x, const Value& y){ return x->isSameValueAs(y);} );
         ARCHETYPE_TEST(are_equal);
