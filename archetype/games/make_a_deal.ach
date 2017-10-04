@@ -1,0 +1,48 @@
+# On a game show similar to Let’s Make a Deal, a contestant is shown
+# three closed doors and told that behind one of them is a Corvette,
+# and behind the other two are goats.  They are asked to choose a
+# door.  The door remains closed for the moment.  Next, the game show
+# host, according to the rules, has to open one of the remaining two
+# doors, which he does, revealing a goat.  (He's never going to reveal
+# the car.) The host now gives the contestant a chance to change their
+# choice before finally opening the door and winning whatever is
+# behind it.
+#
+# What are the results of each strategy?
+
+null main
+
+  i          : 0
+  switcher   : 0
+  stayer     : 0
+  iterations : 0
+
+  choice1      : UNDEFINED
+  reveal       : UNDEFINED
+  choice2      : UNDEFINED
+  car          : UNDEFINED
+
+methods
+
+  'START' : {
+    writes "How many iterations? "
+    iterations := numeric read
+    switcher := stayer := i := 0
+    while (i +:= 1) <= iterations do 'One Game' -> self
+    write "Final result:"
+    write "Iterations:", iterations, " Switcher: ", switcher, " Stayer: ", stayer
+  }
+
+  'One Game' : {
+    car     := ?3
+    choice1 := ?3
+    reveal  := ?3
+    while reveal = choice1 or reveal = car do reveal := ?3
+    choice2 := ?3
+    while choice2 = choice1 or choice2 = reveal do choice2 := ?3
+    if choice1 = car then stayer +:= 1 else if choice2 = car then switcher +:= 1
+  }
+
+end
+
+
