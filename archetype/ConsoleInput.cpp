@@ -6,13 +6,15 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#define _POSIX_SOURCE
+#include <unistd.h>
+
 #include <iostream>
 #include <stdexcept>
 #include <cstring>
 
 #ifdef _XOPEN_VERSION
 #  include <termios.h>
-#  include <unistd.h>
 #endif
 
 #include "Universe.h"

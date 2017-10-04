@@ -6,12 +6,16 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#define _POSIX_SOURCE
+#include <unistd.h>
+
 #include <string>
 #include <cctype>
+#include <unistd.h>
 
+#include <unistd.h>
 #ifdef _XOPEN_VERSION
 #  include <sys/ioctl.h>
-#  include <unistd.h>
 #endif
 
 #include "WrappedOutput.h"
