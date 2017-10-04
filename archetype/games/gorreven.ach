@@ -226,7 +226,7 @@ end
 object cot_fragment
 
   desc      : "sharp piece of metal"
-  name      : desc & "|sharp metal|piece of metal|metal|flange|metal flange"
+  syn       : "sharp metal|piece of metal|metal|flange|metal flange"
   location  : cot
 
   broken_off : FALSE
@@ -557,7 +557,7 @@ end
 object gun
 
   desc      : "gun"
-  name      : "gun|pistol|revolver"
+  syn       : "pistol|revolver"
 
   location  : guard
 
@@ -800,7 +800,7 @@ end
 object human_arm
 
   desc      : "long lumpy shape"
-  syn       : desc & "|lumpy shape|shape|arm|human arm|bone|human bone"
+  syn       : "lumpy shape|shape|arm|human arm|bone|human bone"
   location  : stinky_hall
 
   never_seen : TRUE
