@@ -25,6 +25,7 @@ using namespace std;
 namespace archetype {
     char ConsoleInput::getKey() {
         cout.flush();
+        Universe::instance().output()->resetPager();
 #ifdef _XOPEN_VERSION
         struct termios term;
         if (tcgetattr(0, &term) < 0) {
@@ -42,14 +43,18 @@ namespace archetype {
         }
         if (read_stat != sizeof(key)) {
             throw runtime_error("Could not even read key from terminal");
-        } else {
-            return key;
         }
 #else
-		char key;
-		cin >> key;
+        char key;
+        cin >> key;
 #endif
-		return key;
+        if (key == 3) {
+            throw runtime_error("^C Interrupt");
+        }
+        if (key == 28) {
+            throw runtime_error("^\\ Quit");
+        }
+        return key;
     }
 
     string ConsoleInput::getLine() {
