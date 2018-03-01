@@ -48,7 +48,7 @@ namespace archetype {
     WrappedOutput::~WrappedOutput() { }
 
     void WrappedOutput::wrapWait_() {
-        string prompt = "Hit any key to continue...";
+        string prompt = "(more)...";
         string blanks(prompt.size(), ' ');
         output_->put(prompt);
         Universe::instance().input()->getKey();
@@ -78,12 +78,10 @@ namespace archetype {
                 --cut_p;
             }
 
-            /*
-             If we were unable to find a wrapping point, it means one of two
-             things:  a) the string is too long to fit on one line, and must be
-             split unnaturally; or b) we are near the end of a line and must wrap
-             the entire string; i.e. print nothing, finish the line and go on.
-             */
+            // If we were unable to find a wrapping point, it means one of two
+            // things:  a) the string is too long to fit on one line, and must be
+            // split unnaturally; or b) we are near the end of a line and must wrap
+            // the entire string; i.e. print nothing, finish the line and go on.
 
             if (cut_p == s.begin() and int(s.size()) > maxColumns_) {
                 cut_p = s.begin() + remaining;
@@ -104,9 +102,12 @@ namespace archetype {
 
     void WrappedOutput::endLine() {
         output_->endLine();
+        // Need at least two rows, one for text, one for the prompt,
+        // otherwise there's no way to page.
+        if (maxRows_ > 1  and  rows_ >= (maxRows_ - 1)) {
+            wrapWait_();
+        }
         rows_++;
-        // Zero is a sentinel value meaning "never page".
-        if (maxRows_ > 0  and  rows_ >= maxRows_) wrapWait_();
         cursor_ = 0;
     }
 
