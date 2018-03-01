@@ -20,14 +20,14 @@ using namespace std;
 
 namespace archetype {
     inline TokenStream make_tokens_from_string(string name, string src_str) {
-        stream_ptr in(new istringstream(src_str));
+        stream_ptr in{new istringstream{src_str}};
         SourceFilePtr source{make_shared<SourceFile>(name, in)};
-        return TokenStream(source);
+        return TokenStream{source};
     }
 
     inline bool is_object_declaration(const Token& t) {
-        if (t == Token(Token::RESERVED_WORD, Keywords::RW_TYPE) ||
-            t == Token(Token::RESERVED_WORD, Keywords::RW_CLASS)) {
+        if (t == Token{Token::RESERVED_WORD, Keywords::RW_TYPE} ||
+            t == Token{Token::RESERVED_WORD, Keywords::RW_CLASS}) {
             return true;
         }
         if (t.type() != Token::IDENTIFIER) {
@@ -50,7 +50,8 @@ namespace archetype {
                 out->put("> ");
                 string command = in->getLine();
                 if (in->atEOF() or command == "exit") {
-                    out->put("Goodbye.\n");
+                    out->put("Goodbye.");
+                    out->endLine();
                     break;
                 }
                 TokenStream input_tokens = make_tokens_from_string("input", command);
@@ -58,16 +59,19 @@ namespace archetype {
                     if (is_object_declaration(input_tokens.token())) {
                         input_tokens.didNotConsume();
                         if (Universe::instance().make(input_tokens)) {
-                            out->put("Added to Universe.\n");
+                            out->put("Added to Universe.");
+                            out->endLine();
                         } else {
-                            out->put("Could not compile as an object declaration.\n");
+                            out->put("Could not compile as an object declaration.");
+                            out->endLine();
                             break;
                         }
                     } else {
                         input_tokens.didNotConsume();
                         Statement stmt = make_statement(input_tokens);
                         if (not stmt) {
-                            out->put("Could not compile as a statement.\n");
+                            out->put("Could not compile as a statement.");
+                            out->endLine();
                             break;
                         }
                         Value result = stmt->execute();
@@ -88,7 +92,6 @@ namespace archetype {
                 errors++;
             }
         }
-        Universe::destroy();
         return errors;
     }
 }
