@@ -32,7 +32,7 @@ Value.o \
 Wellspring.o \
 WrappedOutput.o
 
-CXXFLAGS=-std=c++0x -Wall
+CXXFLAGS=-std=c++14 -Wall
 archetype: $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $@
 
