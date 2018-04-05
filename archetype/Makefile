@@ -37,5 +37,5 @@ archetype: $(OBJECTS)
 	$(CXX) $(OBJECTS) -o $@
 
 clean:
-	$(RM) -f $(OBJECTS) archetype archetype.exe
-	$(RM) -f *~
+	$(RM) $(OBJECTS) archetype archetype.exe
+	$(RM) *~
