@@ -32,9 +32,12 @@ Value.o \
 Wellspring.o \
 WrappedOutput.o
 
-CXXFLAGS=-std=c++14 -Wall
+# CXXFLAGS=-std=c++14 -Wall
+CXX=clang++
+CXXFLAGS=-g -std=c++0x -Wall -fsanitize=address
+
 archetype: $(OBJECTS)
-	$(CXX) $(OBJECTS) -o $@
+	$(CXX) $(CXXFLAGS) $(OBJECTS) -o $@
 
 clean:
 	$(RM) $(OBJECTS) archetype archetype.exe

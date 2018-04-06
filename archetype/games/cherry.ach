@@ -1,0 +1,51 @@
+# Tiny demo of how to sketch out part of the Cherry Ave house.
+
+include "standard"
+include "utility"
+
+room tiny_porch
+  desc : "tiny porch"
+methods
+  'INITIAL' : 'START HERE' -> player
+  'LONGDESC' : write "I'm at the top of a half flight of stairs, ",
+                     "under what looks like a tiny porch with Plexiglass ",
+                     "windows protecting me from stray golf balls."
+   'north' : landing
+end
+
+room landing
+  desc : "landing"
+methods
+  'LONGDESC' : write "I'm on a landing between the upper and lower ",
+                     "levels of the house."
+  'south' : tiny_porch
+  'up'    : west_hall
+  'down'  : garage_entrance
+end
+
+room west_hall
+  desc : "west end of the hallway"
+methods
+  'down' : landing
+end
+
+room garage_entrance
+  desc    : "entrance to the garage"
+methods
+  'up'    : landing
+  'north' : laundry_room
+  'west'  : bonus_room
+end
+
+room laundry_room
+  desc    : "laundry room"
+methods
+  'south' : garage_entrance
+end
+
+room bonus_room
+  desc : "bonus room downstairs"
+methods
+  'east' : garage_entrance
+end
+
