@@ -21,7 +21,7 @@ namespace archetype {
         if (not sortedStrings_.empty()) {
             string result = *sortedStrings_.begin();
             sortedStrings_.erase(sortedStrings_.begin());
-            return Value(new StringValue(result));
+            return Value{new StringValue{result}};
         }
         return Value{new UndefinedValue};
     }

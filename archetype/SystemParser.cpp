@@ -27,24 +27,24 @@ namespace archetype {
     }
 
     inline Value make_string_value(string s) {
-        return Value(new StringValue(lowercase(s)));
+        return Value{new StringValue{lowercase(s)}};
     }
 
     SystemParser::SystemParser():
-    mode_(SystemParser::VERBS)
+    mode_{SystemParser::VERBS}
     { }
 
     void SystemParser::addParseable(int sender, std::string names) {
         list<string> name_list;
-        istringstream in(names);
+        istringstream in{names};
         string word;
         while (getline(in, word, '|')) {
             switch (mode_) {
                 case VERBS:
-                    verbs_.push_back(Parseable(word, sender));
+                    verbs_.push_back(Parseable{word, sender});
                     break;
                 case NOUNS:
-                    nouns_.push_back(Parseable(word, sender));
+                    nouns_.push_back(Parseable{word, sender});
                     break;
             }
         }
@@ -61,18 +61,18 @@ namespace archetype {
     void SystemParser::close() {
         verbs_.sort(longest_phrase_first);
         for (auto const& verb_phrase : verbs_) {
-            verbMatches_.push_back(PhraseMatch());
+            verbMatches_.push_back(PhraseMatch{});
             istringstream in(verb_phrase.first);
-            transform(istream_iterator<string>(in), istream_iterator<string>(),
+            transform(istream_iterator<string>{in}, istream_iterator<string>{},
                       back_inserter(verbMatches_.back().first),
                       [](string s) { return make_string_value(lowercase(s)); });
             verbMatches_.back().second = verb_phrase.second;
         }
         nouns_.sort(longest_phrase_first);
         for (auto const& noun_phrase : nouns_) {
-            nounMatches_.push_back(PhraseMatch());
+            nounMatches_.push_back(PhraseMatch{});
             istringstream in(noun_phrase.first);
-            transform(istream_iterator<string>(in), istream_iterator<string>(),
+            transform(istream_iterator<string>{in}, istream_iterator<string>{},
                       back_inserter(nounMatches_.back().first),
                       [](string s) { return make_string_value(lowercase(s)); });
             nounMatches_.back().second = noun_phrase.second;
@@ -145,7 +145,7 @@ namespace archetype {
 
         ostringstream out;
         out << ' ';
-        copy(begin(words), end(words), ostream_iterator<string>(out, " "));
+        copy(begin(words), end(words), ostream_iterator<string>{out, " "});
         normalized_ = out.str();
 
         parsedValues_.clear();
@@ -181,7 +181,7 @@ namespace archetype {
     Value SystemParser::whichObject(std::string phrase) {
         istringstream in(phrase);
         list<Value> words;
-        transform(istream_iterator<string>(in), istream_iterator<string>(),
+        transform(istream_iterator<string>{in}, istream_iterator<string>{},
                   back_inserter(words),
                   [](string s) { return make_string_value(lowercase(s)); });
         remove_fillers(words);
