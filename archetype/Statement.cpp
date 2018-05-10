@@ -59,8 +59,7 @@ namespace archetype {
                 return true;
             } else {
                 t.didNotConsume();
-                Statement s = make_statement(t);
-                if (s) {
+                if (Statement s = make_statement(t)) {
                     statements_.push_back(move(s));
                 } else {
                     t.errorMessage("Unfinished compound statement");
@@ -115,11 +114,9 @@ namespace archetype {
     }
 
     Value ExpressionStatement::execute() const {
-        ValueExpression* val_expr = dynamic_cast<ValueExpression*>(expression_.get());
-        if (val_expr) {
+        if (auto val_expr = dynamic_cast<ValueExpression*>(expression_.get())) {
             Value val = val_expr->evaluate();
-            MessageValue* message_value = dynamic_cast<MessageValue*>(val.get());
-            if (message_value) {
+            if (dynamic_cast<MessageValue*>(val.get())) {
                 return Object::pass(Universe::instance().currentContext().selfObject, std::move(val));
             }
         }
