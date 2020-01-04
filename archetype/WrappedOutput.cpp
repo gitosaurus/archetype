@@ -11,9 +11,7 @@
 
 #include <string>
 #include <cctype>
-#include <unistd.h>
 
-#include <unistd.h>
 #ifdef _XOPEN_VERSION
 #  include <sys/ioctl.h>
 #endif
