@@ -1,0 +1,22 @@
+name: archetype
+base: core18
+version: '2.0'
+summary: Archetype
+description: |
+  A programming language for writing and playing text adventure games,
+  and other text-based games.
+
+confinement: strict
+
+parts:
+  archetype:
+    source: archetype
+    artifacts:
+      - archetype
+    build-packages:
+      - clang
+    plugin: make
+
+apps:
+  archetype:
+    command: archetype
