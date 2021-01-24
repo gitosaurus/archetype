@@ -56,7 +56,7 @@ namespace archetype {
             auto where = index_.find(obj);
             assert(where != index_.end());
             index_.erase(where);
-            if (obj_index == registry_.size() - 1) {
+            if (size_t(obj_index) == registry_.size() - 1) {
                 registry_.resize(obj_index);
             } else {
                 registry_[obj_index] = sentinel_;
@@ -86,7 +86,7 @@ namespace archetype {
         }
 
         bool hasIndex(int i) const {
-            return i >= 0 and i < registry_.size();
+            return i >= 0 and size_t(i) < registry_.size();
         }
 
         void display(std::ostream& out) const {

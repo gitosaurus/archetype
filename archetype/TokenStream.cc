@@ -102,11 +102,6 @@ namespace archetype {
         enum StateType_e {START, STOP, DECIDE, WHITE, COMMENT, QUOTE,
             LITERAL, IDENTIFIER, NUMBER, OPERATOR};
 
-        StateType_e state;
-        char bracket;
-        char next_ch;
-        string s;
-
         // Check for old token.  newlines_ may have changed while (an old
         // token was unconsumed, so if the unconsumed token was a NEWLINE
         // and newlines_ is false, we must continue and get another token;
@@ -119,8 +114,9 @@ namespace archetype {
             }
         }
 
-        state = START;
-        s     = "";
+        StateType_e state = START;
+        char next_ch = '\0';
+        string s;
 
         while (state != STOP) {
 
@@ -207,7 +203,7 @@ namespace archetype {
 
                 case LITERAL: {
 
-                    bracket = next_ch;
+                    char bracket = next_ch;
                     s = "";
                     while ((next_ch = source_->readChar()) and
                            (next_ch != '\n') and (next_ch != bracket)) {
