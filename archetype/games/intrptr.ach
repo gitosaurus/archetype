@@ -120,9 +120,7 @@ methods
 # the ASSEMBLEs may depend on things set up by INITIAL.
   for each do 'INITIAL'   -> each
 
-  writes "Assembling objects..."
   for each do 'ASSEMBLE'  -> each
-  write "done."
 
   'ASSEMBLE VOCABULARY'
 
@@ -300,9 +298,6 @@ methods
     }
 
   'ASSEMBLE VOCABULARY' : {
-
-    writes "Assembling vocabulary..."
-
     'INIT PARSER' -> system
     'VERB LIST' -> system
     for each.IsAlex do 'NAME' -> each
@@ -310,8 +305,6 @@ methods
     for each.IsAnoun do 'NAME' -> each
     'NAME' -> everything
     'CLOSE PARSER' -> system
-    write "done."
-
     }
 
 end
