@@ -4,7 +4,7 @@
 #
 # by Derek T. Jones
 #
-# Copyright 1995 Derek T. Jones
+# Copyright 2020 Derek T. Jones
 
 include "standard"
 include "gorreven.lex"
