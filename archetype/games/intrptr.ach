@@ -14,6 +14,26 @@
 #
 #########################################################################
 
+class narrative_voice based on null
+end
+
+class first_person based on narrative_voice
+  Who    : "I"
+  who    : "I"
+  WhoIs  : "I'm"
+  whois  : "I'm"
+  prompt : "What should I do now?"
+end
+
+class second_person based on narrative_voice
+  Who    : "You"
+  who    : "you"
+  WhoIs  : "You're"
+  whois  : "you're"
+  prompt : "What do you want to do now?"
+end
+
+
 class pronoun_object based on null
 
   IsApronoun : TRUE
@@ -82,13 +102,15 @@ end
 
 null main
 
+  voice        : first_person
+
   # Some ANSI formatting sequences.
   bold         : "\e[1m"
   dim          : "\e[2m"
   normal       : "\e[0m"
 
-  prompt       : "\n" & dim & "What should I do now?" & normal & " " & bold
-  wait_message : "I wait patiently."
+  prompt       : "\n" & dim & voice.prompt & normal & " " & bold
+  wait_message : voice.Who & " wait patiently."
 
 # Parsing attributes
 
@@ -259,11 +281,11 @@ methods
 
   'NOUNS PRESENT' :
     if main.subj and not 'ACCESS' -> main.subj then {
-      write "I don't see ", 'NEG INDEF' -> main.subj, " here."
+      write main.voice.Who & " don't see ", 'NEG INDEF' -> main.subj, " here."
       FALSE
       }
     else if main.dobj and not 'ACCESS' -> main.dobj then {
-      write "I don't see ", 'NEG INDEF' -> main.dobj, " here."
+      write main.voice.Who & " don't see ", 'NEG INDEF' -> main.dobj, " here."
       FALSE
       }
     else
@@ -521,7 +543,7 @@ methods
   'INTERPRET'   : 'MOVE PLAYER'
   'MOVE PLAYER' :
     if not (destination := full -> player.location) then
-      >>I can't go that way.
+      write main.voice.Who & " can't go that way."
     else {
       player.location := destination
       'MOVE' -> player
@@ -539,7 +561,7 @@ end
 
 inventoried compass
 
-  intro       : "I can exit"
+  intro       : main.voice.Who & " can exit"
   empty_intro : "There are no visible exits."
 
   exitstr : "|"
@@ -566,7 +588,7 @@ class room based on inventoried
   visited   : FALSE
   desc      : "nondescript room"
 
-  intro       : "I can see"
+  intro       : main.voice.Who & " can see"
   empty_intro : "There is nothing of interest here."
 
 methods
@@ -594,7 +616,7 @@ methods
     write "In the ", desc, "."
 
   'LONGDESC' :
-    write "I'm in the ", desc, "."
+    write main.voice.WhoIs & " in the ", desc, "."
 
 end  # room
 
@@ -724,16 +746,16 @@ methods
 # Verb responses
 
   'look' :
-    write "Nothing strikes me as unusual about ", 'DEF' -> self, "."
+    write "Nothing seems unusual about ", 'DEF' -> self, "."
 
   'get' :
     if location = player then
-      write "I've already got ", 'DEF' -> self, "."
+      write main.voice.Who & "'ve already got ", 'DEF' -> self, "."
     else if size > player.capacity then
-      >>I can't carry that much.
+      write main.voice.Who & " can't carry that much."
     else {
       location := player; 'MOVE'
-      write "I picked up ", 'DEF' -> self, "."
+      write main.voice.Who & " picked up ", 'DEF' -> self, "."
       }
 
   'pick up' : 'get'
@@ -742,10 +764,10 @@ methods
 
   'drop' :
     if location ~= player then
-      write "I don't have ", 'DEF' -> self, "."
+      write main.voice.Who & " don't have ", 'DEF' -> self, "."
     else {
       location := player.location; 'MOVE'
-      write "I put down ", 'DEF' -> self, "."
+      write main.voice.Who & " put down ", 'DEF' -> self, "."
       }
 
   'put down' : 'drop'
@@ -763,8 +785,8 @@ end   # object class
 
 inventoried player
 
-  intro       : "I am carrying"
-  empty_intro : "I am empty-handed."
+  intro       : main.voice.WhoIs & " carrying"
+  empty_intro : main.voice.WhoIs & " empty-handed."
 
   capacity     : 8      # default maximum number of items player can hold
   match        : UNDEFINED

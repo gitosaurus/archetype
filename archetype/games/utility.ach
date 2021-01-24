@@ -41,14 +41,14 @@ methods
   'exit' :
     if location then {
       if player.location ~= self then
-        write "I'm not ", proximity, " ", 'DEF' -> self, "."
+        write main.voice.WhoIs & " not ", proximity, " ", 'DEF' -> self, "."
       else {
         player.location := location
         'MOVE' -> player
         }
       }
     else
-      write "I can't leave ", 'DEF' -> self, "."
+      write main.voice.Who & " can't leave ", 'DEF' -> self, "."
 
   'leave' : 'exit'
 
@@ -57,15 +57,15 @@ methods
 
   'look in' :
     if 'TRANSPARENT' -> self then {
-      writes "I look inside.  "
+      writes main.voice.Who & " look inside.  "
       'INVENTORY'
       }
     else
-      write "I can't look inside that."
+      write main.voice.Who & " can't look inside that."
 
   'enter' :
     if player.location = self then
-      write "I'm already ", proximity, " ", 'DEF' -> self, "."
+      write main.voice.WhoIs & " already ", proximity, " ", 'DEF' -> self, "."
     else if location = player.location then {
       if open = FALSE then
         >>It's closed at the moment.
@@ -75,9 +75,9 @@ methods
         }
       }
     else if location = player then
-      write "I cannot enter something that I'm carrying."
+      write main.voice.Who, " cannot enter something that " & main.voice.whois, " carrying."
     else
-      write "I can't enter ", 'DEF' -> self, " because ",
+      write main.voice.Who, " can't enter ", 'DEF' -> self, " because ",
             pronoun, " isn't here."
 
   'go'    : 'enter'
@@ -86,12 +86,12 @@ methods
 
   'get' :
     if player.location = self then
-      write "I can't pick up something that I'm ", proximity, "."
+      write main.voice.Who, " can't pick up something that ", main.voice.whois, " ", proximity, "."
     else
       message --> object
 
   'BRIEF' :
-    write "I am ", proximity, " ", 'DEF' -> self, "."
+    write main.voice.WhoIs, " ", proximity, " ", 'DEF' -> self, "."
 
   'LONGDESC' : 'BRIEF'
 
