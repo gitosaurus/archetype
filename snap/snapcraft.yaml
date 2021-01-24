@@ -14,7 +14,7 @@ parts:
     artifacts:
       - archetype
     build-packages:
-      - clang
+      - g++
     plugin: make
 
 apps:
