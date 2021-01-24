@@ -82,7 +82,12 @@ end
 
 null main
 
-  prompt       : "\nWhat should I do now? "
+  # Some ANSI formatting sequences.
+  bold         : "\e[1m"
+  dim          : "\e[2m"
+  normal       : "\e[0m"
+
+  prompt       : "\n" & dim & "What should I do now?" & normal & " " & bold
   wait_message : "I wait patiently."
 
 # Parsing attributes
@@ -140,7 +145,7 @@ methods
   # Prompt for input and parse
     writes prompt
     command := read
-    write
+    write normal
 
     'PLAYER CMD' -> system
     command -> system

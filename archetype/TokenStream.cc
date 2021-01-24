@@ -216,6 +216,7 @@ namespace archetype {
                             switch (next_ch) {
                                 case 't' : next_ch = '\t'; break;
                                 case 'b' : next_ch = '\b'; break;
+                                case 'e' : next_ch = '\033'; break;  // escape
                                 case 'n' : next_ch = '\n'; break;
                                 case '"' : next_ch = '"'; break;
                                 default: {
