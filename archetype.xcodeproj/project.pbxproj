@@ -41,6 +41,7 @@
 		45F7CF3B18AA932B00D39E12 /* TestRegistry.cc in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF3918AA932B00D39E12 /* TestRegistry.cc */; };
 		45F7CF3E18AB57C600D39E12 /* TestSourceFile.cc in Sources */ = {isa = PBXBuildFile; fileRef = 45F7CF3C18AB57C600D39E12 /* TestSourceFile.cc */; };
 		45FBD4E718FE180300E6B2D1 /* TestSystemObject.cc in Sources */ = {isa = PBXBuildFile; fileRef = 45FBD4E518FE180300E6B2D1 /* TestSystemObject.cc */; };
+		DA2C623C26AF3CF1000D6714 /* TestSystemSorter.cc in Sources */ = {isa = PBXBuildFile; fileRef = DA2C623A26AF3CF1000D6714 /* TestSystemSorter.cc */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXCopyFilesBuildPhase section */
@@ -132,6 +133,8 @@
 		45F7CF3D18AB57C600D39E12 /* TestSourceFile.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestSourceFile.hh; sourceTree = "<group>"; };
 		45FBD4E518FE180300E6B2D1 /* TestSystemObject.cc */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.cpp; path = TestSystemObject.cc; sourceTree = "<group>"; };
 		45FBD4E618FE180300E6B2D1 /* TestSystemObject.hh */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.cpp.h; path = TestSystemObject.hh; sourceTree = "<group>"; };
+		DA2C623A26AF3CF1000D6714 /* TestSystemSorter.cc */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.cpp; path = TestSystemSorter.cc; sourceTree = "<group>"; };
+		DA2C623B26AF3CF1000D6714 /* TestSystemSorter.hh */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.cpp.h; path = TestSystemSorter.hh; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -246,6 +249,8 @@
 				4588EC431961A3970024E2E7 /* TestValue.hh */,
 				45804FA919CF31740055AF10 /* TestWrappedOutput.cc */,
 				45804FAA19CF31740055AF10 /* TestWrappedOutput.hh */,
+				DA2C623A26AF3CF1000D6714 /* TestSystemSorter.cc */,
+				DA2C623B26AF3CF1000D6714 /* TestSystemSorter.hh */,
 			);
 			name = Testing;
 			sourceTree = "<group>";
@@ -315,6 +320,7 @@
 				4571ECCB193F6BF5006D85A9 /* Wellspring.cc in Sources */,
 				45DDAD12194E8D0500B282F7 /* Serialization.cc in Sources */,
 				45F7CF3E18AB57C600D39E12 /* TestSourceFile.cc in Sources */,
+				DA2C623C26AF3CF1000D6714 /* TestSystemSorter.cc in Sources */,
 				451BA00E18D7C3AF0043C274 /* TestObject.cc in Sources */,
 				450F908C19B7E9EF002AB81D /* ReadEvalPrintLoop.cc in Sources */,
 				459010DF19326E19007B14C0 /* TestSystemParser.cc in Sources */,

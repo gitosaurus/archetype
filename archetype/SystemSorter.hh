@@ -19,11 +19,17 @@ namespace archetype {
     class SystemSorter {
     public:
     private:
-        std::set<std::string> sortedStrings_;
+        std::multiset<std::string> sortedStrings_;
+        friend Storage& operator<<(Storage& out, const SystemSorter& p);
+        friend Storage& operator>>(Storage&in, SystemSorter& p);
     public:
         void add(std::string s);
         Value nextSorted();
     };
+
+    Storage& operator<<(Storage& out, const SystemSorter& p);
+    Storage& operator>>(Storage&in, SystemSorter& p);
+
 }
 
 #endif /* defined(__archetype__SystemSorter__) */
