@@ -1,5 +1,5 @@
 //
-//  SystemParser.cpp
+//  SystemParser.cc
 //  archetype
 //
 //  Created by Derek Jones on 4/26/14.
@@ -193,4 +193,57 @@ namespace archetype {
             return Value{new UndefinedValue};
         }
     }
+
+    template <typename T1, typename T2>
+    Storage& operator<<(Storage& out, const std::pair<T1, T2>& p) {
+        return out << p.first << p.second;
+    }
+
+    template <typename Tseq>
+    Storage& operator<<(Storage& out, const Tseq& seq) {
+        const int zero = 0;
+        const int one = 1;
+        for (auto ii = begin(seq); ii != end(seq); ++ii) {
+            out << one << *ii;
+        }
+        out << zero;
+        return out;
+    }
+
+    template <typename T1, typename T2>
+    Storage& operator>>(Storage& in, std::pair<T1, T2>& p) {
+        return in >> p.first >> p.second;
+    }
+
+    template <typename Tseq>
+    Storage& operator>>(Storage& in, Tseq& seq) {
+        int more;
+        in >> more;
+        while (more) {
+            typename Tseq::value_type element;
+            in >> element;
+            seq.insert(end(seq), move(element));
+            in >> more;
+        }
+        return in;
+    }
+
+    Storage& operator<<(Storage& out, const SystemParser& p) {
+        out << static_cast<int>(p.mode_);
+        out << p.proximate_ << p.verbs_ << p.nouns_;
+        out << p.verbMatches_ << p.nounMatches_;
+        out << p.playerCommand_ << p.normalized_ << p.parsedValues_;
+        return out;
+    }
+
+    Storage& operator>>(Storage&in, SystemParser& p) {
+        int mode;
+        in >> mode;
+        p.mode_ = static_cast<SystemParser::Mode_e>(mode);
+        in >> p.proximate_ >> p.verbs_ >> p.nouns_;
+        in >> p.verbMatches_ >> p.nounMatches_;
+        in >> p.playerCommand_ >> p.normalized_ >> p.parsedValues_;
+        return in;
+    }
+
 }

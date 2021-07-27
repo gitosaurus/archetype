@@ -185,10 +185,59 @@ namespace archetype {
         ARCHETYPE_TEST(!parser->whichObject("dog")->isDefined());
     }
 
+    void TestSystemParser::testSerialization_() {
+        // Prepare a parser, bounce through serialization, see it if still works
+        unique_ptr<SystemParser> parser(new SystemParser);
+        parser->setMode(SystemParser::VERBS);
+        int press_id = 50;
+        parser->addParseable(press_id, "press|push");
+
+        parser->setMode(SystemParser::NOUNS);
+
+        // Put in a "green herring"
+        int green_button_id = 80;
+        parser->addParseable(green_button_id, "green button|button");
+
+        int red_button_id = 60;
+        parser->addParseable(red_button_id, "red button|button");
+
+        int blue_button_id = 70;
+        parser->addParseable(blue_button_id, "blue button|button");
+
+        parser->close();
+
+        parser->rollCall();
+        parser->announcePresence(blue_button_id);
+
+        MemoryStorage mem;
+        mem << *parser;
+        // Wipe out the previous parser, and replace
+        parser.reset(new SystemParser);
+        mem >> *parser;
+
+        // Verify that the objects are detected and that proximity works as desired
+        // Just 'button' by itself should choose the blue one.
+        parser->parse("press button");
+        Value v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value press_obj = v->objectConversion();
+        ARCHETYPE_TEST(press_obj->isDefined());
+        ARCHETYPE_TEST_EQUAL(press_obj->getObject(), press_id);
+
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        Value noun_obj_2 = v->objectConversion();
+        ARCHETYPE_TEST(noun_obj_2->isDefined());
+        ARCHETYPE_TEST_EQUAL(noun_obj_2->getObject(), blue_button_id);
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+    }
+
     void TestSystemParser::runTests_() {
         testNormalization_();
         testBasicParsing_();
         testPartialParsing_();
         testProximity_();
+        testSerialization_();
     }
 }

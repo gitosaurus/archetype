@@ -1,5 +1,5 @@
 //
-//  SystemParser.h
+//  SystemParser.hh
 //  archetype
 //
 //  Created by Derek Jones on 4/26/14.
@@ -59,6 +59,10 @@ namespace archetype {
         // Looks for nouns first, then verbs.  Returns undefined if no match.
         Value whichObject(std::string phrase);
 
+        friend Storage& operator<<(Storage& out, const SystemParser& p);
+        friend Storage& operator>>(Storage&in, SystemParser& p);
+
+
     private:
         Mode_e mode_;
         std::set<int> proximate_;
@@ -76,6 +80,10 @@ namespace archetype {
         void matchVerbs_(std::list<Value>& wordValues);
         void matchNouns_(std::list<Value>& wordValues);
     };
+
+    Storage& operator<<(Storage& out, const SystemParser& p);
+    Storage& operator>>(Storage&in, SystemParser& p);
+
 }
 
 #endif /* defined(__archetype__SystemParser__) */
