@@ -28,10 +28,16 @@ namespace archetype {
     public:
         static const int npos = -1;
 
-        IdIndex(const T& sentinel = T()):
-        sentinel_(sentinel),
-        holes_(0)
+        IdIndex(const T& sentinel = T{}):
+        sentinel_{sentinel},
+        holes_{0}
         { }
+
+        void clear() {
+            index_.clear();
+            registry_.clear();
+            holes_ = 0;
+        }
 
         int index(const T& obj) {
             auto where = index_.find(obj);
@@ -100,7 +106,7 @@ namespace archetype {
             int indexed_entries = static_cast<int>(index_.size());
             out << total_entries << indexed_entries;
             for (auto const& entry : index_) {
-                out << entry.first << entry.second;
+                out << entry.second << entry.first;
             }
         }
 
@@ -108,15 +114,15 @@ namespace archetype {
             int total_entries;
             int indexed_entries;
             in >> total_entries >> indexed_entries;
-            index_.clear();
-            registry_.clear();
             registry_.resize(total_entries, sentinel_);
-            for (int i = 0; i < indexed_entries; ++i) {
-                T value;
+            for (int ii = 0; ii < indexed_entries; ++ii) {
                 int value_index;
-                in >> value >> value_index;
-                index_[value] = value_index;
-                registry_[value_index] = value;
+                in >> value_index;
+                if (registry_[value_index] == sentinel_) {
+                    registry_[value_index] = T{};
+                }
+                in >> registry_[value_index];
+                index_[registry_[value_index]] = value_index;
             }
         }
 

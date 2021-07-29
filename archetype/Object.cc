@@ -186,7 +186,9 @@ namespace archetype {
         int non_null;
         in >> non_null;
         if (non_null) {
-            p = make_shared<Object>();
+            if (not p.get()) {
+                p = make_shared<Object>();
+            }
             p->read(in);
         } else {
             p.reset();

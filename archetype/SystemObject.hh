@@ -42,6 +42,9 @@ namespace archetype {
         virtual Value executeMethod(int message_id) override;
         virtual Value executeDefaultMethod() override;
 
+        virtual void write(Storage& out) override;
+        virtual void read(Storage& in) override;
+
     private:
         State_e state_;
         std::map<int, State_e> stateByMessage_;

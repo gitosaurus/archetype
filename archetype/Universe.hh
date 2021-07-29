@@ -117,6 +117,8 @@ namespace archetype {
         Universe& operator=(const Universe&) = delete;
         ~Universe();
 
+        void createReservedObjects_();
+
         friend Storage& operator<<(Storage& out, const Universe& u);
         friend Storage& operator>>(Storage& in, Universe& u);
     };

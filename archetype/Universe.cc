@@ -59,10 +59,7 @@ namespace archetype {
     Universe::Context::~Context()
     { }
 
-    Universe::Universe() :
-    input_{new ConsoleInput},
-    output_{new WrappedOutput{UserOutput{new ConsoleOutput}}}
-    {
+    void Universe::createReservedObjects_() {
         nullObject_ = defineNewObject();
         assignObjectIdentifier(nullObject_, "null");
         nullObject_->setPrototype(true);
@@ -73,12 +70,18 @@ namespace archetype {
         kinds_[nullObject_->id()] = OBJECT_ID;
 
         systemObject_ = ObjectPtr{new SystemObject};
-        int system_id = objects_.index(std::move(systemObject_));
+        int system_id = objects_.index(systemObject_);
         systemObject_->setId(system_id);
         assert(system_id == SystemObjectId);
         assignObjectIdentifier(systemObject_, "system");
         kinds_[systemObject_->id()] = OBJECT_ID;
+    }
 
+    Universe::Universe() :
+    input_{new ConsoleInput},
+    output_{new WrappedOutput{UserOutput{new ConsoleOutput}}}
+    {
+        createReservedObjects_();
         Context context;
         context.selfObject = nullObject_;
         context.senderObject = nullObject_;
@@ -176,7 +179,7 @@ namespace archetype {
 
     ObjectPtr Universe::defineNewObject(int parent_id) {
         ObjectPtr obj{make_shared<Object>(parent_id)};
-        int object_id = objects_.index(std::move(obj));
+        int object_id = objects_.index(obj);
         obj->setId(object_id);
         return objects_.get(object_id);
     }
@@ -408,7 +411,13 @@ namespace archetype {
     }
 
     Storage& operator>>(Storage& in, Universe& u) {
+        u.Messages.clear();
+        u.TextLiterals.clear();
+        u.Identifiers.clear();
+        u.ObjectIdentifiers.clear();
         in >> u.Messages >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
+        u.objects_.clear();
+        u.createReservedObjects_();
         in >> u.objects_;
         return in;
     }

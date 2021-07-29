@@ -307,4 +307,18 @@ namespace archetype {
         state_ = IDLING;
     }
 
+
+    void SystemObject::write(Storage& out) {
+        int state_int = static_cast<int>(state_);
+        out << state_int << *sorter_ << *parser_;
+    }
+
+    void SystemObject::read(Storage& in) {
+        resetSystem_();
+        int state_int;
+        in >> state_int;
+        state_ = static_cast<State_e>(state_int);
+        in >> *sorter_ >> *parser_;
+    }
+
 }
