@@ -225,6 +225,7 @@ namespace archetype {
             {"UNDEFINED ~= (& \"hello\")", new BooleanValue{true}},
             {"(\"world\" within scratch.s) ~= UNDEFINED", new BooleanValue{true}},
             {"(\"Mars\" within scratch.s) = UNDEFINED", new BooleanValue{true}},
+            {"(\"\" within scratch.s)", new UndefinedValue},
             {"scratch.n ~= UNDEFINED", new BooleanValue{true}},
             {"scratch.less = UNDEFINED", new BooleanValue{true}},
             {"scratch = system", new BooleanValue{false}},

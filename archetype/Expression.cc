@@ -349,10 +349,10 @@ namespace archetype {
                 return Value(new StringValue(lv_s + rv_s));
             case Keywords::OP_WITHIN: {
                 size_t where = rv_s.find(lv_s);
-                if (where == string::npos) {
+                if (lv_s.empty()  or  where == string::npos) {
                     return Value{new UndefinedValue};
                 } else {
-                    return Value{new NumericValue{static_cast<int>(where+ 1)}};
+                    return Value{new NumericValue{static_cast<int>(where + 1)}};
                 }
             }
             default:
