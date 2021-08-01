@@ -21,6 +21,7 @@ TestSourceFile.o \
 TestStatement.o \
 TestSystemObject.o \
 TestSystemParser.o \
+TestSystemSorter.o \
 TestTokenStream.o \
 TestUniverse.o \
 TestValue.o \
