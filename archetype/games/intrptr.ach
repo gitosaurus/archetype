@@ -9,8 +9,9 @@
 # For use with Archetype version 1.02
 #
 # Modifications:
-#   version 1.02  8/15/95  force vocabulary reassembly following
-#                          the loading of a game state
+#   version 1.02  8/15/1995  force vocabulary reassembly following
+#                            the loading of a game state
+#   version 3.0   7/31/2021  introduce one-command flow
 #
 #########################################################################
 
@@ -102,6 +103,7 @@ end
 
 null main
 
+  started      : FALSE
   voice        : first_person
 
   # Some ANSI formatting sequences.
@@ -143,53 +145,49 @@ methods
 
 'START' : {
 
-# The INITIAL and ASSEMBLE messages are broadcast separately because
-# the ASSEMBLEs may depend on things set up by INITIAL.
-  for each do 'INITIAL'   -> each
-
-  for each do 'ASSEMBLE'  -> each
-
-  'ASSEMBLE VOCABULARY'
-
-  'ENTERED' -> player.location
-
-# Main command loop
-
-  while TRUE do {
-
-    'UPDATE' -> player
-
-    'ROLL CALL' -> system
-    'ANNOUNCE MEMBERS' -> player
-    'ANNOUNCE MEMBERS' -> player.location
-    'ANNOUNCE SELF'    -> player.location
-
-  # Prompt for input and parse
-    writes prompt
-    command := read
-    write normal
-
-    'PLAYER CMD' -> system
-    command -> system
-
-    'SEND EVENT' -> before
-
-    if 'NORMALIZE' -> system = " " then
-      write wait_message
-    else {
-      mentioned := FALSE
-      'PARSE' -> system
-      'INTERPRET'
-      }
-
-    if not mentioned and subj.IsAobject then
-      'MENTION SELF' -> subj
-
-    'SEND EVENT' -> after
-
-    }  # end of primary command loop
+  # Main command loop
+  while TRUE do { 'UPDATE' }
 
   }  # START
+
+'UPDATE' : {
+  if not started then {
+    # The INITIAL and ASSEMBLE messages are broadcast separately because
+    # the ASSEMBLEs may depend on things set up by INITIAL.
+    for each do 'INITIAL'   -> each
+    for each do 'ASSEMBLE'  -> each
+    'ASSEMBLE VOCABULARY'
+    'ENTERED' -> player.location
+    started := TRUE
+  }
+
+   'UPDATE' -> player
+   'ROLL CALL' -> system
+   'ANNOUNCE MEMBERS' -> player
+   'ANNOUNCE MEMBERS' -> player.location
+   'ANNOUNCE SELF'    -> player.location
+
+  # Prompt for input and parse
+   writes prompt; command := read; write normal
+
+   'PLAYER CMD' -> system
+   command -> system
+
+   'SEND EVENT' -> before
+
+   if 'NORMALIZE' -> system = " " then
+     write wait_message
+   else {
+     mentioned := FALSE
+     'PARSE' -> system
+     'INTERPRET'
+     }
+
+   if not mentioned and subj.IsAobject then
+     'MENTION SELF' -> subj
+
+   'SEND EVENT' -> after
+  }
 
 
  'INTERPRET' : {
