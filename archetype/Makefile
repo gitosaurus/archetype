@@ -31,6 +31,7 @@ TokenStream.o \
 Universe.o \
 Value.o \
 Wellspring.o \
+PagedOutput.o \
 WrappedOutput.o
 
 CXX=g++

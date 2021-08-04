@@ -19,7 +19,7 @@ using namespace std;
 #include "SystemObject.hh"
 #include "ConsoleInput.hh"
 #include "ConsoleOutput.hh"
-#include "WrappedOutput.hh"
+#include "PagedOutput.hh"
 
 namespace archetype {
     Universe* Universe::instance_ = nullptr;
@@ -79,7 +79,7 @@ namespace archetype {
 
     Universe::Universe() :
     input_{new ConsoleInput},
-    output_{new WrappedOutput{UserOutput{new ConsoleOutput}}}
+    output_{new PagedOutput{UserOutput{new ConsoleOutput}}}
     {
         createReservedObjects_();
         Context context;

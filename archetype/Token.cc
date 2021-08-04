@@ -7,6 +7,7 @@
 //
 
 #include "Token.hh"
+#include "Keywords.hh"
 
 namespace archetype {
     Token::Token():
@@ -20,7 +21,46 @@ namespace archetype {
     { }
 
     std::ostream& operator<<(std::ostream& out, const Token& t) {
-        out << "Token(" << t.type() << ", " << t.number() << ")";
+        switch (t.type()) {
+            case Token::RESERVED_WORD:
+                out << "reserved word '" << Keywords::instance().Reserved.get(t.number()) << "'";
+                break;
+            case Token::PUNCTUATION:
+                out << "punctuation '" << char(t.number()) << "'";
+                break;
+            default:
+                out << "Token(";
+                switch (t.type()) {
+                    case Token::RESERVED_WORD: case Token::PUNCTUATION:
+                        assert(0);
+                    case Token::IDENTIFIER:
+                        out << "identifier";
+                        break;
+                    case Token::MESSAGE:
+                        out << "message";
+                        break;
+                    case Token::OPERATOR:
+                        out << "operator";
+                        break;
+                    case Token::TEXT_LITERAL:
+                        out << "text literal";
+                        break;
+                    case Token::QUOTE_LITERAL:
+                        out << "quote literal";
+                        break;
+                    case Token::NUMERIC:
+                        out << "numeric";
+                        break;
+                    case Token::BAD_TOKEN:
+                        out << "bad token";
+                        break;
+                    case Token::NEWLINE:
+                        out << "newline";
+                        break;
+                }
+                out << ", " << t.number() << ")";
+                break;
+        }
         return out;
     }
 

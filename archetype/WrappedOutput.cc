@@ -1,58 +1,35 @@
 //
-//  WrappedOutput.cpp
+//  WrappedOutput.cc
 //  archetype
 //
 //  Created by Derek Jones on 9/20/14.
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
-#define _POSIX_SOURCE
-#include <unistd.h>
-
 #include <string>
-#include <cctype>
-
-#ifdef _XOPEN_VERSION
-#  include <sys/ioctl.h>
-#endif
 
 #include "WrappedOutput.hh"
-#include "Universe.hh"
 
 using namespace std;
 
 namespace archetype {
-    const int WrapMargin = 5;
     const int SafetyMargin = 3;
 
-    WrappedOutput::WrappedOutput(UserOutput output):
-    output_{output},
-    maxRows_{24},
-    maxColumns_{80},
-    rows_{0},
-    cursor_{0} {
-#ifdef _XOPEN_VERSION
-        struct winsize w;
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) < 0) {
-            perror("ioctl call to get terminal size");
-        } else {
-            maxRows_ = w.ws_row;
-            maxColumns_ = w.ws_col;
-        }
-#endif
-        maxColumns_ = max(0, maxColumns_ - WrapMargin);
+    WrappedOutput::WrappedOutput(UserOutput output, int max_columns):
+    output_{output} {
+        setMaxColumns(max_columns);
+        resetCursor();
+    }
+
+    void WrappedOutput::setMaxColumns(int max_columns) {
+        maxColumns_ = max_columns;
+    }
+
+    void WrappedOutput::resetCursor() {
+        cursor_ = 0;
     }
 
     WrappedOutput::~WrappedOutput() { }
-
-    void WrappedOutput::wrapWait_() {
-        string prompt = "(more)...";
-        string blanks(prompt.size(), ' ');
-        output_->put(prompt);
-        Universe::instance().input()->getKey();
-        output_->put("\r" + blanks + "\r");
-        rows_ = 0;
-    }
 
     void WrappedOutput::put(const std::string& line) {
         if (maxColumns_ == 0) {
@@ -100,18 +77,7 @@ namespace archetype {
 
     void WrappedOutput::endLine() {
         output_->endLine();
-        // Need at least two rows, one for text, one for the prompt,
-        // otherwise there's no way to page.
-        if (maxRows_ > 1  and  rows_ >= (maxRows_ - 1)) {
-            wrapWait_();
-        }
-        rows_++;
-        cursor_ = 0;
-    }
-
-    void WrappedOutput::resetPager() {
-        rows_ = 0;
-        cursor_ = 0;
+        resetCursor();
     }
 
     void WrappedOutput::banner(char ch) {

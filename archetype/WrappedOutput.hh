@@ -1,5 +1,5 @@
 //
-//  WrappedOutput.h
+//  WrappedOutput.hh
 //  archetype
 //
 //  Created by Derek Jones on 9/20/14.
@@ -13,31 +13,25 @@
 
 namespace archetype {
     class WrappedOutput : public IUserOutput {
-        UserOutput output_;
-        int maxRows_;
         int maxColumns_;
-        int rows_;
         int cursor_;
-        void wrapWait_();
+    protected:
+        UserOutput output_;
     public:
-        WrappedOutput(UserOutput output);
+        WrappedOutput(UserOutput output, int max_columns = 80);
         virtual ~WrappedOutput();
         virtual void put(const std::string& line) override;
         virtual void endLine() override;
-        virtual void resetPager() override;
         virtual void banner(char ch) override;
-
-        // Get and set the rows of text available in the console.
-        // Zero is a special value meaning that the rows are
-        // indeterminate, so never page the output.
-        int maxRows() const { return maxRows_; }
-        void setMaxRows(int rows) { maxRows_ = rows; }
 
         // Get and set the columns of text available in the console.
         // Zero is a special value meaning that the columns are
         // indeterminate, so never wrap lines.
         int maxColumns() const { return maxColumns_; }
-        void setMaxColumns(int columns) { maxColumns_ = columns; }
+        void setMaxColumns(int max_columns);
+        
+        // Set cursor back to the left margin.
+        void resetCursor();
     };
 }
 
