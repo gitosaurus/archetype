@@ -138,8 +138,11 @@ namespace archetype {
 
     void SystemParser::parse(std::string command_line) {
         playerCommand_ = command_line;
-        normalized_.clear();
-        istringstream in(command_line);
+        string unpunctuated;
+        copy_if(begin(command_line), end(command_line),
+                back_inserter(unpunctuated),
+                [](char ch) { return not ispunct(ch); });
+        istringstream in(unpunctuated);
         list<string> words;
         transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), lowercase);
 
