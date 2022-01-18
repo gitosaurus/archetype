@@ -69,6 +69,9 @@ namespace archetype {
 
         IdentifierMap ObjectIdentifiers;
 
+        void endItAll() { ended_ = true; }
+        bool ended() const { return ended_; }
+
         Context& currentContext() { return context_.top(); }
         void pushContext(const Context& context) { context_.push(context); }
         void popContext() { context_.pop(); }
@@ -101,6 +104,7 @@ namespace archetype {
         static void destroy();
 
     private:
+        bool ended_;
         ObjectIndex objects_;
         ObjectPtr   nullObject_;
         ObjectPtr   systemObject_;

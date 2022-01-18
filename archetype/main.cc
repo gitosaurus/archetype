@@ -79,20 +79,8 @@ Value dispatch_to_universe(string message) {
     if (not main_object) {
         throw invalid_argument("No 'main' object");
     }
-    int start_id = Universe::instance().Messages.index(message);
-    Value start{new MessageValue{start_id}};
-    Value result = Object::send(main_object, move(start));
-    if (result->isSameValueAs(Value{new AbsentValue})) {
-        throw invalid_argument("No method for '" + message + "' on main object");
-    }
-    return result;
-}
-
-Value update_universe() {
-    const string message = "START";
-    ObjectPtr main_object = Universe::instance().getObject("main");
-    if (not main_object) {
-        throw invalid_argument("No 'main' object");
+    if (Universe::instance().ended()) {
+        throw invalid_argument("Universe has ended");
     }
     int start_id = Universe::instance().Messages.index(message);
     Value start{new MessageValue{start_id}};
@@ -221,7 +209,7 @@ int main(int argc, const char* argv[]) {
         try {
             dispatch_to_universe("UPDATE");
         } catch (const archetype::QuitGame&) {
-            return 0;
+            Universe::instance().endItAll();
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;

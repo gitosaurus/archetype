@@ -78,6 +78,7 @@ namespace archetype {
     }
 
     Universe::Universe() :
+    ended_(false),
     input_{new ConsoleInput},
     output_{new PagedOutput{UserOutput{new ConsoleOutput}}}
     {
@@ -405,12 +406,16 @@ namespace archetype {
     }
 
     Storage& operator<<(Storage& out, const Universe& u) {
+        out << static_cast<int>(u.ended_);
         out << u.Messages << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
         out << u.objects_;
         return out;
     }
 
     Storage& operator>>(Storage& in, Universe& u) {
+        int ended;
+        in >> ended;
+        u.ended_ = static_cast<bool>(ended);
         u.Messages.clear();
         u.TextLiterals.clear();
         u.Identifiers.clear();
