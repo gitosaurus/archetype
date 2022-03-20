@@ -38,6 +38,7 @@ namespace archetype {
     public:
         MemoryStorage();
         virtual ~MemoryStorage() { }
+        std::vector<Byte>& bytes() { return bytes_; }
         virtual int remaining() const override;
         virtual int read(Byte* buf, int nbytes) override;
         virtual void write(const Byte* buf, int nbytes) override;

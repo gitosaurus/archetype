@@ -1,5 +1,5 @@
 //
-//  main.cpp
+//  main.cc
 //  archetype
 //
 //  Created by Derek Jones on 2/5/14.
@@ -13,20 +13,31 @@
 #include <list>
 #include <string>
 #include <fstream>
+#include <iterator>
 
-#include "TestRegistry.hh"
-#include "ReadEvalPrintLoop.hh"
-#include "SourceFile.hh"
-#include "TokenStream.hh"
-#include "Universe.hh"
-#include "Keywords.hh"
-#include "FileStorage.hh"
-#include "Wellspring.hh"
+#include "archetype/TestRegistry.hh"
+#include "archetype/ReadEvalPrintLoop.hh"
+#include "archetype/SourceFile.hh"
+#include "archetype/TokenStream.hh"
+#include "archetype/Universe.hh"
+#include "archetype/WrappedOutput.hh"
+#include "archetype/ConsoleOutput.hh"
+#include "archetype/StringInput.hh"
+#include "archetype/Keywords.hh"
+#include "archetype/FileStorage.hh"
+#include "archetype/Wellspring.hh"
+
+#include "archetype/update_universe.hh"
 
 namespace archetype {
-    static const char VersionString[] = "3.0";
+  static const char VersionString[] = "3.0";
 
-    class Session {
+  class CompilationFailure : public std::runtime_error {
+  public:
+    CompilationFailure(): runtime_error("Could not compile.") { }
+  };
+
+  class Session {
     public:
         Session():
         silent_{false}
@@ -54,7 +65,8 @@ namespace archetype {
         bool silent_;
     };
 
-}
+} // namespace archetype
+
 
 using namespace std;
 using namespace archetype;
@@ -74,21 +86,40 @@ void usage() {
     ;
 }
 
-Value dispatch_to_universe(string message) {
-    ObjectPtr main_object = Universe::instance().getObject("main");
-    if (not main_object) {
-        throw invalid_argument("No 'main' object");
+static void from_source(map<std::string, std::string> &opts) {
+    string source_path = opts["source"];
+    SourceFilePtr source = Wellspring::instance().primarySource(source_path);
+    if (not source) {
+        throw invalid_argument("Cannot open \"" + source_path + "\"");
     }
-    if (Universe::instance().ended()) {
-        throw invalid_argument("Universe has ended");
+    TokenStream tokens(source);
+    if (not Universe::instance().make(tokens)) {
+        throw CompilationFailure();
     }
-    int start_id = Universe::instance().Messages.index(message);
-    Value start{new MessageValue{start_id}};
-    Value result = Object::send(main_object, move(start));
-    if (result->isSameValueAs(Value{new AbsentValue})) {
-        throw invalid_argument("No method for '" + message + "' on main object");
+    Universe::instance().reportUndefinedIdentifiers();
+    if (not opts.count("create")) {
+        dispatch_to_universe("START");
+    } else {
+        string filename_out = opts["create"];
+        if (filename_out.empty()) {
+            auto iext = source_path.rfind('.');
+            filename_out = source_path.substr(0, iext);
+        }
+        string acx = ".acx";
+        if (filename_out.rfind(acx) != filename_out.length() - acx.length()) {
+            filename_out += acx;
+        }
+        if (source_path == filename_out) {
+            throw invalid_argument("Cannot use " + filename_out + " as output");
+        }
+        OutFileStorage save_file(filename_out);
+        if (save_file.ok()) {
+            save_file << Universe::instance();
+            cout << "Created " + filename_out << endl;
+        } else {
+            throw runtime_error("Could not write to " + filename_out);
+        }
     }
-    return result;
 }
 
 int main(int argc, const char* argv[]) {
@@ -132,39 +163,7 @@ int main(int argc, const char* argv[]) {
 
     if (opts.count("source")) {
         try {
-            string source_path = opts["source"];
-            SourceFilePtr source = Wellspring::instance().primarySource(source_path);
-            if (not source) {
-                throw invalid_argument("Cannot open \"" + source_path + "\"");
-            }
-            TokenStream tokens(source);
-            if (not Universe::instance().make(tokens)) {
-                return 1;
-            }
-            Universe::instance().reportUndefinedIdentifiers();
-            if (not opts.count("create")) {
-                dispatch_to_universe("START");
-            } else {
-                string filename_out = opts["create"];
-                if (filename_out.empty()) {
-                    auto iext = source_path.rfind('.');
-                    filename_out = source_path.substr(0, iext);
-                }
-                string acx = ".acx";
-                if (filename_out.rfind(acx) != filename_out.length() - acx.length()) {
-                  filename_out += acx;
-                }
-                if (source_path == filename_out) {
-                  throw invalid_argument("Cannot use " + filename_out + " as output");
-                }
-                OutFileStorage save_file(filename_out);
-                if (save_file.ok()) {
-                    save_file << Universe::instance();
-                    cout << "Created " + filename_out << endl;
-                } else {
-                    throw runtime_error("Could not write to " + filename_out);
-                }
-            }
+            from_source(opts);
         } catch (const archetype::QuitGame&) {
             return 0;
         } catch (const std::exception& e) {
@@ -178,12 +177,6 @@ int main(int argc, const char* argv[]) {
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
-        InFileStorage in(filename);
-        if (not in.ok()) {
-            cerr << "Cannot open " << filename << endl;
-            return 1;
-        }
-        in >> Universe::instance();
         try {
             dispatch_to_universe("START");
         } catch (const archetype::QuitGame&) {
@@ -192,36 +185,35 @@ int main(int argc, const char* argv[]) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
-        return 0;
     } else if (opts.count("update")) {
         string filename = opts["update"];
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
-        {
-            InFileStorage in(filename);
-            if (not in.ok()) {
-                cerr << "Cannot open " << filename << endl;
-                return 1;
-            }
-            in >> Universe::instance();
+        int width = 40;
+        if (opts.count("width")) {
+            width = stoi(opts["width"]);
         }
         try {
-            dispatch_to_universe("UPDATE");
-        } catch (const archetype::QuitGame&) {
-            Universe::instance().endItAll();
+          MemoryStorage in_mem;
+          {
+              ifstream f_in(filename.c_str());
+              if (!f_in) {
+                throw invalid_argument("Cannot read from " + filename);
+              }
+              copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
+          }
+          MemoryStorage out_mem;
+          update_universe(in_mem, out_mem, opts["input"], width);
+          ofstream f_out(filename.c_str());
+          if (!f_out) {
+              throw invalid_argument("Cannot write to " + filename);
+          }
+          copy(out_mem.bytes().begin(), out_mem.bytes().end(), ostreambuf_iterator<char>{f_out});
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
-        {
-            OutFileStorage out(filename);
-            if (not out.ok()) {
-                cerr << "Cannot write to " << filename << endl;
-            }
-            out << Universe::instance();
-        }
-        return 0;
     }
+    return 0;
 }
-

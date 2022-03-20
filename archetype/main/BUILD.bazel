@@ -1,0 +1,9 @@
+
+cc_binary(
+    name = "archetype",
+    srcs = ["main.cc"],
+    deps = [
+        "//archetype:archetype",
+    ],
+)
+
