@@ -141,7 +141,7 @@ namespace archetype {
         string unpunctuated;
         copy_if(begin(command_line), end(command_line),
                 back_inserter(unpunctuated),
-                [](char ch) { return not ispunct(ch); });
+                [](char ch) { return not ispunct(ch)  or  ch == '-'; });
         istringstream in(unpunctuated);
         list<string> words;
         transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), lowercase);

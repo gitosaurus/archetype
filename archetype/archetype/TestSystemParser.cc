@@ -24,11 +24,16 @@ namespace archetype {
         parser->parse("The quick Brown Fox     jumped over   the lazy    dogs");
         string n1_str = parser->normalized();
         ARCHETYPE_TEST_EQUAL(n1_str, string(" the quick brown fox jumped over the lazy dogs "));
-        
+
         parser->close();
         parser->parse("Look, above, at the 'bulb'.");
         string n2_str = parser->normalized();
         ARCHETYPE_TEST_EQUAL(n2_str, string(" look above at the bulb "));
+
+        parser->close();
+        parser->parse("Get some part-time work.");
+        string n3_str = parser->normalized();
+        ARCHETYPE_TEST_EQUAL(n3_str, string(" get some part-time work "));
     }
 
     void TestSystemParser::testBasicParsing_() {
