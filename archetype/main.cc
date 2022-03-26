@@ -204,7 +204,7 @@ int main(int argc, const char* argv[]) {
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
           MemoryStorage out_mem;
-          update_universe(in_mem, out_mem, opts["input"], width);
+          cout << update_universe(in_mem, out_mem, opts["input"], width);
           ofstream f_out(filename.c_str());
           if (!f_out) {
               throw invalid_argument("Cannot write to " + filename);
