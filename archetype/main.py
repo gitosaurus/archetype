@@ -19,7 +19,7 @@ def update(adventure: str):
         blob.download_to_filename(local_data)
         run = subprocess.run([
             '/usr/local/bin/archetype_run',
-            '--width=70', '--silent',
+            '--width=80', '--silent',
             f'--update={local_data}',
             '--input={}'.format(command)], capture_output=True)
         narrative = run.stdout.decode()
