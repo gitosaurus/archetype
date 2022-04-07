@@ -157,8 +157,10 @@ methods
 >>triangle on the chest; probably to indicate my special status.
     }
 
-  'wear' : if uniform.wearing = TRUE then
+  'wear' : if uniform.wearing = TRUE then {
              write "But I'm already wearing ", 'DEF' -> uniform, "."
+	     'MENTION SELF' -> uniform
+	   }
            else
              message --> wearable
 
@@ -319,7 +321,6 @@ end
 scenery bulb
   desc     : "dirty yellow light bulb"
   location : cell
-  visible  : FALSE
 methods
   'get'   : write "It's too high up."
   'break' : 'get'
@@ -344,7 +345,7 @@ object guard
   stare     : 4           # how many times you can stare at the guard before
                           # he loses it
 
-  never_put_on : FALSE
+  never_put_on : TRUE
 
 methods
 
@@ -501,7 +502,10 @@ methods
 
   'put...on' :
     if alive then
-      write "He's not going to let me do that."
+      >>He's not going to let me do that.
+    else if location = cot then {
+      >>He's already on the cot.
+    }
     else if main.dobj = cot then {
       if never_put_on then {
 >>Pushing and grunting, I manage to get him over to the cot and,
@@ -551,6 +555,16 @@ methods
 end
 
 
+scenery blue_light
+  desc     : "dull blue light"
+  location : hall
+  visible  : FALSE
+methods
+  'get' : write "It's recessed into the wall."
+  'break' : 'get'
+  'look' : write "It's barely enough to see by."
+end
+
 
 ############################# Guard's Possessions ###########################
 
@@ -597,8 +611,10 @@ methods
       message --> object
 
   'wear' : {
-    if prison_coveralls.wearing = TRUE then
+    if prison_coveralls.wearing = TRUE then {
       write "But I'm already wearing ", 'DEF' -> prison_coveralls, "."
+      'MENTION SELF' -> prison_coveralls
+    }
     else {
       message --> wearable
       if wearing = TRUE and first_worn then {
@@ -790,6 +806,7 @@ methods
 >>I squint deeper into the darkness.  All of the cells have a little
 >>doorbell-like device.  Above each one is a sign that reads, "RING WHEN
 >>READY TO COOPERATE."
+>>
 >>Now that is sad.  Really sad.
       }
     }
@@ -1082,10 +1099,10 @@ methods
   'BRIEF' : >>Back near Velchny's office and the broom closet.
 
   'LONGDESC' : {
->>I'm standing in a carpeted hallway that has a broom closet to the south
+>>I'm standing in a carpeted hallway that has a broom closet to the southo
 >>and a wide office door to the north, with the name "Commandant Velchny"
-    writes "stenciled on the door.  "
-    if ? 4 = 1 then writes "A cockroach scuttles under the closet door.  "
+>>stenciled on the door.
+    if ? 4 = 1 then write "A cockroach scuttles under the closet door."
     write
     }
 

@@ -14,7 +14,7 @@ methods
 
   'get' : >>I can't do that.
   'look' : {
-    'Desc'
+    message --> object
     first_seen := FALSE
     }
 

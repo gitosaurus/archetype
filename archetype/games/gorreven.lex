@@ -11,6 +11,16 @@ Verb null
 end
 
 Verb null
+  full : 'shoot'
+  normal : TRUE
+methods
+  'NORMAL' :
+    if gun.location = player
+    then 'kill' -> main.subj
+    else write "I have nothing with which to shoot."
+end
+
+Verb null
   full   : 'face'
   normal : "I set my shoulders and face " & ('DEF' -> main.subj) & "."
 end
