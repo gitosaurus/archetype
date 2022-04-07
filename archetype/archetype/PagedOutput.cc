@@ -26,7 +26,8 @@ namespace archetype {
 
     PagedOutput::PagedOutput(UserOutput output, int max_columns, int max_rows):
     WrappedOutput{output, max_columns},
-    maxRows_{max_rows}
+    maxRows_{max_rows},
+    rows_{0}
     {
 #ifdef _XOPEN_VERSION
         struct winsize w;

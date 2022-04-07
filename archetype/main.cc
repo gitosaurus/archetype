@@ -178,7 +178,12 @@ int main(int argc, const char* argv[]) {
             filename += ".acx";
         }
         try {
-            dispatch_to_universe("START");
+          InFileStorage in(filename);
+          if (!in.ok()) {
+            throw runtime_error("Cannot open \"" + filename + "\"");
+          }
+          in >> Universe::instance();
+          dispatch_to_universe("START");
         } catch (const archetype::QuitGame&) {
             return 0;
         } catch (const std::exception& e) {
@@ -190,7 +195,7 @@ int main(int argc, const char* argv[]) {
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
-        int width = 40;
+        int width = 80;
         if (opts.count("width")) {
             width = stoi(opts["width"]);
         }
