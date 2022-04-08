@@ -15,19 +15,19 @@
 #include <fstream>
 #include <iterator>
 
-#include "archetype/TestRegistry.hh"
-#include "archetype/ReadEvalPrintLoop.hh"
-#include "archetype/SourceFile.hh"
-#include "archetype/TokenStream.hh"
-#include "archetype/Universe.hh"
-#include "archetype/WrappedOutput.hh"
-#include "archetype/ConsoleOutput.hh"
-#include "archetype/StringInput.hh"
-#include "archetype/Keywords.hh"
-#include "archetype/FileStorage.hh"
-#include "archetype/Wellspring.hh"
+#include "TestRegistry.hh"
+#include "ReadEvalPrintLoop.hh"
+#include "SourceFile.hh"
+#include "TokenStream.hh"
+#include "Universe.hh"
+#include "WrappedOutput.hh"
+#include "ConsoleOutput.hh"
+#include "StringInput.hh"
+#include "Keywords.hh"
+#include "FileStorage.hh"
+#include "Wellspring.hh"
 
-#include "archetype/update_universe.hh"
+#include "update_universe.hh"
 
 namespace archetype {
   static const char VersionString[] = "3.0";

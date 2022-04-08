@@ -18,7 +18,7 @@ def update(adventure: str):
         local_data = temp_dir + '/local.acx'
         blob.download_to_filename(local_data)
         run = subprocess.run([
-            '/usr/local/bin/archetype_run',
+            '/usr/local/bin/archetype',
             '--width=80', '--silent',
             f'--update={local_data}',
             '--input={}'.format(command)], capture_output=True)

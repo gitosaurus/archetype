@@ -4,7 +4,7 @@ project(archetype)
 set(CMAKE_CXX_STANDARD 11)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-add_library(archetype
+add_executable(archetype
 Capture.cc
 ConsoleInput.cc
 Expression.cc
@@ -40,4 +40,8 @@ Value.cc
 Wellspring.cc
 WrappedOutput.cc
 update_universe.cc
+main.cc
 )
+
+include(GNUInstallDirs)
+install(TARGETS archetype RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR})

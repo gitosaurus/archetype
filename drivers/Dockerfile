@@ -4,18 +4,13 @@ FROM python:3.10-slim
 
 # Prepare to build the main Archetype program.
 
-# Install the typical development tools and some additions:
-#   - ninja-build is a backend for CMake that often compiles faster than
-#     CMake with GNU Make.
-#   - Install the boost libraries.
 RUN apt update && \
     apt install --yes \
-        cmake \
-        g++
+        cmake g++
 
 # First build the main Archetype executable.
 WORKDIR /c/source
-COPY . /c/source/
+COPY archetype/ /c/source/
 
 # Run the CMake configuration step, setting the options to create
 # a statically linked C++ program
@@ -23,14 +18,13 @@ RUN cmake -S/c/source -B/c/binary \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXE_LINKER_FLAGS=-static
 
-# Compile the binary and strip it to reduce its size.
 RUN cmake --build /c/binary
 RUN cmake --install /c/binary --prefix /usr/local
 
 # Copy local code to the container image.
 ENV APP_HOME /app
 WORKDIR $APP_HOME
-COPY . ./
+COPY cloud_run/ ./
 
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
