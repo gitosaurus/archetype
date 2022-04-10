@@ -159,8 +159,8 @@ methods
 
   'wear' : if uniform.wearing = TRUE then {
              write "But I'm already wearing ", 'DEF' -> uniform, "."
-	     'MENTION SELF' -> uniform
-	   }
+             'MENTION SELF' -> uniform
+           }
            else
              message --> wearable
 
@@ -234,6 +234,8 @@ object cot_fragment
   broken_off : FALSE
   breaks_glass : TRUE
 
+  times_pulled: 0
+
 methods
 
   'look' :
@@ -260,6 +262,23 @@ methods
       >>I don't know if I could break it, but maybe I could break it OFF...
 
   'break_off'        : 'break off'
+
+  'pull on' : 'pull'
+  'pull':
+    if broken_off then
+      message --> object
+    else
+      case times_pulled +:=1 of {
+        1: >>I pull on the piece of metal experimentally.  It creaks away from the
+           >>frame, weakening the remaining connection further.  If I pull it again,
+           >>it might break off.
+        default: 'break_off'
+      }
+
+  'push on' : 'push'
+  'push' :
+    >>I push it up against the frame, but it doesn't stay, and sags out again.
+    >>It looks as if it might break off if I were to pull on it.
 
   'break off...from' : 'break...off of'
   'break...off of' :
@@ -2478,5 +2497,3 @@ methods
                    "suspicion - and a target, anyway.  The crescendoing ",
                    "pain lancing through my body is mercifully short-lived."
 end
-
-
