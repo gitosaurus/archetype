@@ -1,25 +1,26 @@
-# Use the official lightweight Python image.
-# https://hub.docker.com/_/python
-FROM python:3.10-slim
+# First, build the executable.
+FROM alpine:latest as build
 
-# Prepare to build the main Archetype program.
+RUN apk update && apk add --no-cache \
+        build-base cmake g++ make ninja
 
-RUN apt update && \
-    apt install --yes \
-        cmake g++
-
-# First build the main Archetype executable.
 WORKDIR /c/source
 COPY archetype/ /c/source/
 
 # Run the CMake configuration step, setting the options to create
 # a statically linked C++ program
 RUN cmake -S/c/source -B/c/binary \
+    -G Ninja \
     -DCMAKE_BUILD_TYPE=Release \
     -DCMAKE_EXE_LINKER_FLAGS=-static
 
 RUN cmake --build /c/binary
-RUN cmake --install /c/binary --prefix /usr/local
+RUN strip /c/binary/archetype
+
+# Next layer:
+# use the official lightweight Python image.
+# https://hub.docker.com/_/python
+FROM python:3.10-slim
 
 # Copy local code to the container image.
 ENV APP_HOME /app
@@ -28,6 +29,9 @@ COPY cloud_run/ ./
 
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
+
+# Bring in the executable from the build stage.
+COPY --from=build /c/binary/archetype /usr/local/bin/archetype
 
 # Allow statements and log messages to immediately appear in the Knative logs
 ENV PYTHONUNBUFFERED True
