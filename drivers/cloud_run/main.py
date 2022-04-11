@@ -9,9 +9,9 @@ app = Flask(__name__)
 client = storage.Client()
 
 
-@app.route('/update/<adventure>')
+@app.route('/update/<adventure>', methods=['POST'])
 def update(adventure: str):
-    command = request.args.get('command', 'wait')
+    command = request.form.get('command', 'wait')
     bucket = client.get_bucket('archetype_web_cards')
     blob = bucket.get_blob(adventure)
     with TemporaryDirectory() as temp_dir:
