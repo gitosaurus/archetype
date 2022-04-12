@@ -3,7 +3,7 @@
 //  archetype
 //
 //  Created by Derek Jones on 6/4/14.
-//  Copyright (c) 2014 Derek Jones. All rights reserved.
+//  Copyright (c) 2014, 2022 Derek Jones. All rights reserved.
 //
 
 #include <fstream>
@@ -27,6 +27,10 @@ namespace archetype {
         // Run the filename alone through the regular search now, since that
         // will also supply the default extension.
         return open(file_path.substr(last_slash + 1));
+    }
+
+    void Wellspring::addSearchPath(std::string directory_path) {
+        paths_.push_back(directory_path);
     }
 
     SourceFilePtr Wellspring::open(string source_name) {

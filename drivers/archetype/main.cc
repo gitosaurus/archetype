@@ -3,7 +3,7 @@
 //  archetype
 //
 //  Created by Derek Jones on 2/5/14.
-//  Copyright (c) 2014 Derek Jones. All rights reserved.
+//  Copyright (c) 2014, 2022 Derek Jones. All rights reserved.
 //
 
 #include <iostream>
@@ -28,6 +28,14 @@
 #include "Wellspring.hh"
 
 #include "update_universe.hh"
+
+
+#if NDEBUG
+#  define SHOW(expr)
+#else
+#  define SHOW(expr) std::cerr << #expr << " == " << (expr) << std::endl
+#endif
+
 
 namespace archetype {
   static const char VersionString[] = "3.0";
@@ -80,7 +88,8 @@ void usage() {
         << " --repl                  Enter the REPL (Read-Eval-Print Loop)." << endl
         << " --silent                Produce only game output and no other advisory output." << endl
         << " --source=file.ach       Read, compile, and run the given program." << endl
-        << "   --create[=file.acx]   Don't run, but write the program given by --source to a binary file." << endl
+        << "   --include=path[:path...]  Colon-separated list of paths to search for source." << endl
+        << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
     ;
@@ -91,6 +100,14 @@ static void from_source(map<std::string, std::string> &opts) {
     SourceFilePtr source = Wellspring::instance().primarySource(source_path);
     if (not source) {
         throw invalid_argument("Cannot open \"" + source_path + "\"");
+    }
+    if (opts.count("include")) {
+      string includes = opts["include"];
+      istringstream in(includes);
+      string path; while (getline(in, path, ':')) {
+	SHOW(path);
+	Wellspring::instance().addSearchPath(path);
+      }
     }
     TokenStream tokens(source);
     if (not Universe::instance().make(tokens)) {
