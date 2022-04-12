@@ -205,69 +205,6 @@ end
 
 
 
-# We're going to define a class of furniture that is "openable".  This
-# requires the definition of the verbs "open" and "close" as well.
-# Notice here that Archetype takes no notice of the end of the line
-# for anything except comments (#) and quote-me's (>>).
-#
-# The "syn" attribute works for objects as well as lexicon entries;
-# it is a list of other synonyms for the same thing.  If there were
-# more than one synonym, they would be separated by vertical bars.
-# See the entry for 'in' in LEXICON.ACH for an example.
-
-lex null full : 'open'  end
-lex null full : 'close' syn : 'shut' end
-
-
-class openable based on furniture
-
-  open      : FALSE
-  proximity : "in"
-
-methods
-
-# The TRANSPARENT method determines whether or not the player can access
-# objects within this one without being actually inside the "openable"
-# object.  Note that for openable furniture, the transparency depends on
-# the state of the "open" attribute.
-
-  'TRANSPARENT' : open
-
-# Note the "writes" statement below.  "writes" writes its arguments but
-# does not finish the line.
-
-  'look' : {
-    writes "It is presently "
-    if open then write "open." else write "closed."
-    }
-
-
-# Note below the 'DEF' message sent to self.  All objects have a
-# 'DEF' and 'INDEF' methods, meaning "definite" and "indefinite".
-# 'DEF' is usually "the <object>" and 'INDEF', "a <object>" or "an <object>".
-# It's better to use these because some objects may change their 'INDEF'
-# or 'DEF' messages; this is more portable.  Take a look at the "drawers"
-# object.
-
-  'open' :
-    if open then
-      >>It's already open.
-    else {
-      open := TRUE
-      write "I opened ", 'DEF' -> self, "."
-    }
-
-  'close' :
-    if open then {
-      open := FALSE
-      write "I closed ", 'DEF' -> self, "."
-      }
-    else
-      write "It's already closed."
-
-end
-
-
 openable closet
 
   desc      : "closet"

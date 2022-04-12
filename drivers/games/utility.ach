@@ -20,6 +20,86 @@ methods
 
 end
 
+
+Verb null
+
+full : 'open'
+  normal : TRUE
+
+methods
+
+'NORMAL' :
+    if main.subj.open = UNDEFINED then
+      ABSENT
+    else if main.subj.open then
+      write "It's already open."
+    else {
+      write main.voice.Who & " opened ", 'DEF' -> main.subj, "."
+      main.subj.open := TRUE
+      }
+end
+
+Verb null
+
+  full : 'close'
+  syn : 'shut'
+
+methods
+
+'NORMAL' :
+    if main.subj.open = UNDEFINED then
+      ABSENT
+    else if not main.subj.open then
+      write "It's already closed."
+    else {
+      write main.voice.Who & " closed ", 'DEF' -> main.subj, "."
+      main.subj.open := FALSE
+      }
+end
+
+
+type openable based on object
+
+  open    : FALSE
+
+methods
+
+  'TRANSPARENT' : open
+
+  'look' : {
+    writes "It is presently "
+    if open then write "open." else write "closed."
+    }
+
+  'look in' :
+    if 'TRANSPARENT' -> self then {
+      writes main.voice.Who & " look inside ", 'DEF' -> self, ".  "
+      'INVENTORY'
+      }
+    else if not open then
+      write "It's not open; ", main.voice.who, " can't look inside."
+    else
+      write "I can't look inside that."
+
+  'open' :
+    if open then
+      write main.voice.Who & " would but ", 'DEF' -> self, " is already open."
+    else {
+      open := TRUE
+      write main.voice.Who & " opened ", 'DEF' -> self, "."
+      }
+
+  'close' :
+    if not open then
+      write main.voice.Who & " would but ", 'DEF' -> self, " is already closed."
+    else {
+      open := FALSE
+      write main.voice.Who & " closed ", 'DEF' -> self, "."
+      }
+
+end
+
+
 # Hollow objects.  These are objects that can double as rooms.
 
 class hollow_object based on object

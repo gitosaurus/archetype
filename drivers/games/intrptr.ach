@@ -416,8 +416,8 @@ end
 
 class inventoried based on inventory_item
 
-  intro       : "This object contains"
-  empty_intro : "There is nothing in this object."
+  intro       : "There is"
+  empty_intro : "There is nothing in there."
 
   members_ : UNDEFINED
   temp_    : UNDEFINED

@@ -5,49 +5,6 @@
 
 include "utility"
 
-type openable based on object
-
-  open    : FALSE
-
-methods
-
-  'TRANSPARENT' : open
-
-  'look' : {
-    writes "It is presently "
-    if open then write "open." else write "closed."
-    }
-
-  'look in' :
-    if 'TRANSPARENT' -> self then {
-      writes "I look inside ", 'DEF' -> self, ".  "
-      'INVENTORY'
-      }
-    else if not open then
-      write "It's not open; I can't look inside."
-    else
-      write "I can't look inside that."
-
-  'open' :
-    if open then
-      write "I would but ", 'DEF' -> self, " is already open."
-    else {
-      open := TRUE
-      write "I opened ", 'DEF' -> self, "."
-      }
-
-  'close' :
-    if not open then
-      write "I would but ", 'DEF' -> self, " is already closed."
-    else {
-      open := FALSE
-      write "I closed ", 'DEF' -> self, "."
-      }
-
-end
-
-
-
 type wearable based on object
 
   wearing : FALSE

@@ -233,37 +233,6 @@ writes "glancing up and making eye contact.  "
 end
 
 
-type openable based on object
-
-  open  : FALSE
-
-methods
-
-  'look' : {
-    writes "It is "
-    if open then writes "open " else writes "closed "
-    write "at the moment."
-    }
-
-  'open' :
-    if open then
-      write "It's already open."
-    else {
-      open := TRUE
-      write "I opened ", 'DEF' -> self, "."
-      }
-
-  'close' :
-    if open then {
-      open := FALSE
-      write "I closed ", 'DEF' -> self, "."
-      }
-    else
-      write "It's already closed."
-
-end
-
-
 type elev_button based on object
 
   location : elevator

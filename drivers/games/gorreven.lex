@@ -55,9 +55,6 @@ Verb null full : 'wear'    syn : 'put on' end
 Verb null full : 'remove'  syn : 'take off' end
 
 
-Verb null full : 'open'  end
-Verb null full : 'close'       syn : 'shut' end
-
 Verb null
   full : 'push'
   syn  : 'press'

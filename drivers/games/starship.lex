@@ -96,36 +96,6 @@ methods
 end
 
 
-Verb null
-  full : 'open'
-  normal : TRUE
-methods
-  'NORMAL' :
-    if main.subj.open = UNDEFINED then
-      ABSENT
-    else if main.subj.open then
-      write "It's already open."
-    else {
-      write "I opened ", 'DEF' -> main.subj, "."
-      main.subj.open := TRUE
-      }
-end
-Verb null
-  full : 'close'
-  syn : 'shut'
-methods
-  'NORMAL' :
-    if main.subj.open = UNDEFINED then
-      ABSENT
-    else if not main.subj.open then
-      write "It's already closed."
-    else {
-      write "I closed ", 'DEF' -> main.subj, "."
-      main.subj.open := FALSE
-      }
-end
-
-
 Verb null  full : 'wear'  syn  : 'put on' end
 Verb null full : 'remove'  end
 
