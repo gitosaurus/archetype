@@ -105,8 +105,8 @@ static void from_source(map<std::string, std::string> &opts) {
       string includes = opts["include"];
       istringstream in(includes);
       string path; while (getline(in, path, ':')) {
-	SHOW(path);
-	Wellspring::instance().addSearchPath(path);
+        SHOW(path);
+        Wellspring::instance().addSearchPath(path);
       }
     }
     TokenStream tokens(source);
