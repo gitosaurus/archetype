@@ -724,13 +724,21 @@ namespace archetype {
             case Keywords::RW_EACH:
                 result = Value{new ObjectValue{Universe::instance().currentContext().eachObject->id()}};
                 break;
-            case Keywords::RW_READ:
-                result = Value{new StringValue{Universe::instance().input()->getLine()}};
+            case Keywords::RW_READ: {
+                string line = Universe::instance().input()->getLine();
+                if (Universe::instance().input()->atEOF()) {
+                    result = Value{new UndefinedValue};
+                } else {
+                    result = Value{new StringValue{line}};
+                }
                 break;
+            }
             case Keywords::RW_KEY: {
                 char key = Universe::instance().input()->getKey();
-                if (key == '\0') {
-                    result = Value{new StringValue{""}};
+                if (key == '\4'  ||  key == '\0') {
+                    // Consider it UNDEFINED if the user hit ^D (to immediately cause EOF)
+                    // or if the stream truly is exhausted, which will return NUL ('\0').
+                    result = Value{new UndefinedValue};
                 } else {
                     result = Value{new StringValue{string{key}}};
                 }

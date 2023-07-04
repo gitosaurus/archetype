@@ -290,7 +290,7 @@ namespace archetype {
     }
 
     void TestExpression::testInput_() {
-        UserInput input_seq{new StringInput{"Hello, world!\nyGoodbye, world."}};
+        UserInput input_seq{new StringInput{"Hello, world!\nyGoodbye, world.\n"}};
         Universe::instance().setInput(input_seq);
         Expression read_expr = make_expr_from_str("read");
         Value val = read_expr->evaluate()->stringConversion();
@@ -303,11 +303,11 @@ namespace archetype {
         val = read_expr->evaluate()->stringConversion();
         ARCHETYPE_TEST(val->isDefined());
         ARCHETYPE_TEST_EQUAL(val->getString(), string{"Goodbye, world."});
-        // Now test the EOF conditions of both, which are blank strings
+        // Now test the EOF conditions of both, which should be UNDEFINED
         val = read_expr->evaluate()->stringConversion();
-        ARCHETYPE_TEST_EQUAL(val->getString(), string{});
+        ARCHETYPE_TEST(!val->isDefined());
         val = key_expr->evaluate()->stringConversion();
-        ARCHETYPE_TEST_EQUAL(val->getString(), string{"Save file? (y/n) "});
+        ARCHETYPE_TEST(!val->isDefined());
     }
 
     void TestExpression::testVerification_() {

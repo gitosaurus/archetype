@@ -169,6 +169,10 @@ methods
 
   # Prompt for input and parse
    writes prompt; command := read; write normal
+   if command = UNDEFINED then {
+     # User has terminated the input
+     stop "EOF; goodbye."
+   }
 
    'PLAYER CMD' -> system
    command -> system
