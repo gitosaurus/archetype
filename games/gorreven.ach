@@ -205,15 +205,19 @@ sit_furniture cot
 methods
 
   'look' : {
->>It is a dingy, ill-maintained cot with a thin and moth-eaten mattress.
->>The Marriott this isn't.  The thin mattress is spotted with stains of
->>sweat and blood and sits atop a creaky metal frame that is on the
->>verge of coming apart.
->>
+
+    >>It is a dingy, ill-maintained cot with a thin and moth-eaten mattress.
+    >>The Marriott this isn't.  The thin mattress is spotted with stains of
+    >>sweat and blood and sits atop a creaky metal frame that is on the
+    >>verge of coming apart.
+    >>
+
     if cot_fragment.broken_off then
->>One corner sags, the worse for wear since you broke off a piece of its support.
-    else
->>In one corner a piece of metal that forms the flange has begun to detach.
+      >>One corner sags, the worse for wear since you broke off a piece of its support.
+    else {
+      >>In one corner a piece of metal that forms the flange has begun to detach.
+      'MENTION SELF' -> cot_fragment
+    }
   }
 
   'get' :
