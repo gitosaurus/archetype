@@ -520,7 +520,7 @@ namespace archetype {
             case PAIR: {
                 Value head, tail;
                 in >> head >> tail;
-                v = Value{new PairValue{move(head), move(tail)}};
+                v = Value{new PairValue{std::move(head), std::move(tail)}};
                 break;
             }
         }

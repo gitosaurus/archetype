@@ -240,8 +240,8 @@ namespace archetype {
         Value tail_;
     public:
         PairValue(Value head, Value tail):
-        head_(move(head)),
-        tail_(move(tail))
+        head_(std::move(head)),
+        tail_(std::move(tail))
         { }
 
         virtual bool isSameValueAs(const Value& other) const override;

@@ -77,7 +77,7 @@ namespace archetype {
     void TestValue::testPairs_() {
         Value a{new NumericValue{1}};
         Value b{new NumericValue{2}};
-        Value ab{new PairValue{move(a), move(b)}};
+        Value ab{new PairValue{std::move(a), std::move(b)}};
         string actual = display(ab);
         string expected = "(1 @ 2)";
         ARCHETYPE_TEST_EQUAL(actual, expected);
@@ -87,7 +87,7 @@ namespace archetype {
         actual = display(node1);
         expected = "{\"world\"}";
         ARCHETYPE_TEST_EQUAL(actual, expected);
-        Value node2{new PairValue{Value{new StringValue{"hello"}}, move(node1)}};
+        Value node2{new PairValue{Value{new StringValue{"hello"}}, std::move(node1)}};
         actual = display(node2);
         expected = "{\"hello\" \"world\"}";
         ARCHETYPE_TEST_EQUAL(actual, expected);

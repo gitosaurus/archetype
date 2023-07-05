@@ -225,7 +225,7 @@ namespace archetype {
         while (more) {
             typename Tseq::value_type element;
             in >> element;
-            seq.insert(end(seq), move(element));
+            seq.insert(end(seq), std::move(element));
             in >> more;
         }
         return in;

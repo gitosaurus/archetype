@@ -90,7 +90,7 @@ namespace archetype {
         Value val = stmt->execute();
         list<Value> parsed;
         while (val->isDefined()) {
-            parsed.push_back(move(val));
+            parsed.push_back(std::move(val));
             val = stmt->execute();
         }
         ARCHETYPE_TEST_EQUAL(parsed.size(), size_t(3));

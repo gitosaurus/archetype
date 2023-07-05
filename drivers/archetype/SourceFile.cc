@@ -15,7 +15,7 @@ using namespace std;
 namespace archetype {
     SourceFile::SourceFile(std::string source, stream_ptr& in):
     filename_{source},
-    file_{move(in)},
+    file_{std::move(in)},
     fileLine_{0},
     linePos_{0},
     lastChar_{0}

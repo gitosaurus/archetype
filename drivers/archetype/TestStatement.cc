@@ -132,7 +132,7 @@ namespace archetype {
         Universe::instance().assignObjectIdentifier(x, "x");
         int i_id = Universe::instance().Identifiers.index("i");
         Expression init{new ValueExpression{Value{new NumericValue{0}}}};
-        x->setAttribute(i_id, move(init));
+        x->setAttribute(i_id, std::move(init));
         string loop_str = "{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } write; x.i}";
         Statement loop_w = make_stmt_from_str(loop_str);
         ARCHETYPE_TEST(loop_w != nullptr);

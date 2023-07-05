@@ -158,7 +158,7 @@ namespace archetype {
             int attribute_id;
             Expression expr;
             in >> attribute_id >> expr;
-            attributes_[attribute_id] = move(expr);
+            attributes_[attribute_id] = std::move(expr);
         }
 
         int method_entries;
@@ -168,7 +168,7 @@ namespace archetype {
             int message_id;
             Statement stmt;
             in >> message_id >> stmt;
-            methods_[message_id] = move(stmt);
+            methods_[message_id] = std::move(stmt);
         }
     }
 

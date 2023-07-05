@@ -40,7 +40,7 @@ namespace archetype {
         for (int i = 0; i < count; ++i) {
             Statement stmt;
             in >> stmt;
-            statements_.push_back(move(stmt));
+            statements_.push_back(std::move(stmt));
         }
     }
 
@@ -60,7 +60,7 @@ namespace archetype {
             } else {
                 t.didNotConsume();
                 if (Statement s = make_statement(t)) {
-                    statements_.push_back(move(s));
+                    statements_.push_back(std::move(s));
                 } else {
                     t.errorMessage("Unfinished compound statement");
                     t.stopLooking();
@@ -209,7 +209,7 @@ namespace archetype {
         for (int i = 0; i < entries; ++i) {
             Case case_pair;
             in >> case_pair.match >> case_pair.action;
-            cases_.push_back(move(case_pair));
+            cases_.push_back(std::move(case_pair));
         }
         int default_exists;
         in >> default_exists;
@@ -366,7 +366,7 @@ namespace archetype {
         Value object_v{new ObjectValue{object->id()}};
         Value result{object_v->clone()};
         Value target{target_->evaluate()->attributeConversion()};
-        target->assign(move(object_v));
+        target->assign(std::move(object_v));
         if (IStatement::Debug) {
             ostringstream out;
             out << "created new instance ";
@@ -422,7 +422,7 @@ namespace archetype {
         for (int i = 0; i < entries; ++i) {
             Expression expr;
             in >> expr;
-            expressions_.push_back(move(expr));
+            expressions_.push_back(std::move(expr));
         }
     }
 
@@ -449,7 +449,7 @@ namespace archetype {
         t.didNotConsume();
         Expression the_expr = make_expr(t);
         if (not the_expr) return false;
-        expressions_.push_back(move(the_expr));
+        expressions_.push_back(std::move(the_expr));
         while (t.fetch()) {
             if (t.token() != Token(Token::PUNCTUATION, ',')) {
                 t.didNotConsume();
@@ -457,7 +457,7 @@ namespace archetype {
             }
             the_expr = make_expr(t);
             if (not the_expr) return false;
-            expressions_.push_back(move(the_expr));
+            expressions_.push_back(std::move(the_expr));
         }
         return true;
     }
