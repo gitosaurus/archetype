@@ -92,6 +92,7 @@ void usage() {
         << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
+        << "   --input <string>          In combination with --update, provide command input as a string." << endl
     ;
 }
 
