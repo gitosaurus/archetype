@@ -726,7 +726,7 @@ namespace archetype {
                 break;
             case Keywords::RW_READ: {
                 string line = Universe::instance().input()->getLine();
-                if (Universe::instance().input()->atEOF()) {
+                if (line.empty()  and  Universe::instance().input()->atEOF()) {
                     result = Value{new UndefinedValue};
                 } else {
                     result = Value{new StringValue{line}};
