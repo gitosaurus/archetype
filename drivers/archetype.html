@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html>
+<body>
+
+  <input type="text" id="command">  <!-- TODO:  how to get ENTER from this? -->
+  <button id="send">COMMAND</button>
+  <script>
+    document.getElementById("send").addEventListener("click", function(event) {
+	var command = document.getElementById("command").value;
+	let formData = new FormData();
+	formData.append("command", command);
+	fetch('https://archetype-d656yixu4q-uw.a.run.app/update/dtj-spacebits.acx', {
+            method: 'POST',
+            body: formData
+	})
+	    .then(response => response.text())
+	    .then(data => {
+		// Update your chat interface with the response data
+		console.log(data);
+	    })
+	    .catch((error) => {
+		console.error('Error:', error);
+	    });
+    });
+</script>
+
+</body>
+</html>
+

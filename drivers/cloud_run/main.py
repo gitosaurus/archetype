@@ -1,11 +1,13 @@
 import os
 
 from flask import Flask, request
+from flask_cors import CORS
 from google.cloud import storage
 from tempfile import TemporaryDirectory
 import subprocess
 
 app = Flask(__name__)
+CORS(app)
 client = storage.Client()
 
 
