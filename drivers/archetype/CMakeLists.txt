@@ -39,6 +39,7 @@ Universe.cc
 Value.cc
 Wellspring.cc
 WrappedOutput.cc
+inspect_universe.cc
 update_universe.cc
 main.cc
 )

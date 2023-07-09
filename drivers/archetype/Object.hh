@@ -12,6 +12,7 @@
 #include <map>
 #include <memory>
 #include <iostream>
+#include <limits>
 
 #include "Expression.hh"
 #include "Statement.hh"
@@ -19,6 +20,8 @@
 #include "Serialization.hh"
 
 namespace archetype {
+
+    const int DefaultMethod = std::numeric_limits<int>::max();
 
     class Object;
     typedef std::shared_ptr<Object> ObjectPtr;
@@ -29,6 +32,9 @@ namespace archetype {
         bool prototype_;
         std::map<int, Expression> attributes_;
         std::map<int, Statement> methods_;
+
+        friend void inspect_universe(Storage& in, std::ostream& out);
+
     public:
         static const int INVALID = -1;
         static bool Debug;

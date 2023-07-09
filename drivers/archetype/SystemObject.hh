@@ -55,6 +55,8 @@ namespace archetype {
         bool figureState_(const Value& message);
         void resetSystem_();
 
+        friend void inspect_universe(Storage& in, std::ostream& out);
+
     };
 }
 

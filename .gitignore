@@ -5,3 +5,4 @@ archetype.xcodeproj/xcshareddata/*
 archetype.xcodeproj/xcuserdata/*
 drivers/archetype/.vscode/
 drivers/build/
+drivers/archetype/build/

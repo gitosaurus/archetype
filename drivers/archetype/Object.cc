@@ -7,7 +7,6 @@
 //
 
 #include <iostream>
-#include <limits>
 #include <cassert>
 #include <sstream>
 
@@ -17,8 +16,6 @@
 using namespace std;
 
 namespace archetype {
-
-    const int DefaultMethod = numeric_limits<int>::max();
 
     bool Object::Debug = false;
 

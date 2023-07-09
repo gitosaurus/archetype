@@ -7,13 +7,13 @@
 //
 
 #include <iostream>
+#include <iomanip>
 #include <iterator>
 #include <algorithm>
 #include <map>
 #include <list>
 #include <string>
 #include <fstream>
-#include <iterator>
 
 #include "TestRegistry.hh"
 #include "ReadEvalPrintLoop.hh"
@@ -28,6 +28,7 @@
 #include "Wellspring.hh"
 
 #include "update_universe.hh"
+#include "inspect_universe.hh"
 
 
 #if NDEBUG
@@ -233,6 +234,22 @@ int main(int argc, const char* argv[]) {
               throw invalid_argument("Cannot write to " + filename);
           }
           copy(out_mem.bytes().begin(), out_mem.bytes().end(), ostreambuf_iterator<char>{f_out});
+        } catch (const std::exception& e) {
+            cerr << "ERROR: " << e.what() << endl;
+            return 1;
+        }
+    } else if (opts.count("inspect")) {
+        string filename = opts["inspect"];
+        if (filename.rfind('.') == string::npos) {
+            filename += ".acx";
+        }
+        try {
+            InFileStorage in(filename);
+            if (!in.ok()) {
+                throw runtime_error("Cannot open \"" + filename + "\"");
+            }
+            // TODO:  no, take an output filename
+            inspect_universe(in, cout);
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;

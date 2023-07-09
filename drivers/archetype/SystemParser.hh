@@ -79,6 +79,8 @@ namespace archetype {
 
         void matchVerbs_(std::list<Value>& wordValues);
         void matchNouns_(std::list<Value>& wordValues);
+
+        friend void inspect_universe(Storage& in, std::ostream& out);
     };
 
     Storage& operator<<(Storage& out, const SystemParser& p);
