@@ -86,7 +86,7 @@ void usage() {
         << endl
         << " --help                  Print this message and exit." << endl
         << " --test                  Run all test suites." << endl
-        << " --repl                  Enter the REPL (Read-Eval-Print Loop)." << endl
+        << " --repl [file.acx]       Enter the REPL (Read-Eval-Print Loop), optionally loading file.acx first" << endl
         << " --silent                Produce only game output and no other advisory output." << endl
         << " --source=file.arch      Read, compile, and run the given program." << endl
         << "   --include=path[:path...]  Colon-separated list of paths to search for source." << endl
@@ -176,6 +176,15 @@ int main(int argc, const char* argv[]) {
         return exit_code;
     }
     if (opts.count("repl")) {
+        if (!args.empty()) {
+            std::string filename = args.front();
+            cout << "Loading " << filename << endl;
+            InFileStorage in(filename);
+            if (!in.ok()) {
+                throw runtime_error("Cannot open \"" + filename + "\"");
+            }
+            in >> Universe::instance();
+        }
         int errors = repl();
         return errors;
     }
