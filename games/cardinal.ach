@@ -6,16 +6,16 @@
 #
 ############################################################################
 
-direction  null        full: 'north'                    end
-direction  null        full: 'south'                    end
-direction  null        full: 'east'                     end
-direction  null        full: 'west'                     end
-direction  null        full: 'northeast'   syn: 'ne'    end
-direction  null        full: 'northwest'   syn: 'nw'    end
-direction  null        full: 'southeast'   syn: 'se'    end
-direction  null        full: 'northeast'   syn: 'sw'    end
+direction  north       full: 'north'                    end
+direction  south       full: 'south'                    end
+direction  east        full: 'east'                     end
+direction  west        full: 'west'                     end
+direction  northeast   full: 'northeast'   syn: 'ne'    end
+direction  northwest   full: 'northwest'   syn: 'nw'    end
+direction  southeast   full: 'southeast'   syn: 'se'    end
+direction  southwest   full: 'southwest'   syn: 'sw'    end
 
-direction null
+direction up
 
   full : 'up'
 
@@ -26,7 +26,7 @@ methods
 end
 
 
-direction null
+direction down
 
   full : 'down'
 
