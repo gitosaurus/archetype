@@ -327,7 +327,7 @@ end
 
 
 
-lex null full : 'throw'   syn : 'toss|fling'  end
+Verb null full : 'throw'   syn : 'toss|fling'  end
 
 object rope
 
