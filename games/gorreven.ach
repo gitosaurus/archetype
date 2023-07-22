@@ -262,11 +262,14 @@ methods
   'break' :
     if broken_off then
       >>I can't break that.
-    else
-      >>I don't know if I could break it, but maybe I could break it OFF...
+    else {
+      >>I'm not able to break it, but I might be able to break it off...trying that.
+      'break off'
+      }
 
   'break_off'        : 'break off'
 
+  'pull off' : 'pull'
   'pull on' : 'pull'
   'pull':
     if broken_off then
@@ -279,6 +282,7 @@ methods
         default: 'break_off'
       }
 
+  'push off' : 'push'
   'push on' : 'push'
   'push' :
     >>I push it up against the frame, but it doesn't stay, and sags out again.
@@ -490,6 +494,10 @@ methods
   'kill' :
     if not alive then
       write "He's already dead."
+    else if cot_fragment.location = player then {
+      main.dobj := cot_fragment
+      'kill...with'
+      }
     else {
       writes "I lunge at him, my bare hands grasping for a hold on his "
       writes "throat.  "
@@ -1122,7 +1130,7 @@ methods
   'BRIEF' : >>Back near Velchny's office and the broom closet.
 
   'LONGDESC' : {
->>I'm standing in a carpeted hallway that has a broom closet to the southo
+>>I'm standing in a carpeted hallway that has a broom closet to the south
 >>and a wide office door to the north, with the name "Commandant Velchny"
 >>stenciled on the door.
     if ? 4 = 1 then write "A cockroach scuttles under the closet door."
