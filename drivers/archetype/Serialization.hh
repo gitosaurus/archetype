@@ -13,6 +13,10 @@
 #include <string>
 #include <vector>
 
+#ifdef __linux__
+#include <iterator>
+#endif /* linux */
+
 namespace archetype {
     class Storage {
     public:
