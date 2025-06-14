@@ -11,6 +11,7 @@
 #include "TestSerialization.hh"
 #include "TestRegistry.hh"
 #include "Serialization.hh"
+#include <stdexcept>
 
 using namespace std;
 
@@ -32,5 +33,15 @@ namespace archetype {
             ARCHETYPE_TEST_EQUAL(next_integer, sample);
         }
         ARCHETYPE_TEST_EQUAL(mem.remaining(), 0);
+
+        bool threw = false;
+        try {
+            mem.readInteger();
+        } catch (const invalid_argument&) {
+            threw = true;
+        } catch (...) {
+            threw = true;
+        }
+        ARCHETYPE_TEST(threw);
     }
 }
