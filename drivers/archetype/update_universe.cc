@@ -20,7 +20,7 @@ namespace archetype {
     { }
 
     virtual char getKey() override {
-      std::string key_str(input_->getKey(), 1);
+      std::string key_str(1, input_->getKey());
       output_->put(key_str);
       return key_str[0];
     }

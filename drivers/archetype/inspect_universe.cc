@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <iterator>
 
 #include "inspect_universe.hh"
 #include "Universe.hh"
