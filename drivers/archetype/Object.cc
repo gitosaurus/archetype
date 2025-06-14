@@ -1,5 +1,5 @@
 //
-//  Object.cpp
+//  Object.cc
 //  archetype
 //
 //  Created by Derek Jones on 2/10/14.

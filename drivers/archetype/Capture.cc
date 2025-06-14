@@ -1,5 +1,5 @@
 //
-//  Capture.cpp
+//  Capture.cc
 //  archetype
 //
 //  Created by Derek Jones on 7/9/14.

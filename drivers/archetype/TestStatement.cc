@@ -1,5 +1,5 @@
 //
-//  TestStatement.cpp
+//  TestStatement.cc
 //  archetype
 //
 //  Created by Derek Jones on 2/28/14.

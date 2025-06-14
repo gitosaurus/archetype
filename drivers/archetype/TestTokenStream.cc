@@ -1,5 +1,5 @@
 //
-//  TestTokenStream.cpp
+//  TestTokenStream.cc
 //  archetype
 //
 //  Created by Derek Jones on 2/19/14.
