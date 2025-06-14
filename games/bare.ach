@@ -292,7 +292,7 @@ methods
 
 # Here, for the first time in this adventure, we need to follow a message
 # with a method that is more than one statement.  This is done by declaring
-# a compound statment:  a left curly brace, {, followed by any number of
+# a compound statement:  a left curly brace, {, followed by any number of
 # statements (even zero), and right curly brace, }, to finish them off.
 #
 # The other new thing is the >> operator.  Like a comment, it is active
