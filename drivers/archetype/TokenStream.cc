@@ -1,5 +1,5 @@
 //
-//  TokenStream.cpp
+//  TokenStream.cc
 //  archetype
 //
 //  Created by Derek Jones on 2/16/14.

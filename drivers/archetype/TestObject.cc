@@ -1,5 +1,5 @@
 //
-//  TestObject.cpp
+//  TestObject.cc
 //  archetype
 //
 //  Created by Derek Jones on 3/17/14.

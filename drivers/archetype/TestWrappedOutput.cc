@@ -1,5 +1,5 @@
 //
-//  TestWrappedOutput.cpp
+//  TestWrappedOutput.cc
 //  archetype
 //
 //  Created by Derek Jones on 9/21/14.
