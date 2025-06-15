@@ -9,6 +9,7 @@
 #define __archetype__inspect_universe__
 
 #include <iostream>
+#include <iterator> // for std::ostream_iterator
 
 #include "Serialization.hh"
 
