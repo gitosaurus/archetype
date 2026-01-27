@@ -3,6 +3,6 @@
 archetype.xcodeproj/project.xcworkspace/xcuserdata/*
 archetype.xcodeproj/xcshareddata/*
 archetype.xcodeproj/xcuserdata/*
-drivers/archetype/.vscode/
+src/.vscode/
 drivers/build/
-drivers/archetype/build/
+build/

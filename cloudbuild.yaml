@@ -1,0 +1,13 @@
+steps:
+  - name: "gcr.io/cloud-builders/docker"
+    args:
+      [
+        "build",
+        "-f",
+        "drivers/Dockerfile",
+        "-t",
+        "gcr.io/$PROJECT_ID/archetype",
+        ".",
+      ]
+images:
+  - "gcr.io/$PROJECT_ID/archetype"

@@ -5,7 +5,7 @@ RUN apk update && apk add --no-cache \
         build-base cmake g++ make ninja
 
 WORKDIR /c/source
-COPY archetype/ /c/source/
+COPY src/ /c/source/
 
 # Run the CMake configuration step, setting the options to create
 # a statically linked C++ program
@@ -20,12 +20,12 @@ RUN strip /c/binary/archetype
 # Next layer:
 # use the official lightweight Python image.
 # https://hub.docker.com/_/python
-FROM python:3.10-slim
+FROM python:3.13-slim
 
 # Copy local code to the container image.
 ENV APP_HOME /app
 WORKDIR $APP_HOME
-COPY cloud_run/ ./
+COPY drivers/cloud_run/ ./
 
 # Install production dependencies.
 RUN pip install --no-cache-dir -r requirements.txt
