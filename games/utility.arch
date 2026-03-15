@@ -71,6 +71,7 @@ methods
     if open then write "open." else write "closed."
     }
 
+  'look inside of': 'look in'
   'look in' :
     if 'TRANSPARENT' -> self then {
       writes main.voice.Who & " look inside ", 'DEF' -> self, ".  "
@@ -135,6 +136,7 @@ methods
   'look' :
     >>It looks roomy enough to enter.
 
+  'look inside of': 'look in'
   'look in' :
     if 'TRANSPARENT' -> self then {
       writes main.voice.Who & " look inside.  "
