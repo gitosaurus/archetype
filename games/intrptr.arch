@@ -161,36 +161,36 @@ methods
     started := TRUE
   }
 
-   'UPDATE' -> player
-   'ROLL CALL' -> system
-   'ANNOUNCE MEMBERS' -> player
-   'ANNOUNCE MEMBERS' -> player.location
-   'ANNOUNCE SELF'    -> player.location
+  'UPDATE' -> player
+  'ROLL CALL' -> system
+  'ANNOUNCE MEMBERS' -> player
+  'ANNOUNCE MEMBERS' -> player.location
+  'ANNOUNCE SELF'    -> player.location
 
   # Prompt for input and parse
-   writes prompt; command := read; write normal
-   if command = UNDEFINED then {
-     # User has terminated the input
-     stop "EOF; goodbye."
-   }
+  writes prompt; command := read; write normal
+  if command = UNDEFINED then {
+    # User has terminated the input
+    stop "EOF; goodbye."
+  }
 
-   'PLAYER CMD' -> system
-   command -> system
+  'PLAYER CMD' -> system
+  command -> system
 
-   'SEND EVENT' -> before
+  'SEND EVENT' -> before
 
-   if 'NORMALIZE' -> system = " " then
-     write wait_message
-   else {
-     mentioned := FALSE
-     'PARSE' -> system
-     'INTERPRET'
-     }
+  if 'NORMALIZE' -> system = " " then
+    write wait_message
+  else {
+    mentioned := FALSE
+    'PARSE' -> system
+    'INTERPRET'
+    }
 
-   if not mentioned and subj.IsAobject then
-     'MENTION SELF' -> subj
+  if not mentioned and subj.IsAobject then
+    'MENTION SELF' -> subj
 
-   'SEND EVENT' -> after
+  'SEND EVENT' -> after
   }
 
 
