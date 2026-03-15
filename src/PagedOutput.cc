@@ -30,12 +30,12 @@ namespace archetype {
     rows_{0}
     {
 #ifdef _XOPEN_VERSION
-        struct winsize w;
-        if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) < 0) {
-            perror("ioctl call to get terminal size");
-        } else {
-            maxRows_ = w.ws_row;
-            setMaxColumns(max(0, w.ws_col - WrapMargin));
+        if (isatty(STDOUT_FILENO)) {
+            struct winsize w;
+            if (ioctl(STDOUT_FILENO, TIOCGWINSZ, &w) == 0) {
+                maxRows_ = w.ws_row;
+                setMaxColumns(max(0, w.ws_col - WrapMargin));
+            }
         }
 #endif
     }
