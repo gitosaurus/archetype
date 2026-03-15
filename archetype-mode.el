@@ -6,9 +6,7 @@
 ;; message-passing, object-oriented language for writing text-based
 ;; adventure games.
 ;;
-;; File extensions handled: .ach (main source), .lex (lexicons),
-;; .typ (type definitions).  All three contain identical Archetype
-;; syntax; the different extensions are purely organizational.
+;; File extension: .ach
 ;;
 ;; See https://www.derektjones.net/archetype/archetype.html
 
@@ -165,8 +163,7 @@ All other single quotes (apostrophes, stray ticks) remain punctuation."
   "Major mode for editing Archetype adventure game source files.
 
 Archetype is a message-passing, object-oriented language for writing
-text-based adventure games.  Source files use extensions .ach, .lex,
-and .typ (all syntactically identical).
+text-based adventure games.  Source files use the .ach extension.
 
 Syntax overview:
   # comment to end of line
@@ -193,10 +190,6 @@ Syntax overview:
 
 ;;;###autoload
 (add-to-list 'auto-mode-alist '("\\.ach\\'" . archetype-mode))
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.lex\\'" . archetype-mode))
-;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.typ\\'" . archetype-mode))
 
 (provide 'archetype-mode)
 

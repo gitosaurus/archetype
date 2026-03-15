@@ -25,7 +25,7 @@ c++ src/*.cc -o archetype
 
 ## Running a game
 
-Games are in the `games/` directory and are written in `.ach` source files.  There are also `.lex` files (lexicon) and `.typ` files (type definitions) but the differing extensions are only for organization purposes; all three extensions contain Archetype source code.
+Games are in the `games/` directory and are written in `.ach` source files.
 
 ### Compile and run from source
 
@@ -114,7 +114,7 @@ curl -X POST $ENDPOINT/update/gorreven.acx -F command="go north"
 | Path | Contents |
 |---|---|
 | `src/` | C++ source for the Archetype interpreter |
-| `games/` | Adventure game sources (`.ach`, `.typ`, `.lex`) and compiled binaries (`.acx`) |
+| `games/` | Adventure game sources (`.ach`) and compiled binaries (`.acx`) |
 | `drivers/` | Cloud Run driver (Python/Flask) and its `README.md` |
 
 ---

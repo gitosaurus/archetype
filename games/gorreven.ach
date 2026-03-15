@@ -7,8 +7,8 @@
 # Copyright 2020 Derek T. Jones
 
 include "standard"
-include "gorreven.lex"
-include "gorreven.typ"
+include "gorreven_lex"
+include "gorreven_types"
 include "debug"
 
 

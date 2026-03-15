@@ -13,8 +13,8 @@ include "intrptr"
 include "lexicon"
 include "shipdir"
 
-include "starship.typ"
-include "starship.lex"
+include "starship_types"
+include "starship_lex"
 
 keyword Windexed, Filthy
 
