@@ -20,12 +20,12 @@ include "utility"           # "extras" for types like furniture
 # Although STANDARD.ACH includes a default lexicon, sometimes there is
 # a need to define special verbs for the adventure.
 
-# Here, we're going to define the special combination 'put...in'.  Whenever
-# a verb phrase and prepositional phrase are separated by an ellipsis (...)
-# it means that both a subject and a direct object were found.  We don't
-# want to have to define this action for every object so we're defining
-# it here.  That way it works "backwards" even on objects that do not have
-# this method defined in their lineage.
+# Here, we will define the special combination 'put...in'.  Whenever a
+# verb phrase and prepositional phrase are separated by an ellipsis
+# (...)  it means that both a subject and a direct object were found.
+# We don't want to have to define this action for every object so
+# we're defining it here.  That way it works even for objects that do
+# not have this method defined in their lineage.
 
 Verb null           # we won't need its name
   full  : 'put...in'
