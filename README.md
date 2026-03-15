@@ -25,15 +25,15 @@ c++ src/*.cc -o archetype
 
 ## Running a game
 
-Games are in the `games/` directory and are written in `.ach` source files.
+Games are in the `games/` directory and are written in `.arch` source files.
 
 ### Compile and run from source
 
 ```shell
-./build/archetype --source=games/gorreven.ach --include=games
+./build/archetype --source=games/gorreven.arch --include=games
 ```
 
-`--include` tells the compiler where to find `standard.ach` and other shared library files.
+`--include` tells the compiler where to find `standard.arch` and other shared library files.
 
 ### Compile to a binary, then run
 
@@ -42,7 +42,7 @@ This is the preferred method if you are intending to share your game as a single
 Compile once to a `.acx` binary:
 
 ```shell
-./build/archetype --source=games/gorreven.ach --include=games --create
+./build/archetype --source=games/gorreven.arch --include=games --create
 # Creates: gorreven.acx
 ```
 
@@ -114,7 +114,7 @@ curl -X POST $ENDPOINT/update/gorreven.acx -F command="go north"
 | Path | Contents |
 |---|---|
 | `src/` | C++ source for the Archetype interpreter |
-| `games/` | Adventure game sources (`.ach`) and compiled binaries (`.acx`) |
+| `games/` | Adventure game sources (`.arch`) and compiled binaries (`.acx`) |
 | `drivers/` | Cloud Run driver (Python/Flask) and its `README.md` |
 
 ---

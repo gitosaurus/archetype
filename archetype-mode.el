@@ -6,7 +6,7 @@
 ;; message-passing, object-oriented language for writing text-based
 ;; adventure games.
 ;;
-;; File extension: .ach
+;; File extension: .arch
 ;;
 ;; See https://www.derektjones.net/archetype/archetype.html
 
@@ -163,7 +163,7 @@ All other single quotes (apostrophes, stray ticks) remain punctuation."
   "Major mode for editing Archetype adventure game source files.
 
 Archetype is a message-passing, object-oriented language for writing
-text-based adventure games.  Source files use the .ach extension.
+text-based adventure games.  Source files use the .arch extension.
 
 Syntax overview:
   # comment to end of line
@@ -189,7 +189,7 @@ Syntax overview:
   (setq-local indent-tabs-mode nil))
 
 ;;;###autoload
-(add-to-list 'auto-mode-alist '("\\.ach\\'" . archetype-mode))
+(add-to-list 'auto-mode-alist '("\\.arch\\'" . archetype-mode))
 
 (provide 'archetype-mode)
 

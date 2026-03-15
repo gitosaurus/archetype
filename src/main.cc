@@ -88,7 +88,7 @@ void usage() {
         << " --test                  Run all test suites." << endl
         << " --repl                  Enter the REPL (Read-Eval-Print Loop)." << endl
         << " --silent                Produce only game output and no other advisory output." << endl
-        << " --source=file.ach       Read, compile, and run the given program." << endl
+        << " --source=file.arch      Read, compile, and run the given program." << endl
         << "   --include=path[:path...]  Colon-separated list of paths to search for source." << endl
         << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl

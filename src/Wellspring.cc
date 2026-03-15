@@ -47,7 +47,7 @@ namespace archetype {
             }
             try_path += source_name;
             if (source_name.find('.') == string::npos) {
-                try_path += ".ach";
+                try_path += ".arch";
             }
             unique_ptr<ifstream> input(new ifstream(try_path.c_str()));
             if (input->is_open()) {

@@ -115,7 +115,7 @@ namespace archetype {
         // Verify that the "hole" from the destroyed object is reused
         ARCHETYPE_TEST_EQUAL(obj3->id(), 2);
 
-        TokenStream t(make_source_from_str("dynamic.ach", program_dynamic));
+        TokenStream t(make_source_from_str("dynamic.arch", program_dynamic));
         ARCHETYPE_TEST(Universe::instance().make(t));
         Capture capture;
         Statement stmt = make_stmt_from_str("{'buy' -> customer; 'look' -> customer.left; 'look' -> customer.right}");
@@ -147,7 +147,7 @@ namespace archetype {
     }
 
     static char program_inclusion[] =
-    "include \"snack.ach\"\n"
+    "include \"snack.arch\"\n"
     "null flavor desc : \"Confusing object with same name as an attribute\" end\n"
     "null conservatory\n"
     "  desc: \"A nicely appointed room overlooking the garden.\"\n"
@@ -160,7 +160,7 @@ namespace archetype {
     void TestUniverse::testInclusion_() {
         Universe::destroy();
 
-        Wellspring::instance().put("snack.ach", make_source_from_str("snack.ach", program_basic_2));
+        Wellspring::instance().put("snack.arch", make_source_from_str("snack.arch", program_basic_2));
         TokenStream t3(make_source_from_str("program_inclusion", program_inclusion));
         ARCHETYPE_TEST(Universe::instance().make(t3));
         Capture capture;
