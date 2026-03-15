@@ -494,7 +494,7 @@ methods
     else {
       if number > 2 then writes ","
       if number > 1 then writes " and"
-      write " " & last & "."
+      write " ", last, "."
       }
 
     }  # INVENTORY
