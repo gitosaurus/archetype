@@ -36,6 +36,10 @@ namespace archetype {
                 maxRows_ = w.ws_row;
                 setMaxColumns(max(0, w.ws_col - WrapMargin));
             }
+        } else {
+            // Not a terminal; disable paging since there is no one
+            // to press a key at the "(more)..." prompt.
+            maxRows_ = 0;
         }
 #endif
     }
