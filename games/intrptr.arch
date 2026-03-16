@@ -141,6 +141,8 @@ null main
 
   verbmsg   : UNDEFINED
 
+  sitrep    : UNDEFINED
+
 methods
 
 'START' : {
@@ -150,6 +152,13 @@ methods
 
   }  # START
 
+'ROLL CALL' : {
+  'ROLL CALL' -> system
+  'ANNOUNCE MEMBERS' -> player
+  'ANNOUNCE MEMBERS' -> player.location
+  'ANNOUNCE SELF'    -> player.location
+  }
+
 'UPDATE' : {
   if not started then {
     # The INITIAL and ASSEMBLE messages are broadcast separately because
@@ -158,14 +167,11 @@ methods
     for each do 'ASSEMBLE'  -> each
     'ASSEMBLE VOCABULARY'
     'ENTERED' -> player.location
+    'ROLL CALL'
     started := TRUE
   }
 
   'UPDATE' -> player
-  'ROLL CALL' -> system
-  'ANNOUNCE MEMBERS' -> player
-  'ANNOUNCE MEMBERS' -> player.location
-  'ANNOUNCE SELF'    -> player.location
 
   # Prompt for input and parse
   writes prompt; command := read; write normal
@@ -191,6 +197,15 @@ methods
     'MENTION SELF' -> subj
 
   'SEND EVENT' -> after
+  'ROLL CALL'
+  }
+
+'SITREP' : {
+  sitrep := UNDEFINED
+  sitrep := { "exits"     ('INVENTORY NAMES' -> compass) } @ sitrep
+  sitrep := { "visible"   ('INVENTORY NAMES' -> player.location) } @ sitrep
+  sitrep := { "inventory" ('INVENTORY NAMES' -> player) } @ sitrep
+  sitrep
   }
 
 
@@ -453,7 +468,8 @@ methods
       }
     }
 
-  'INVENTORY' : message -> list_inventory
+  'INVENTORY'       : message -> list_inventory
+  'INVENTORY NAMES' : message -> list_inventory
 
 end
 
@@ -467,26 +483,37 @@ null list_inventory
   number  : 0
   temp    : UNDEFINED
   last    : UNDEFINED
+  names   : UNDEFINED
 
 methods
 
+  'INVENTORY NAMES' : {
+    names   := UNDEFINED
+    temp    := sender.members
+    while temp do {
+      if 'INVENTORY NAME' -> head temp then
+        names := ('INVENTORY NAME' -> head temp) @ names
+      temp := tail temp
+      }
+    names
+    }
+
   'INVENTORY' : {
 
+    'INVENTORY NAMES'  # bring 'names' up to date
     number  := 0
-    temp    := sender.members
+    temp    := names
     last    := UNDEFINED
 
     while temp do {
-      if 'INVENTORY NAME' -> head temp then {      # we may proceed
-        number +:= 1
-        if not last then
-          writes sender.intro
-        else {
-          if number > 2 then writes ","
-          writes " ", last
-          }
-        last := 'INVENTORY NAME' -> head temp
+      number +:= 1
+      if not last then
+        writes sender.intro
+      else {
+        if number > 2 then writes ","
+        writes " ", last
         }
+      last := head temp
       temp := tail temp
       }
     if number = 0 then
@@ -496,7 +523,7 @@ methods
       if number > 1 then writes " and"
       write " ", last, "."
       }
-
+    names
     }  # INVENTORY
 
 end
