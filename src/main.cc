@@ -93,9 +93,10 @@ void usage() {
         << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
-        << "   --input <string>          In combination with --update, provide command input as a string." << endl
+        << "   --input=<string>          In combination with --update, provide command input as a string." << endl
         << "   --sitrep[=json|rdf]       In combination with --update, append a situation report to output." << endl
-        << " --inspect=file.acx      Load a saved binary file and dump its contents." << endl
+        << " --inspect=file.acx      Load a saved binary file and dump its contents as RDF/Turtle." << endl
+        << "   --full                    Include method signatures in the RDF output." << endl
     ;
 }
 
@@ -268,8 +269,8 @@ int main(int argc, const char* argv[]) {
             if (!in.ok()) {
                 throw runtime_error("Cannot open \"" + filename + "\"");
             }
-            // TODO:  no, take an output filename
-            inspect_universe(in, cout);
+            bool full = opts.count("full") > 0;
+            inspect_universe(in, cout, full);
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
