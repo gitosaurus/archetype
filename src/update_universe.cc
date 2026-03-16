@@ -61,7 +61,8 @@ Value dispatch_to_universe(string message) {
   return result;
 }
 
-string update_universe(Storage& in, Storage& out, string input, int width) {
+string update_universe(Storage& in, Storage& out, string input, int width,
+                       SitrepFormat sitrep_format) {
   // Paging, no; wrapping, yes.
   UserOutput str_output{new StringOutput};
   UserOutput wrapped{new WrappedOutput{str_output, width}};
@@ -76,8 +77,23 @@ string update_universe(Storage& in, Storage& out, string input, int width) {
   } catch (const archetype::QuitGame&) {
     Universe::instance().endItAll();
   }
+  string result = dynamic_cast<StringOutput*>(str_output.get())->getOutput();
+
+  if (sitrep_format != SitrepFormat::NONE and not Universe::instance().ended()) {
+    try {
+      Value sitrep = dispatch_to_universe("SITREP");
+      if (sitrep_format == SitrepFormat::JSON) {
+        result += "SITREP " + sitrep->asJSON() + "\n";
+      } else if (sitrep_format == SitrepFormat::RDF) {
+        result += "SITREP " + sitrep->asRDF() + "\n";
+      }
+    } catch (const std::exception&) {
+      // SITREP not available; silently skip
+    }
+  }
+
   out << Universe::instance();
-  return dynamic_cast<StringOutput*>(str_output.get())->getOutput();
+  return result;
 }
 
 } // namespace archetype

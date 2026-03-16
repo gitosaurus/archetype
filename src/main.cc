@@ -94,6 +94,8 @@ void usage() {
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
         << "   --input <string>          In combination with --update, provide command input as a string." << endl
+        << "   --sitrep[=json|rdf]       In combination with --update, append a situation report to output." << endl
+        << " --inspect=file.acx      Load a saved binary file and dump its contents." << endl
     ;
 }
 
@@ -236,8 +238,17 @@ int main(int argc, const char* argv[]) {
               }
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
+          SitrepFormat sitrep_format = SitrepFormat::NONE;
+          if (opts.count("sitrep")) {
+              string fmt = opts["sitrep"];
+              if (fmt.empty() or fmt == "json") {
+                  sitrep_format = SitrepFormat::JSON;
+              } else if (fmt == "rdf") {
+                  sitrep_format = SitrepFormat::RDF;
+              }
+          }
           MemoryStorage out_mem;
-          cout << update_universe(in_mem, out_mem, opts["input"], width);
+          cout << update_universe(in_mem, out_mem, opts["input"], width, sitrep_format);
           ofstream f_out(filename.c_str());
           if (!f_out) {
               throw invalid_argument("Cannot write to " + filename);
