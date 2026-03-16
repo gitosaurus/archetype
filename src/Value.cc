@@ -350,12 +350,8 @@ namespace archetype {
 
     Value AttributeValue::dereference_() const {
         ObjectPtr obj = Universe::instance().getObject(objectId_);
-        if (not obj) {
+        if (not obj or not obj->hasAttribute(attributeId_)) {
             return Value{new UndefinedValue};
-        }
-
-        if (not obj->hasAttribute(attributeId_)) {
-            obj->setAttribute(attributeId_, Value{new UndefinedValue});
         }
 
         ContextScope c;
