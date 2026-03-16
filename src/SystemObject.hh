@@ -55,7 +55,8 @@ namespace archetype {
         bool figureState_(const Value& message);
         void resetSystem_();
 
-        friend void inspect_universe(Storage& in, std::ostream& out);
+        friend void inspect_universe(Storage& in, std::ostream& out, bool include_methods);
+        friend std::string sitrep_parser_context();
 
     };
 }

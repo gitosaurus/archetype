@@ -4,10 +4,12 @@
 #include "Serialization.hh"
 #include "Universe.hh"
 #include "WrappedOutput.hh"
-#include "ConsoleOutput.hh"
 #include "StringInput.hh"
 #include "StringOutput.hh"
+#include "SystemObject.hh"
 #include "Value.hh"
+
+#include <sstream>
 
 namespace archetype {
 
@@ -61,7 +63,64 @@ Value dispatch_to_universe(string message) {
   return result;
 }
 
-string update_universe(Storage& in, Storage& out, string input, int width) {
+// Produce the parser-level portion of the situation report: proximate objects,
+// effective noun phrases (those matching proximate objects), and all verb phrases.
+// Output is RDF/Turtle collections, one per line, prefixed by a label.
+string sitrep_parser_context() {
+  ObjectPtr sys = Universe::instance().getObject(Universe::SystemObjectId);
+  SystemObject* system = dynamic_cast<SystemObject*>(sys.get());
+  if (not system or not system->parser_) return "";
+
+  const auto& parser = *system->parser_;
+
+  // Helper: join a phrase word list into a single string.
+  auto phrase_str = [](const list<Value>& words) -> string {
+    ostringstream ss;
+    for (auto ii = words.begin(); ii != words.end(); ++ii) {
+      if (ii != words.begin()) ss << ' ';
+      ss << (*ii)->getString();
+    }
+    return ss.str();
+  };
+
+  // Helper: render an object reference as an RDF URI.
+  auto obj_ref = [](int obj_id) -> string {
+    ObjectValue ov{obj_id};
+    return ov.asRDF();
+  };
+
+  ostringstream out;
+
+  // Proximate objects
+  if (not parser.proximate_.empty()) {
+    out << "PROXIMATE (";
+    for (int obj_id : parser.proximate_) {
+      out << " " << obj_ref(obj_id);
+    }
+    out << " )\n";
+  }
+
+  // Effective nouns: phrases matching proximate objects
+  out << "NOUNS (";
+  for (const auto& nm : parser.nounMatches_) {
+    if (parser.proximate_.count(nm.second)) {
+      out << " ( \"" << phrase_str(nm.first) << "\" " << obj_ref(nm.second) << " )";
+    }
+  }
+  out << " )\n";
+
+  // All verb phrases
+  out << "VERBS (";
+  for (const auto& vm : parser.verbMatches_) {
+    out << " ( \"" << phrase_str(vm.first) << "\" " << obj_ref(vm.second) << " )";
+  }
+  out << " )\n";
+
+  return out.str();
+}
+
+string update_universe(Storage& in, Storage& out, string input, int width,
+                       bool sitrep) {
   // Paging, no; wrapping, yes.
   UserOutput str_output{new StringOutput};
   UserOutput wrapped{new WrappedOutput{str_output, width}};
@@ -76,8 +135,20 @@ string update_universe(Storage& in, Storage& out, string input, int width) {
   } catch (const archetype::QuitGame&) {
     Universe::instance().endItAll();
   }
+  string result = dynamic_cast<StringOutput*>(str_output.get())->getOutput();
+
+  if (sitrep and not Universe::instance().ended()) {
+    try {
+      Value sitrep_val = dispatch_to_universe("SITREP");
+      result += "SITREP " + sitrep_val->asRDF() + "\n";
+    } catch (const std::exception&) {
+      // SITREP not available; silently skip
+    }
+    result += sitrep_parser_context();
+  }
+
   out << Universe::instance();
-  return dynamic_cast<StringOutput*>(str_output.get())->getOutput();
+  return result;
 }
 
 } // namespace archetype

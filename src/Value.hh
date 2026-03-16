@@ -36,6 +36,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const = 0;
         virtual Value clone() const = 0;
         virtual void display(std::ostream& out) const = 0;
+        virtual std::string asRDF() const = 0;
         virtual void write(Storage& out) const = 0;
 
         virtual bool isTrueEnough() const     { return true; }
@@ -65,6 +66,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value{new UndefinedValue}; }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual bool isDefined()   const override { return false; }
@@ -77,6 +79,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value{new AbsentValue}; }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual bool isDefined()   const override { return true; }
@@ -89,6 +92,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value{new BreakValue}; }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual bool isDefined()   const override { return true; }
@@ -102,6 +106,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new BooleanValue(value_)); }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual bool isTrueEnough() const override { return value_; }
@@ -117,6 +122,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value{new MessageValue{message_}}; }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual int getMessage() const override;
@@ -133,6 +139,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value{new TextLiteralValue{textLiteral_}}; }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual std::string getString() const override;
@@ -150,6 +157,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new NumericValue(value_)); }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual int getNumber() const override;
@@ -166,6 +174,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new StringValue(value_)); }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual std::string getString() const override;
@@ -183,6 +192,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new IdentifierValue(id_)); }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual int getIdentifier() const override;
@@ -198,6 +208,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value{new ObjectValue{objectId_}}; }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual int getObject() const override;
@@ -220,6 +231,7 @@ namespace archetype {
         virtual bool isSameValueAs(const Value& other) const override;
         virtual Value clone() const override { return Value(new AttributeValue(objectId_, attributeId_)); }
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
         virtual int getIdentifier() const override;
@@ -253,6 +265,7 @@ namespace archetype {
         virtual Value tail() const override;
 
         virtual void display(std::ostream& out) const override;
+        virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
 
     };

@@ -18,6 +18,36 @@ using namespace std;
 
 namespace archetype {
 
+    // Escape a string for safe embedding in a quoted literal.
+    static std::string escape_string(const std::string& s) {
+        std::string result;
+        result.reserve(s.size() + 2);
+        result += '"';
+        for (char ch : s) {
+            switch (ch) {
+                case '"':  result += "\\\""; break;
+                case '\\': result += "\\\\"; break;
+                case '\n': result += "\\n";  break;
+                case '\r': result += "\\r";  break;
+                case '\t': result += "\\t";  break;
+                default:   result += ch;     break;
+            }
+        }
+        result += '"';
+        return result;
+    }
+
+    // Look up the identifier name bound to an object, or empty string if none.
+    static std::string identifier_of(int object_id) {
+        for (auto const& p : Universe::instance().ObjectIdentifiers) {
+            if (p.second == object_id) {
+                return Universe::instance().Identifiers.get(p.first);
+            }
+        }
+        return "";
+    }
+
+
     enum ValueType_e {
         UNDEFINED,
         ABSENT,
@@ -99,6 +129,10 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_UNDEFINED);
     }
 
+    std::string UndefinedValue::asRDF() const {
+        return "archetype:UNDEFINED";
+    }
+
     void UndefinedValue::write(Storage& out) const {
         out << UNDEFINED;
     }
@@ -110,6 +144,10 @@ namespace archetype {
 
     void AbsentValue::display(std::ostream &out) const {
         out << Keywords::instance().Reserved.get(Keywords::RW_ABSENT);
+    }
+
+    std::string AbsentValue::asRDF() const {
+        return "archetype:ABSENT";
     }
 
     void AbsentValue::write(Storage& out) const {
@@ -125,6 +163,10 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_BREAK);
     }
 
+    std::string BreakValue::asRDF() const {
+        return "archetype:BREAK";
+    }
+
     void BreakValue::write(Storage& out) const {
         out << BREAK;
     }
@@ -138,6 +180,10 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(value_ ?
                                                  Keywords::RW_TRUE :
                                                  Keywords::RW_FALSE);
+    }
+
+    std::string BooleanValue::asRDF() const {
+        return value_ ? "\"true\"^^xsd:boolean" : "\"false\"^^xsd:boolean";
     }
 
     void BooleanValue::write(Storage& out) const {
@@ -171,6 +217,10 @@ namespace archetype {
 
     void MessageValue::display(std::ostream &out) const {
         out << "'" << Universe::instance().Messages.get(message_) << "'";
+    }
+
+    std::string MessageValue::asRDF() const {
+        return escape_string(Universe::instance().Messages.get(message_)) + "^^archetype:message";
     }
 
     void MessageValue::write(Storage& out) const {
@@ -207,6 +257,10 @@ namespace archetype {
         out << '"' << Universe::instance().TextLiterals.get(textLiteral_) << '"';
     }
 
+    std::string TextLiteralValue::asRDF() const {
+        return escape_string(getString());
+    }
+
     void TextLiteralValue::write(Storage& out) const {
         out << TEXT_LITERAL << textLiteral_;
     }
@@ -218,6 +272,10 @@ namespace archetype {
 
     void NumericValue::display(std::ostream &out) const {
         out << value_;
+    }
+
+    std::string NumericValue::asRDF() const {
+        return std::to_string(value_);
     }
 
     void NumericValue::write(Storage& out) const {
@@ -241,6 +299,10 @@ namespace archetype {
 
     void StringValue::display(std::ostream &out) const {
         out << '"' << value_ << '"';
+    }
+
+    std::string StringValue::asRDF() const {
+        return escape_string(value_);
     }
 
     void StringValue::write(Storage& out) const {
@@ -269,6 +331,10 @@ namespace archetype {
 
     void IdentifierValue::display(std::ostream &out) const {
         out << Universe::instance().Identifiers.get(id_);
+    }
+
+    std::string IdentifierValue::asRDF() const {
+        return "archetype:" + Universe::instance().Identifiers.get(id_);
     }
 
     int IdentifierValue::getIdentifier() const {
@@ -308,6 +374,16 @@ namespace archetype {
         out << '>';
     }
 
+    std::string ObjectValue::asRDF() const {
+        std::string name = identifier_of(objectId_);
+        if (name.empty()) {
+            return "_:object_" + std::to_string(objectId_);
+        }
+        ObjectPtr obj = Universe::instance().getObject(objectId_);
+        std::string prefix = obj->isPrototype() ? "type:" : "obj:";
+        return prefix + name;
+    }
+
     void ObjectValue::write(Storage& out) const {
         out << OBJECT << objectId_;
     }
@@ -328,6 +404,10 @@ namespace archetype {
     bool AttributeValue::isSameValueAs(const Value &other) const {
         const AttributeValue* other_p = dynamic_cast<const AttributeValue*>(other.get());
         return other_p and other_p->objectId_ == objectId_ and other_p->attributeId_ == attributeId_;
+    }
+
+    std::string AttributeValue::asRDF() const {
+        return dereference_()->asRDF();
     }
 
     void AttributeValue::display(std::ostream &out) const {
@@ -435,6 +515,25 @@ namespace archetype {
             }
             out << '}';
         }
+    }
+
+    std::string PairValue::asRDF() const {
+        // Render as a Turtle collection: ( item1 item2 ... )
+        std::string result = "( ";
+        result += head_->asRDF();
+        const PairValue* p = dynamic_cast<const PairValue*>(tail_.get());
+        while (p) {
+            result += " ";
+            result += p->head_->asRDF();
+            const PairValue* next = dynamic_cast<const PairValue*>(p->tail_.get());
+            if (not next and p->tail_->isDefined()) {
+                result += " ";
+                result += p->tail_->asRDF();
+            }
+            p = next;
+        }
+        result += " )";
+        return result;
     }
 
     void PairValue::write(Storage &out) const {
