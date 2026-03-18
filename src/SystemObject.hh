@@ -56,6 +56,7 @@ namespace archetype {
         void resetSystem_();
 
         friend void inspect_universe(Storage& in, std::ostream& out, bool include_methods);
+        friend std::string sitrep_parser_context();
 
     };
 }

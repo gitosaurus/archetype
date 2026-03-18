@@ -18,8 +18,8 @@ using namespace std;
 
 namespace archetype {
 
-    // Escape a string for safe embedding in JSON.
-    static std::string json_escape(const std::string& s) {
+    // Escape a string for safe embedding in a quoted literal.
+    static std::string escape_string(const std::string& s) {
         std::string result;
         result.reserve(s.size() + 2);
         result += '"';
@@ -129,10 +129,6 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_UNDEFINED);
     }
 
-    std::string UndefinedValue::asJSON() const {
-        return "null";
-    }
-
     std::string UndefinedValue::asRDF() const {
         return "archetype:UNDEFINED";
     }
@@ -148,10 +144,6 @@ namespace archetype {
 
     void AbsentValue::display(std::ostream &out) const {
         out << Keywords::instance().Reserved.get(Keywords::RW_ABSENT);
-    }
-
-    std::string AbsentValue::asJSON() const {
-        return "null";
     }
 
     std::string AbsentValue::asRDF() const {
@@ -171,10 +163,6 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(Keywords::RW_BREAK);
     }
 
-    std::string BreakValue::asJSON() const {
-        return "null";
-    }
-
     std::string BreakValue::asRDF() const {
         return "archetype:BREAK";
     }
@@ -192,10 +180,6 @@ namespace archetype {
         out << Keywords::instance().Reserved.get(value_ ?
                                                  Keywords::RW_TRUE :
                                                  Keywords::RW_FALSE);
-    }
-
-    std::string BooleanValue::asJSON() const {
-        return value_ ? "true" : "false";
     }
 
     std::string BooleanValue::asRDF() const {
@@ -235,12 +219,8 @@ namespace archetype {
         out << "'" << Universe::instance().Messages.get(message_) << "'";
     }
 
-    std::string MessageValue::asJSON() const {
-        return json_escape(Universe::instance().Messages.get(message_));
-    }
-
     std::string MessageValue::asRDF() const {
-        return json_escape(Universe::instance().Messages.get(message_)) + "^^archetype:message";
+        return escape_string(Universe::instance().Messages.get(message_)) + "^^archetype:message";
     }
 
     void MessageValue::write(Storage& out) const {
@@ -277,12 +257,8 @@ namespace archetype {
         out << '"' << Universe::instance().TextLiterals.get(textLiteral_) << '"';
     }
 
-    std::string TextLiteralValue::asJSON() const {
-        return json_escape(getString());
-    }
-
     std::string TextLiteralValue::asRDF() const {
-        return json_escape(getString());
+        return escape_string(getString());
     }
 
     void TextLiteralValue::write(Storage& out) const {
@@ -296,10 +272,6 @@ namespace archetype {
 
     void NumericValue::display(std::ostream &out) const {
         out << value_;
-    }
-
-    std::string NumericValue::asJSON() const {
-        return std::to_string(value_);
     }
 
     std::string NumericValue::asRDF() const {
@@ -329,12 +301,8 @@ namespace archetype {
         out << '"' << value_ << '"';
     }
 
-    std::string StringValue::asJSON() const {
-        return json_escape(value_);
-    }
-
     std::string StringValue::asRDF() const {
-        return json_escape(value_);
+        return escape_string(value_);
     }
 
     void StringValue::write(Storage& out) const {
@@ -363,10 +331,6 @@ namespace archetype {
 
     void IdentifierValue::display(std::ostream &out) const {
         out << Universe::instance().Identifiers.get(id_);
-    }
-
-    std::string IdentifierValue::asJSON() const {
-        return json_escape(Universe::instance().Identifiers.get(id_));
     }
 
     std::string IdentifierValue::asRDF() const {
@@ -410,14 +374,6 @@ namespace archetype {
         out << '>';
     }
 
-    std::string ObjectValue::asJSON() const {
-        std::string name = object_name(objectId_);
-        if (name.empty()) {
-            return json_escape("object_" + std::to_string(objectId_));
-        }
-        return json_escape(name);
-    }
-
     std::string ObjectValue::asRDF() const {
         std::string name = object_name(objectId_);
         if (name.empty()) {
@@ -448,10 +404,6 @@ namespace archetype {
     bool AttributeValue::isSameValueAs(const Value &other) const {
         const AttributeValue* other_p = dynamic_cast<const AttributeValue*>(other.get());
         return other_p and other_p->objectId_ == objectId_ and other_p->attributeId_ == attributeId_;
-    }
-
-    std::string AttributeValue::asJSON() const {
-        return dereference_()->asJSON();
     }
 
     std::string AttributeValue::asRDF() const {
@@ -567,26 +519,6 @@ namespace archetype {
             }
             out << '}';
         }
-    }
-
-    std::string PairValue::asJSON() const {
-        // Render as a JSON array by iterating the cons cells.
-        std::string result = "[";
-        result += head_->asJSON();
-        const PairValue* p = dynamic_cast<const PairValue*>(tail_.get());
-        while (p) {
-            result += ", ";
-            result += p->head_->asJSON();
-            const PairValue* next = dynamic_cast<const PairValue*>(p->tail_.get());
-            if (not next and p->tail_->isDefined()) {
-                // Improper list: tail is not a pair and not UNDEFINED
-                result += ", ";
-                result += p->tail_->asJSON();
-            }
-            p = next;
-        }
-        result += "]";
-        return result;
     }
 
     std::string PairValue::asRDF() const {

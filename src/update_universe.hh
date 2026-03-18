@@ -15,11 +15,9 @@
 
 namespace archetype {
 
-  enum class SitrepFormat { NONE, JSON, RDF };
-
   Value dispatch_to_universe(std::string message);
   std::string update_universe(Storage& in, Storage& out, std::string input,
-                              int width = 0, SitrepFormat sitrep = SitrepFormat::NONE);
+                              int width = 0, bool sitrep = false);
 
 }
 

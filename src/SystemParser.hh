@@ -81,6 +81,7 @@ namespace archetype {
         void matchNouns_(std::list<Value>& wordValues);
 
         friend void inspect_universe(Storage& in, std::ostream& out, bool include_methods);
+        friend std::string sitrep_parser_context();
     };
 
     Storage& operator<<(Storage& out, const SystemParser& p);
