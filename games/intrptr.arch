@@ -202,9 +202,12 @@ methods
 
 'SITREP' : {
   sitrep := UNDEFINED
-  sitrep := { "exits"     ('INVENTORY NAMES' -> compass) } @ sitrep
-  sitrep := { "visible"   ('INVENTORY NAMES' -> player.location) } @ sitrep
-  sitrep := { "inventory" ('INVENTORY NAMES' -> player) } @ sitrep
+  sitrep := { "location"  player.location } @ sitrep
+  sitrep := { "exits"     ('INVENTORY OBJECTS' -> compass) } @ sitrep
+  sitrep := { "visible"   ('INVENTORY OBJECTS' -> player.location) } @ sitrep
+  sitrep := { "inventory" ('INVENTORY OBJECTS' -> player) } @ sitrep
+  if it then
+    sitrep := { "it" it.referent } @ sitrep
   sitrep
   }
 
@@ -468,8 +471,9 @@ methods
       }
     }
 
-  'INVENTORY'       : message -> list_inventory
-  'INVENTORY NAMES' : message -> list_inventory
+  'INVENTORY'         : message -> list_inventory
+  'INVENTORY NAMES'   : message -> list_inventory
+  'INVENTORY OBJECTS' : message -> list_inventory
 
 end
 
@@ -486,6 +490,17 @@ null list_inventory
   names   : UNDEFINED
 
 methods
+
+  'INVENTORY OBJECTS' : {
+    names   := UNDEFINED
+    temp    := sender.members
+    while temp do {
+      if 'INVENTORY NAME' -> head temp then
+        names := (head temp) @ names
+      temp := tail temp
+      }
+    names
+    }
 
   'INVENTORY NAMES' : {
     names   := UNDEFINED
