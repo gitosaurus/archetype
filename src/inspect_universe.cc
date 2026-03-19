@@ -83,6 +83,8 @@ namespace archetype {
                 out << " a rdfs:Class";
             } else if (obj_id == Universe::SystemObjectId) {
                 out << " a archetype:SystemObject";
+            } else {
+                out << " a " << obj_name(Universe::NullObjectId);
             }
 
             // Attributes: flat view with evaluated values
@@ -143,16 +145,21 @@ namespace archetype {
 
         for (int vo : vocab_objects) {
             out << obj_name(vo);
+            bool first = true;
             auto vi = verb_objects.find(vo);
             if (vi != verb_objects.end()) {
                 for (const auto& vp : vi->second) {
-                    out << "\n    ; archetype:verbPhrase \"" << vp << "\"";
+                    out << "\n    " << (first ? "" : "; ")
+                        << "archetype:verbPhrase \"" << vp << "\"";
+                    first = false;
                 }
             }
             auto ni = noun_objects.find(vo);
             if (ni != noun_objects.end()) {
                 for (const auto& np : ni->second) {
-                    out << "\n    ; archetype:nounPhrase \"" << np << "\"";
+                    out << "\n    " << (first ? "" : "; ")
+                        << "archetype:nounPhrase \"" << np << "\"";
+                    first = false;
                 }
             }
             out << " .\n\n";
@@ -162,8 +169,10 @@ namespace archetype {
         if (not system->parser_->proximate_.empty()) {
             out << "# Proximate objects (present in current context)\n\n"
                 << "archetype:situation archetype:proximate";
+            bool first = true;
             for (int p_obj_id : system->parser_->proximate_) {
-                out << "\n    , " << obj_name(p_obj_id);
+                out << "\n    " << (first ? "" : ", ") << obj_name(p_obj_id);
+                first = false;
             }
             out << " .\n\n";
         }
