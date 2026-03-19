@@ -33,19 +33,6 @@ namespace archetype {
     void inspect_universe(Storage& in, std::ostream& out, bool include_methods) {
         in >> Universe::instance();
 
-        // -- Prefixes --
-
-        out << "@base <http://derektjones.net/archetype/> .\n\n"
-            << "@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
-            << "@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .\n"
-            << "@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .\n\n"
-            << "@prefix archetype: <vocab/> .\n"
-            << "@prefix type:      <type/> .\n"
-            << "@prefix object:    <object/> .\n"
-            << "@prefix attr:      <attr/> .\n"
-            << "@prefix msg:       <msg/> .\n\n"
-            ;
-
         // -- Build reverse lookup: object_id -> identifier_id --
 
         std::map<int, int> reverse_ids;
@@ -59,9 +46,21 @@ namespace archetype {
                 return "_:object_" + std::to_string(obj_id);
             }
             ObjectPtr obj = Universe::instance().getObject(obj_id);
-            std::string prefix = obj->isPrototype() ? "type:" : "object:";
+            std::string prefix = obj->isPrototype() ? "type:" : "obj:";
             return prefix + Universe::instance().Identifiers.get(it->second);
         };
+
+        // -- Prefixes --
+
+        out << "@base <http://derektjones.net/archetype/> .\n\n"
+            << "@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
+            << "@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .\n"
+            << "@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .\n\n"
+            << "@prefix archetype: <vocab/> .\n"
+            << "@prefix type:      <type/> .\n"
+            << "@prefix obj:       <instance/> .\n"
+            << "@prefix attr:      <attr/> .\n"
+            << "@prefix msg:       <msg/> .\n\n";
 
         // -- Objects --
 

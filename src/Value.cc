@@ -37,9 +37,8 @@ namespace archetype {
         return result;
     }
 
-    // Look up the name of an object by its ID, returning an empty string
-    // if the object has no identifier binding.
-    static std::string object_name(int object_id) {
+    // Look up the identifier name bound to an object, or empty string if none.
+    static std::string identifier_of(int object_id) {
         for (auto const& p : Universe::instance().ObjectIdentifiers) {
             if (p.second == object_id) {
                 return Universe::instance().Identifiers.get(p.first);
@@ -47,6 +46,7 @@ namespace archetype {
         }
         return "";
     }
+
 
     enum ValueType_e {
         UNDEFINED,
@@ -375,12 +375,12 @@ namespace archetype {
     }
 
     std::string ObjectValue::asRDF() const {
-        std::string name = object_name(objectId_);
+        std::string name = identifier_of(objectId_);
         if (name.empty()) {
             return "_:object_" + std::to_string(objectId_);
         }
         ObjectPtr obj = Universe::instance().getObject(objectId_);
-        std::string prefix = obj->isPrototype() ? "type:" : "object:";
+        std::string prefix = obj->isPrototype() ? "type:" : "obj:";
         return prefix + name;
     }
 
