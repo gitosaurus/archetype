@@ -21,6 +21,7 @@ SystemParser.cc
 SystemSorter.cc
 TestExpression.cc
 TestIdIndex.cc
+TestInspectUniverse.cc
 TestObject.cc
 TestRegistry.cc
 TestSerialization.cc
