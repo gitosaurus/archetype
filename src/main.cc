@@ -58,11 +58,7 @@ namespace archetype {
 
         ~Session() {
             if (not silent_) {
-                UserOutput output = Universe::instance().output();
-                output->endLine();
-                output->put("Archetype ");
-                output->put(VersionString);
-                output->endLine();
+                std::cerr << "Archetype " << VersionString << std::endl;
             }
             TestRegistry::destroy();
             Universe::destroy();
