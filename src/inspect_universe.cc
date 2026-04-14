@@ -56,9 +56,9 @@ namespace archetype {
             << "@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
             << "@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .\n"
             << "@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .\n\n"
-            << "@prefix archetype: <vocab/> .\n"
+            << "@prefix archetype: <schema/> .\n"
             << "@prefix type:      <type/> .\n"
-            << "@prefix obj:       <instance/> .\n"
+            << "@prefix obj:       <object/> .\n"
             << "@prefix attr:      <attr/> .\n"
             << "@prefix msg:       <msg/> .\n\n";
 
