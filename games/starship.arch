@@ -96,13 +96,13 @@ methods
 >>
 >>Who am I...?
 >>
->>                       Derek Jones Presents
->>
->>                      an Archetype Adventure
->>
->>                       STARSHIP  SOLITAIRE
->>
->>
+      write_centered "Derek Jones Presents"
+      write
+      write_centered "an Archetype Adventure"
+      write
+      write_centered "STARSHIP  SOLITAIRE"
+      write
+      write
     }  # FIRSTDESC
 
   'LONGDESC' : {
