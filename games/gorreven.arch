@@ -122,13 +122,13 @@ methods
 >>my life won't be worth a fake dollar bill.  None of our lives will.
 >>
 >>
->>                         Derek Jones Presents...
->>
->>                        an Archetype Adventure
->>
->>                         "The Gorreven Papers"
->>
->>
+      write_centered "Derek Jones Presents..."
+      write
+      write_centered "an Archetype Adventure"
+      write
+      write_centered "\"The Gorreven Papers\""
+      write
+      write
     }  # FIRSTDESC
 
   'LONGDESC' :

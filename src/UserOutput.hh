@@ -24,6 +24,7 @@ namespace archetype {
         virtual void endLine() = 0;
         virtual void resetPager() { }
         virtual void banner(char ch) = 0;
+        virtual void center(const std::string& line) { put(line); endLine(); }
     };
     typedef std::shared_ptr<IUserOutput> UserOutput;
 }

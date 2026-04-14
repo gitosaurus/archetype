@@ -23,6 +23,7 @@ namespace archetype {
         virtual void put(const std::string& line) override;
         virtual void endLine() override;
         virtual void banner(char ch) override;
+        virtual void center(const std::string& line) override;
 
         // Get and set the columns of text available in the console.
         // Zero is a special value meaning that the columns are
