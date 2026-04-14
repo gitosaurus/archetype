@@ -80,6 +80,18 @@ namespace archetype {
         resetCursor();
     }
 
+    void WrappedOutput::center(const std::string& line) {
+        if (cursor_ != 0) {
+            endLine();
+        }
+        if (maxColumns_ > 0 and int(line.size()) < maxColumns_) {
+            int pad = (maxColumns_ - int(line.size())) / 2;
+            output_->put(string(pad, ' '));
+        }
+        output_->put(line);
+        endLine();
+    }
+
     void WrappedOutput::banner(char ch) {
         if (cursor_ != 0) {
             endLine();

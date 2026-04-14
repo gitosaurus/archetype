@@ -68,6 +68,7 @@ namespace archetype {
         RESERVE(RW_WHILE, "while");
         RESERVE(RW_WRITE, "write");
         RESERVE(RW_WRITES, "writes");
+        RESERVE(RW_WRITE_CENTERED, "write_centered");
 
         OPERATOR(OP_PAIR, "@");
         OPERATOR(OP_CONCAT, "&");

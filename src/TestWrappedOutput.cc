@@ -50,7 +50,35 @@ namespace archetype {
         out() << "TestWrappedOutput finished." << endl;
     }
 
+    void TestWrappedOutput::testCenter_() {
+        UserOutput user_soutput{new StringOutput};
+        StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
+        UserOutput user_output{new WrappedOutput{user_soutput}};
+        WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
+        wrout.setMaxColumns(20);
+        string title = "Hello";
+        user_output->center(title);
+        string result = strout.getOutput();
+        // (20 - 5) / 2 = 7 leading spaces
+        ARCHETYPE_TEST_EQUAL(result, string("       Hello\n"));
+
+        // A line equal to or wider than the column count gets no padding.
+        StringOutput& strout2 = strout;
+        wrout.setMaxColumns(5);
+        user_output->center("Hello, world!");
+        string wide = strout2.getOutput();
+        ARCHETYPE_TEST(wide.find("Hello, world!") != string::npos);
+
+        // Zero columns means indeterminate width: emit unpadded.
+        wrout.setMaxColumns(0);
+        user_output->center("X");
+        ARCHETYPE_TEST(strout2.getOutput().find("\nX\n") != string::npos
+                       or strout2.getOutput().rfind("X\n") == strout2.getOutput().size() - 2);
+        out() << "TestWrappedOutput::testCenter_ finished." << endl;
+    }
+
     void TestWrappedOutput::runTests_() {
         testBasicWrap_();
+        testCenter_();
     }
 }
