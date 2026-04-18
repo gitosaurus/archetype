@@ -19,6 +19,7 @@ namespace archetype {
         void testInheritance_();
         void testMethods_();
         void testMessagePassing_();
+        void testReadDoesNotMutate_();
     protected:
         virtual void runTests_() override;
     public:

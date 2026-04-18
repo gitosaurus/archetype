@@ -166,10 +166,29 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
 
+    void TestObject::testReadDoesNotMutate_() {
+        ObjectPtr subject = Universe::instance().defineNewObject();
+        Universe::instance().assignObjectIdentifier(subject, "subject");
+        int ghost_id = Universe::instance().Identifiers.index("ghost");
+
+        ARCHETYPE_TEST(not subject->hasAttribute(ghost_id));
+
+        Expression expr = make_expr_from_str("subject.ghost");
+        Value val = expr->evaluate()->valueConversion();
+        ARCHETYPE_TEST(not val->isDefined());
+
+        ARCHETYPE_TEST(not subject->hasAttribute(ghost_id));
+
+        expr->evaluate();
+        expr->evaluate();
+        ARCHETYPE_TEST(not subject->hasAttribute(ghost_id));
+    }
+
     void TestObject::runTests_() {
         testObjects_();
         testInheritance_();
         testMethods_();
         testMessagePassing_();
+        testReadDoesNotMutate_();
     }
 }
