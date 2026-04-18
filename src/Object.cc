@@ -33,6 +33,10 @@ namespace archetype {
         return attributes_.count(attribute_id) > 0 or (p and p->hasAttribute(attribute_id));
     }
 
+    bool Object::hasLocalAttribute(int attribute_id) const {
+        return attributes_.count(attribute_id) > 0;
+    }
+
     Value Object::getAttributeValue(int attribute_id) const {
         auto where = attributes_.find(attribute_id);
         if (where != attributes_.end()) {

@@ -182,6 +182,24 @@ namespace archetype {
         expr->evaluate();
         expr->evaluate();
         ARCHETYPE_TEST(not subject->hasAttribute(ghost_id));
+
+        ObjectPtr animal = Universe::instance().defineNewObject();
+        animal->setPrototype(true);
+        Universe::instance().assignObjectIdentifier(animal, "animal");
+        int legs_id = Universe::instance().Identifiers.index("legs");
+        animal->setAttribute(legs_id, Value(new NumericValue(4)));
+
+        ObjectPtr dog = Universe::instance().defineNewObject(animal->id());
+        Universe::instance().assignObjectIdentifier(dog, "dog");
+
+        ARCHETYPE_TEST(dog->hasAttribute(legs_id));
+        ARCHETYPE_TEST(not dog->hasLocalAttribute(legs_id));
+
+        Expression inherited = make_expr_from_str("dog.legs");
+        Value inherited_val = inherited->evaluate()->numericConversion();
+        ARCHETYPE_TEST_EQUAL(inherited_val->getNumber(), 4);
+
+        ARCHETYPE_TEST(not dog->hasLocalAttribute(legs_id));
     }
 
     void TestObject::runTests_() {

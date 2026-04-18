@@ -62,6 +62,7 @@ namespace archetype {
         ObjectPtr parent() const;
 
         bool hasAttribute(int attribute_id) const;
+        bool hasLocalAttribute(int attribute_id) const;
         Value getAttributeValue(int attribute_id) const;
         void setAttribute(int attribute_id, Expression expr);
         void setAttribute(int attribute_id, Value val);
