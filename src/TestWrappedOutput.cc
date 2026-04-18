@@ -55,25 +55,34 @@ namespace archetype {
         StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
         UserOutput user_output{new WrappedOutput{user_soutput}};
         WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
-        wrout.setMaxColumns(20);
-        string title = "Hello";
-        user_output->center(title);
-        string result = strout.getOutput();
-        // (20 - 5) / 2 = 7 leading spaces
-        ARCHETYPE_TEST_EQUAL(result, string("       Hello\n"));
 
-        // A line equal to or wider than the column count gets no padding.
-        StringOutput& strout2 = strout;
+        auto delta = [&](size_t& mark) {
+            string all = strout.getOutput();
+            string d = all.substr(mark);
+            mark = all.size();
+            return d;
+        };
+        size_t mark = 0;
+
+        wrout.setMaxColumns(20);
+        user_output->center("Hello");
+        // (20 - 5) / 2 = 7 leading spaces
+        ARCHETYPE_TEST_EQUAL(delta(mark), string("       Hello\n"));
+
+        // A line at the column count gets no padding.
         wrout.setMaxColumns(5);
+        user_output->center("Hello");
+        ARCHETYPE_TEST_EQUAL(delta(mark), string("Hello\n"));
+
+        // A line wider than the column count gets no padding.
         user_output->center("Hello, world!");
-        string wide = strout2.getOutput();
-        ARCHETYPE_TEST(wide.find("Hello, world!") != string::npos);
+        ARCHETYPE_TEST_EQUAL(delta(mark), string("Hello, world!\n"));
 
         // Zero columns means indeterminate width: emit unpadded.
         wrout.setMaxColumns(0);
         user_output->center("X");
-        ARCHETYPE_TEST(strout2.getOutput().find("\nX\n") != string::npos
-                       or strout2.getOutput().rfind("X\n") == strout2.getOutput().size() - 2);
+        ARCHETYPE_TEST_EQUAL(delta(mark), string("X\n"));
+
         out() << "TestWrappedOutput::testCenter_ finished." << endl;
     }
 
