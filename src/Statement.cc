@@ -477,7 +477,10 @@ namespace archetype {
 
     Value OutputStatement::execute() const {
         Value last_value(new UndefinedValue);
-        ostringstream centered;
+        unique_ptr<ostringstream> centered;
+        if (writeType_ == Keywords::RW_WRITE_CENTERED) {
+            centered.reset(new ostringstream);
+        }
         for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
             if (writeType_ == Keywords::RW_DISPLAY) {
@@ -489,15 +492,15 @@ namespace archetype {
             }
             Value v_s = last_value->stringConversion();
             if (v_s->isDefined()) {
-                if (writeType_ == Keywords::RW_WRITE_CENTERED) {
-                    centered << v_s->getString();
+                if (centered) {
+                    *centered << v_s->getString();
                 } else {
                     Universe::instance().output()->put(v_s->getString());
                 }
             }
         }
-        if (writeType_ == Keywords::RW_WRITE_CENTERED) {
-            Universe::instance().output()->center(centered.str());
+        if (centered) {
+            Universe::instance().output()->center(centered->str());
         } else if (writeType_ != Keywords::RW_WRITES) {
             Universe::instance().output()->endLine();
         }

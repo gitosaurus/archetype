@@ -87,6 +87,14 @@ namespace archetype {
         string expected_4_2 = "Hello, world!\n";
         ARCHETYPE_TEST_EQUAL(actual_4_2, expected_4_2);
 
+        // Capture uses a bare StringOutput, so center() falls through to the
+        // default put+endLine; padding math is covered in TestWrappedOutput.
+        Statement stmt4c = make_stmt_from_str("write_centered \"Hello, \", \"world!\"");
+        ARCHETYPE_TEST(stmt4c != nullptr);
+        Capture capture4c;
+        stmt4c->execute();
+        ARCHETYPE_TEST_EQUAL(capture4c.getCapture(), string("Hello, world!\n"));
+
         Statement stmt5 = make_stmt_from_str(">>Now, this is a \"quote\".");
         ARCHETYPE_TEST(stmt5 != nullptr);
         Capture capture5;
