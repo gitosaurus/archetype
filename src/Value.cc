@@ -502,7 +502,7 @@ namespace archetype {
             tail_->display(out);
             out << ')';
         } else {
-            out << '{';
+            out << '[';
             head_->display(out);
             while (tail_p) {
                 out << ' ';
@@ -517,7 +517,7 @@ namespace archetype {
                     break;
                 }
             }
-            out << '}';
+            out << ']';
         }
     }
 

@@ -76,13 +76,8 @@ namespace archetype {
                         }
                         Value result = stmt->execute();
                         ostringstream sout;
-                        sout << "[";
+                        sout << "=> ";
                         result->display(sout);
-                        sout << "]";
-                        Value result_str = result->stringConversion();
-                        if (result_str->isDefined()) {
-                            sout << " " << result_str->getString();
-                        }
                         sout << endl;
                         out->put(sout.str());
                     }
