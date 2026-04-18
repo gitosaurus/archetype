@@ -202,12 +202,12 @@ methods
 
 'SITREP' : {
   sitrep := UNDEFINED
-  sitrep := { "location"  player.location } @ sitrep
-  sitrep := { "exits"     ('INVENTORY OBJECTS' -> compass) } @ sitrep
-  sitrep := { "visible"   ('INVENTORY OBJECTS' -> player.location) } @ sitrep
-  sitrep := { "inventory" ('INVENTORY OBJECTS' -> player) } @ sitrep
+  sitrep := [ "location"  player.location ] @ sitrep
+  sitrep := [ "exits"     ('INVENTORY OBJECTS' -> compass) ] @ sitrep
+  sitrep := [ "visible"   ('INVENTORY OBJECTS' -> player.location) ] @ sitrep
+  sitrep := [ "inventory" ('INVENTORY OBJECTS' -> player) ] @ sitrep
   if it then
-    sitrep := { "it" it.referent } @ sitrep
+    sitrep := [ "it" it.referent ] @ sitrep
   sitrep
   }
 
@@ -373,7 +373,7 @@ end
 
 class event_handler based on null
 
-  subscribers : { }
+  subscribers : [ ]
   temp : UNDEFINED
 
   event : 'EVENT'

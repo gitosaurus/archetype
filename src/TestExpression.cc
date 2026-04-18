@@ -18,6 +18,8 @@
 #include "Expression.hh"
 #include "Serialization.hh"
 #include "StringInput.hh"
+#include "StringOutput.hh"
+#include "ReadEvalPrintLoop.hh"
 #include "Universe.hh"
 
 using namespace std;
@@ -327,11 +329,62 @@ namespace archetype {
         ARCHETYPE_TEST(expr7 != nullptr);
     }
 
+    void TestExpression::testListLiterals_() {
+        // A list literal uses square brackets and evaluates to a PairValue
+        // chain whose display round-trips to the same bracket form.
+        Expression list_expr = make_expr_from_str("[1 2 3]");
+        ARCHETYPE_TEST(list_expr != nullptr);
+        Value list_val = list_expr->evaluate()->valueConversion();
+        ostringstream list_out;
+        list_val->display(list_out);
+        ARCHETYPE_TEST_EQUAL(list_out.str(), string{"[1 2 3]"});
+
+        // The empty list still parses.
+        Expression empty_expr = make_expr_from_str("[]");
+        ARCHETYPE_TEST(empty_expr != nullptr);
+
+        // Nested list literals.
+        Expression nested_expr = make_expr_from_str("[[1 2] [3 4]]");
+        ARCHETYPE_TEST(nested_expr != nullptr);
+        Value nested_val = nested_expr->evaluate()->valueConversion();
+        ostringstream nested_out;
+        nested_val->display(nested_out);
+        ARCHETYPE_TEST_EQUAL(nested_out.str(), string{"[[1 2] [3 4]]"});
+
+        // Curly braces in expression position no longer form a list literal.
+        Expression curly_expr = make_expr_from_str("{1 2 3}");
+        ARCHETYPE_TEST(curly_expr == nullptr);
+    }
+
+    void TestExpression::testReplDisplay_() {
+        // Drive the REPL with a few inputs and verify each result is echoed
+        // once with the `=> ` prefix — the display form only, matching the
+        // Python/Ruby/Lisp convention. No duplicated stringConversion tail.
+        UserInput prior_input = Universe::instance().input();
+        UserOutput prior_output = Universe::instance().output();
+        UserInput repl_input{new StringInput{"3 + 5\n[1 2 3]\n\"hi\"\nexit\n"}};
+        UserOutput repl_output{new StringOutput};
+        Universe::instance().setInput(repl_input);
+        Universe::instance().setOutput(repl_output);
+        int errors = repl();
+        ARCHETYPE_TEST_EQUAL(errors, 0);
+        string text = dynamic_cast<StringOutput*>(repl_output.get())->getOutput();
+        ARCHETYPE_TEST(text.find("=> 8\n") != string::npos);
+        ARCHETYPE_TEST(text.find("=> 8 8") == string::npos);
+        ARCHETYPE_TEST(text.find("=> [1 2 3]\n") != string::npos);
+        ARCHETYPE_TEST(text.find("=> \"hi\"\n") != string::npos);
+        ARCHETYPE_TEST(text.find("\"hi\" hi") == string::npos);
+        Universe::instance().setInput(prior_input);
+        Universe::instance().setOutput(prior_output);
+    }
+
     void TestExpression::runTests_() {
         testTranslation_();
         testEvaluation_();
         testSerialization_();
         testInput_();
         testVerification_();
+        testListLiterals_();
+        testReplDisplay_();
     }
 }

@@ -814,9 +814,9 @@ namespace archetype {
     }
 
     Expression form_list_expr(TokenStream& t) {
-        // Called when the list has already begun, with an opening '{'.
+        // Called when the list has already begun, with an opening '['.
         stack<Expression> elements;
-        while (t.fetch() and t.token() != Token(Token::PUNCTUATION, '}')) {
+        while (t.fetch() and t.token() != Token(Token::PUNCTUATION, ']')) {
             if (t.token() != Token(Token::PUNCTUATION, ';')) {
                 t.didNotConsume();
             }
@@ -848,7 +848,7 @@ namespace archetype {
                         } else {
                             return nullptr;
                         }
-                    case '{':
+                    case '[':
                         return form_list_expr(t);
                     default:
                         return nullptr;

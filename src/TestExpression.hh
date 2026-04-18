@@ -20,6 +20,8 @@ namespace archetype {
         void testSerialization_();
         void testInput_();
         void testVerification_();
+        void testListLiterals_();
+        void testReplDisplay_();
     protected:
         virtual void runTests_() override;
     public:
