@@ -141,9 +141,37 @@ namespace archetype {
         ARCHETYPE_TEST(ttl.find("archetype:proximate obj:") != string::npos);
     }
 
+    void TestInspectUniverse::testParserBlock_() {
+        Universe::destroy();
+
+        TokenStream t(make_source_from_str("inspect_test", program));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+
+        // Run setup, then hand the parser a command so playerCommand_ and
+        // normalized_ are populated before we inspect.
+        Capture capture;
+        Statement setup = make_stmt_from_str(
+            "{'go' -> setup; 'PLAYER CMD' -> system; \"look at gizmo\" -> system}");
+        setup->execute();
+
+        string ttl = getTurtleOutput_();
+
+        // The parser is serialized as a first-class archetype:SystemParser.
+        ARCHETYPE_TEST(ttl.find("archetype:parser a archetype:SystemParser") != string::npos);
+
+        // CLOSE PARSER leaves the parser in NOUNS mode.
+        ARCHETYPE_TEST(ttl.find("archetype:mode \"nouns\"") != string::npos);
+
+        // The raw command round-trips verbatim; the normalized form is
+        // present (exact spacing is an implementation detail of parse()).
+        ARCHETYPE_TEST(ttl.find("archetype:playerCommand \"look at gizmo\"") != string::npos);
+        ARCHETYPE_TEST(ttl.find("archetype:normalized ") != string::npos);
+    }
+
     void TestInspectUniverse::runTests_() {
         testNullParentType_();
         testVocabSyntax_();
         testProximateSyntax_();
+        testParserBlock_();
     }
 }
