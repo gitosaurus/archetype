@@ -111,10 +111,14 @@ namespace archetype {
         ARCHETYPE_TEST(ttl.find("obj:thing\n    ; ") == string::npos);
         ARCHETYPE_TEST(ttl.find("obj:gizmo\n    ; ") == string::npos);
 
-        // But they should have the noun phrases
-        ARCHETYPE_TEST(ttl.find("archetype:nounPhrase \"thing\"") != string::npos);
-        ARCHETYPE_TEST(ttl.find("archetype:nounPhrase \"thingamajig\"") != string::npos);
-        ARCHETYPE_TEST(ttl.find("archetype:nounPhrase \"gizmo\"") != string::npos);
+        // Per-object phrases are emitted under the unified predicate.
+        ARCHETYPE_TEST(ttl.find("archetype:matchesPhrase \"thing\"") != string::npos);
+        ARCHETYPE_TEST(ttl.find("archetype:matchesPhrase \"thingamajig\"") != string::npos);
+        ARCHETYPE_TEST(ttl.find("archetype:matchesPhrase \"gizmo\"") != string::npos);
+
+        // ANNOUNCE made both objects proximate, so their phrases are live too.
+        ARCHETYPE_TEST(ttl.find("archetype:matchesNow \"thing\"") != string::npos);
+        ARCHETYPE_TEST(ttl.find("archetype:matchesNow \"gizmo\"") != string::npos);
     }
 
     void TestInspectUniverse::testProximateSyntax_() {
@@ -130,11 +134,11 @@ namespace archetype {
 
         string ttl = getTurtleOutput_();
 
-        // The proximate list must not have a leading comma before the first object.
-        // Valid:   "archetype:proximate\n    obj:gizmo"
-        // Invalid: "archetype:proximate\n    , obj:gizmo"
-        ARCHETYPE_TEST(ttl.find("archetype:proximate\n    , ") == string::npos);
-        ARCHETYPE_TEST(ttl.find("archetype:proximate\n    obj:") != string::npos);
+        // Proximate now lives on archetype:parser, not archetype:situation.
+        ARCHETYPE_TEST(ttl.find("archetype:parser a archetype:SystemParser") != string::npos);
+        // First object in the list must not be preceded by a comma.
+        ARCHETYPE_TEST(ttl.find("archetype:proximate ,") == string::npos);
+        ARCHETYPE_TEST(ttl.find("archetype:proximate obj:") != string::npos);
     }
 
     void TestInspectUniverse::runTests_() {

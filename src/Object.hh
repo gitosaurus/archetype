@@ -33,7 +33,7 @@ namespace archetype {
         std::map<int, Expression> attributes_;
         std::map<int, Statement> methods_;
 
-        friend void inspect_universe(Storage& in, std::ostream& out, bool include_methods);
+        friend void dump_universe_rdf(std::ostream& out, bool include_methods);
 
     public:
         static const int INVALID = -1;

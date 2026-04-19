@@ -2,7 +2,6 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
-#include <iterator>
 #include <set>
 #include <map>
 
@@ -50,28 +49,43 @@ namespace archetype {
         return encoded.str();
     }
 
-    void inspect_universe(Storage& in, std::ostream& out, bool include_methods) {
-        in >> Universe::instance();
-
-        // -- Build reverse lookup: object_id -> identifier_id --
-
-        std::map<int, int> reverse_ids;
+    static std::map<int, int> build_reverse_ids() {
+        std::map<int, int> m;
         for (auto const& a : Universe::instance().ObjectIdentifiers) {
-            reverse_ids.insert(std::make_pair(a.second, a.first));
+            m.insert(std::make_pair(a.second, a.first));
         }
+        return m;
+    }
 
-        auto obj_name = [&](int obj_id) -> std::string {
-            auto it = reverse_ids.find(obj_id);
-            if (it == reverse_ids.end()) {
-                return "_:object_" + std::to_string(obj_id);
-            }
-            ObjectPtr obj = Universe::instance().getObject(obj_id);
-            std::string prefix = obj->isPrototype() ? "type:" : "obj:";
-            return prefix + Universe::instance().Identifiers.get(it->second);
-        };
+    static std::string obj_name_for(int obj_id, const std::map<int, int>& reverse_ids) {
+        auto it = reverse_ids.find(obj_id);
+        if (it == reverse_ids.end()) {
+            return "_:object_" + std::to_string(obj_id);
+        }
+        ObjectPtr obj = Universe::instance().getObject(obj_id);
+        std::string prefix = obj->isPrototype() ? "type:" : "obj:";
+        return prefix + Universe::instance().Identifiers.get(it->second);
+    }
 
-        // -- Prefixes --
+    // Join a phrase word list into a single space-separated string.
+    static std::string join_phrase(const std::list<Value>& words) {
+        std::ostringstream ss;
+        for (auto ii = words.begin(); ii != words.end(); ++ii) {
+            if (ii != words.begin()) ss << ' ';
+            ss << (*ii)->getString();
+        }
+        return ss.str();
+    }
 
+    static std::string parser_mode_name(SystemParser::Mode_e mode) {
+        switch (mode) {
+            case SystemParser::VERBS: return "verbs";
+            case SystemParser::NOUNS: return "nouns";
+        }
+        return "unknown";
+    }
+
+    static void write_rdf_prefixes(std::ostream& out) {
         out << "@base <http://derektjones.net/archetype/> .\n\n"
             << "@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .\n"
             << "@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .\n"
@@ -81,8 +95,98 @@ namespace archetype {
             << "@prefix obj:       <object/> .\n"
             << "@prefix attr:      <attr/> .\n"
             << "@prefix msg:       <msg/> .\n\n";
+    }
 
-        // -- Objects --
+    void write_parser_rdf(std::ostream& out, bool with_prefixes) {
+        ObjectPtr systemObject = Universe::instance().getObject(Universe::SystemObjectId);
+        SystemObject* system = dynamic_cast<SystemObject*>(systemObject.get());
+        if (not system or not system->parser_) return;
+        const auto& parser = *system->parser_;
+
+        if (with_prefixes) write_rdf_prefixes(out);
+
+        std::map<int, int> reverse_ids = build_reverse_ids();
+        auto obj_name = [&](int id) { return obj_name_for(id, reverse_ids); };
+
+        // -- Vocabulary: invert match tables so phrases are grouped by object --
+
+        std::map<int, std::set<std::string>> phrases_by_object;
+        for (const auto& vm : parser.verbMatches_) {
+            phrases_by_object[vm.second].insert(join_phrase(vm.first));
+        }
+        for (const auto& nm : parser.nounMatches_) {
+            phrases_by_object[nm.second].insert(join_phrase(nm.first));
+        }
+
+        // "Effective" phrases: noun phrases whose referent is currently in
+        // scope (proximate).  Pre-baked here so consumers without SPARQL can
+        // answer "what can the player type right now?" with a simple scan.
+        std::map<int, std::set<std::string>> live_phrases_by_object;
+        for (const auto& nm : parser.nounMatches_) {
+            if (parser.proximate_.count(nm.second)) {
+                live_phrases_by_object[nm.second].insert(join_phrase(nm.first));
+            }
+        }
+
+        out << "# Vocabulary\n\n";
+        for (const auto& entry : phrases_by_object) {
+            int obj_id = entry.first;
+            out << obj_name(obj_id);
+            bool first = true;
+            for (const auto& p : entry.second) {
+                out << "\n    " << (first ? "" : "; ")
+                    << "archetype:matchesPhrase " << escape_literal(p);
+                first = false;
+            }
+            auto live = live_phrases_by_object.find(obj_id);
+            if (live != live_phrases_by_object.end()) {
+                for (const auto& p : live->second) {
+                    out << "\n    ; archetype:matchesNow " << escape_literal(p);
+                }
+            }
+            out << " .\n\n";
+        }
+
+        // -- Parser state --
+
+        out << "# Parser state\n\n"
+            << "archetype:parser a archetype:SystemParser"
+            << "\n    ; archetype:mode " << escape_literal(parser_mode_name(parser.mode_));
+
+        if (not parser.proximate_.empty()) {
+            bool first = true;
+            out << "\n    ; archetype:proximate ";
+            for (int p_obj_id : parser.proximate_) {
+                if (not first) out << ", ";
+                out << obj_name(p_obj_id);
+                first = false;
+            }
+        }
+
+        if (not parser.playerCommand_.empty()) {
+            out << "\n    ; archetype:playerCommand " << escape_literal(parser.playerCommand_);
+        }
+        if (not parser.normalized_.empty()) {
+            out << "\n    ; archetype:normalized " << escape_literal(parser.normalized_);
+        }
+        if (not parser.parsedValues_.empty()) {
+            bool first = true;
+            out << "\n    ; archetype:parsedValue ";
+            for (const auto& v : parser.parsedValues_) {
+                if (not first) out << ", ";
+                out << v->asRDF();
+                first = false;
+            }
+        }
+
+        out << " .\n\n";
+    }
+
+    void dump_universe_rdf(std::ostream& out, bool include_methods) {
+        std::map<int, int> reverse_ids = build_reverse_ids();
+        auto obj_name = [&](int id) { return obj_name_for(id, reverse_ids); };
+
+        write_rdf_prefixes(out);
 
         for (int obj_id = 0; obj_id < Universe::instance().objectCount(); obj_id++) {
             ObjectPtr obj = Universe::instance().getObject(obj_id);
@@ -90,7 +194,6 @@ namespace archetype {
 
             out << obj_name(obj_id);
 
-            // Type / inheritance
             ObjectPtr parent = obj->parent();
             if (parent) {
                 if (obj->isPrototype()) {
@@ -107,7 +210,6 @@ namespace archetype {
                 out << " a " << obj_name(Universe::NullObjectId);
             }
 
-            // Attributes: flat view with evaluated values
             for (auto const& attr : obj->attributes_) {
                 Value value = attr.second->evaluate();
                 if (value->isDefined()) {
@@ -116,7 +218,6 @@ namespace archetype {
                 }
             }
 
-            // Methods: list which messages this object responds to
             if (include_methods) {
                 for (auto const& method : obj->methods_) {
                     if (method.first == DefaultMethod) {
@@ -129,72 +230,13 @@ namespace archetype {
             }
 
             out << " .\n\n";
-        } // objects
-
-        // -- Vocabulary: parser state --
-
-        ObjectPtr systemObject = Universe::instance().getObject(Universe::SystemObjectId);
-        SystemObject* system = dynamic_cast<SystemObject*>(systemObject.get());
-        assert(system != nullptr);
-
-        // Join a phrase word list into a single quoted string.
-        auto phrase = [](const std::list<Value>& phr) -> std::string {
-            std::ostringstream ss;
-            for (auto ii = phr.begin(); ii != phr.end(); ++ii) {
-                if (ii != phr.begin()) ss << ' ';
-                ss << (*ii)->getString();
-            }
-            return ss.str();
-        };
-
-        // Invert the parser's match tables: group phrases by object.
-        std::map<int, std::set<std::string>> verb_objects;
-        for (const auto& vp : system->parser_->verbMatches_) {
-            verb_objects[vp.second].insert(phrase(vp.first));
-        }
-        std::map<int, std::set<std::string>> noun_objects;
-        for (const auto& np : system->parser_->nounMatches_) {
-            noun_objects[np.second].insert(phrase(np.first));
         }
 
-        // Emit vocabulary as RDF: each object's verb/noun phrases.
-        out << "# Vocabulary\n\n";
-        std::set<int> vocab_objects;
-        for (const auto& vi : verb_objects) vocab_objects.insert(vi.first);
-        for (const auto& ni : noun_objects) vocab_objects.insert(ni.first);
+        write_parser_rdf(out, /* with_prefixes = */ false);
+    }
 
-        for (int vo : vocab_objects) {
-            out << obj_name(vo);
-            bool first = true;
-            auto vi = verb_objects.find(vo);
-            if (vi != verb_objects.end()) {
-                for (const auto& vp : vi->second) {
-                    out << "\n    " << (first ? "" : "; ")
-                        << "archetype:verbPhrase " << escape_literal(vp);
-                    first = false;
-                }
-            }
-            auto ni = noun_objects.find(vo);
-            if (ni != noun_objects.end()) {
-                for (const auto& np : ni->second) {
-                    out << "\n    " << (first ? "" : "; ")
-                        << "archetype:nounPhrase " << escape_literal(np);
-                    first = false;
-                }
-            }
-            out << " .\n\n";
-        }
-
-        // Proximate objects
-        if (not system->parser_->proximate_.empty()) {
-            out << "# Proximate objects (present in current context)\n\n"
-                << "archetype:situation archetype:proximate";
-            bool first = true;
-            for (int p_obj_id : system->parser_->proximate_) {
-                out << "\n    " << (first ? "" : ", ") << obj_name(p_obj_id);
-                first = false;
-            }
-            out << " .\n\n";
-        }
-    } // inspect_universe
+    void inspect_universe(Storage& in, std::ostream& out, bool include_methods) {
+        in >> Universe::instance();
+        dump_universe_rdf(out, include_methods);
+    }
 }

@@ -17,7 +17,8 @@ namespace archetype {
 
   Value dispatch_to_universe(std::string message);
   std::string update_universe(Storage& in, Storage& out, std::string input,
-                              int width = 0, bool sitrep = false);
+                              int width = 0, bool sitrep = false,
+                              bool inspect = false);
 
 }
 
