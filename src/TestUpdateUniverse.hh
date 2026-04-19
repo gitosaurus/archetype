@@ -17,6 +17,7 @@ namespace archetype {
     class TestUpdateUniverse : public ITestSuite {
         void testPlainUpdate_();
         void testSitrepAppendsParserRdf_();
+        void testSitrepUnpacksPairs_();
         void testInspectAppendsFullRdf_();
     protected:
         virtual void runTests_() override;
