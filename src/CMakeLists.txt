@@ -32,6 +32,7 @@ TestSystemParser.cc
 TestSystemSorter.cc
 TestTokenStream.cc
 TestUniverse.cc
+TestUpdateUniverse.cc
 TestValue.cc
 TestWrappedOutput.cc
 Token.cc
