@@ -488,18 +488,19 @@ null list_inventory
   temp    : UNDEFINED
   last    : UNDEFINED
   names   : UNDEFINED
+  items   : UNDEFINED
 
 methods
 
   'INVENTORY OBJECTS' : {
-    names   := UNDEFINED
+    items   := UNDEFINED
     temp    := sender.members
     while temp do {
       if 'INVENTORY NAME' -> head temp then
-        names := (head temp) @ names
+        items := (head temp) @ items
       temp := tail temp
       }
-    names
+    items
     }
 
   'INVENTORY NAMES' : {

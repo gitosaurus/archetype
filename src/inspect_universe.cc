@@ -14,6 +14,26 @@
 
 namespace archetype {
 
+    // Escape a string for safe embedding in a quoted Turtle literal.
+    // Mirrors escape_string in Value.cc; kept local to avoid a cross-TU dep.
+    static std::string escape_literal(const std::string& s) {
+        std::string result;
+        result.reserve(s.size() + 2);
+        result += '"';
+        for (char ch : s) {
+            switch (ch) {
+                case '"':  result += "\\\""; break;
+                case '\\': result += "\\\\"; break;
+                case '\n': result += "\\n";  break;
+                case '\r': result += "\\r";  break;
+                case '\t': result += "\\t";  break;
+                default:   result += ch;     break;
+            }
+        }
+        result += '"';
+        return result;
+    }
+
     // URI-encode a message name following RFC 3986 section 2.3.
     static std::string uri_encode(const std::string& s) {
         std::ostringstream encoded;
@@ -150,7 +170,7 @@ namespace archetype {
             if (vi != verb_objects.end()) {
                 for (const auto& vp : vi->second) {
                     out << "\n    " << (first ? "" : "; ")
-                        << "archetype:verbPhrase \"" << vp << "\"";
+                        << "archetype:verbPhrase " << escape_literal(vp);
                     first = false;
                 }
             }
@@ -158,7 +178,7 @@ namespace archetype {
             if (ni != noun_objects.end()) {
                 for (const auto& np : ni->second) {
                     out << "\n    " << (first ? "" : "; ")
-                        << "archetype:nounPhrase \"" << np << "\"";
+                        << "archetype:nounPhrase " << escape_literal(np);
                     first = false;
                 }
             }
