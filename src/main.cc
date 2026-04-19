@@ -91,6 +91,7 @@ void usage() {
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
         << "   --input=<string>          In combination with --update, provide command input as a string." << endl
         << "   --sitrep                  In combination with --update, append a situation report (RDF/Turtle)." << endl
+        << "   --inspect                 In combination with --update, append the full post-turn universe (RDF/Turtle)." << endl
         << " --inspect=file.acx      Load a saved binary file and dump its contents as RDF/Turtle." << endl
         << "   --full                    Include method signatures in the RDF output." << endl
     ;
@@ -236,8 +237,11 @@ int main(int argc, const char* argv[]) {
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
           bool sitrep = opts.count("sitrep") > 0;
+          // --inspect with an empty value pairs with --update; a non-empty value
+          // selects the standalone --inspect=file.acx path handled below.
+          bool inspect_after = opts.count("inspect") > 0 and opts["inspect"].empty();
           MemoryStorage out_mem;
-          cout << update_universe(in_mem, out_mem, opts["input"], width, sitrep);
+          cout << update_universe(in_mem, out_mem, opts["input"], width, sitrep, inspect_after);
           ofstream f_out(filename.c_str());
           if (!f_out) {
               throw invalid_argument("Cannot write to " + filename);
