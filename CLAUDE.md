@@ -19,6 +19,12 @@ cmake --build build
 
 Always run the test suite and verify it passes before committing changes to C++ source.
 
+## Compile a game to binary
+
+```shell
+./build/archetype --source=games/gorreven.arch --include=games --create=games/gorreven.acx
+```
+
 ## Smoke-test a game
 
 ```shell
