@@ -211,7 +211,11 @@ namespace archetype {
             }
 
             for (auto const& attr : obj->attributes_) {
-                Value value = attr.second->evaluate();
+                auto* val_expr = dynamic_cast<ValueExpression*>(attr.second.get());
+                if (not val_expr) continue;
+                ContextScope c;
+                c->selfObject = obj;
+                Value value = val_expr->evaluate();
                 if (value->isDefined()) {
                     out << "\n    ; attr:" << Universe::instance().Identifiers.get(attr.first)
                         << " " << value->asRDF();
