@@ -200,6 +200,12 @@ namespace archetype {
     void Universe::assignObjectIdentifier(const ObjectPtr& object, int identifier_id) {
         int object_id = object->id();
         ObjectIdentifiers[identifier_id] = object_id;
+        reverseObjectIdentifiers_[object_id] = identifier_id;
+    }
+
+    int Universe::identifierForObject(int object_id) const {
+        auto it = reverseObjectIdentifiers_.find(object_id);
+        return it != reverseObjectIdentifiers_.end() ? it->second : -1;
     }
 
     static ObjectPtr declare_object(TokenStream& t, ObjectPtr obj) {
@@ -420,7 +426,11 @@ namespace archetype {
         u.TextLiterals.clear();
         u.Identifiers.clear();
         u.ObjectIdentifiers.clear();
+        u.reverseObjectIdentifiers_.clear();
         in >> u.Messages >> u.TextLiterals >> u.Identifiers >> u.ObjectIdentifiers;
+        for (auto const& kv : u.ObjectIdentifiers) {
+            u.reverseObjectIdentifiers_[kv.second] = kv.first;
+        }
         u.objects_.clear();
         u.createReservedObjects_();
         in >> u.objects_;

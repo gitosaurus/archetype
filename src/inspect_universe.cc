@@ -49,22 +49,14 @@ namespace archetype {
         return encoded.str();
     }
 
-    static std::map<int, int> build_reverse_ids() {
-        std::map<int, int> m;
-        for (auto const& a : Universe::instance().ObjectIdentifiers) {
-            m.insert(std::make_pair(a.second, a.first));
-        }
-        return m;
-    }
-
-    static std::string obj_name_for(int obj_id, const std::map<int, int>& reverse_ids) {
-        auto it = reverse_ids.find(obj_id);
-        if (it == reverse_ids.end()) {
+    static std::string obj_name_for(int obj_id) {
+        int identifier_id = Universe::instance().identifierForObject(obj_id);
+        if (identifier_id < 0) {
             return "_:object_" + std::to_string(obj_id);
         }
         ObjectPtr obj = Universe::instance().getObject(obj_id);
         std::string prefix = obj->isPrototype() ? "type:" : "obj:";
-        return prefix + Universe::instance().Identifiers.get(it->second);
+        return prefix + Universe::instance().Identifiers.get(identifier_id);
     }
 
     // Join a phrase word list into a single space-separated string.
@@ -105,9 +97,6 @@ namespace archetype {
 
         if (with_prefixes) write_rdf_prefixes(out);
 
-        std::map<int, int> reverse_ids = build_reverse_ids();
-        auto obj_name = [&](int id) { return obj_name_for(id, reverse_ids); };
-
         // -- Vocabulary: invert match tables so phrases are grouped by object --
 
         std::map<int, std::set<std::string>> phrases_by_object;
@@ -131,7 +120,7 @@ namespace archetype {
         out << "# Vocabulary\n\n";
         for (const auto& entry : phrases_by_object) {
             int obj_id = entry.first;
-            out << obj_name(obj_id);
+            out << obj_name_for(obj_id);
             bool first = true;
             for (const auto& p : entry.second) {
                 out << "\n    " << (first ? "" : "; ")
@@ -158,7 +147,7 @@ namespace archetype {
             out << "\n    ; archetype:proximate ";
             for (int p_obj_id : parser.proximate_) {
                 if (not first) out << ", ";
-                out << obj_name(p_obj_id);
+                out << obj_name_for(p_obj_id);
                 first = false;
             }
         }
@@ -183,31 +172,28 @@ namespace archetype {
     }
 
     void dump_universe_rdf(std::ostream& out, bool include_methods) {
-        std::map<int, int> reverse_ids = build_reverse_ids();
-        auto obj_name = [&](int id) { return obj_name_for(id, reverse_ids); };
-
         write_rdf_prefixes(out);
 
         for (int obj_id = 0; obj_id < Universe::instance().objectCount(); obj_id++) {
             ObjectPtr obj = Universe::instance().getObject(obj_id);
             if (not obj) continue;
 
-            out << obj_name(obj_id);
+            out << obj_name_for(obj_id);
 
             ObjectPtr parent = obj->parent();
             if (parent) {
                 if (obj->isPrototype()) {
                     out << " a rdfs:Class\n"
-                        << "    ; rdfs:subClassOf " << obj_name(parent->id());
+                        << "    ; rdfs:subClassOf " << obj_name_for(parent->id());
                 } else {
-                    out << " a " << obj_name(parent->id());
+                    out << " a " << obj_name_for(parent->id());
                 }
             } else if (obj_id == Universe::NullObjectId) {
                 out << " a rdfs:Class";
             } else if (obj_id == Universe::SystemObjectId) {
                 out << " a archetype:SystemObject";
             } else {
-                out << " a " << obj_name(Universe::NullObjectId);
+                out << " a " << obj_name_for(Universe::NullObjectId);
             }
 
             for (auto const& attr : obj->attributes_) {

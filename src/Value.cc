@@ -39,12 +39,9 @@ namespace archetype {
 
     // Look up the identifier name bound to an object, or empty string if none.
     static std::string identifier_of(int object_id) {
-        for (auto const& p : Universe::instance().ObjectIdentifiers) {
-            if (p.second == object_id) {
-                return Universe::instance().Identifiers.get(p.first);
-            }
-        }
-        return "";
+        int identifier_id = Universe::instance().identifierForObject(object_id);
+        if (identifier_id < 0) return "";
+        return Universe::instance().Identifiers.get(identifier_id);
     }
 
 
@@ -356,11 +353,10 @@ namespace archetype {
     }
 
     void ObjectValue::display(std::ostream &out) const {
-        for (auto const& p : Universe::instance().ObjectIdentifiers) {
-            if (p.second == objectId_) {
-                out << Universe::instance().Identifiers.get(p.first);
-                return;
-            }
+        int identifier_id = Universe::instance().identifierForObject(objectId_);
+        if (identifier_id >= 0) {
+            out << Universe::instance().Identifiers.get(identifier_id);
+            return;
         }
         out << "<object " << objectId_ << ", type ";
         ObjectPtr obj = Universe::instance().getObject(objectId_);
@@ -389,10 +385,9 @@ namespace archetype {
     }
 
     Value ObjectValue::identifierConversion() const {
-        for (auto const& p : Universe::instance().ObjectIdentifiers) {
-            if (p.second == objectId_) {
-                return Value{new IdentifierValue{p.first}};
-            }
+        int identifier_id = Universe::instance().identifierForObject(objectId_);
+        if (identifier_id >= 0) {
+            return Value{new IdentifierValue{identifier_id}};
         }
         return Value{new UndefinedValue};
     }
