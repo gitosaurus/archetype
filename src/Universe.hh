@@ -96,6 +96,10 @@ namespace archetype {
         void assignObjectIdentifier(const ObjectPtr& object, std::string identifier);
         void assignObjectIdentifier(const ObjectPtr& object, int identifier_id);
 
+        // Reverse lookup of ObjectIdentifiers.  Returns the identifier_id bound to
+        // object_id, or -1 if the object has no associated identifier.
+        int identifierForObject(int object_id) const;
+
         bool identifierIsAssignedAs(int identifier_id, int object_id) const;
 
         bool make(TokenStream& t);
@@ -113,6 +117,8 @@ namespace archetype {
         UserOutput output_;
 
         IdentifierKindMap kinds_;
+
+        IdentifierMap reverseObjectIdentifiers_;
 
         static Universe* instance_;
 
