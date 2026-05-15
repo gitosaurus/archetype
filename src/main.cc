@@ -98,13 +98,17 @@ void usage() {
 }
 
 static void from_source(map<std::string, std::string> &opts) {
-    string source_path = opts["source"];
+    auto it_source = opts.find("source");
+    string source_path = it_source->second;
+    opts.erase(it_source);
     SourceFilePtr source = Wellspring::instance().primarySource(source_path);
     if (not source) {
         throw invalid_argument("Cannot open \"" + source_path + "\"");
     }
-    if (opts.count("include")) {
-      string includes = opts["include"];
+    auto it_include = opts.find("include");
+    if (it_include != opts.end()) {
+      string includes = it_include->second;
+      opts.erase(it_include);
       istringstream in(includes);
       string path; while (getline(in, path, ':')) {
         SHOW(path);
@@ -116,10 +120,12 @@ static void from_source(map<std::string, std::string> &opts) {
         throw CompilationFailure();
     }
     Universe::instance().reportUndefinedIdentifiers();
-    if (not opts.count("create")) {
+    auto it_create = opts.find("create");
+    if (it_create == opts.end()) {
         dispatch_to_universe("START");
     } else {
-        string filename_out = opts["create"];
+        string filename_out = it_create->second;
+        opts.erase(it_create);
         if (filename_out.empty()) {
             auto iext = source_path.rfind('.');
             filename_out = source_path.substr(0, iext);
@@ -163,21 +169,40 @@ int main(int argc, const char* argv[]) {
         usage();
         return 0;
     }
-    if (opts.count("help")) {
+    auto unknown_options_error = [&]() -> int {
+        if (opts.empty() and args.empty()) return 0;
+        cerr << "ERROR: unknown options or arguments:";
+        for (auto const& kv : opts) cerr << " --" << kv.first;
+        for (auto const& a : args) cerr << " " << a;
+        cerr << endl;
+        return 1;
+    };
+    auto it_help = opts.find("help");
+    if (it_help != opts.end()) {
+        opts.erase(it_help);
+        if (int e = unknown_options_error()) return e;
         usage();
         return 0;
     }
-    if (opts.count("silent")) {
+    auto it_silent = opts.find("silent");
+    if (it_silent != opts.end()) {
         session.silent(true);
+        opts.erase(it_silent);
     }
-    if (opts.count("test")) {
+    auto it_test = opts.find("test");
+    if (it_test != opts.end()) {
+        opts.erase(it_test);
+        if (int e = unknown_options_error()) return e;
         bool success = TestRegistry::instance().runAllTestSuites(cout);
         int exit_code = success ? 0 : 1;
         return exit_code;
     }
-    if (opts.count("repl")) {
+    auto it_repl = opts.find("repl");
+    if (it_repl != opts.end()) {
+        opts.erase(it_repl);
         if (!args.empty()) {
             std::string filename = args.front();
+            args.pop_front();
             cout << "Loading " << filename << endl;
             InFileStorage in(filename);
             if (!in.ok()) {
@@ -185,14 +210,16 @@ int main(int argc, const char* argv[]) {
             }
             in >> Universe::instance();
         }
+        if (int e = unknown_options_error()) return e;
         int errors = repl();
         return errors;
     }
 
-    if (opts.count("source")) {
+    if (opts.find("source") != opts.end()) {
         try {
             from_source(opts);
         } catch (const archetype::QuitGame&) {
+            if (int e = unknown_options_error()) return e;
             return 0;
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
@@ -200,8 +227,12 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    if (opts.count("perform")) {
-        string filename = opts["perform"];
+    auto it_perform = opts.find("perform");
+    auto it_update  = opts.find("update");
+    auto it_inspect = opts.find("inspect");
+    if (it_perform != opts.end()) {
+        string filename = it_perform->second;
+        opts.erase(it_perform);
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
@@ -213,19 +244,23 @@ int main(int argc, const char* argv[]) {
           in >> Universe::instance();
           dispatch_to_universe("START");
         } catch (const archetype::QuitGame&) {
+            if (int e = unknown_options_error()) return e;
             return 0;
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
-    } else if (opts.count("update")) {
-        string filename = opts["update"];
+    } else if (it_update != opts.end()) {
+        string filename = it_update->second;
+        opts.erase(it_update);
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
         int width = 80;
-        if (opts.count("width")) {
-            width = stoi(opts["width"]);
+        auto it_width = opts.find("width");
+        if (it_width != opts.end()) {
+            width = stoi(it_width->second);
+            opts.erase(it_width);
         }
         try {
           MemoryStorage in_mem;
@@ -236,12 +271,24 @@ int main(int argc, const char* argv[]) {
               }
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
-          bool sitrep = opts.count("sitrep") > 0;
+          auto it_sitrep = opts.find("sitrep");
+          bool sitrep = (it_sitrep != opts.end());
+          if (sitrep) opts.erase(it_sitrep);
           // --inspect with an empty value pairs with --update; a non-empty value
           // selects the standalone --inspect=file.acx path handled below.
-          bool inspect_after = opts.count("inspect") > 0 and opts["inspect"].empty();
+          bool inspect_after = false;
+          if (it_inspect != opts.end()) {
+              inspect_after = it_inspect->second.empty();
+              opts.erase(it_inspect);
+          }
+          string input;
+          auto it_input = opts.find("input");
+          if (it_input != opts.end()) {
+              input = it_input->second;
+              opts.erase(it_input);
+          }
           MemoryStorage out_mem;
-          cout << update_universe(in_mem, out_mem, opts["input"], width, sitrep, inspect_after);
+          cout << update_universe(in_mem, out_mem, input, width, sitrep, inspect_after);
           ofstream f_out(filename.c_str());
           if (!f_out) {
               throw invalid_argument("Cannot write to " + filename);
@@ -251,8 +298,9 @@ int main(int argc, const char* argv[]) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
-    } else if (opts.count("inspect")) {
-        string filename = opts["inspect"];
+    } else if (it_inspect != opts.end()) {
+        string filename = it_inspect->second;
+        opts.erase(it_inspect);
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
@@ -261,12 +309,15 @@ int main(int argc, const char* argv[]) {
             if (!in.ok()) {
                 throw runtime_error("Cannot open \"" + filename + "\"");
             }
-            bool full = opts.count("full") > 0;
+            auto it_full = opts.find("full");
+            bool full = (it_full != opts.end());
+            if (full) opts.erase(it_full);
             inspect_universe(in, cout, full);
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
     }
+    if (int e = unknown_options_error()) return e;
     return 0;
 }
