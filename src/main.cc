@@ -91,9 +91,9 @@ void usage() {
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
         << "   --input=<string>          In combination with --update, provide command input as a string." << endl
         << "   --sitrep                  In combination with --update, append a situation report (RDF/Turtle)." << endl
-        << "   --inspect                 In combination with --update, append the full post-turn universe (RDF/Turtle)." << endl
-        << " --inspect=file.acx      Load a saved binary file and dump its contents as RDF/Turtle." << endl
-        << "   --full                    Include method signatures in the RDF output." << endl
+        << "   --inspect                 In combination with --update, append post-turn world state (RDF/Turtle)." << endl
+        << " --inspect=file.acx      Load a saved binary file and dump its world state as RDF/Turtle." << endl
+        << "   --full                    Add method signatures and parser vocabulary to the RDF output." << endl
     ;
 }
 
