@@ -236,7 +236,7 @@ namespace archetype {
             out << " .\n\n";
         }
 
-        write_parser_rdf(out, /* with_prefixes = */ false);
+        if (include_methods) write_parser_rdf(out, /* with_prefixes = */ false);
     }
 
     void inspect_universe(Storage& in, std::ostream& out, bool include_methods) {

@@ -111,7 +111,7 @@ namespace archetype {
         ARCHETYPE_TEST(result.find("SITREP (") == string::npos);
     }
 
-    void TestUpdateUniverse::testInspectAppendsFullRdf_() {
+    void TestUpdateUniverse::testInspectAppendsStateRdf_() {
         MemoryStorage in_mem;
         loadProgram_(in_mem);
 
@@ -120,18 +120,18 @@ namespace archetype {
                                         /* sitrep = */ false,
                                         /* inspect = */ true);
 
-        // Game output, then full universe dump: prefixes, objects, and the
-        // parser block at the end.
+        // Game output, then post-turn world state: prefixes and objects.
+        // Parser vocabulary/state is reserved for the --full output.
         ARCHETYPE_TEST(result.find("tick") != string::npos);
         ARCHETYPE_TEST(result.find("@prefix archetype:") != string::npos);
         ARCHETYPE_TEST(result.find("obj:main a type:null") != string::npos);
-        ARCHETYPE_TEST(result.find("archetype:parser a archetype:SystemParser") != string::npos);
+        ARCHETYPE_TEST(result.find("archetype:parser a archetype:SystemParser") == string::npos);
     }
 
     void TestUpdateUniverse::runTests_() {
         testPlainUpdate_();
         testSitrepAppendsParserRdf_();
         testSitrepUnpacksPairs_();
-        testInspectAppendsFullRdf_();
+        testInspectAppendsStateRdf_();
     }
 }

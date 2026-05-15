@@ -61,14 +61,14 @@ namespace archetype {
     "end\n"
     ;
 
-    static string getTurtleOutput_() {
+    static string getTurtleOutput_(bool include_methods = false) {
         // Serialize the universe
         MemoryStorage mem;
         mem << Universe::instance();
 
         // Inspect it
         ostringstream ttl;
-        inspect_universe(mem, ttl);
+        inspect_universe(mem, ttl, include_methods);
         return ttl.str();
     }
 
@@ -104,7 +104,7 @@ namespace archetype {
         Statement stmt = make_stmt_from_str("'go' -> setup");
         stmt->execute();
 
-        string ttl = getTurtleOutput_();
+        string ttl = getTurtleOutput_(/* include_methods = */ true);
 
         // Vocabulary entries must not start with "; " — the first predicate
         // in a subject block must not be preceded by a semicolon.
@@ -132,7 +132,7 @@ namespace archetype {
         Statement stmt = make_stmt_from_str("'go' -> setup");
         stmt->execute();
 
-        string ttl = getTurtleOutput_();
+        string ttl = getTurtleOutput_(/* include_methods = */ true);
 
         // Proximate now lives on archetype:parser, not archetype:situation.
         ARCHETYPE_TEST(ttl.find("archetype:parser a archetype:SystemParser") != string::npos);
@@ -154,7 +154,7 @@ namespace archetype {
             "{'go' -> setup; 'PLAYER CMD' -> system; \"look at gizmo\" -> system}");
         setup->execute();
 
-        string ttl = getTurtleOutput_();
+        string ttl = getTurtleOutput_(/* include_methods = */ true);
 
         // The parser is serialized as a first-class archetype:SystemParser.
         ARCHETYPE_TEST(ttl.find("archetype:parser a archetype:SystemParser") != string::npos);

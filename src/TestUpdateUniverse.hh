@@ -18,7 +18,7 @@ namespace archetype {
         void testPlainUpdate_();
         void testSitrepAppendsParserRdf_();
         void testSitrepUnpacksPairs_();
-        void testInspectAppendsFullRdf_();
+        void testInspectAppendsStateRdf_();
     protected:
         virtual void runTests_() override;
     public:
