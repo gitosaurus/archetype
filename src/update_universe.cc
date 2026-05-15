@@ -124,13 +124,15 @@ string update_universe(Storage& in, Storage& out, string input, int width,
   if (sitrep and not Universe::instance().ended()) {
     ostringstream rdf_out;
     write_parser_rdf(rdf_out, /* with_prefixes = */ true);
-    try {
-      Value sitrep_val = dispatch_to_universe("SITREP");
-      if (sitrep_val->isDefined()) {
-        write_sitrep_rdf(rdf_out, sitrep_val);
+    if (Universe::instance().Messages.find("SITREP") >= 0) {
+      try {
+        Value sitrep_val = dispatch_to_universe("SITREP");
+        if (sitrep_val->isDefined()) {
+          write_sitrep_rdf(rdf_out, sitrep_val);
+        }
+      } catch (const std::exception&) {
+        // SITREP dispatched but failed at runtime; silently skip
       }
-    } catch (const std::exception&) {
-      // SITREP not available; silently skip
     }
     result += rdf_out.str();
   }
