@@ -221,7 +221,9 @@ namespace archetype {
             }
             int attribute_id = t.token().number();
             Universe::instance().classify(t, attribute_id, DEFINED_ATTRIBUTE_ID);
-            t.insistOn(Token(Token::PUNCTUATION, ':'));
+            if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) {
+                return nullptr;
+            }
             Expression expr = make_expr(t);
             if (not expr) {
                 return nullptr;
@@ -239,7 +241,9 @@ namespace archetype {
                     return nullptr;
                 }
                 int message_id = (t.token().type() == Token::MESSAGE) ? t.token().number() : numeric_limits<int>::max();
-                t.insistOn(Token(Token::PUNCTUATION, ':'));
+                if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) {
+                    return nullptr;
+                }
                 Statement stmt = make_statement(t);
                 if (not stmt) {
                     return nullptr;
@@ -282,8 +286,10 @@ namespace archetype {
         ObjectPtr obj = Universe::instance().defineNewObject();
         obj->setPrototype(true);
         Universe::instance().assignObjectIdentifier(obj, t.token().number());
-        t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_BASED));
-        t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_ON));
+        if (not (t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_BASED)) and
+                 t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_ON)))) {
+            return nullptr;
+        }
         if (not t.fetch()) {
             t.expectGeneral("name of a previously defined type");
             return nullptr;

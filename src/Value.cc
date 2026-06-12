@@ -7,6 +7,8 @@
 //
 
 #include <string>
+#include <string_view>
+#include <optional>
 #include <sstream>
 #include <cctype>
 #include <cassert>
@@ -19,7 +21,7 @@ using namespace std;
 namespace archetype {
 
     // Escape a string for safe embedding in a quoted literal.
-    static std::string escape_string(const std::string& s) {
+    static std::string escape_string(std::string_view s) {
         std::string result;
         result.reserve(s.size() + 2);
         result += '"';
@@ -37,10 +39,10 @@ namespace archetype {
         return result;
     }
 
-    // Look up the identifier name bound to an object, or empty string if none.
-    static std::string identifier_of(int object_id) {
+    // Look up the identifier name bound to an object, if there is one.
+    static std::optional<std::string> identifier_of(int object_id) {
         int identifier_id = Universe::instance().identifierForObject(object_id);
-        if (identifier_id < 0) return "";
+        if (identifier_id < 0) return std::nullopt;
         return Universe::instance().Identifiers.get(identifier_id);
     }
 
@@ -371,13 +373,13 @@ namespace archetype {
     }
 
     std::string ObjectValue::asRDF() const {
-        std::string name = identifier_of(objectId_);
-        if (name.empty()) {
+        auto name = identifier_of(objectId_);
+        if (not name) {
             return "_:object_" + std::to_string(objectId_);
         }
         ObjectPtr obj = Universe::instance().getObject(objectId_);
         std::string prefix = obj->isPrototype() ? "type:" : "obj:";
-        return prefix + name;
+        return prefix + *name;
     }
 
     void ObjectValue::write(Storage& out) const {

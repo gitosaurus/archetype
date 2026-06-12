@@ -2,6 +2,7 @@
 #include <sstream>
 #include <iomanip>
 #include <string>
+#include <string_view>
 #include <set>
 #include <map>
 #include <ranges>
@@ -16,7 +17,7 @@ namespace archetype {
 
     // Escape a string for safe embedding in a quoted Turtle literal.
     // Mirrors escape_string in Value.cc; kept local to avoid a cross-TU dep.
-    static std::string escape_literal(const std::string& s) {
+    static std::string escape_literal(std::string_view s) {
         std::string result;
         result.reserve(s.size() + 2);
         result += '"';
@@ -35,7 +36,7 @@ namespace archetype {
     }
 
     // URI-encode a message name following RFC 3986 section 2.3.
-    static std::string uri_encode(const std::string& s) {
+    static std::string uri_encode(std::string_view s) {
         std::ostringstream encoded;
         for (auto ch : s) {
             if ((ch >= 'A' and ch <= 'Z')  or  (ch >= 'a' and ch <= 'z')  or

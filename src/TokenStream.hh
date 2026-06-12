@@ -24,7 +24,7 @@ namespace archetype {
         bool keepLooking_;
     public:
         TokenStream(SourceFilePtr source);
-        bool fetch();
+        [[nodiscard]] bool fetch();
 
         bool isNewlineSignificant() const { return newlineIsToken_.front(); }
         void considerNewline() { newlineIsToken_.push_front(true); }
@@ -35,7 +35,7 @@ namespace archetype {
         void expectGeneral(std::string expected);
         void expected(Token required);
         void hitEOF(Token required);
-        bool insistOn(Token required);
+        [[nodiscard]] bool insistOn(Token required);
         void errorMessage(std::string message);
         void stopLooking();
     };
