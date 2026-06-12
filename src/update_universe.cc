@@ -11,6 +11,7 @@
 #include "inspect_universe.hh"
 
 #include <sstream>
+#include <string_view>
 
 namespace archetype {
 
@@ -51,7 +52,7 @@ using namespace std;
 // convention is that keys are short identifier-ish words ("location",
 // "exits"), so anything outside [A-Za-z0-9_-] is replaced with '_'.  Leading
 // digits get an underscore prefix.  An empty or all-invalid key becomes "_".
-static string sanitize_local_name(const string& raw) {
+static string sanitize_local_name(string_view raw) {
   if (raw.empty()) return "_";
   string out;
   out.reserve(raw.size());

@@ -6,27 +6,25 @@
 //  Copyright (c) 2014, 2022 Derek Jones. All rights reserved.
 //
 
+#include <filesystem>
 #include <fstream>
 #include <string>
-#include <cassert>
 #include <cstdlib>
 #include <stdexcept>
 
 #include "Wellspring.hh"
 
 using namespace std;
+namespace fs = std::filesystem;
 
 namespace archetype {
     SourceFilePtr Wellspring::primarySource(string file_path) {
-        string::size_type last_slash = file_path.rfind('/');
-        string basename = file_path.substr(0, last_slash + 1);
-        if (basename.empty()) {
-            basename = "./";
-        }
-        paths_.push_front(basename);
+        fs::path source_path{file_path};
+        fs::path directory = source_path.parent_path();
+        paths_.push_front(directory.empty() ? "." : directory.string());
         // Run the filename alone through the regular search now, since that
         // will also supply the default extension.
-        return open(file_path.substr(last_slash + 1));
+        return open(source_path.filename().string());
     }
 
     void Wellspring::addSearchPath(std::string directory_path) {
@@ -38,22 +36,17 @@ namespace archetype {
             everBeenOpened_.insert(source_name);
             return result->second;
         }
-        for (auto p : paths_) {
-            string try_path = p;
-            assert(!try_path.empty());
-            if (not try_path.ends_with('/')) {
-                try_path += '/';
-            }
-            try_path += source_name;
-            if (source_name.find('.') == string::npos) {
+        for (const auto& p : paths_) {
+            fs::path try_path = fs::path{p} / source_name;
+            if (try_path.extension().empty()) {
                 try_path += ".arch";
             }
-            unique_ptr<ifstream> input(new ifstream(try_path.c_str()));
+            unique_ptr<ifstream> input(new ifstream(try_path));
             if (input->is_open()) {
                 // Now that it's been tested for openness, move it to a higher abstraction
                 stream_ptr source_stream{input.release()};
-                SourceFilePtr source{make_shared<SourceFile>(try_path, source_stream)};
-                sources_[try_path] = source;
+                SourceFilePtr source{make_shared<SourceFile>(try_path.string(), source_stream)};
+                sources_[try_path.string()] = source;
                 return source;
             }
         }

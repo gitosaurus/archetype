@@ -22,7 +22,7 @@ namespace archetype {
         InFileStorage(const InFileStorage&) = delete;
         InFileStorage& operator=(const InFileStorage&) = delete;
 
-        bool ok() const;
+        [[nodiscard]] bool ok() const;
         virtual ~InFileStorage() { }
         virtual int remaining() const override;
         virtual int read(Byte* buf, int nbytes) override;
@@ -38,7 +38,7 @@ namespace archetype {
         OutFileStorage(const OutFileStorage&) = delete;
         OutFileStorage& operator=(const OutFileStorage&) = delete;
 
-        bool ok() const;
+        [[nodiscard]] bool ok() const;
         virtual ~OutFileStorage() { }
         virtual int remaining() const override;
         virtual int read(Byte* buf, int nbytes) override;
