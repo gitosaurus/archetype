@@ -34,6 +34,7 @@ namespace archetype {
                 switch (t.type()) {
                     case RESERVED_WORD: case PUNCTUATION:
                         assert(0);
+                        break;
                     case IDENTIFIER:
                         out << "identifier";
                         break;
