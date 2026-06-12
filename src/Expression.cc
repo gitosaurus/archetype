@@ -22,6 +22,8 @@ using namespace std;
 
 namespace archetype {
 
+    using enum Keywords::Operators_e;
+
     bool IExpression::Debug = false;
 
     enum ExpressionType_e {
@@ -47,15 +49,15 @@ namespace archetype {
 
     inline bool is_binary(Keywords::Operators_e op) {
         switch (op) {
-            case Keywords::OP_LPAREN:
-            case Keywords::OP_CHS:
-            case Keywords::OP_NUMERIC:
-            case Keywords::OP_NOT:
-            case Keywords::OP_STRING:
-            case Keywords::OP_RANDOM:
-            case Keywords::OP_LENGTH:
-            case Keywords::OP_HEAD:
-            case Keywords::OP_TAIL:
+            case OP_LPAREN:
+            case OP_CHS:
+            case OP_NUMERIC:
+            case OP_NOT:
+            case OP_STRING:
+            case OP_RANDOM:
+            case OP_LENGTH:
+            case OP_HEAD:
+            case OP_TAIL:
                 return false;
             default:
                 return true;
@@ -68,14 +70,14 @@ namespace archetype {
         // all others are  left-associative, unless
         // special-cased.
         switch (op) {
-            case Keywords::OP_POWER:
-            case Keywords::OP_C_MULTIPLY:
-            case Keywords::OP_C_DIVIDE:
-            case Keywords::OP_C_PLUS:
-            case Keywords::OP_C_MINUS:
-            case Keywords::OP_C_CONCAT:
-            case Keywords::OP_ASSIGN:
-            case Keywords::OP_PAIR:
+            case OP_POWER:
+            case OP_C_MULTIPLY:
+            case OP_C_DIVIDE:
+            case OP_C_PLUS:
+            case OP_C_MINUS:
+            case OP_C_CONCAT:
+            case OP_ASSIGN:
+            case OP_PAIR:
                 return true;
             default:
                 return not is_binary(op);
@@ -84,54 +86,54 @@ namespace archetype {
 
     inline int precedence(Keywords::Operators_e op) {
         switch (op) {
-            case Keywords::OP_LPAREN: return 14;
-            case Keywords::OP_DOT: return 13;
+            case OP_LPAREN: return 14;
+            case OP_DOT: return 13;
 
-            case Keywords::OP_CHS: return 12;
-            case Keywords::OP_NUMERIC: return 12;
-            case Keywords::OP_STRING: return 12;
-            case Keywords::OP_RANDOM: return 12;
-            case Keywords::OP_LENGTH: return 12;
+            case OP_CHS: return 12;
+            case OP_NUMERIC: return 12;
+            case OP_STRING: return 12;
+            case OP_RANDOM: return 12;
+            case OP_LENGTH: return 12;
 
-            case Keywords::OP_POWER: return 11;
+            case OP_POWER: return 11;
 
-            case Keywords::OP_MULTIPLY: return 10;
-            case Keywords::OP_DIVIDE: return 10;
+            case OP_MULTIPLY: return 10;
+            case OP_DIVIDE: return 10;
 
-            case Keywords::OP_PLUS: return 9;
-            case Keywords::OP_MINUS: return 9;
-            case Keywords::OP_CONCAT: return 9;
+            case OP_PLUS: return 9;
+            case OP_MINUS: return 9;
+            case OP_CONCAT: return 9;
 
-            case Keywords::OP_WITHIN: return 8;
+            case OP_WITHIN: return 8;
 
-            case Keywords::OP_LEFTFROM: return 7;
-            case Keywords::OP_RIGHTFROM: return 7;
+            case OP_LEFTFROM: return 7;
+            case OP_RIGHTFROM: return 7;
 
-            case Keywords::OP_SEND: return 6;
-            case Keywords::OP_PASS: return 6;
+            case OP_SEND: return 6;
+            case OP_PASS: return 6;
 
-            case Keywords::OP_EQ: return 5;
-            case Keywords::OP_NE: return 5;
-            case Keywords::OP_GT: return 5;
-            case Keywords::OP_LT: return 5;
-            case Keywords::OP_GE: return 5;
-            case Keywords::OP_LE: return 5;
+            case OP_EQ: return 5;
+            case OP_NE: return 5;
+            case OP_GT: return 5;
+            case OP_LT: return 5;
+            case OP_GE: return 5;
+            case OP_LE: return 5;
 
-            case Keywords::OP_NOT: return 4;
-            case Keywords::OP_AND: return 3;
-            case Keywords::OP_OR: return 2;
+            case OP_NOT: return 4;
+            case OP_AND: return 3;
+            case OP_OR: return 2;
 
             // TODO:  What's the right precedence here?  LISP never has to decide
-            case Keywords::OP_PAIR: return 2;
-            case Keywords::OP_HEAD: return 2;
-            case Keywords::OP_TAIL: return 2;
+            case OP_PAIR: return 2;
+            case OP_HEAD: return 2;
+            case OP_TAIL: return 2;
 
-            case Keywords::OP_C_MULTIPLY: return 1;
-            case Keywords::OP_C_DIVIDE: return 1;
-            case Keywords::OP_C_PLUS: return 1;
-            case Keywords::OP_C_MINUS: return 1;
-            case Keywords::OP_C_CONCAT: return 1;
-            case Keywords::OP_ASSIGN: return 1;
+            case OP_C_MULTIPLY: return 1;
+            case OP_C_DIVIDE: return 1;
+            case OP_C_PLUS: return 1;
+            case OP_C_MINUS: return 1;
+            case OP_C_CONCAT: return 1;
+            case OP_ASSIGN: return 1;
 
             default:
                 throw logic_error("Attempt to look up precedence of nonexistent operator");
@@ -141,16 +143,16 @@ namespace archetype {
 
     Keywords::Operators_e non_assignment_equivalent(Keywords::Operators_e op) {
         switch (op) {
-            case Keywords::OP_C_PLUS:
-                return Keywords::OP_PLUS;
-            case Keywords::OP_C_MINUS:
-                return Keywords::OP_MINUS;
-            case Keywords::OP_C_MULTIPLY:
-                return Keywords::OP_MULTIPLY;
-            case Keywords::OP_C_DIVIDE:
-                return Keywords::OP_DIVIDE;
-            case Keywords::OP_C_CONCAT:
-                return Keywords::OP_CONCAT;
+            case OP_C_PLUS:
+                return OP_PLUS;
+            case OP_C_MINUS:
+                return OP_MINUS;
+            case OP_C_MULTIPLY:
+                return OP_MULTIPLY;
+            case OP_C_DIVIDE:
+                return OP_DIVIDE;
+            case OP_C_CONCAT:
+                return OP_CONCAT;
             default:
                 throw logic_error("Unexpected cumulative assignment operator");
         }
@@ -191,8 +193,8 @@ namespace archetype {
                 result = Value(new AttributeValue(selfObject->id(), id_));
             } else {
                 // Next:  an object in the Universe
-                auto id_obj_p = Universe::instance().ObjectIdentifiers.find(id_);
-                if (id_obj_p != Universe::instance().ObjectIdentifiers.end()) {
+                auto& object_ids = Universe::instance().ObjectIdentifiers;
+                if (auto id_obj_p = object_ids.find(id_); id_obj_p != object_ids.end()) {
                     result = Value{new ObjectValue{id_obj_p->second}};
                 }
             }
@@ -255,7 +257,7 @@ namespace archetype {
             Value rv = right_->evaluate()->valueConversion();
             Value result;
             switch (op()) {
-                case Keywords::OP_CHS: {
+                case OP_CHS: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined()) {
                         result = Value{new NumericValue{-rv_n->getNumber()}};
@@ -264,16 +266,16 @@ namespace archetype {
                     }
                     break;
                 }
-                case Keywords::OP_NUMERIC:
+                case OP_NUMERIC:
                     result = rv->numericConversion();
                     break;
-                case Keywords::OP_NOT:
+                case OP_NOT:
                     result = Value{new BooleanValue{not rv->isTrueEnough()}};
                     break;
-                case Keywords::OP_STRING:
+                case OP_STRING:
                     result = rv->stringConversion();
                     break;
-                case Keywords::OP_RANDOM: {
+                case OP_RANDOM: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined() and rv_n->getNumber() > 0) {
                         random_device rd;
@@ -286,7 +288,7 @@ namespace archetype {
                     }
                     break;
                 }
-                case Keywords::OP_LENGTH: {
+                case OP_LENGTH: {
                     Value rv_s = rv->stringConversion();
                     if (rv_s->isDefined()) {
                         result = Value{new NumericValue{static_cast<int>(rv_s->getString().size())}};
@@ -295,12 +297,12 @@ namespace archetype {
                     }
                     break;
                 }
-                case Keywords::OP_HEAD: {
+                case OP_HEAD: {
                     Value rv_v = rv->valueConversion();
                     result = rv_v->head();
                     break;
                 }
-                case Keywords::OP_TAIL: {
+                case OP_TAIL: {
                     Value rv_v = rv->valueConversion();
                     result = rv_v->tail();
                     break;
@@ -328,11 +330,11 @@ namespace archetype {
         virtual int nodeCount() const override { return 1 + right_->nodeCount(); }
         virtual Expression anyFewerNodeEquivalent() override {
             right_ = tighten(std::move(right_));
-            return op() != Keywords::OP_LPAREN ? nullptr : std::move(right_);
+            return op() != OP_LPAREN ? nullptr : std::move(right_);
         }
 
         virtual void prefixDisplay(ostream& out) const override {
-            if (op() == Keywords::OP_LPAREN) {
+            if (op() == OP_LPAREN) {
                 right_->prefixDisplay(out);
             } else {
                 out << '(';
@@ -345,9 +347,9 @@ namespace archetype {
 
     Value eval_ss(Keywords::Operators_e op, string lv_s, string rv_s) {
         switch (op) {
-            case Keywords::OP_CONCAT:
+            case OP_CONCAT:
                 return Value(new StringValue(lv_s + rv_s));
-            case Keywords::OP_WITHIN: {
+            case OP_WITHIN: {
                 size_t where = rv_s.find(lv_s);
                 if (lv_s.empty()  or  where == string::npos) {
                     return Value{new UndefinedValue};
@@ -362,9 +364,9 @@ namespace archetype {
 
     Value eval_sn(Keywords::Operators_e op, string lv_s, int rv_n) {
         switch (op) {
-            case Keywords::OP_LEFTFROM:
+            case OP_LEFTFROM:
                 return Value(new StringValue(lv_s.substr(0, rv_n)));
-            case Keywords::OP_RIGHTFROM: {
+            case OP_RIGHTFROM: {
                 int n = min(int(lv_s.size() + 1), max(0, rv_n));
                 return Value(new StringValue(lv_s.substr(n - 1)));
             }
@@ -376,11 +378,11 @@ namespace archetype {
     Value eval_nn(Keywords::Operators_e op, int lv_n, int rv_n) {
         int result;
         switch (op) {
-            case Keywords::OP_PLUS:     result = lv_n + rv_n;     break;
-            case Keywords::OP_MINUS:    result = lv_n - rv_n;     break;
-            case Keywords::OP_MULTIPLY: result = lv_n * rv_n;     break;
-            case Keywords::OP_DIVIDE:   result = lv_n / rv_n;     break;
-            case Keywords::OP_POWER:    result = static_cast<int>(pow(lv_n, rv_n)); break;
+            case OP_PLUS:     result = lv_n + rv_n;     break;
+            case OP_MINUS:    result = lv_n - rv_n;     break;
+            case OP_MULTIPLY: result = lv_n * rv_n;     break;
+            case OP_DIVIDE:   result = lv_n / rv_n;     break;
+            case OP_POWER:    result = static_cast<int>(pow(lv_n, rv_n)); break;
             default:
                 throw logic_error("number-op-number attempted on this operator");
         }
@@ -389,19 +391,19 @@ namespace archetype {
 
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
         // Quick shortcut for identity.  Will also catch (v = UNDEFINED) and (UNDEFINED = v).
-        if (op == Keywords::OP_EQ and lv->isSameValueAs(rv)) {
+        if (op == OP_EQ and lv->isSameValueAs(rv)) {
             return true;
         }
 
         // If one side or the other is UNDEFINED, only ~= is possible to be true.
         if ((not lv->isDefined()) xor (not rv->isDefined())) {
-            return op == Keywords::OP_NE;
+            return op == OP_NE;
         }
 
         // But if they are both UNDEFINED, then they are only equal if testing for
         // that equality.
         if ((not lv->isDefined()) and (not rv->isDefined())) {
-            return op == Keywords::OP_EQ;
+            return op == OP_EQ;
         }
 
         Value lv_n = lv->numericConversion();
@@ -410,12 +412,12 @@ namespace archetype {
             int ln = lv_n->getNumber();
             int rn = rv_n->getNumber();
             switch (op) {
-                case Keywords::OP_EQ: return ln == rn;
-                case Keywords::OP_NE: return ln != rn;
-                case Keywords::OP_LT: return ln <  rn;
-                case Keywords::OP_LE: return ln <= rn;
-                case Keywords::OP_GE: return ln >= rn;
-                case Keywords::OP_GT: return ln >  rn;
+                case OP_EQ: return ln == rn;
+                case OP_NE: return ln != rn;
+                case OP_LT: return ln <  rn;
+                case OP_LE: return ln <= rn;
+                case OP_GE: return ln >= rn;
+                case OP_GT: return ln >  rn;
                 default: throw logic_error("Unexpected numeric eval_compare case");
             }
         }
@@ -425,12 +427,12 @@ namespace archetype {
             string ls = lv_s->getString();
             string rs = rv_s->getString();
             switch (op) {
-                case Keywords::OP_EQ: return ls == rs;
-                case Keywords::OP_NE: return ls != rs;
-                case Keywords::OP_LT: return ls <  rs;
-                case Keywords::OP_LE: return ls <= rs;
-                case Keywords::OP_GE: return ls >= rs;
-                case Keywords::OP_GT: return ls >  rs;
+                case OP_EQ: return ls == rs;
+                case OP_NE: return ls != rs;
+                case OP_LT: return ls <  rs;
+                case OP_LE: return ls <= rs;
+                case OP_GE: return ls >= rs;
+                case OP_GT: return ls >  rs;
                 default: throw logic_error("Unexpected numeric eval_compare case");
             }
         }
@@ -440,15 +442,15 @@ namespace archetype {
             int l_obj = lv_o->getObject();
             int r_obj = rv_o->getObject();
             switch (op) {
-                case Keywords::OP_EQ: return l_obj == r_obj;
-                case Keywords::OP_NE: return l_obj != r_obj;
+                case OP_EQ: return l_obj == r_obj;
+                case OP_NE: return l_obj != r_obj;
                 default:
                     return false;
             }
         }
         // Special case:  if the two values aren't comparable, that is, the comparison
         // fails no matter the conversion, then they definitely aren't equal.
-        if (op == Keywords::OP_NE) {
+        if (op == OP_NE) {
             return not lv->isSameValueAs(rv);
         } else {
             return false;
@@ -473,7 +475,7 @@ namespace archetype {
             }
             bool result = true;
             switch (op()) {
-                case Keywords::OP_DOT:
+                case OP_DOT:
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(right_.get())) {
                         Universe::instance().classify(t, id_node->id(), REFERENCED_ATTRIBUTE_ID);
                     } else {
@@ -481,16 +483,16 @@ namespace archetype {
                         result = false;
                     }
                     break;
-                case Keywords::OP_ASSIGN:
-                case Keywords::OP_C_CONCAT:
-                case Keywords::OP_C_DIVIDE:
-                case Keywords::OP_C_MINUS:
-                case Keywords::OP_C_MULTIPLY:
-                case Keywords::OP_C_PLUS: {
+                case OP_ASSIGN:
+                case OP_C_CONCAT:
+                case OP_C_DIVIDE:
+                case OP_C_MINUS:
+                case OP_C_MULTIPLY:
+                case OP_C_PLUS: {
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(left_.get())) {
                         Universe::instance().classify(t, id_node->id(), REFERENCED_ATTRIBUTE_ID);
                     } else if (auto binary = dynamic_cast<const BinaryOperator*>(left_.get())) {
-                        if (binary->op() != Keywords::OP_DOT) {
+                        if (binary->op() != OP_DOT) {
                             t.errorMessage("Left-hand side of assignment must be an attribute");
                             result = false;
                         }
@@ -515,14 +517,14 @@ namespace archetype {
             Value result;
             // Sort evaluations by "signature"
             switch (op()) {
-                case Keywords::OP_PAIR: {
+                case OP_PAIR: {
                     Value lv_v = left_->evaluate()->valueConversion();
                     Value rv_v = right_->evaluate()->valueConversion();
                     result = Value{new PairValue{std::move(lv_v), std::move(rv_v)}};
                     break;
                 }
-                case Keywords::OP_CONCAT:
-                case Keywords::OP_WITHIN: {
+                case OP_CONCAT:
+                case OP_WITHIN: {
                     Value lv_s = left_->evaluate()->stringConversion();
                     Value rv_s = right_->evaluate()->stringConversion();
                     if (lv_s->isDefined() and rv_s->isDefined()) {
@@ -532,8 +534,8 @@ namespace archetype {
                     }
                     break;
                 }
-                case Keywords::OP_LEFTFROM:
-                case Keywords::OP_RIGHTFROM: {
+                case OP_LEFTFROM:
+                case OP_RIGHTFROM: {
                     Value lv_s = left_->evaluate()->stringConversion();
                     Value rv_n = right_->evaluate()->numericConversion();
                     if (lv_s->isDefined() and rv_n->isDefined()) {
@@ -543,23 +545,23 @@ namespace archetype {
                     }
                     break;
                 }
-                case Keywords::OP_AND: {
+                case OP_AND: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
                     result = Value{new BooleanValue{lv->isTrueEnough() and rv->isTrueEnough()}};
                     break;
                 }
-                case Keywords::OP_OR: {
+                case OP_OR: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
                     result = Value{new BooleanValue{lv->isTrueEnough() or rv->isTrueEnough()}};
                     break;
                 }
-                case Keywords::OP_PLUS:
-                case Keywords::OP_MINUS:
-                case Keywords::OP_MULTIPLY:
-                case Keywords::OP_DIVIDE:
-                case Keywords::OP_POWER: {
+                case OP_PLUS:
+                case OP_MINUS:
+                case OP_MULTIPLY:
+                case OP_DIVIDE:
+                case OP_POWER: {
                     Value lv_n = left_->evaluate()->numericConversion();
                     Value rv_n = right_->evaluate()->numericConversion();
                     if (lv_n->isDefined() and rv_n->isDefined()) {
@@ -570,10 +572,10 @@ namespace archetype {
                     break;
                 }
 
-                case Keywords::OP_C_PLUS:
-                case Keywords::OP_C_MINUS:
-                case Keywords::OP_C_MULTIPLY:
-                case Keywords::OP_C_DIVIDE: {
+                case OP_C_PLUS:
+                case OP_C_MINUS:
+                case OP_C_MULTIPLY:
+                case OP_C_DIVIDE: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
                     Value lv_a = lv->attributeConversion();
@@ -589,7 +591,7 @@ namespace archetype {
                     break;
                 }
 
-                case Keywords::OP_C_CONCAT: {
+                case OP_C_CONCAT: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
                     Value lv_a = lv->attributeConversion();
@@ -605,25 +607,25 @@ namespace archetype {
                     break;
                 }
 
-                case Keywords::OP_EQ:
-                case Keywords::OP_NE:
-                case Keywords::OP_LT:
-                case Keywords::OP_LE:
-                case Keywords::OP_GE:
-                case Keywords::OP_GT:
+                case OP_EQ:
+                case OP_NE:
+                case OP_LT:
+                case OP_LE:
+                case OP_GE:
+                case OP_GT:
                     result = as_boolean_value(eval_compare(op(),
                                                          left_->evaluate()->valueConversion(),
                                                          right_->evaluate()->valueConversion()));
                     break;
 
-                case Keywords::OP_ASSIGN: {
+                case OP_ASSIGN: {
                     Value lv_a = left_->evaluate()->attributeConversion();
                     Value rv_v = right_->evaluate()->valueConversion();
                     result = lv_a->assign(std::move(rv_v));
                     break;
                 }
 
-                case Keywords::OP_DOT: {
+                case OP_DOT: {
                     Value lv_o = left_->evaluate()->objectConversion();
                     if (not lv_o->isDefined()) {
                         result = Value{new UndefinedValue};
@@ -640,8 +642,8 @@ namespace archetype {
                     break;
                 }
 
-                case Keywords::OP_SEND:
-                case Keywords::OP_PASS: {
+                case OP_SEND:
+                case OP_PASS: {
                     Value lv_v = left_->evaluate()->valueConversion();
                     Value rv_o = right_->evaluate()->objectConversion();
                     if (not rv_o->isDefined()) {
@@ -650,7 +652,7 @@ namespace archetype {
                         ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
                         if (not recipient) {
                             result = Value{new UndefinedValue};
-                        } else if (op() == Keywords::OP_PASS or recipient->isPrototype()) {
+                        } else if (op() == OP_PASS or recipient->isPrototype()) {
                             result = Object::pass(recipient, std::move(lv_v));
                         } else {
                             result = Object::send(recipient, std::move(lv_v));
@@ -828,11 +830,11 @@ namespace archetype {
         }
         Expression list_expr{new ValueExpression{Value{new UndefinedValue}}};
         while (not elements.empty()) {
-            list_expr = Expression{new BinaryOperator{std::move(elements.top()), Keywords::OP_PAIR, std::move(list_expr)}};
+            list_expr = Expression{new BinaryOperator{std::move(elements.top()), OP_PAIR, std::move(list_expr)}};
             elements.pop();
         }
         // Ensure that everything inside the braces is grouped together
-        return Expression{new UnaryOperator{Keywords::OP_LPAREN, std::move(list_expr)}};
+        return Expression{new UnaryOperator{OP_LPAREN, std::move(list_expr)}};
     }
 
     Expression get_operand_node(TokenStream& t) {
@@ -843,7 +845,7 @@ namespace archetype {
                         return nullptr;
                     case '(':
                         if (Expression expr = form_expr(t)) {
-                            Expression result(new UnaryOperator(Keywords::OP_LPAREN, std::move(expr)));
+                            Expression result(new UnaryOperator(OP_LPAREN, std::move(expr)));
                             return result;
                         } else {
                             return nullptr;
@@ -858,14 +860,14 @@ namespace archetype {
                 Keywords::Operators_e op_name = Keywords::Operators_e(t.token().number());
                 // Check for special cases, operators that can be unary in this context
                 switch (op_name) {
-                    case Keywords::OP_PLUS:
-                        op_name = Keywords::OP_NUMERIC;
+                    case OP_PLUS:
+                        op_name = OP_NUMERIC;
                         break;
-                    case Keywords::OP_MINUS:
-                        op_name = Keywords::OP_CHS;
+                    case OP_MINUS:
+                        op_name = OP_CHS;
                         break;
-                    case Keywords::OP_CONCAT:
-                        op_name = Keywords::OP_STRING;
+                    case OP_CONCAT:
+                        op_name = OP_STRING;
                         break;
                     default:
                         if (is_binary(op_name)) {
@@ -883,7 +885,7 @@ namespace archetype {
             }
             default: { /* some constant or keyword */
                 if (Expression scalar = get_scalar(t)) {
-                    return Expression(new UnaryOperator(Keywords::OP_LPAREN, std::move(scalar)));
+                    return Expression(new UnaryOperator(OP_LPAREN, std::move(scalar)));
                 } else {
                     return nullptr;
                 }

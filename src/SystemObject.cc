@@ -52,8 +52,7 @@ namespace archetype {
         }
         Value message_literal = message->messageConversion();
         if (message_literal->isDefined()) {
-            auto where = stateByMessage_.find(message_literal->getMessage());
-            if (where != stateByMessage_.end()) {
+            if (auto where = stateByMessage_.find(message_literal->getMessage()); where != stateByMessage_.end()) {
                 state_ = where->second;
                 return true;
             }

@@ -105,8 +105,8 @@ namespace archetype {
             int total_entries = static_cast<int>(registry_.size());
             int indexed_entries = static_cast<int>(index_.size());
             out << total_entries << indexed_entries;
-            for (auto const& entry : index_) {
-                out << entry.second << entry.first;
+            for (auto const& [obj, obj_index] : index_) {
+                out << obj_index << obj;
             }
         }
 

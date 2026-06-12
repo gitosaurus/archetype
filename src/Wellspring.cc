@@ -34,8 +34,7 @@ namespace archetype {
     }
 
     SourceFilePtr Wellspring::open(string source_name) {
-        auto result = sources_.find(source_name);
-        if (result != sources_.end()) {
+        if (auto result = sources_.find(source_name); result != sources_.end()) {
             everBeenOpened_.insert(source_name);
             return result->second;
         }

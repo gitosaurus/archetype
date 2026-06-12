@@ -4,6 +4,7 @@
 #include <string>
 #include <set>
 #include <map>
+#include <ranges>
 
 #include "inspect_universe.hh"
 #include "Universe.hh"
@@ -100,35 +101,33 @@ namespace archetype {
         // -- Vocabulary: invert match tables so phrases are grouped by object --
 
         std::map<int, std::set<std::string>> phrases_by_object;
-        for (const auto& vm : parser.verbMatches_) {
-            phrases_by_object[vm.second].insert(join_phrase(vm.first));
+        for (const auto& [phrase, verb_id] : parser.verbMatches_) {
+            phrases_by_object[verb_id].insert(join_phrase(phrase));
         }
-        for (const auto& nm : parser.nounMatches_) {
-            phrases_by_object[nm.second].insert(join_phrase(nm.first));
+        for (const auto& [phrase, noun_id] : parser.nounMatches_) {
+            phrases_by_object[noun_id].insert(join_phrase(phrase));
         }
 
         // "Effective" phrases: noun phrases whose referent is currently in
         // scope (proximate).  Pre-baked here so consumers without SPARQL can
         // answer "what can the player type right now?" with a simple scan.
         std::map<int, std::set<std::string>> live_phrases_by_object;
-        for (const auto& nm : parser.nounMatches_) {
-            if (parser.proximate_.contains(nm.second)) {
-                live_phrases_by_object[nm.second].insert(join_phrase(nm.first));
+        for (const auto& [phrase, noun_id] : parser.nounMatches_) {
+            if (parser.proximate_.contains(noun_id)) {
+                live_phrases_by_object[noun_id].insert(join_phrase(phrase));
             }
         }
 
         out << "# Vocabulary\n\n";
-        for (const auto& entry : phrases_by_object) {
-            int obj_id = entry.first;
+        for (const auto& [obj_id, phrases] : phrases_by_object) {
             out << obj_name_for(obj_id);
             bool first = true;
-            for (const auto& p : entry.second) {
+            for (const auto& p : phrases) {
                 out << "\n    " << (first ? "" : "; ")
                     << "archetype:matchesPhrase " << escape_literal(p);
                 first = false;
             }
-            auto live = live_phrases_by_object.find(obj_id);
-            if (live != live_phrases_by_object.end()) {
+            if (auto live = live_phrases_by_object.find(obj_id); live != live_phrases_by_object.end()) {
                 for (const auto& p : live->second) {
                     out << "\n    ; archetype:matchesNow " << escape_literal(p);
                 }
@@ -196,24 +195,24 @@ namespace archetype {
                 out << " a " << obj_name_for(Universe::NullObjectId);
             }
 
-            for (auto const& attr : obj->attributes_) {
-                auto* val_expr = dynamic_cast<ValueExpression*>(attr.second.get());
+            for (auto const& [attribute_id, expr] : obj->attributes_) {
+                auto* val_expr = dynamic_cast<ValueExpression*>(expr.get());
                 if (not val_expr) continue;
                 ContextScope c;
                 c->selfObject = obj;
                 Value value = val_expr->evaluate();
                 if (value->isDefined()) {
-                    out << "\n    ; attr:" << Universe::instance().Identifiers.get(attr.first)
+                    out << "\n    ; attr:" << Universe::instance().Identifiers.get(attribute_id)
                         << " " << value->asRDF();
                 }
             }
 
             if (include_methods) {
-                for (auto const& method : obj->methods_) {
-                    if (method.first == DefaultMethod) {
+                for (int message_id : obj->methods_ | std::views::keys) {
+                    if (message_id == DefaultMethod) {
                         out << "\n    ; archetype:respondsTo archetype:default";
                     } else {
-                        std::string message = Universe::instance().Messages.get(method.first);
+                        std::string message = Universe::instance().Messages.get(message_id);
                         out << "\n    ; archetype:respondsTo msg:" << uri_encode(message);
                     }
                 }

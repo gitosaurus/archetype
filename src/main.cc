@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <map>
 #include <list>
+#include <ranges>
 #include <string>
 #include <fstream>
 
@@ -105,8 +106,7 @@ static void from_source(map<std::string, std::string> &opts) {
     if (not source) {
         throw invalid_argument("Cannot open \"" + source_path + "\"");
     }
-    auto it_include = opts.find("include");
-    if (it_include != opts.end()) {
+    if (auto it_include = opts.find("include"); it_include != opts.end()) {
       string includes = it_include->second;
       opts.erase(it_include);
       istringstream in(includes);
@@ -120,8 +120,7 @@ static void from_source(map<std::string, std::string> &opts) {
         throw CompilationFailure();
     }
     Universe::instance().reportUndefinedIdentifiers();
-    auto it_create = opts.find("create");
-    if (it_create == opts.end()) {
+    if (auto it_create = opts.find("create"); it_create == opts.end()) {
         dispatch_to_universe("START");
     } else {
         string filename_out = it_create->second;
@@ -171,33 +170,29 @@ int main(int argc, const char* argv[]) {
     auto unknown_options_error = [&]() -> int {
         if (opts.empty() and args.empty()) return 0;
         cerr << "ERROR: unknown options or arguments:";
-        for (auto const& kv : opts) cerr << " --" << kv.first;
+        for (auto const& opt_name : opts | views::keys) cerr << " --" << opt_name;
         for (auto const& a : args) cerr << " " << a;
         cerr << endl;
         return 1;
     };
-    auto it_help = opts.find("help");
-    if (it_help != opts.end()) {
+    if (auto it_help = opts.find("help"); it_help != opts.end()) {
         opts.erase(it_help);
         if (int e = unknown_options_error()) return e;
         usage();
         return 0;
     }
-    auto it_silent = opts.find("silent");
-    if (it_silent != opts.end()) {
+    if (auto it_silent = opts.find("silent"); it_silent != opts.end()) {
         session.silent(true);
         opts.erase(it_silent);
     }
-    auto it_test = opts.find("test");
-    if (it_test != opts.end()) {
+    if (auto it_test = opts.find("test"); it_test != opts.end()) {
         opts.erase(it_test);
         if (int e = unknown_options_error()) return e;
         bool success = TestRegistry::instance().runAllTestSuites(cout);
         int exit_code = success ? 0 : 1;
         return exit_code;
     }
-    auto it_repl = opts.find("repl");
-    if (it_repl != opts.end()) {
+    if (auto it_repl = opts.find("repl"); it_repl != opts.end()) {
         opts.erase(it_repl);
         if (!args.empty()) {
             std::string filename = args.front();
@@ -226,10 +221,7 @@ int main(int argc, const char* argv[]) {
         }
     }
 
-    auto it_perform = opts.find("perform");
-    auto it_update  = opts.find("update");
-    auto it_inspect = opts.find("inspect");
-    if (it_perform != opts.end()) {
+    if (auto it_perform = opts.find("perform"); it_perform != opts.end()) {
         string filename = it_perform->second;
         opts.erase(it_perform);
         if (filename.rfind('.') == string::npos) {
@@ -249,15 +241,14 @@ int main(int argc, const char* argv[]) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
-    } else if (it_update != opts.end()) {
+    } else if (auto it_update = opts.find("update"); it_update != opts.end()) {
         string filename = it_update->second;
         opts.erase(it_update);
         if (filename.rfind('.') == string::npos) {
             filename += ".acx";
         }
         int width = 80;
-        auto it_width = opts.find("width");
-        if (it_width != opts.end()) {
+        if (auto it_width = opts.find("width"); it_width != opts.end()) {
             width = stoi(it_width->second);
             opts.erase(it_width);
         }
@@ -270,19 +261,16 @@ int main(int argc, const char* argv[]) {
               }
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
-          auto it_sitrep = opts.find("sitrep");
-          bool sitrep = (it_sitrep != opts.end());
-          if (sitrep) opts.erase(it_sitrep);
+          bool sitrep = opts.erase("sitrep") > 0;
           // --inspect with an empty value pairs with --update; a non-empty value
           // selects the standalone --inspect=file.acx path handled below.
           bool inspect_after = false;
-          if (it_inspect != opts.end()) {
+          if (auto it_inspect = opts.find("inspect"); it_inspect != opts.end()) {
               inspect_after = it_inspect->second.empty();
               opts.erase(it_inspect);
           }
           string input;
-          auto it_input = opts.find("input");
-          if (it_input != opts.end()) {
+          if (auto it_input = opts.find("input"); it_input != opts.end()) {
               input = it_input->second;
               opts.erase(it_input);
           }
@@ -297,7 +285,7 @@ int main(int argc, const char* argv[]) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
-    } else if (it_inspect != opts.end()) {
+    } else if (auto it_inspect = opts.find("inspect"); it_inspect != opts.end()) {
         string filename = it_inspect->second;
         opts.erase(it_inspect);
         if (filename.rfind('.') == string::npos) {
@@ -308,9 +296,7 @@ int main(int argc, const char* argv[]) {
             if (!in.ok()) {
                 throw runtime_error("Cannot open \"" + filename + "\"");
             }
-            auto it_full = opts.find("full");
-            bool full = (it_full != opts.end());
-            if (full) opts.erase(it_full);
+            bool full = opts.erase("full") > 0;
             inspect_universe(in, cout, full);
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;

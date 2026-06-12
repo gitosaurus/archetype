@@ -38,8 +38,7 @@ namespace archetype {
     }
 
     Value Object::getAttributeValue(int attribute_id) const {
-        auto where = attributes_.find(attribute_id);
-        if (where != attributes_.end()) {
+        if (auto where = attributes_.find(attribute_id); where != attributes_.end()) {
             return where->second->evaluate();
         }
         ObjectPtr p = parent();
@@ -105,8 +104,7 @@ namespace archetype {
     }
 
     Value Object::executeMethod(int message_id) {
-        auto where = methods_.find(message_id);
-        if (where != methods_.end()) {
+        if (auto where = methods_.find(message_id); where != methods_.end()) {
             return where->second->execute();
         }
         ObjectPtr p = parent();
@@ -138,12 +136,12 @@ namespace archetype {
     void Object::write(Storage& out) {
         out << parentId_ << id_ << static_cast<int>(prototype_);
         out << static_cast<int>(attributes_.size());
-        for (auto const& attribute : attributes_) {
-            out << attribute.first << attribute.second;
+        for (auto const& [attribute_id, expr] : attributes_) {
+            out << attribute_id << expr;
         }
         out << static_cast<int>(methods_.size());
-        for (auto const& method : methods_) {
-            out << method.first << method.second;
+        for (auto const& [message_id, stmt] : methods_) {
+            out << message_id << stmt;
         }
     }
 
