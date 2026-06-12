@@ -30,11 +30,11 @@ namespace archetype {
 
     bool Object::hasAttribute(int attribute_id) const {
         ObjectPtr p = parent();
-        return attributes_.count(attribute_id) > 0 or (p and p->hasAttribute(attribute_id));
+        return attributes_.contains(attribute_id) or (p and p->hasAttribute(attribute_id));
     }
 
     bool Object::hasLocalAttribute(int attribute_id) const {
-        return attributes_.count(attribute_id) > 0;
+        return attributes_.contains(attribute_id);
     }
 
     Value Object::getAttributeValue(int attribute_id) const {

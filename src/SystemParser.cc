@@ -87,11 +87,9 @@ namespace archetype {
 
     inline void remove_fillers(list<Value>& wordValues) {
         auto fillers = {"a", "an", "the"};
-        wordValues.erase(remove_if(begin(wordValues), end(wordValues),
-                                   [fillers](const Value& v) {
-                                       return find(begin(fillers), end(fillers), v->getString()) != end(fillers);
-                                   }),
-                         end(wordValues));
+        erase_if(wordValues, [fillers](const Value& v) {
+            return ranges::find(fillers, v->getString()) != end(fillers);
+        });
     }
 
     void SystemParser::matchVerbs_(std::list<Value>& wordValues) {
@@ -119,11 +117,11 @@ namespace archetype {
                 // At this point we have at least one match.  If it's proximate, we're completely
                 // done.  But if it isn't, then we want to check all remaining matches at this
                 // place, of this size, for a better match that is proximate.
-                if (not proximate_.count(matched_obj_id)) {
+                if (not proximate_.contains(matched_obj_id)) {
                     auto next_np = np;
                     while (++next_np != end(nounMatches_) and next_np->first.size() == phrase_size) {
                         if (equal(match, match_end, begin(next_np->first), equal_string_values) and
-                            proximate_.count(next_np->second)) {
+                            proximate_.contains(next_np->second)) {
                             // This is a nearer version of the same match phrase
                             matched_obj_id = next_np->second;
                             break;

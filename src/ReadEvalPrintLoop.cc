@@ -33,7 +33,7 @@ namespace archetype {
         if (t.type() != Token::IDENTIFIER) {
             return false;
         }
-        if (not Universe::instance().ObjectIdentifiers.count(t.number())) {
+        if (not Universe::instance().ObjectIdentifiers.contains(t.number())) {
             return false;
         }
         int object_id = Universe::instance().ObjectIdentifiers[t.number()];

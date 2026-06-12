@@ -29,8 +29,8 @@ namespace archetype {
         bool isIDStart(char c) const        { return isalpha(c) or c == '_'; }
         bool isIDChar(char c) const         { return isIDStart(c) or isDigit(c); }
         bool isDigit(char c) const          { return isdigit(c); }
-        bool isOperator(char c) const       { return opers_.count(c) > 0; }
-        bool isLongOperator(char c) const   { return longOpers_.count(c) > 0; }
+        bool isOperator(char c) const       { return opers_.contains(c); }
+        bool isLongOperator(char c) const   { return longOpers_.contains(c); }
     } TypeCheck;
 
     TypeChecker::TypeChecker():

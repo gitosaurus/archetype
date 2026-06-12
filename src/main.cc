@@ -130,9 +130,8 @@ static void from_source(map<std::string, std::string> &opts) {
             auto iext = source_path.rfind('.');
             filename_out = source_path.substr(0, iext);
         }
-        string acx = ".acx";
-        if (filename_out.rfind(acx) != filename_out.length() - acx.length()) {
-            filename_out += acx;
+        if (not filename_out.ends_with(".acx")) {
+            filename_out += ".acx";
         }
         if (source_path == filename_out) {
             throw invalid_argument("Cannot use " + filename_out + " as output");
@@ -152,10 +151,10 @@ int main(int argc, const char* argv[]) {
     list<string> args(argv + 1, argv + argc);
     map<string, string> opts;
     for (auto a = args.begin(); a != args.end();) {
-        if (a->find("--") != 0) {
+        if (not a->starts_with("--")) {
             ++a;
         } else {
-            auto iequal = find(a->begin(), a->end(), '=');
+            auto iequal = ranges::find(*a, '=');
             string opt_name(a->begin() + 2, iequal);
             string opt_value;
             if (iequal != a->end()) {
@@ -215,7 +214,7 @@ int main(int argc, const char* argv[]) {
         return errors;
     }
 
-    if (opts.find("source") != opts.end()) {
+    if (opts.contains("source")) {
         try {
             from_source(opts);
         } catch (const archetype::QuitGame&) {
@@ -293,7 +292,7 @@ int main(int argc, const char* argv[]) {
           if (!f_out) {
               throw invalid_argument("Cannot write to " + filename);
           }
-          copy(out_mem.bytes().begin(), out_mem.bytes().end(), ostreambuf_iterator<char>{f_out});
+          ranges::copy(out_mem.bytes(), ostreambuf_iterator<char>{f_out});
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
