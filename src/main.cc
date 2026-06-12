@@ -10,10 +10,12 @@
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
+#include <format>
 #include <map>
 #include <list>
 #include <ranges>
 #include <string>
+#include <string_view>
 #include <fstream>
 
 #include "TestRegistry.hh"
@@ -40,7 +42,7 @@
 
 
 namespace archetype {
-  static const char VersionString[] = "3.0";
+  static constexpr std::string_view VersionString = "3.0";
 
   class CompilationFailure : public std::runtime_error {
   public:
@@ -104,7 +106,7 @@ static void from_source(map<std::string, std::string> &opts) {
     opts.erase(it_source);
     SourceFilePtr source = Wellspring::instance().primarySource(source_path);
     if (not source) {
-        throw invalid_argument("Cannot open \"" + source_path + "\"");
+        throw invalid_argument(format("Cannot open \"{}\"", source_path));
     }
     if (auto it_include = opts.find("include"); it_include != opts.end()) {
       string includes = it_include->second;
@@ -133,14 +135,14 @@ static void from_source(map<std::string, std::string> &opts) {
             filename_out += ".acx";
         }
         if (source_path == filename_out) {
-            throw invalid_argument("Cannot use " + filename_out + " as output");
+            throw invalid_argument(format("Cannot use {} as output", filename_out));
         }
         OutFileStorage save_file(filename_out);
         if (save_file.ok()) {
             save_file << Universe::instance();
-            cout << "Created " + filename_out << endl;
+            cout << format("Created {}", filename_out) << endl;
         } else {
-            throw runtime_error("Could not write to " + filename_out);
+            throw runtime_error(format("Could not write to {}", filename_out));
         }
     }
 }
@@ -200,7 +202,7 @@ int main(int argc, const char* argv[]) {
             cout << "Loading " << filename << endl;
             InFileStorage in(filename);
             if (!in.ok()) {
-                throw runtime_error("Cannot open \"" + filename + "\"");
+                throw runtime_error(format("Cannot open \"{}\"", filename));
             }
             in >> Universe::instance();
         }
@@ -230,7 +232,7 @@ int main(int argc, const char* argv[]) {
         try {
           InFileStorage in(filename);
           if (!in.ok()) {
-            throw runtime_error("Cannot open \"" + filename + "\"");
+            throw runtime_error(format("Cannot open \"{}\"", filename));
           }
           in >> Universe::instance();
           dispatch_to_universe("START");
@@ -257,7 +259,7 @@ int main(int argc, const char* argv[]) {
           {
               ifstream f_in(filename.c_str());
               if (!f_in) {
-                throw invalid_argument("Cannot read from " + filename);
+                throw invalid_argument(format("Cannot read from {}", filename));
               }
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
@@ -278,7 +280,7 @@ int main(int argc, const char* argv[]) {
           cout << update_universe(in_mem, out_mem, input, width, sitrep, inspect_after);
           ofstream f_out(filename.c_str());
           if (!f_out) {
-              throw invalid_argument("Cannot write to " + filename);
+              throw invalid_argument(format("Cannot write to {}", filename));
           }
           ranges::copy(out_mem.bytes(), ostreambuf_iterator<char>{f_out});
         } catch (const std::exception& e) {
@@ -294,7 +296,7 @@ int main(int argc, const char* argv[]) {
         try {
             InFileStorage in(filename);
             if (!in.ok()) {
-                throw runtime_error("Cannot open \"" + filename + "\"");
+                throw runtime_error(format("Cannot open \"{}\"", filename));
             }
             bool full = opts.erase("full") > 0;
             inspect_universe(in, cout, full);

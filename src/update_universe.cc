@@ -10,6 +10,7 @@
 #include "Value.hh"
 #include "inspect_universe.hh"
 
+#include <format>
 #include <sstream>
 #include <string_view>
 
@@ -99,7 +100,7 @@ Value dispatch_to_universe(string message) {
   Value start{new MessageValue{start_id}};
   Value result = Object::send(main_object, std::move(start));
   if (result->isSameValueAs(Value{new AbsentValue})) {
-    throw invalid_argument("No method for '" + message + "' on main object");
+    throw invalid_argument(format("No method for '{}' on main object", message));
   }
   return result;
 }

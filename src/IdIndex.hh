@@ -26,7 +26,7 @@ namespace archetype {
         T sentinel_;
         int holes_;
     public:
-        static const int npos = -1;
+        static constexpr int npos = -1;
 
         IdIndex(const T& sentinel = T{}):
         sentinel_{sentinel},
