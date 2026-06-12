@@ -21,40 +21,41 @@ namespace archetype {
     { }
 
     std::ostream& operator<<(std::ostream& out, const Token& t) {
+        using enum Token::Type_e;
         switch (t.type()) {
-            case Token::RESERVED_WORD:
+            case RESERVED_WORD:
                 out << "reserved word '" << Keywords::instance().Reserved.get(t.number()) << "'";
                 break;
-            case Token::PUNCTUATION:
+            case PUNCTUATION:
                 out << "punctuation '" << char(t.number()) << "'";
                 break;
             default:
                 out << "Token(";
                 switch (t.type()) {
-                    case Token::RESERVED_WORD: case Token::PUNCTUATION:
+                    case RESERVED_WORD: case PUNCTUATION:
                         assert(0);
-                    case Token::IDENTIFIER:
+                    case IDENTIFIER:
                         out << "identifier";
                         break;
-                    case Token::MESSAGE:
+                    case MESSAGE:
                         out << "message";
                         break;
-                    case Token::OPERATOR:
+                    case OPERATOR:
                         out << "operator";
                         break;
-                    case Token::TEXT_LITERAL:
+                    case TEXT_LITERAL:
                         out << "text literal";
                         break;
-                    case Token::QUOTE_LITERAL:
+                    case QUOTE_LITERAL:
                         out << "quote literal";
                         break;
-                    case Token::NUMERIC:
+                    case NUMERIC:
                         out << "numeric";
                         break;
-                    case Token::BAD_TOKEN:
+                    case BAD_TOKEN:
                         out << "bad token";
                         break;
-                    case Token::NEWLINE:
+                    case NEWLINE:
                         out << "newline";
                         break;
                 }
@@ -62,14 +63,6 @@ namespace archetype {
                 break;
         }
         return out;
-    }
-
-    bool operator==(const Token& t1, const Token& t2) {
-        return t1.type() == t2.type() and t1.number() == t2.number();
-    }
-
-    bool operator!=(const Token& t1, const Token& t2) {
-        return not (t1 == t2);
     }
 
 }

@@ -115,8 +115,7 @@ namespace archetype {
     }
 
     void Universe::classify(TokenStream& t, int identifier, IdentifierKind_e kind) {
-        auto existing_p = kinds_.find(identifier);
-        if (existing_p == kinds_.end()) {
+        if (auto existing_p = kinds_.find(identifier); existing_p == kinds_.end()) {
             kinds_[identifier] = kind;
         } else if (kind != UNKNOWN_ID and existing_p->second == UNKNOWN_ID) {
             kinds_[identifier] = kind;
@@ -133,11 +132,11 @@ namespace archetype {
     }
 
     void Universe::reportUndefinedIdentifiers() const {
-        for (auto const& p : kinds_) {
-            if (p.second == UNKNOWN_ID or p.second == REFERENCED_ATTRIBUTE_ID) {
+        for (auto const& [identifier, kind] : kinds_) {
+            if (kind == UNKNOWN_ID or kind == REFERENCED_ATTRIBUTE_ID) {
                 ostringstream out;
                 out << "Identifier \"";
-                out << Identifiers.get(p.first);
+                out << Identifiers.get(identifier);
                 out << "\" was never defined";
                 output()->put(out.str());
                 output()->endLine();

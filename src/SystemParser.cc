@@ -93,14 +93,14 @@ namespace archetype {
     }
 
     void SystemParser::matchVerbs_(std::list<Value>& wordValues) {
-        for (auto vp = begin(verbMatches_); vp != end(verbMatches_); ++vp) {
+        for (const auto& [phrase, verb_id] : verbMatches_) {
             auto match = search(begin(wordValues), end(wordValues),
-                                begin(vp->first), end(vp->first), equal_string_values);
+                                begin(phrase), end(phrase), equal_string_values);
             if (match != end(wordValues)) {
                 auto match_end = match;
-                advance(match_end, vp->first.size());
+                advance(match_end, phrase.size());
                 wordValues.erase(match, match_end);
-                wordValues.insert(match_end, Value{new ObjectValue{vp->second}});
+                wordValues.insert(match_end, Value{new ObjectValue{verb_id}});
             }
         }
     }
