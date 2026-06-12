@@ -37,7 +37,7 @@ namespace archetype {
         return bytes_read;
     }
 
-    void InFileStorage::write(const Byte *buf, int nbytes) {
+    void InFileStorage::write(const Byte* /*buf*/, int /*nbytes*/) {
     }
 
     OutFileStorage::OutFileStorage(std::string filename)
@@ -53,7 +53,7 @@ namespace archetype {
         return 0;
     }
 
-    int OutFileStorage::read(Byte *buf, int nbytes) {
+    int OutFileStorage::read(Byte* /*buf*/, int /*nbytes*/) {
         return 0;
     }
 

@@ -60,7 +60,7 @@ namespace archetype {
         return false;
     }
 
-    Value SystemObject::executeMethod(int message_id) {
+    Value SystemObject::executeMethod(int /*message_id*/) {
         return Value{new AbsentValue};
     }
 
