@@ -115,7 +115,7 @@ namespace archetype {
         return Value{new UndefinedValue};
     }
 
-    Value IValue::assign(Value new_value) {
+    Value IValue::assign(Value /*new_value*/) {
         return Value{new UndefinedValue};
     }
 

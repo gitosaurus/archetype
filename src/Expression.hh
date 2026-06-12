@@ -36,12 +36,12 @@ namespace archetype {
 
         virtual void write(Storage& out) const = 0;
 
-        virtual bool bindsBefore(Keywords::Operators_e op) const { return true; }
-        virtual void tieOnRightSide(Keywords::Operators_e op, Expression rightSide) { }
+        virtual bool bindsBefore(Keywords::Operators_e /*op*/) const { return true; }
+        virtual void tieOnRightSide(Keywords::Operators_e /*op*/, Expression /*rightSide*/) { }
 
         virtual Expression anyFewerNodeEquivalent() { return nullptr; }
         virtual int nodeCount() const { return 1; }
-        virtual bool verify(TokenStream& t) const { return true; }
+        virtual bool verify(TokenStream& /*t*/) const { return true; }
 
         virtual void prefixDisplay(std::ostream& out) const = 0;
         virtual Value evaluate() const = 0;
