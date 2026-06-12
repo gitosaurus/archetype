@@ -112,7 +112,7 @@ namespace archetype {
         // answer "what can the player type right now?" with a simple scan.
         std::map<int, std::set<std::string>> live_phrases_by_object;
         for (const auto& nm : parser.nounMatches_) {
-            if (parser.proximate_.count(nm.second)) {
+            if (parser.proximate_.contains(nm.second)) {
                 live_phrases_by_object[nm.second].insert(join_phrase(nm.first));
             }
         }

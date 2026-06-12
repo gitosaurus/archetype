@@ -42,7 +42,7 @@ namespace archetype {
         for (auto p : paths_) {
             string try_path = p;
             assert(!try_path.empty());
-            if (try_path.rfind('/') != (try_path.size() - 1)) {
+            if (not try_path.ends_with('/')) {
                 try_path += '/';
             }
             try_path += source_name;
@@ -62,7 +62,7 @@ namespace archetype {
     }
 
     bool Wellspring::hasNeverBeenOpened(std::string source_name) const {
-        return everBeenOpened_.count(source_name) == 0;
+        return not everBeenOpened_.contains(source_name);
     }
 
     void Wellspring::put(std::string source_name, SourceFilePtr source) {
@@ -70,12 +70,7 @@ namespace archetype {
     }
 
     void Wellspring::close(SourceFilePtr source) {
-        for (auto p = sources_.begin(); p != sources_.end(); ++p) {
-            if (p->second == source) {
-                sources_.erase(p);
-                return;
-            }
-        }
+        erase_if(sources_, [&source](auto const& entry) { return entry.second == source; });
     }
 
     void Wellspring::closeAll() {

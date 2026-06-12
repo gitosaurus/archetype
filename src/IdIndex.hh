@@ -88,7 +88,7 @@ namespace archetype {
         }
 
         bool has(const T& obj) const {
-            return index_.count(obj);
+            return index_.contains(obj);
         }
 
         bool hasIndex(int i) const {
