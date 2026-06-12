@@ -21,7 +21,7 @@
 
 namespace archetype {
 
-    const int DefaultMethod = std::numeric_limits<int>::max();
+    inline constexpr int DefaultMethod = std::numeric_limits<int>::max();
 
     class Object;
     typedef std::shared_ptr<Object> ObjectPtr;

@@ -2,7 +2,7 @@
 
 ## Project overview
 
-Archetype is a message-passing, object-oriented programming language for writing text-based adventure games. The interpreter is implemented in C++11. Game source files use the `.arch` extension; compiled binaries use `.acx`.
+Archetype is a message-passing, object-oriented programming language for writing text-based adventure games. The interpreter is implemented in C++20. Game source files use the `.arch` extension; compiled binaries use `.acx`.
 
 ## Build
 

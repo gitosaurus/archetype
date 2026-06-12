@@ -1,6 +1,6 @@
 #include <iostream>
 #include <sstream>
-#include <iomanip>
+#include <format>
 #include <string>
 #include <string_view>
 #include <set>
@@ -37,18 +37,17 @@ namespace archetype {
 
     // URI-encode a message name following RFC 3986 section 2.3.
     static std::string uri_encode(std::string_view s) {
-        std::ostringstream encoded;
+        std::string encoded;
         for (auto ch : s) {
             if ((ch >= 'A' and ch <= 'Z')  or  (ch >= 'a' and ch <= 'z')  or
                 (ch >= '0' and ch <= '9')  or
                  ch == '.'  or  ch == '_'  or  ch == '-'  or  ch == '~') {
-                encoded << ch;
+                encoded += ch;
             } else {
-                encoded << '%' << std::setw(2) << std::setfill('0') << std::hex
-                        << (static_cast<unsigned int>(static_cast<unsigned char>(ch)));
+                encoded += std::format("%{:02x}", static_cast<unsigned char>(ch));
             }
         }
-        return encoded.str();
+        return encoded;
     }
 
     static std::string obj_name_for(int obj_id) {
