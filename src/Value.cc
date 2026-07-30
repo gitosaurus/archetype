@@ -9,7 +9,7 @@
 #include <string>
 #include <string_view>
 #include <optional>
-#include <sstream>
+#include <memory>
 #include <cctype>
 #include <cassert>
 
@@ -75,48 +75,48 @@ namespace archetype {
         int number = 0;
         for (char ch : str) {
             if (not isdigit(ch)) {
-                return Value{new UndefinedValue};
+                return make_unique<UndefinedValue>();
             }
             number *= 10;
             number += (ch - '0');
         }
-        return Value(new NumericValue(number));
+        return make_unique<NumericValue>(number);
     }
 
     Value IValue::messageConversion() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::stringConversion() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::numericConversion() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::identifierConversion() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::objectConversion() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::attributeConversion() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::head() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::tail() const {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Value IValue::assign(Value /*new_value*/) {
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     bool UndefinedValue::isSameValueAs(const Value &other) const {
@@ -190,14 +190,14 @@ namespace archetype {
     }
 
     Value BooleanValue::numericConversion() const {
-        return Value(new NumericValue(value_ ? 1 : 0));
+        return make_unique<NumericValue>(value_ ? 1 : 0);
     }
 
     Value BooleanValue::stringConversion() const {
         string bool_str = Keywords::instance().Reserved.get(value_ ?
                                                             Keywords::RW_TRUE :
                                                             Keywords::RW_FALSE);
-        return Value(new StringValue(bool_str));
+        return make_unique<StringValue>(bool_str);
     }
 
     int MessageValue::getMessage() const {
@@ -206,7 +206,7 @@ namespace archetype {
 
     Value MessageValue::stringConversion() const {
         string conversion = Universe::instance().Messages.get(message_);
-        return Value{new StringValue{conversion}};
+        return make_unique<StringValue>(conversion);
     }
 
     bool MessageValue::isSameValueAs(const Value &other) const {
@@ -233,14 +233,14 @@ namespace archetype {
     Value TextLiteralValue::messageConversion() const {
         string value = getString();
         if (Universe::instance().Messages.has(value)) {
-            return Value{new MessageValue{Universe::instance().Messages.index(value)}};
+            return make_unique<MessageValue>(Universe::instance().Messages.index(value));
         } else {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         }
     }
 
     Value TextLiteralValue::stringConversion() const {
-        return Value{new StringValue{getString()}};
+        return make_unique<StringValue>(getString());
     }
 
     Value TextLiteralValue::numericConversion() const {
@@ -286,9 +286,7 @@ namespace archetype {
     }
 
     Value NumericValue::stringConversion() const {
-        ostringstream out;
-        out << value_;
-        return Value(new StringValue(out.str()));
+        return make_unique<StringValue>(std::to_string(value_));
     }
 
     bool StringValue::isSameValueAs(const Value &other) const {
@@ -318,9 +316,9 @@ namespace archetype {
 
     Value StringValue::messageConversion() const {
         if (Universe::instance().Messages.has(value_)) {
-            return Value{new MessageValue{Universe::instance().Messages.index(value_)}};
+            return make_unique<MessageValue>(Universe::instance().Messages.index(value_));
         } else {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         }
     }
 
@@ -389,9 +387,9 @@ namespace archetype {
     Value ObjectValue::identifierConversion() const {
         int identifier_id = Universe::instance().identifierForObject(objectId_);
         if (identifier_id >= 0) {
-            return Value{new IdentifierValue{identifier_id}};
+            return make_unique<IdentifierValue>(identifier_id);
         }
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     int ObjectValue::getObject() const {
@@ -408,7 +406,7 @@ namespace archetype {
     }
 
     void AttributeValue::display(std::ostream &out) const {
-        Value obj_v{new ObjectValue{objectId_}};
+        Value obj_v = make_unique<ObjectValue>(objectId_);
         obj_v->display(out);
         out << '.';
         out << Universe::instance().Identifiers.get(attributeId_);
@@ -428,7 +426,7 @@ namespace archetype {
     Value AttributeValue::dereference_() const {
         ObjectPtr obj = Universe::instance().getObject(objectId_);
         if (not obj or not obj->hasAttribute(attributeId_)) {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         }
 
         ContextScope c;
@@ -449,7 +447,7 @@ namespace archetype {
     }
 
     Value AttributeValue::identifierConversion() const {
-        return Value{new IdentifierValue{attributeId_}};
+        return make_unique<IdentifierValue>(attributeId_);
     }
 
     Value AttributeValue::objectConversion() const {
@@ -463,9 +461,9 @@ namespace archetype {
     Value AttributeValue::assign(Value new_value) {
         ObjectPtr obj = Universe::instance().getObject(objectId_);
         if (not obj) {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         } else {
-            obj->setAttribute(attributeId_, Expression{new ValueExpression{std::move(new_value)}});
+            obj->setAttribute(attributeId_, make_unique<ValueExpression>(std::move(new_value)));
             return clone();
         }
     }
@@ -549,36 +547,36 @@ namespace archetype {
         ValueType_e type = static_cast<ValueType_e>(type_as_int);
         switch (type) {
             case UNDEFINED:
-                v = Value{new UndefinedValue};
+                v = make_unique<UndefinedValue>();
                 break;
             case ABSENT:
-                v = Value{new AbsentValue};
+                v = make_unique<AbsentValue>();
                 break;
             case BREAK:
-                v = Value{new BreakValue};
+                v = make_unique<BreakValue>();
                 break;
             case BOOLEAN: {
                 int bool_as_int;
                 in >> bool_as_int;
-                v = Value(new BooleanValue(static_cast<bool>(bool_as_int)));
+                v = make_unique<BooleanValue>(static_cast<bool>(bool_as_int));
                 break;
             }
             case MESSAGE: {
                 int message_id;
                 in >> message_id;
-                v = Value{new MessageValue{message_id}};
+                v = make_unique<MessageValue>(message_id);
                 break;
             }
             case TEXT_LITERAL: {
                 int text_literal;
                 in >> text_literal;
-                v = Value{new TextLiteralValue{text_literal}};
+                v = make_unique<TextLiteralValue>(text_literal);
                 break;
             }
             case NUMERIC: {
                 int number;
                 in >> number;
-                v = Value(new NumericValue(number));
+                v = make_unique<NumericValue>(number);
                 break;
             }
             case STRING: {
@@ -588,31 +586,31 @@ namespace archetype {
                 text.resize(text_size);
                 Storage::Byte* buffer = reinterpret_cast<Storage::Byte*>(&text[0]);
                 in.read(buffer, text_size);
-                v = Value(new StringValue(text));
+                v = make_unique<StringValue>(text);
                 break;
             }
             case IDENTIFIER: {
                 int id;
                 in >> id;
-                v = Value(new IdentifierValue(id));
+                v = make_unique<IdentifierValue>(id);
                 break;
             }
             case OBJECT: {
                 int object_id;
                 in >> object_id;
-                v = Value(new ObjectValue(object_id));
+                v = make_unique<ObjectValue>(object_id);
                 break;
             }
             case ATTRIBUTE: {
                 int object_id, attribute_id;
                 in >> object_id >> attribute_id;
-                v = Value(new AttributeValue(object_id, attribute_id));
+                v = make_unique<AttributeValue>(object_id, attribute_id);
                 break;
             }
             case PAIR: {
                 Value head, tail;
                 in >> head >> tail;
-                v = Value{new PairValue{std::move(head), std::move(tail)}};
+                v = make_unique<PairValue>(std::move(head), std::move(tail));
                 break;
             }
         }

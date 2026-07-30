@@ -25,9 +25,13 @@ namespace archetype {
     std::ostream& operator<<(std::ostream& out, const Value& value);
 
     class IValue {
+    protected:
+        IValue() = default;
+
+        // Available to derived classes so that Cloneable can copy-construct them,
+        // but not to the outside world, which must duplicate values via clone().
+        IValue(const IValue&) = default;
     public:
-        IValue() { }
-        IValue(const IValue&) = delete;
         IValue& operator=(const IValue&) = delete;
         virtual ~IValue() { }
 
@@ -60,11 +64,23 @@ namespace archetype {
         virtual Value assign(Value new_value);
     };
 
-    class UndefinedValue : public IValue {
+    // Supplies the clone() that every concrete value type would otherwise have to
+    // spell out for itself.  A type derives from Cloneable<itself>; clone() then
+    // copy-constructs that type, which makes the copy constructor the single place
+    // where a value says how it duplicates itself.  Types whose members copy
+    // correctly on their own (that is, all of them but PairValue) need say nothing.
+    template <class Derived>
+    class Cloneable : public IValue {
+    public:
+        virtual Value clone() const override {
+            return std::make_unique<Derived>(static_cast<const Derived&>(*this));
+        }
+    };
+
+    class UndefinedValue : public Cloneable<UndefinedValue> {
     public:
         UndefinedValue() { }
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value{new UndefinedValue}; }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -73,11 +89,10 @@ namespace archetype {
         virtual bool isTrueEnough() const override { return false; }
     };
 
-    class AbsentValue : public IValue {
+    class AbsentValue : public Cloneable<AbsentValue> {
     public:
         AbsentValue() { }
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value{new AbsentValue}; }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -86,11 +101,10 @@ namespace archetype {
         virtual bool isTrueEnough() const override { return false; }
     };
 
-    class BreakValue : public IValue {
+    class BreakValue : public Cloneable<BreakValue> {
     public:
         BreakValue() { }
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value{new BreakValue}; }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -98,13 +112,12 @@ namespace archetype {
         virtual bool isDefined()   const override { return true; }
     };
 
-    class BooleanValue : public IValue {
+    class BooleanValue : public Cloneable<BooleanValue> {
         bool value_;
     public:
         BooleanValue(bool value): value_(value) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new BooleanValue(value_)); }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -114,13 +127,12 @@ namespace archetype {
         virtual Value numericConversion() const override;
     };
 
-    class MessageValue : public IValue {
+    class MessageValue : public Cloneable<MessageValue> {
         int message_;
     public:
         MessageValue(int message): message_(message) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value{new MessageValue{message_}}; }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -131,13 +143,12 @@ namespace archetype {
         virtual Value stringConversion() const override;
     };
 
-    class TextLiteralValue : public IValue {
+    class TextLiteralValue : public Cloneable<TextLiteralValue> {
         int textLiteral_;
     public:
         TextLiteralValue(int text_literal): textLiteral_(text_literal) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value{new TextLiteralValue{textLiteral_}}; }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -149,13 +160,12 @@ namespace archetype {
         virtual Value numericConversion() const override;
     };
 
-    class NumericValue : public IValue {
+    class NumericValue : public Cloneable<NumericValue> {
         int value_;
     public:
         NumericValue(int value): value_(value) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new NumericValue(value_)); }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -166,13 +176,12 @@ namespace archetype {
         virtual Value numericConversion() const override { return clone(); }
     };
 
-    class StringValue : public IValue {
+    class StringValue : public Cloneable<StringValue> {
         std::string value_;
     public:
         StringValue(std::string value): value_(value) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new StringValue(value_)); }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -184,13 +193,12 @@ namespace archetype {
         virtual Value numericConversion() const override;
     };
 
-    class IdentifierValue : public IValue {
+    class IdentifierValue : public Cloneable<IdentifierValue> {
         int id_;
     public:
         IdentifierValue(int id): id_(id) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new IdentifierValue(id_)); }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -200,13 +208,12 @@ namespace archetype {
         virtual Value identifierConversion() const override { return clone(); }
     };
 
-    class ObjectValue : public IValue {
+    class ObjectValue : public Cloneable<ObjectValue> {
         int objectId_;
     public:
         ObjectValue(int object_id): objectId_(object_id) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value{new ObjectValue{objectId_}}; }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -220,7 +227,7 @@ namespace archetype {
     // The purpose of this Value type is to track a writable reference to an object attribute.
     // If Archetype had any other types of left-hand values, there would be a parent
     // of this class called LeftHandValue.
-    class AttributeValue : public IValue {
+    class AttributeValue : public Cloneable<AttributeValue> {
         int objectId_;
         int attributeId_;
 
@@ -229,7 +236,6 @@ namespace archetype {
         AttributeValue(int object_id, int attribute_id): objectId_(object_id), attributeId_(attribute_id) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override { return Value(new AttributeValue(objectId_, attributeId_)); }
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;
@@ -247,7 +253,7 @@ namespace archetype {
         virtual Value assign(Value new_value) override;
     };
 
-    class PairValue : public IValue {
+    class PairValue : public Cloneable<PairValue> {
         Value head_;
         Value tail_;
     public:
@@ -256,10 +262,15 @@ namespace archetype {
         tail_(std::move(tail))
         { }
 
+        // A pair owns its head and tail outright, so duplicating one has to go
+        // all the way down.  This is the only value type that copies by hand.
+        PairValue(const PairValue& other):
+        Cloneable<PairValue>{other},
+        head_{other.head_->clone()},
+        tail_{other.tail_->clone()}
+        { }
+
         virtual bool isSameValueAs(const Value& other) const override;
-        virtual Value clone() const override {
-            return Value{new PairValue{head_->clone(), tail_->clone()}};
-        }
 
         virtual Value head() const override;
         virtual Value tail() const override;
