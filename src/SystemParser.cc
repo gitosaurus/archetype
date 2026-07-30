@@ -7,11 +7,14 @@
 //
 
 #include <string>
+#include <string_view>
 #include <iostream>
 #include <sstream>
 #include <algorithm>
+#include <concepts>
 #include <iterator>
 #include <list>
+#include <ranges>
 #include <cctype>
 
 #include "SystemParser.hh"
@@ -200,12 +203,29 @@ namespace archetype {
         return out << p.first << p.second;
     }
 
-    template <typename Tseq>
+    // Storage already has non-template overloads for int and std::string, and
+    // an unconstrained template here is a candidate for those types too: the
+    // non-template wins only by the tie-break that prefers it, and would fail
+    // to compile if it ever lost.  Naming what these templates are actually for
+    // states the intent instead of relying on that.
+    template <typename T>
+    concept StorableSequence =
+        std::ranges::input_range<T> and
+        not std::convertible_to<const T&, std::string_view>;
+
+    template <typename T>
+    concept ReadableSequence =
+        StorableSequence<T> and
+        requires (T& seq, std::ranges::range_value_t<T> element) {
+            seq.insert(std::ranges::end(seq), std::move(element));
+        };
+
+    template <StorableSequence Tseq>
     Storage& operator<<(Storage& out, const Tseq& seq) {
         const int zero = 0;
         const int one = 1;
-        for (auto ii = begin(seq); ii != end(seq); ++ii) {
-            out << one << *ii;
+        for (const auto& element : seq) {
+            out << one << element;
         }
         out << zero;
         return out;
@@ -216,14 +236,14 @@ namespace archetype {
         return in >> p.first >> p.second;
     }
 
-    template <typename Tseq>
+    template <ReadableSequence Tseq>
     Storage& operator>>(Storage& in, Tseq& seq) {
         int more;
         in >> more;
         while (more) {
-            typename Tseq::value_type element;
+            std::ranges::range_value_t<Tseq> element;
             in >> element;
-            seq.insert(end(seq), std::move(element));
+            seq.insert(std::ranges::end(seq), std::move(element));
             in >> more;
         }
         return in;
