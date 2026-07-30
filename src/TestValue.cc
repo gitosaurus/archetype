@@ -28,20 +28,20 @@ namespace archetype {
     }
 
     void TestValue::testSerialization_() {
-        auto samples = {
-            Value{new UndefinedValue},
-            Value{new StringValue{"Hello, world"}},
-            Value{new StringValue{""}},
-            Value{new StringValue{" "}},
-            Value{new BreakValue},
-            Value{new MessageValue{88}},
-            Value{new NumericValue{42}},
-            Value{new BooleanValue{true}},
-            Value{new BooleanValue{false}},
-            Value{new AbsentValue},
-            Value{new IdentifierValue{13}},
-            Value{new ObjectValue{9}},
-            Value{new AttributeValue{9, 13}}
+        initializer_list<Value> samples = {
+            make_unique<UndefinedValue>(),
+            make_unique<StringValue>("Hello, world"),
+            make_unique<StringValue>(""),
+            make_unique<StringValue>(" "),
+            make_unique<BreakValue>(),
+            make_unique<MessageValue>(88),
+            make_unique<NumericValue>(42),
+            make_unique<BooleanValue>(true),
+            make_unique<BooleanValue>(false),
+            make_unique<AbsentValue>(),
+            make_unique<IdentifierValue>(13),
+            make_unique<ObjectValue>(9),
+            make_unique<AttributeValue>(9, 13)
         };
         MemoryStorage mem;
         for (auto const &v : samples) {
@@ -56,13 +56,13 @@ namespace archetype {
     }
 
     void TestValue::testConversion_() {
-        Value number_192{new NumericValue{192}};
+        Value number_192 = make_unique<NumericValue>(192);
         Value string_192{number_192->stringConversion()};
         ARCHETYPE_TEST_EQUAL(string_192->getString(), string{"192"});
         Value number_192_back{string_192->numericConversion()};
         ARCHETYPE_TEST_EQUAL(number_192_back->getNumber(), 192);
 
-        Value false_value{new BooleanValue{false}};
+        Value false_value = make_unique<BooleanValue>(false);
         Value string_false{false_value->stringConversion()};
         ARCHETYPE_TEST_EQUAL(string_false->getString(), string{"FALSE"});
         Value number_false{false_value->numericConversion()};
@@ -75,19 +75,19 @@ namespace archetype {
     }
 
     void TestValue::testPairs_() {
-        Value a{new NumericValue{1}};
-        Value b{new NumericValue{2}};
-        Value ab{new PairValue{std::move(a), std::move(b)}};
+        Value a = make_unique<NumericValue>(1);
+        Value b = make_unique<NumericValue>(2);
+        Value ab = make_unique<PairValue>(std::move(a), std::move(b));
         string actual = display(ab);
         string expected = "(1 @ 2)";
         ARCHETYPE_TEST_EQUAL(actual, expected);
 
         // Now create a couple of short lists
-        Value node1{new PairValue{Value{new StringValue{"world"}}, Value{new UndefinedValue}}};
+        Value node1 = make_unique<PairValue>(make_unique<StringValue>("world"), make_unique<UndefinedValue>());
         actual = display(node1);
         expected = "[\"world\"]";
         ARCHETYPE_TEST_EQUAL(actual, expected);
-        Value node2{new PairValue{Value{new StringValue{"hello"}}, std::move(node1)}};
+        Value node2 = make_unique<PairValue>(make_unique<StringValue>("hello"), std::move(node1));
         actual = display(node2);
         expected = "[\"hello\" \"world\"]";
         ARCHETYPE_TEST_EQUAL(actual, expected);

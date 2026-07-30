@@ -270,13 +270,13 @@ namespace archetype {
         Statement stmt5 = make_stmt_from_str("'yelp' -> another");
         Value actual5 = stmt5->execute();
         ARCHETYPE_TEST(actual5->isDefined());
-        Value expected5 = Value{new AbsentValue};
+        Value expected5 = make_unique<AbsentValue>();
         ARCHETYPE_TEST(actual5->isSameValueAs(expected5));
 
         Statement stmt6 = make_stmt_from_str("'con' & 'structed' -> another");
         Value actual6 = stmt6->execute();
         ARCHETYPE_TEST(actual6->isDefined());
-        Value expected6 = Value{new AbsentValue};
+        Value expected6 = make_unique<AbsentValue>();
         ARCHETYPE_TEST(actual6->isSameValueAs(expected6));
 
         list<pair<string, string>> test_pairs = {

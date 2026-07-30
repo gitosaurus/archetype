@@ -44,7 +44,7 @@ namespace archetype {
     }
 
     inline Value as_boolean_value(bool value) {
-        return Value{new BooleanValue{value}};
+        return make_unique<BooleanValue>(value);
     }
 
     inline bool is_binary(Keywords::Operators_e op) {
@@ -190,17 +190,17 @@ namespace archetype {
             // Closest binding:  an attribute in the current object
             ObjectPtr selfObject = Universe::instance().currentContext().selfObject;
             if (selfObject and selfObject->hasAttribute(id_)) {
-                result = Value(new AttributeValue(selfObject->id(), id_));
+                result = make_unique<AttributeValue>(selfObject->id(), id_);
             } else {
                 // Next:  an object in the Universe
                 auto& object_ids = Universe::instance().ObjectIdentifiers;
                 if (auto id_obj_p = object_ids.find(id_); id_obj_p != object_ids.end()) {
-                    result = Value{new ObjectValue{id_obj_p->second}};
+                    result = make_unique<ObjectValue>(id_obj_p->second);
                 }
             }
             // Finally:  just a keyword value
             if (not result) {
-                result = Value(new IdentifierValue(id_));
+                result = make_unique<IdentifierValue>(id_);
             }
             if (IExpression::Debug) {
                 debug_expr(*this, result);
@@ -260,7 +260,7 @@ namespace archetype {
                 case OP_CHS: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined()) {
-                        result = Value{new NumericValue{-rv_n->getNumber()}};
+                        result = make_unique<NumericValue>(-rv_n->getNumber());
                     } else {
                         result = std::move(rv_n);
                     }
@@ -270,7 +270,7 @@ namespace archetype {
                     result = rv->numericConversion();
                     break;
                 case OP_NOT:
-                    result = Value{new BooleanValue{not rv->isTrueEnough()}};
+                    result = make_unique<BooleanValue>(not rv->isTrueEnough());
                     break;
                 case OP_STRING:
                     result = rv->stringConversion();
@@ -282,16 +282,16 @@ namespace archetype {
                         mt19937 gen(rd());
                         uniform_int_distribution<> dis(1, rv_n->getNumber());
                         int r_i = dis(gen);
-                        result = Value{new NumericValue{r_i}};
+                        result = make_unique<NumericValue>(r_i);
                     } else {
-                        result = Value{new UndefinedValue};
+                        result = make_unique<UndefinedValue>();
                     }
                     break;
                 }
                 case OP_LENGTH: {
                     Value rv_s = rv->stringConversion();
                     if (rv_s->isDefined()) {
-                        result = Value{new NumericValue{static_cast<int>(rv_s->getString().size())}};
+                        result = make_unique<NumericValue>(static_cast<int>(rv_s->getString().size()));
                     } else {
                         result = std::move(rv_s);
                     }
@@ -348,13 +348,13 @@ namespace archetype {
     Value eval_ss(Keywords::Operators_e op, string lv_s, string rv_s) {
         switch (op) {
             case OP_CONCAT:
-                return Value(new StringValue(lv_s + rv_s));
+                return make_unique<StringValue>(lv_s + rv_s);
             case OP_WITHIN: {
                 size_t where = rv_s.find(lv_s);
                 if (lv_s.empty()  or  where == string::npos) {
-                    return Value{new UndefinedValue};
+                    return make_unique<UndefinedValue>();
                 } else {
-                    return Value{new NumericValue{static_cast<int>(where + 1)}};
+                    return make_unique<NumericValue>(static_cast<int>(where + 1));
                 }
             }
             default:
@@ -365,10 +365,10 @@ namespace archetype {
     Value eval_sn(Keywords::Operators_e op, string lv_s, int rv_n) {
         switch (op) {
             case OP_LEFTFROM:
-                return Value(new StringValue(lv_s.substr(0, rv_n)));
+                return make_unique<StringValue>(lv_s.substr(0, rv_n));
             case OP_RIGHTFROM: {
                 int n = min(int(lv_s.size() + 1), max(0, rv_n));
-                return Value(new StringValue(lv_s.substr(n - 1)));
+                return make_unique<StringValue>(lv_s.substr(n - 1));
             }
             default:
                 throw logic_error("string-op-number attempted on this operator");
@@ -386,7 +386,7 @@ namespace archetype {
             default:
                 throw logic_error("number-op-number attempted on this operator");
         }
-        return Value{new NumericValue{result}};
+        return make_unique<NumericValue>(result);
     }
 
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
@@ -520,7 +520,7 @@ namespace archetype {
                 case OP_PAIR: {
                     Value lv_v = left_->evaluate()->valueConversion();
                     Value rv_v = right_->evaluate()->valueConversion();
-                    result = Value{new PairValue{std::move(lv_v), std::move(rv_v)}};
+                    result = make_unique<PairValue>(std::move(lv_v), std::move(rv_v));
                     break;
                 }
                 case OP_CONCAT:
@@ -530,7 +530,7 @@ namespace archetype {
                     if (lv_s->isDefined() and rv_s->isDefined()) {
                         result = eval_ss(op(), lv_s->getString(), rv_s->getString());
                     } else {
-                        result = Value{new UndefinedValue};
+                        result = make_unique<UndefinedValue>();
                     }
                     break;
                 }
@@ -541,20 +541,20 @@ namespace archetype {
                     if (lv_s->isDefined() and rv_n->isDefined()) {
                         result = eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
-                        result = Value{new UndefinedValue};
+                        result = make_unique<UndefinedValue>();
                     }
                     break;
                 }
                 case OP_AND: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
-                    result = Value{new BooleanValue{lv->isTrueEnough() and rv->isTrueEnough()}};
+                    result = make_unique<BooleanValue>(lv->isTrueEnough() and rv->isTrueEnough());
                     break;
                 }
                 case OP_OR: {
                     Value lv = left_->evaluate();
                     Value rv = right_->evaluate();
-                    result = Value{new BooleanValue{lv->isTrueEnough() or rv->isTrueEnough()}};
+                    result = make_unique<BooleanValue>(lv->isTrueEnough() or rv->isTrueEnough());
                     break;
                 }
                 case OP_PLUS:
@@ -567,7 +567,7 @@ namespace archetype {
                     if (lv_n->isDefined() and rv_n->isDefined()) {
                         result = eval_nn(op(), lv_n->getNumber(), rv_n->getNumber());
                     } else {
-                        result = Value{new UndefinedValue};
+                        result = make_unique<UndefinedValue>();
                     }
                     break;
                 }
@@ -585,7 +585,7 @@ namespace archetype {
                     if (lv_n->isDefined() and rv_n->isDefined()) {
                         rv_c = eval_nn(non_assignment_equivalent(op()), lv_n->getNumber(), rv_n->getNumber());
                     } else {
-                        rv_c = Value{new UndefinedValue};
+                        rv_c = make_unique<UndefinedValue>();
                     }
                     result = lv_a->assign(std::move(rv_c));
                     break;
@@ -601,7 +601,7 @@ namespace archetype {
                     if (lv_s->isDefined() and rv_s->isDefined()) {
                         rv_c = eval_ss(non_assignment_equivalent(op()), lv_s->getString(), rv_s->getString());
                     } else {
-                        rv_c = Value{new UndefinedValue};
+                        rv_c = make_unique<UndefinedValue>();
                     }
                     result = lv_a->assign(std::move(rv_c));
                     break;
@@ -628,13 +628,13 @@ namespace archetype {
                 case OP_DOT: {
                     Value lv_o = left_->evaluate()->objectConversion();
                     if (not lv_o->isDefined()) {
-                        result = Value{new UndefinedValue};
+                        result = make_unique<UndefinedValue>();
                     } else {
                         int object_id = lv_o->getObject();
                         const IdentifierNode* id_node = dynamic_cast<const IdentifierNode*>(right_.get());
                         if (id_node) {
                             int attribute_id = id_node->id();
-                            result = Value(new AttributeValue(object_id, attribute_id));
+                            result = make_unique<AttributeValue>(object_id, attribute_id);
                         } else {
                             throw logic_error("Non-identifier node on right-hand-side of OP_DOT");
                         }
@@ -651,7 +651,7 @@ namespace archetype {
                     } else {
                         ObjectPtr recipient = Universe::instance().getObject(rv_o->getObject());
                         if (not recipient) {
-                            result = Value{new UndefinedValue};
+                            result = make_unique<UndefinedValue>();
                         } else if (op() == OP_PASS or recipient->isPrototype()) {
                             result = Object::pass(recipient, std::move(lv_v));
                         } else {
@@ -715,23 +715,23 @@ namespace archetype {
         Value result;
         switch (word_) {
             case Keywords::RW_SELF:
-                result = Value{new ObjectValue{Universe::instance().currentContext().selfObject->id()}};
+                result = make_unique<ObjectValue>(Universe::instance().currentContext().selfObject->id());
                 break;
             case Keywords::RW_SENDER:
-                result = Value{new ObjectValue{Universe::instance().currentContext().senderObject->id()}};
+                result = make_unique<ObjectValue>(Universe::instance().currentContext().senderObject->id());
                 break;
             case Keywords::RW_MESSAGE:
                 result = Universe::instance().currentContext().messageValue->clone();
                 break;
             case Keywords::RW_EACH:
-                result = Value{new ObjectValue{Universe::instance().currentContext().eachObject->id()}};
+                result = make_unique<ObjectValue>(Universe::instance().currentContext().eachObject->id());
                 break;
             case Keywords::RW_READ: {
                 string line = Universe::instance().input()->getLine();
                 if (line.empty()  and  Universe::instance().input()->atEOF()) {
-                    result = Value{new UndefinedValue};
+                    result = make_unique<UndefinedValue>();
                 } else {
-                    result = Value{new StringValue{line}};
+                    result = make_unique<StringValue>(line);
                 }
                 break;
             }
@@ -740,9 +740,9 @@ namespace archetype {
                 if (key == '\4'  ||  key == '\0') {
                     // Consider it UNDEFINED if the user hit ^D (to immediately cause EOF)
                     // or if the stream truly is exhausted, which will return NUL ('\0').
-                    result = Value{new UndefinedValue};
+                    result = make_unique<UndefinedValue>();
                 } else {
-                    result = Value{new StringValue{string{key}}};
+                    result = make_unique<StringValue>(string{key});
                 }
                 break;
             }
@@ -761,18 +761,18 @@ namespace archetype {
         switch (t.token().type()) {
             case Token::TEXT_LITERAL:
             case Token::QUOTE_LITERAL:
-                scalar.reset(new ValueExpression{Value{new TextLiteralValue{t.token().number()}}});
+                scalar = make_unique<ValueExpression>(make_unique<TextLiteralValue>(t.token().number()));
                 break;
             case Token::MESSAGE:
-                scalar.reset(new ValueExpression{Value{new MessageValue{t.token().number()}}});
+                scalar = make_unique<ValueExpression>(make_unique<MessageValue>(t.token().number()));
                 break;
             case Token::NUMERIC:
-                scalar.reset(new ValueExpression{Value{new NumericValue{t.token().number()}}});
+                scalar = make_unique<ValueExpression>(make_unique<NumericValue>(t.token().number()));
                 break;
             case Token::IDENTIFIER: {
                 int id = t.token().number();
                 Universe::instance().classify(t, id, UNKNOWN_ID);
-                scalar.reset(new IdentifierNode{id});
+                scalar = make_unique<IdentifierNode>(id);
                 break;
             }
             case Token::RESERVED_WORD: {
@@ -780,19 +780,19 @@ namespace archetype {
                 Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());
                 switch (word) {
                     case Keywords::RW_UNDEFINED:
-                        scalar.reset(new ValueExpression{Value{new UndefinedValue}});
+                        scalar = make_unique<ValueExpression>(make_unique<UndefinedValue>());
                         break;
                     case Keywords::RW_ABSENT:
-                        scalar.reset(new ValueExpression{Value{new AbsentValue}});
+                        scalar = make_unique<ValueExpression>(make_unique<AbsentValue>());
                         break;
                     case Keywords::RW_BREAK:
-                        scalar.reset(new ValueExpression{Value{new BreakValue}});
+                        scalar = make_unique<ValueExpression>(make_unique<BreakValue>());
                         break;
                     case Keywords::RW_TRUE:
-                        scalar.reset(new ValueExpression{Value{new BooleanValue{true}}});
+                        scalar = make_unique<ValueExpression>(make_unique<BooleanValue>(true));
                         break;
                     case Keywords::RW_FALSE:
-                        scalar.reset(new ValueExpression{Value{new BooleanValue{false}}});
+                        scalar = make_unique<ValueExpression>(make_unique<BooleanValue>(false));
                         break;
                     case Keywords::RW_READ:
                     case Keywords::RW_KEY:
@@ -800,7 +800,7 @@ namespace archetype {
                     case Keywords::RW_SELF:
                     case Keywords::RW_SENDER:
                     case Keywords::RW_MESSAGE:
-                        scalar.reset(new ReservedWordNode(word));
+                        scalar = make_unique<ReservedWordNode>(word);
                         break;
                     default:
                         scalar.reset();
@@ -828,13 +828,13 @@ namespace archetype {
                 return nullptr;
             }
         }
-        Expression list_expr{new ValueExpression{Value{new UndefinedValue}}};
+        Expression list_expr = make_unique<ValueExpression>(make_unique<UndefinedValue>());
         while (not elements.empty()) {
-            list_expr = Expression{new BinaryOperator{std::move(elements.top()), OP_PAIR, std::move(list_expr)}};
+            list_expr = make_unique<BinaryOperator>(std::move(elements.top()), OP_PAIR, std::move(list_expr));
             elements.pop();
         }
         // Ensure that everything inside the braces is grouped together
-        return Expression{new UnaryOperator{OP_LPAREN, std::move(list_expr)}};
+        return make_unique<UnaryOperator>(OP_LPAREN, std::move(list_expr));
     }
 
     Expression get_operand_node(TokenStream& t) {
@@ -845,7 +845,7 @@ namespace archetype {
                         return nullptr;
                     case '(':
                         if (Expression expr = form_expr(t)) {
-                            Expression result(new UnaryOperator(OP_LPAREN, std::move(expr)));
+                            Expression result = make_unique<UnaryOperator>(OP_LPAREN, std::move(expr));
                             return result;
                         } else {
                             return nullptr;
@@ -878,14 +878,14 @@ namespace archetype {
                         break;
                 }  /* switch op_name */
                 if (Expression r = form_expr(t, precedence(op_name))) {
-                    return Expression(new UnaryOperator(op_name, std::move(r)));
+                    return make_unique<UnaryOperator>(op_name, std::move(r));
                 } else {
                     return nullptr;
                 }
             }
             default: { /* some constant or keyword */
                 if (Expression scalar = get_scalar(t)) {
-                    return Expression(new UnaryOperator(OP_LPAREN, std::move(scalar)));
+                    return make_unique<UnaryOperator>(OP_LPAREN, std::move(scalar));
                 } else {
                     return nullptr;
                 }
@@ -912,7 +912,7 @@ namespace archetype {
                             Keywords::Operators_e op,
                             Expression new_rside) {
         if (existing->bindsBefore(op)) {
-            return Expression(new BinaryOperator(std::move(existing), op, std::move(new_rside)));
+            return make_unique<BinaryOperator>(std::move(existing), op, std::move(new_rside));
         } else {
             existing->tieOnRightSide(op, std::move(new_rside));
             return existing;
@@ -989,7 +989,7 @@ namespace archetype {
                 int word_as_int;
                 in >> word_as_int;
                 Keywords::Reserved_e word = static_cast<Keywords::Reserved_e>(word_as_int);
-                expr.reset(new ReservedWordNode(word));
+                expr = make_unique<ReservedWordNode>(word);
                 break;
             }
             case UNARY: {
@@ -998,7 +998,7 @@ namespace archetype {
                 Keywords::Operators_e op = static_cast<Keywords::Operators_e>(op_as_int);
                 Expression right_side;
                 in >> right_side;
-                expr.reset(new UnaryOperator(op, std::move(right_side)));
+                expr = make_unique<UnaryOperator>(op, std::move(right_side));
                 break;
             }
             case BINARY: {
@@ -1008,19 +1008,19 @@ namespace archetype {
                 Expression left_side;
                 Expression right_side;
                 in >> left_side >> right_side;
-                expr.reset(new BinaryOperator(std::move(left_side), op, std::move(right_side)));
+                expr = make_unique<BinaryOperator>(std::move(left_side), op, std::move(right_side));
                 break;
             }
             case IDENTIFIER: {
                 int id;
                 in >> id;
-                expr.reset(new IdentifierNode(id));
+                expr = make_unique<IdentifierNode>(id);
                 break;
             }
             case VALUE: {
                 Value value;
                 in >> value;
-                expr.reset(new ValueExpression(std::move(value)));
+                expr = make_unique<ValueExpression>(std::move(value));
                 break;
             }
         }
@@ -1028,7 +1028,7 @@ namespace archetype {
     }
 
     Expression make_expr_from_str(string src_str) {
-        stream_ptr in{new istringstream{src_str}};
+        stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Expression expr = make_expr(token_stream);

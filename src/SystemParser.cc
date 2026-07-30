@@ -27,7 +27,7 @@ namespace archetype {
     }
 
     inline Value make_string_value(string s) {
-        return Value{new StringValue{lowercase(s)}};
+        return make_unique<StringValue>(lowercase(s));
     }
 
     SystemParser::SystemParser():
@@ -100,7 +100,7 @@ namespace archetype {
                 auto match_end = match;
                 advance(match_end, phrase.size());
                 wordValues.erase(match, match_end);
-                wordValues.insert(match_end, Value{new ObjectValue{verb_id}});
+                wordValues.insert(match_end, make_unique<ObjectValue>(verb_id));
             }
         }
     }
@@ -129,7 +129,7 @@ namespace archetype {
                     }
                 }
                 wordValues.erase(match, match_end);
-                wordValues.insert(match_end, Value{new ObjectValue{matched_obj_id}});
+                wordValues.insert(match_end, make_unique<ObjectValue>(matched_obj_id));
             }
         }
     }
@@ -171,7 +171,7 @@ namespace archetype {
 
     Value SystemParser::nextObject() {
         if (parsedValues_.empty()) {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         } else {
             Value result = std::move(parsedValues_.front());
             parsedValues_.pop_front();
@@ -191,7 +191,7 @@ namespace archetype {
         if (words.size() == 1) {
             return words.front()->objectConversion();
         } else {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         }
     }
 

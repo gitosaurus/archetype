@@ -41,7 +41,7 @@ namespace archetype {
             if (try_path.extension().empty()) {
                 try_path += ".arch";
             }
-            unique_ptr<ifstream> input(new ifstream(try_path));
+            auto input = make_unique<ifstream>(try_path);
             if (input->is_open()) {
                 // Now that it's been tested for openness, move it to a higher abstraction
                 stream_ptr source_stream{input.release()};

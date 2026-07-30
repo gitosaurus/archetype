@@ -35,8 +35,8 @@ namespace archetype {
 
     SystemObject::SystemObject():
     state_{IDLING},
-    sorter_{new SystemSorter},
-    parser_{new SystemParser} {
+    sorter_{make_unique<SystemSorter>()},
+    parser_{make_unique<SystemParser>()} {
     }
 
     bool SystemObject::figureState_(const Value& message) {
@@ -61,7 +61,7 @@ namespace archetype {
     }
 
     Value SystemObject::executeMethod(int /*message_id*/) {
-        return Value{new AbsentValue};
+        return make_unique<AbsentValue>();
     }
 
     Value SystemObject::executeDefaultMethod() {
@@ -71,7 +71,7 @@ namespace archetype {
                 if (figureState_(message)) {
                     switch (state_) {
                         case INIT_SORTER:
-                            sorter_.reset(new SystemSorter);
+                            sorter_ = make_unique<SystemSorter>();
                             state_ = OPEN_SORTER;
                             break;
                         case OPEN_SORTER:
@@ -82,7 +82,7 @@ namespace archetype {
                             return sorter_->nextSorted();
 
                         case INIT_PARSER:
-                            parser_.reset(new SystemParser);
+                            parser_ = make_unique<SystemParser>();
                             state_ = OPEN_PARSER;
                             break;
                         case OPEN_PARSER:
@@ -112,7 +112,7 @@ namespace archetype {
                             break;
                         case NORMALIZE:
                             state_ = IDLING;
-                            return Value(new StringValue(parser_->normalized()));
+                            return make_unique<StringValue>(parser_->normalized());
                         case NEXT_OBJECT:
                             state_ = IDLING;
                             return parser_->nextObject();
@@ -139,15 +139,15 @@ namespace archetype {
                         case DEBUG_MESSAGES:
                             Object::Debug = not Object::Debug;
                             state_ = IDLING;
-                            return Value{new BooleanValue{Object::Debug}};
+                            return make_unique<BooleanValue>(Object::Debug);
                         case DEBUG_EXPRESSIONS:
                             IExpression::Debug = not IExpression::Debug;
                             state_ = IDLING;
-                            return Value{new BooleanValue{IExpression::Debug}};
+                            return make_unique<BooleanValue>(IExpression::Debug);
                         case DEBUG_STATEMENTS:
                             IStatement::Debug = not IStatement::Debug;
                             state_ = IDLING;
-                            return Value{new BooleanValue{IStatement::Debug}};
+                            return make_unique<BooleanValue>(IStatement::Debug);
                     }
                 }
                 break;
@@ -251,9 +251,9 @@ namespace archetype {
                     OutFileStorage save_file(filename);
                     if (save_file.ok()) {
                         save_file << Universe::instance();
-                        return Value{new BooleanValue{true}};
+                        return make_unique<BooleanValue>(true);
                     } else {
-                        return Value{new BooleanValue{false}};
+                        return make_unique<BooleanValue>(false);
                     }
                 }
                 break;
@@ -267,9 +267,9 @@ namespace archetype {
                     if (load_file.ok()) {
                         load_file >> Universe::instance();
                         resetSystem_();
-                        return Value{new BooleanValue{true}};
+                        return make_unique<BooleanValue>(true);
                     } else {
-                        return Value{new BooleanValue{false}};
+                        return make_unique<BooleanValue>(false);
                     }
                 }
                 break;
@@ -296,13 +296,13 @@ namespace archetype {
             }
 
         }
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     void SystemObject::resetSystem_() {
         stateByMessage_.clear();
-        sorter_.reset(new SystemSorter);
-        parser_.reset(new SystemParser);
+        sorter_ = make_unique<SystemSorter>();
+        parser_ = make_unique<SystemParser>();
         state_ = IDLING;
     }
 

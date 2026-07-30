@@ -28,13 +28,13 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestExpression);
 
     inline TokenStream tokens_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
+        stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr src{make_shared<SourceFile>("test", in)};
         return TokenStream(src);
     }
 
     inline Expression form_expr_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
+        stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Expression expr = form_expr(token_stream);
@@ -188,72 +188,72 @@ namespace archetype {
         // attribute scratch space.
 
         string src_str = "null scratch x : 0 methods 'hello' : x +:= 1 end";
-        stream_ptr in(new istringstream(src_str));
+        stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr src{make_shared<SourceFile>("scratch", in)};
         TokenStream token_stream(src);
         ARCHETYPE_TEST(Universe::instance().make(token_stream));
-        list<pair<string, IValue*>> testing_pairs = {
-            {"numeric \"35\"", new NumericValue{35}},
-            {"+ \"hello\"", new UndefinedValue},
-            {"+ (\"1\" & 9)", new NumericValue{19}},
-            {"& (13 + 7)", new StringValue{"20"}},
-            {"string 82", new StringValue{"82"}},
-            {"FALSE and TRUE", new BooleanValue{false}},
-            {"FALSE or TRUE", new BooleanValue{true}},
-            {"not FALSE", new BooleanValue{true}},
+        list<pair<string, Value>> testing_pairs;
+        auto expect = [&](string src, Value expected) {
+            testing_pairs.emplace_back(std::move(src), std::move(expected));
+        };
+            expect("numeric \"35\"", make_unique<NumericValue>(35));
+            expect("+ \"hello\"", make_unique<UndefinedValue>());
+            expect("+ (\"1\" & 9)", make_unique<NumericValue>(19));
+            expect("& (13 + 7)", make_unique<StringValue>("20"));
+            expect("string 82", make_unique<StringValue>("82"));
+            expect("FALSE and TRUE", make_unique<BooleanValue>(false));
+            expect("FALSE or TRUE", make_unique<BooleanValue>(true));
+            expect("not FALSE", make_unique<BooleanValue>(true));
             // Try reacting to UNDEFINED as a truth value, also
-            {"not ('nothing' -> nowhere)", new BooleanValue{true}},
-            {"13 - - 14", new NumericValue{27}},
-            {"2^4", new NumericValue{16}},
-            {"3 ^ \"4\"", new NumericValue{81}},
+            expect("not ('nothing' -> nowhere)", make_unique<BooleanValue>(true));
+            expect("13 - - 14", make_unique<NumericValue>(27));
+            expect("2^4", make_unique<NumericValue>(16));
+            expect("3 ^ \"4\"", make_unique<NumericValue>(81));
 
             // Testing these cumulative operators requires executing these statements
             // in order.  Be careful of rearranging the tests.
-            {"scratch.n := 5", new NumericValue{5}},
-            {"scratch.n +:= 7", new NumericValue{12}},
-            {"scratch.n", new NumericValue{12}},
-            {"scratch.n /:= 2", new NumericValue{6}},
-            {"scratch.n -:= 1", new NumericValue{5}},
-            {"scratch.n *:= 7", new NumericValue{35}},
-            {"scratch.s := \"hello\"", new TextLiteralValue{Universe::instance().TextLiterals.index("hello")}},
-            {"scratch.s &:= \" world\"", new StringValue{"hello world"}},
+            expect("scratch.n := 5", make_unique<NumericValue>(5));
+            expect("scratch.n +:= 7", make_unique<NumericValue>(12));
+            expect("scratch.n", make_unique<NumericValue>(12));
+            expect("scratch.n /:= 2", make_unique<NumericValue>(6));
+            expect("scratch.n -:= 1", make_unique<NumericValue>(5));
+            expect("scratch.n *:= 7", make_unique<NumericValue>(35));
+            expect("scratch.s := \"hello\"", make_unique<TextLiteralValue>(Universe::instance().TextLiterals.index("hello")));
+            expect("scratch.s &:= \" world\"", make_unique<StringValue>("hello world"));
 
             // The nasty tests of definition.  So tricky.
-            {"3 ~= UNDEFINED", new BooleanValue{true}},
-            {"UNDEFINED ~= 3", new BooleanValue{true}},
-            {"UNDEFINED = UNDEFINED", new BooleanValue{true}},
-            {"UNDEFINED ~= UNDEFINED", new BooleanValue{false}},
-            {"(& \"hello\") ~= UNDEFINED", new BooleanValue{true}},
-            {"UNDEFINED ~= (& \"hello\")", new BooleanValue{true}},
-            {"(\"world\" within scratch.s) ~= UNDEFINED", new BooleanValue{true}},
-            {"(\"Mars\" within scratch.s) = UNDEFINED", new BooleanValue{true}},
-            {"(\"\" within scratch.s)", new UndefinedValue},
-            {"scratch.n ~= UNDEFINED", new BooleanValue{true}},
-            {"scratch.less = UNDEFINED", new BooleanValue{true}},
-            {"scratch = system", new BooleanValue{false}},
-            {"(scratch.nothing := null) = null", new BooleanValue{true}},
-            {"scratch.nothing ~= system", new BooleanValue{true}},
-            {"scratch ~= system", new BooleanValue{true}},
-            {"scratch.nothing = system", new BooleanValue{false}},
-            {"system = system", new BooleanValue{true}},
-            {"(scratch.sys := system) = system", new BooleanValue{true}},
-            {"scratch.sys ~= system", new BooleanValue{false}},
-            {"'never' -> scratch = ABSENT", new BooleanValue{true}},
-            {"'never' -> scratch ~= ABSENT", new BooleanValue{false}},
-            {"'hello' -> scratch = ABSENT", new BooleanValue{false}},
-            {"'hello' -> scratch ~= ABSENT", new BooleanValue{true}},
+            expect("3 ~= UNDEFINED", make_unique<BooleanValue>(true));
+            expect("UNDEFINED ~= 3", make_unique<BooleanValue>(true));
+            expect("UNDEFINED = UNDEFINED", make_unique<BooleanValue>(true));
+            expect("UNDEFINED ~= UNDEFINED", make_unique<BooleanValue>(false));
+            expect("(& \"hello\") ~= UNDEFINED", make_unique<BooleanValue>(true));
+            expect("UNDEFINED ~= (& \"hello\")", make_unique<BooleanValue>(true));
+            expect("(\"world\" within scratch.s) ~= UNDEFINED", make_unique<BooleanValue>(true));
+            expect("(\"Mars\" within scratch.s) = UNDEFINED", make_unique<BooleanValue>(true));
+            expect("(\"\" within scratch.s)", make_unique<UndefinedValue>());
+            expect("scratch.n ~= UNDEFINED", make_unique<BooleanValue>(true));
+            expect("scratch.less = UNDEFINED", make_unique<BooleanValue>(true));
+            expect("scratch = system", make_unique<BooleanValue>(false));
+            expect("(scratch.nothing := null) = null", make_unique<BooleanValue>(true));
+            expect("scratch.nothing ~= system", make_unique<BooleanValue>(true));
+            expect("scratch ~= system", make_unique<BooleanValue>(true));
+            expect("scratch.nothing = system", make_unique<BooleanValue>(false));
+            expect("system = system", make_unique<BooleanValue>(true));
+            expect("(scratch.sys := system) = system", make_unique<BooleanValue>(true));
+            expect("scratch.sys ~= system", make_unique<BooleanValue>(false));
+            expect("'never' -> scratch = ABSENT", make_unique<BooleanValue>(true));
+            expect("'never' -> scratch ~= ABSENT", make_unique<BooleanValue>(false));
+            expect("'hello' -> scratch = ABSENT", make_unique<BooleanValue>(false));
+            expect("'hello' -> scratch ~= ABSENT", make_unique<BooleanValue>(true));
 
-        };
-        for (auto p : testing_pairs) {
+        for (auto& p : testing_pairs) {
             Expression expr = make_expr_from_str(p.first);
             out() << "Testing: {" << p.first << "}" << endl;
             ARCHETYPE_TEST(expr != nullptr);
             // We're not testing for AttributeValue equivalence here.
             // It does matter, but in this case, we're wanting to be sure the value got through.
             Value val = expr->evaluate()->valueConversion();
-            // This will adopt and destroy the pointer in the pair
-            Value test_value{p.second};
-            p.second = nullptr;
+            Value test_value = std::move(p.second);
             ARCHETYPE_TEST(val->isSameValueAs(test_value));
             // Compare by string, too, so that it's easier to catch in the test output
             ostringstream out1, out2;
@@ -292,7 +292,7 @@ namespace archetype {
     }
 
     void TestExpression::testInput_() {
-        UserInput input_seq{new StringInput{"Hello, world!\nyGoodbye, world.\n"}};
+        UserInput input_seq = make_shared<StringInput>("Hello, world!\nyGoodbye, world.\n");
         Universe::instance().setInput(input_seq);
         Expression read_expr = make_expr_from_str("read");
         Value val = read_expr->evaluate()->stringConversion();
@@ -362,8 +362,8 @@ namespace archetype {
         // Python/Ruby/Lisp convention. No duplicated stringConversion tail.
         UserInput prior_input = Universe::instance().input();
         UserOutput prior_output = Universe::instance().output();
-        UserInput repl_input{new StringInput{"3 + 5\n[1 2 3]\n\"hi\"\nexit\n"}};
-        UserOutput repl_output{new StringOutput};
+        UserInput repl_input = make_shared<StringInput>("3 + 5\n[1 2 3]\n\"hi\"\nexit\n");
+        UserOutput repl_output = make_shared<StringOutput>();
         Universe::instance().setInput(repl_input);
         Universe::instance().setOutput(repl_output);
         int errors = repl();

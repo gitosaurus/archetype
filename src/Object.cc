@@ -45,7 +45,7 @@ namespace archetype {
         if (p) {
             return p->getAttributeValue(attribute_id);
         } else {
-            return Value{new UndefinedValue};
+            return make_unique<UndefinedValue>();
         }
     }
 
@@ -54,7 +54,7 @@ namespace archetype {
     }
 
     void Object::setAttribute(int attribute_id, Value val) {
-        attributes_[attribute_id] = Expression(new ValueExpression(std::move(val)));
+        attributes_[attribute_id] = make_unique<ValueExpression>(std::move(val));
     }
 
     Value Object::send(ObjectPtr target, Value message) {
@@ -73,8 +73,8 @@ namespace archetype {
 
     Value Object::dispatch() {
         Value defined_message = Universe::instance().currentContext().messageValue->messageConversion();
-        Value absence{new AbsentValue};
-        Value result{new AbsentValue};
+        Value absence = make_unique<AbsentValue>();
+        Value result = make_unique<AbsentValue>();
         if (defined_message->isDefined()) {
             if (Debug) {
                 ostringstream out;
@@ -111,12 +111,12 @@ namespace archetype {
         if (p) {
             return p->executeMethod(message_id);
         } else {
-            return Value{new AbsentValue};
+            return make_unique<AbsentValue>();
         }
     }
 
     Value Object::executeDefaultMethod() {
-        Value obj{new ObjectValue{id()}};
+        Value obj = make_unique<ObjectValue>(id());
         if (methods_.size() > 0  and  methods_.rbegin()->first == DefaultMethod) {
             auto defaultMethod = methods_.rbegin();
             return defaultMethod->second->execute();
@@ -125,7 +125,7 @@ namespace archetype {
         if (p) {
             return p->executeDefaultMethod();
         } else {
-            return Value{new AbsentValue};
+            return make_unique<AbsentValue>();
         }
     }
 

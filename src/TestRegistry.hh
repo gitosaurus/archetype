@@ -22,7 +22,7 @@ namespace archetype {
         static TestRegistry& instance();
         static void destroy();
 
-        void registerSuite(ITestSuite* suite);
+        void registerSuite(std::unique_ptr<ITestSuite> suite);
         bool runAllTestSuites(std::ostream& out);
     private:
         static TestRegistry* instance_;
@@ -37,7 +37,7 @@ namespace archetype {
 #define ARCHETYPE_TEST_REGISTER(TNAME) \
 static class register_##TNAME { \
 public: register_##TNAME() { \
-TestRegistry::instance().registerSuite(new TNAME(#TNAME)); \
+TestRegistry::instance().registerSuite(std::make_unique<TNAME>(#TNAME)); \
 } \
 } stub_register_##TNAME
 

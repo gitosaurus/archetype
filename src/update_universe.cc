@@ -97,9 +97,9 @@ Value dispatch_to_universe(string message) {
     throw invalid_argument("Universe has ended");
   }
   int start_id = Universe::instance().Messages.index(message);
-  Value start{new MessageValue{start_id}};
+  Value start = make_unique<MessageValue>(start_id);
   Value result = Object::send(main_object, std::move(start));
-  if (result->isSameValueAs(Value{new AbsentValue})) {
+  if (result->isSameValueAs(make_unique<AbsentValue>())) {
     throw invalid_argument(format("No method for '{}' on main object", message));
   }
   return result;
@@ -108,12 +108,12 @@ Value dispatch_to_universe(string message) {
 string update_universe(Storage& in, Storage& out, string input, int width,
                        bool sitrep, bool inspect) {
   // Paging, no; wrapping, yes.
-  UserOutput str_output{new StringOutput};
-  UserOutput wrapped{new WrappedOutput{str_output, width}};
+  UserOutput str_output = make_shared<StringOutput>();
+  UserOutput wrapped = make_shared<WrappedOutput>(str_output, width);
   Universe::instance().setOutput(wrapped);
   UserOutput user_output = Universe::instance().output();
-  UserInput str_input{new StringInput{input}};
-  UserInput echo_input{new EchoingInput(str_input, user_output)};
+  UserInput str_input = make_shared<StringInput>(input);
+  UserInput echo_input = make_shared<EchoingInput>(str_input, user_output);
   Universe::instance().setInput(echo_input);
   in >> Universe::instance();
   try {

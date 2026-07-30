@@ -44,7 +44,7 @@ namespace archetype {
             ARCHETYPE_TEST_EQUAL(actual, expected);
         }
         // At the end, nothing should be left but UNDEFINED
-        ARCHETYPE_TEST(derived.nextSorted()->isSameValueAs(Value{new UndefinedValue}));
+        ARCHETYPE_TEST(derived.nextSorted()->isSameValueAs(make_unique<UndefinedValue>()));
     }
 
     void TestSystemSorter::runTests_() {

@@ -38,7 +38,7 @@ namespace archetype {
     Universe::Context::Context():
     selfObject(nullptr),
     senderObject(nullptr),
-    messageValue(new UndefinedValue)
+    messageValue(std::make_unique<UndefinedValue>())
     { }
 
     Universe::Context::Context(const Context& c):
@@ -69,7 +69,7 @@ namespace archetype {
         assert(nullObject_->id() == NullObjectId);
         kinds_[nullObject_->id()] = OBJECT_ID;
 
-        systemObject_ = ObjectPtr{new SystemObject};
+        systemObject_ = make_shared<SystemObject>();
         int system_id = objects_.index(systemObject_);
         systemObject_->setId(system_id);
         assert(system_id == SystemObjectId);
@@ -79,14 +79,14 @@ namespace archetype {
 
     Universe::Universe() :
     ended_(false),
-    input_{new ConsoleInput},
-    output_{new PagedOutput{UserOutput{new ConsoleOutput}}}
+    input_{make_shared<ConsoleInput>()},
+    output_{make_shared<PagedOutput>(make_shared<ConsoleOutput>())}
     {
         createReservedObjects_();
         Context context;
         context.selfObject = nullObject_;
         context.senderObject = nullObject_;
-        context.messageValue = Value{new UndefinedValue};
+        context.messageValue = make_unique<UndefinedValue>();
         context_.push(context);
     }
 

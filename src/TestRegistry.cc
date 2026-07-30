@@ -31,8 +31,8 @@ namespace archetype {
     TestRegistry::~TestRegistry() {
     }
 
-    void TestRegistry::registerSuite(ITestSuite* suite) {
-        suites_.push_back(unique_ptr<ITestSuite>(suite));
+    void TestRegistry::registerSuite(unique_ptr<ITestSuite> suite) {
+        suites_.push_back(std::move(suite));
     }
 
     bool TestRegistry::runAllTestSuites(std::ostream &out) {
