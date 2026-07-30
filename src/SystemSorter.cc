@@ -21,9 +21,9 @@ namespace archetype {
         if (not sortedStrings_.empty()) {
             string result = *sortedStrings_.begin();
             sortedStrings_.erase(sortedStrings_.begin());
-            return Value{new StringValue{result}};
+            return make_unique<StringValue>(result);
         }
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     Storage& operator<<(Storage& out, const SystemSorter& ss) {

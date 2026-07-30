@@ -20,7 +20,7 @@ using namespace std;
 
 namespace archetype {
     inline TokenStream make_tokens_from_string(string name, string src_str) {
-        stream_ptr in{new istringstream{src_str}};
+        stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr source{make_shared<SourceFile>(name, in)};
         return TokenStream{source};
     }

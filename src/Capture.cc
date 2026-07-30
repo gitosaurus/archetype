@@ -12,7 +12,7 @@
 
 namespace archetype {
     Capture::Capture():
-    output_{new StringOutput}
+    output_{std::make_shared<StringOutput>()}
     {
         previous_ = Universe::instance().output();
         Universe::instance().setOutput(output_);

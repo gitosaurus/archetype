@@ -23,9 +23,9 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestWrappedOutput);
 
     void TestWrappedOutput::testBasicWrap_() {
-        UserOutput user_soutput{new StringOutput};
+        UserOutput user_soutput = make_shared<StringOutput>();
         StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
-        UserOutput user_output{new WrappedOutput{user_soutput}};
+        UserOutput user_output = make_shared<WrappedOutput>(user_soutput);
         WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
         wrout.setMaxColumns(10);
         string utterance = "Now is the time for all good men to come to the aid of their country.";
@@ -51,9 +51,9 @@ namespace archetype {
     }
 
     void TestWrappedOutput::testCenter_() {
-        UserOutput user_soutput{new StringOutput};
+        UserOutput user_soutput = make_shared<StringOutput>();
         StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
-        UserOutput user_output{new WrappedOutput{user_soutput}};
+        UserOutput user_output = make_shared<WrappedOutput>(user_soutput);
         WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
 
         auto delta = [&](size_t& mark) {

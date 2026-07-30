@@ -83,8 +83,8 @@ namespace archetype {
     }
 
     Value CompoundStatement::execute() const {
-        Value break_v{new BreakValue};
-        Value result{new UndefinedValue};
+        Value break_v = make_unique<BreakValue>();
+        Value result = make_unique<UndefinedValue>();
         for (auto const& stmt : statements_) {
             result = stmt->execute();
             if (result->isSameValueAs(break_v)) {
@@ -189,7 +189,7 @@ namespace archetype {
         } else if (elseBranch_){
             result = elseBranch_->execute();
         } else {
-            result = Value{new UndefinedValue};
+            result = make_unique<UndefinedValue>();
         }
         if (IExpression::Debug) {
             ostringstream out;
@@ -318,7 +318,7 @@ namespace archetype {
             }
             return defaultCase_->execute();
         }
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     void CreateStatement::read(Storage& in) {
@@ -363,7 +363,7 @@ namespace archetype {
 
     Value CreateStatement::execute() const {
         ObjectPtr object{Universe::instance().defineNewObject(typeId_)};
-        Value object_v{new ObjectValue{object->id()}};
+        Value object_v = make_unique<ObjectValue>(object->id());
         Value result{object_v->clone()};
         Value target{target_->evaluate()->attributeConversion()};
         target->assign(std::move(object_v));
@@ -409,7 +409,7 @@ namespace archetype {
             }
             Universe::instance().destroyObject(victim_v->getObject());
         }
-        return Value{new UndefinedValue};
+        return make_unique<UndefinedValue>();
     }
 
     void OutputStatement::read(Storage& in) {
@@ -476,10 +476,10 @@ namespace archetype {
     }
 
     Value OutputStatement::execute() const {
-        Value last_value(new UndefinedValue);
+        Value last_value = make_unique<UndefinedValue>();
         unique_ptr<ostringstream> centered;
         if (writeType_ == Keywords::RW_WRITE_CENTERED) {
-            centered.reset(new ostringstream);
+            centered = make_unique<ostringstream>();
         }
         for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
@@ -587,7 +587,7 @@ namespace archetype {
         if (in_paragraph) {
             Universe::instance().output()->endLine();
         }
-        return Value{new StringValue{line}};
+        return make_unique<StringValue>(line);
     }
 
     void ForStatement::read(Storage& in) {
@@ -613,8 +613,8 @@ namespace archetype {
     }
 
     Value ForStatement::execute() const {
-        Value break_v{new BreakValue};
-        Value result{new UndefinedValue};
+        Value break_v = make_unique<BreakValue>();
+        Value result = make_unique<UndefinedValue>();
         int object_count = Universe::instance().objectCount();
         for (int object_id = Universe::UserObjectsBeginAt; object_id < object_count; ++object_id) {
             ObjectPtr each_object = Universe::instance().getObject(object_id);
@@ -644,7 +644,7 @@ namespace archetype {
                         Universe::instance().output()->endLine();
                     }
                     // The for-loop "consumes" the break so it doesn't keep breaking outer loops
-                    result.reset(new UndefinedValue);
+                    result = make_unique<UndefinedValue>();
                     break;
                 }
             }
@@ -682,8 +682,8 @@ namespace archetype {
     }
 
     Value WhileStatement::execute() const {
-        Value break_v{new BreakValue};
-        Value result{new UndefinedValue};
+        Value break_v = make_unique<BreakValue>();
+        Value result = make_unique<UndefinedValue>();
         for (;;) {
             Value condition_value = condition_->evaluate();
             bool true_enough = condition_value->isTrueEnough();
@@ -712,7 +712,7 @@ namespace archetype {
                     Universe::instance().output()->endLine();
                 }
                 // The while-loop "consumes" the break so it doesn't keep breaking outer loops
-                result.reset(new UndefinedValue);
+                result = make_unique<UndefinedValue>();
                 break;
             }
         }
@@ -751,45 +751,45 @@ namespace archetype {
         }
 
         if (t.token() == Token(Token::PUNCTUATION, '{')) {
-            the_stmt.reset(new CompoundStatement);
+            the_stmt = make_unique<CompoundStatement>();
         } else if (t.token().type() == Token::QUOTE_LITERAL) {
             t.didNotConsume();
-            the_stmt.reset(new ParagraphOutputStatement);
+            the_stmt = make_unique<ParagraphOutputStatement>();
         } else if (t.token().type() != Token::RESERVED_WORD) {
             t.didNotConsume();
-            the_stmt.reset(new ExpressionStatement);
+            the_stmt = make_unique<ExpressionStatement>();
         } else {
             Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());
             switch (word) {
                 case Keywords::RW_IF:
-                    the_stmt.reset(new IfStatement);
+                    the_stmt = make_unique<IfStatement>();
                     break;
                 case Keywords::RW_CASE:
-                    the_stmt.reset(new CaseStatement);
+                    the_stmt = make_unique<CaseStatement>();
                     break;
                 case Keywords::RW_CREATE:
-                    the_stmt.reset(new CreateStatement);
+                    the_stmt = make_unique<CreateStatement>();
                     break;
                 case Keywords::RW_DESTROY:
-                    the_stmt.reset(new DestroyStatement);
+                    the_stmt = make_unique<DestroyStatement>();
                     break;
                 case Keywords::RW_DISPLAY:
                 case Keywords::RW_WRITE:
                 case Keywords::RW_WRITES:
                 case Keywords::RW_WRITE_CENTERED:
                 case Keywords::RW_STOP:
-                    the_stmt.reset(new OutputStatement(word));
+                    the_stmt = make_unique<OutputStatement>(word);
                     break;
                 case Keywords::RW_FOR:
-                    the_stmt.reset(new ForStatement);
+                    the_stmt = make_unique<ForStatement>();
                     break;
                 case Keywords::RW_WHILE:
-                    the_stmt.reset(new WhileStatement);
+                    the_stmt = make_unique<WhileStatement>();
                     break;
                 default:
                     /* Default:  an expression that may begin with a reserved word */
                     t.didNotConsume();
-                    the_stmt.reset(new ExpressionStatement);
+                    the_stmt = make_unique<ExpressionStatement>();
                     break;
             }  /* switch (t.token().number()) */
         }
@@ -814,34 +814,34 @@ namespace archetype {
         StatementType_e type = static_cast<StatementType_e>(stmt_type_as_int);
         switch (type) {
             case COMPOUND:
-                stmt.reset(new CompoundStatement);
+                stmt = make_unique<CompoundStatement>();
                 break;
             case EXPRESSION:
-                stmt.reset(new ExpressionStatement);
+                stmt = make_unique<ExpressionStatement>();
                 break;
             case IF:
-                stmt.reset(new IfStatement);
+                stmt = make_unique<IfStatement>();
                 break;
             case CASE:
-                stmt.reset(new CaseStatement);
+                stmt = make_unique<CaseStatement>();
                 break;
             case CREATE:
-                stmt.reset(new CreateStatement);
+                stmt = make_unique<CreateStatement>();
                 break;
             case DESTROY:
-                stmt.reset(new DestroyStatement);
+                stmt = make_unique<DestroyStatement>();
                 break;
             case FOR:
-                stmt.reset(new ForStatement);
+                stmt = make_unique<ForStatement>();
                 break;
             case WHILE:
-                stmt.reset(new WhileStatement);
+                stmt = make_unique<WhileStatement>();
                 break;
             case OUTPUT:
-                stmt.reset(new OutputStatement);
+                stmt = make_unique<OutputStatement>();
                 break;
             case PARAGRAPH_OUTPUT:
-                stmt.reset(new ParagraphOutputStatement);
+                stmt = make_unique<ParagraphOutputStatement>();
                 break;
         }
         stmt->read(in);
@@ -849,7 +849,7 @@ namespace archetype {
     }
 
     Statement make_stmt_from_str(string src_str) {
-        stream_ptr in(new istringstream(src_str));
+        stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Statement stmt = make_statement(token_stream);

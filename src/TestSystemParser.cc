@@ -19,7 +19,7 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestSystemParser);
 
     void TestSystemParser::testNormalization_() {
-        unique_ptr<SystemParser> parser(new SystemParser);
+        auto parser = make_unique<SystemParser>();
         parser->close();
         parser->parse("The quick Brown Fox     jumped over   the lazy    dogs");
         string n1_str = parser->normalized();
@@ -37,7 +37,7 @@ namespace archetype {
     }
 
     void TestSystemParser::testBasicParsing_() {
-        unique_ptr<SystemParser> parser(new SystemParser);
+        auto parser = make_unique<SystemParser>();
 
         parser->setMode(SystemParser::VERBS);
         int jump_id = 101;
@@ -62,7 +62,7 @@ namespace archetype {
     }
 
     void TestSystemParser::testPartialParsing_() {
-        unique_ptr<SystemParser> parser(new SystemParser);
+        auto parser = make_unique<SystemParser>();
 
         parser->setMode(SystemParser::VERBS);
         int examine_id = 50;
@@ -112,7 +112,7 @@ namespace archetype {
     }
 
     void TestSystemParser::testProximity_() {
-        unique_ptr<SystemParser> parser(new SystemParser);
+        auto parser = make_unique<SystemParser>();
 
         parser->setMode(SystemParser::VERBS);
         int press_id = 50;
@@ -197,7 +197,7 @@ namespace archetype {
 
     void TestSystemParser::testSerialization_() {
         // Prepare a parser, bounce through serialization, see it if still works
-        unique_ptr<SystemParser> parser(new SystemParser);
+        auto parser = make_unique<SystemParser>();
         parser->setMode(SystemParser::VERBS);
         int press_id = 50;
         parser->addParseable(press_id, "press|push");
@@ -222,7 +222,7 @@ namespace archetype {
         MemoryStorage mem;
         mem << *parser;
         // Wipe out the previous parser, and replace
-        parser.reset(new SystemParser);
+        parser = make_unique<SystemParser>();
         mem >> *parser;
 
         // Verify that the objects are detected and that proximity works as desired

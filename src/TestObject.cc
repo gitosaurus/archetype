@@ -71,14 +71,14 @@ namespace archetype {
         room_type->setPrototype(true);
         Universe::instance().assignObjectIdentifier(room_type, "room");
         int desc_id = Universe::instance().Identifiers.index("desc");
-        room_type->setAttribute(desc_id, Value(new StringValue("room")));
+        room_type->setAttribute(desc_id, make_unique<StringValue>("room"));
         Expression expr = make_expr_from_str("\"an unremarkable \" & desc");
         int full_id = Universe::instance().Identifiers.index("full");
         room_type->setAttribute(full_id, std::move(expr));
 
         ObjectPtr basement = Universe::instance().defineNewObject(room_type->id());
         Universe::instance().assignObjectIdentifier(basement, "basement");
-        basement->setAttribute(desc_id, Value(new StringValue("dank cellar of a room")));
+        basement->setAttribute(desc_id, make_unique<StringValue>("dank cellar of a room"));
 
         ObjectPtr courtyard = Universe::instance().defineNewObject(room_type->id());
         Universe::instance().assignObjectIdentifier(courtyard, "courtyard");
@@ -108,7 +108,7 @@ namespace archetype {
     void TestObject::testMethods_() {
         ObjectPtr monster = Universe::instance().defineNewObject();
         int health_id = Universe::instance().Identifiers.index("health");
-        monster->setAttribute(health_id, Value(new NumericValue(10)));
+        monster->setAttribute(health_id, make_unique<NumericValue>(10));
         Universe::instance().assignObjectIdentifier(monster, "monster");
         Statement kill_stmt = make_stmt_from_str("{\n"
                                                  "health := health - 1\n"
@@ -129,18 +129,18 @@ namespace archetype {
         int desc_id = Universe::instance().Identifiers.index("desc");
         Statement growl_stmt = make_stmt_from_str("write \"The \", desc, \" growls.\"");
         int growl_message_id = Universe::instance().Messages.index("growl");
-        animal_type->setAttribute(desc_id, Value(new StringValue("animal")));
+        animal_type->setAttribute(desc_id, make_unique<StringValue>("animal"));
         animal_type->setMethod(growl_message_id, std::move(growl_stmt));
         animal_type->setPrototype(true);
         Universe::instance().assignObjectIdentifier(animal_type, "animal");
 
         ObjectPtr dog = Universe::instance().defineNewObject(animal_type->id());
         Universe::instance().assignObjectIdentifier(dog, "dog");
-        dog->setAttribute(desc_id, Value(new StringValue("dog")));
+        dog->setAttribute(desc_id, make_unique<StringValue>("dog"));
 
         ObjectPtr cat = Universe::instance().defineNewObject(animal_type->id());
         Universe::instance().assignObjectIdentifier(cat, "cat");
-        cat->setAttribute(desc_id, Value(new StringValue("cat")));
+        cat->setAttribute(desc_id, make_unique<StringValue>("cat"));
         Statement meow_stmt = make_stmt_from_str("{ message --> animal; write \"The cat does a double-take.\"}");
         cat->setMethod(growl_message_id, std::move(meow_stmt));
 
@@ -154,7 +154,7 @@ namespace archetype {
         // Test that the single arrow works as a pass with types
         ObjectPtr goat = Universe::instance().defineNewObject(animal_type->id());
         Universe::instance().assignObjectIdentifier(goat, "goat");
-        goat->setAttribute(desc_id, Value(new StringValue("goat")));
+        goat->setAttribute(desc_id, make_unique<StringValue>("goat"));
         Statement baa_stmt = make_stmt_from_str("{ message -> animal; write \"The goat coughs, embarrassed.\" }");
         goat->setMethod(growl_message_id, std::move(baa_stmt));
 
@@ -187,7 +187,7 @@ namespace archetype {
         animal->setPrototype(true);
         Universe::instance().assignObjectIdentifier(animal, "animal");
         int legs_id = Universe::instance().Identifiers.index("legs");
-        animal->setAttribute(legs_id, Value(new NumericValue(4)));
+        animal->setAttribute(legs_id, make_unique<NumericValue>(4));
 
         ObjectPtr dog = Universe::instance().defineNewObject(animal->id());
         Universe::instance().assignObjectIdentifier(dog, "dog");
