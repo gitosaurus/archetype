@@ -12,6 +12,7 @@
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
+#include <format>
 #include <sstream>
 
 #include "Serialization.hh"
@@ -99,10 +100,9 @@ namespace archetype {
         value.resize(size);
         int bytes_read = in.read(reinterpret_cast<Storage::Byte*>(&value[0]), size);
         if (bytes_read != size) {
-            ostringstream out;
-            out << "Could not fully read string declared as " << size << " bytes; "
-                << "only read " << bytes_read;
-            throw invalid_argument(out.str());
+            throw invalid_argument(
+                format("Could not fully read string declared as {} bytes; only read {}",
+                       size, bytes_read));
         }
         return in;
     }

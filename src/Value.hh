@@ -14,6 +14,7 @@
 #include <memory>
 #include <stdexcept>
 
+#include "Formatting.hh"
 #include "Keywords.hh"
 #include "Serialization.hh"
 
@@ -285,5 +286,12 @@ namespace archetype {
     Storage& operator>>(Storage& in, Value& v);
 
 }
+
+template <>
+struct std::formatter<archetype::Value> : archetype::StreamedFormatter {
+    auto format(const archetype::Value& value, std::format_context& ctx) const {
+        return render([&](std::ostream& out) { out << value; }, ctx);
+    }
+};
 
 #endif /* defined(__archetype__Value__) */

@@ -16,6 +16,7 @@
 #include <stack>
 #include <stdexcept>
 
+#include "Formatting.hh"
 #include "IdIndex.hh"
 #include "StringIdIndex.hh"
 #include "Object.hh"
@@ -150,6 +151,17 @@ namespace archetype {
     Storage& operator<<(Storage& out, const Universe& u);
     Storage& operator>>(Storage& in, Universe& u);
 
+    // Renders a kind by name ("an object", "a defined attribute", ...) rather
+    // than by its numeric value; diagnostics rely on the friendly spelling.
+    std::ostream& operator<<(std::ostream& out, IdentifierKind_e kind);
+
 }
+
+template <>
+struct std::formatter<archetype::IdentifierKind_e> : archetype::StreamedFormatter {
+    auto format(archetype::IdentifierKind_e kind, std::format_context& ctx) const {
+        return render([&](std::ostream& out) { out << kind; }, ctx);
+    }
+};
 
 #endif /* defined(__archetype__Universe__) */

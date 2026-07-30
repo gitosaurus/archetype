@@ -7,6 +7,7 @@
 //
 
 #include <string>
+#include <format>
 #include <sstream>
 #include <list>
 #include <utility>
@@ -42,9 +43,7 @@ namespace archetype {
     }
 
     inline string as_prefix(const Expression& expr) {
-        ostringstream out;
-        expr->prefixDisplay(out);
-        return out.str();
+        return format("{}", expr);
     }
 
 #define SHOW(expr) out() << #expr << " == " << (expr) << endl;
@@ -256,10 +255,7 @@ namespace archetype {
             Value test_value = std::move(p.second);
             ARCHETYPE_TEST(val->isSameValueAs(test_value));
             // Compare by string, too, so that it's easier to catch in the test output
-            ostringstream out1, out2;
-            val->display(out1);
-            test_value->display(out2);
-            ARCHETYPE_TEST_EQUAL(out1.str(), out2.str());
+            ARCHETYPE_TEST_EQUAL(format("{}", val), format("{}", test_value));
         }
     }
 
@@ -284,10 +280,7 @@ namespace archetype {
             mem << expr;
             Expression expr_back;
             mem >> expr_back;
-            ostringstream out;
-            expr_back->prefixDisplay(out);
-            string expr_back_str = out.str();
-            ARCHETYPE_TEST_EQUAL(expr_back_str, p.second);
+            ARCHETYPE_TEST_EQUAL(format("{}", expr_back), p.second);
         }
     }
 
@@ -335,9 +328,7 @@ namespace archetype {
         Expression list_expr = make_expr_from_str("[1 2 3]");
         ARCHETYPE_TEST(list_expr != nullptr);
         Value list_val = list_expr->evaluate()->valueConversion();
-        ostringstream list_out;
-        list_val->display(list_out);
-        ARCHETYPE_TEST_EQUAL(list_out.str(), string{"[1 2 3]"});
+        ARCHETYPE_TEST_EQUAL(format("{}", list_val), string{"[1 2 3]"});
 
         // The empty list still parses.
         Expression empty_expr = make_expr_from_str("[]");
@@ -347,9 +338,7 @@ namespace archetype {
         Expression nested_expr = make_expr_from_str("[[1 2] [3 4]]");
         ARCHETYPE_TEST(nested_expr != nullptr);
         Value nested_val = nested_expr->evaluate()->valueConversion();
-        ostringstream nested_out;
-        nested_val->display(nested_out);
-        ARCHETYPE_TEST_EQUAL(nested_out.str(), string{"[[1 2] [3 4]]"});
+        ARCHETYPE_TEST_EQUAL(format("{}", nested_val), string{"[[1 2] [3 4]]"});
 
         // Curly braces in expression position no longer form a list literal.
         Expression curly_expr = make_expr_from_str("{1 2 3}");

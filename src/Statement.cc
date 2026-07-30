@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <format>
 #include <memory>
 #include <stdexcept>
 #include <sstream>
@@ -170,17 +171,9 @@ namespace archetype {
         Value condition_value = condition_->evaluate();
         bool true_enough = condition_value->isTrueEnough();
         if (IStatement::Debug) {
-            ostringstream out;
-            out << "if ";
-            condition_->prefixDisplay(out);
-            out << " => ";
-            condition_value->display(out);
-            if (true_enough) {
-                out << "then-branch";
-            } else {
-                out << "else-branch";
-            }
-            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->put(format("if {} => {}{}",
+                                                      condition_, condition_value,
+                                                      true_enough ? "then-branch" : "else-branch"));
             Universe::instance().output()->endLine();
         }
         Value result;
@@ -192,10 +185,7 @@ namespace archetype {
             result = make_unique<UndefinedValue>();
         }
         if (IExpression::Debug) {
-            ostringstream out;
-            out << "if-result => ";
-            result->display(out);
-            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->put(format("if-result => {}", result));
             Universe::instance().output()->endLine();
         }
         return result;
@@ -298,11 +288,8 @@ namespace archetype {
             Value case_value = case_pair.match->evaluate()->valueConversion();
             if (eval_compare(Keywords::OP_EQ, test_value, case_value)) {
                 if (IStatement::Debug) {
-                    ostringstream out;
-                    test_value->display(out);
-                    out << " matched case ";
-                    case_value->display(out);
-                    Universe::instance().output()->put(out.str());
+                    Universe::instance().output()->put(format("{} matched case {}",
+                                                              test_value, case_value));
                     Universe::instance().output()->endLine();
                 }
                 return case_pair.action->execute();
@@ -310,10 +297,8 @@ namespace archetype {
         }
         if (defaultCase_) {
             if (IStatement::Debug) {
-                ostringstream out;
-                out << "default case; nothing matched ";
-                test_value->display(out);
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("default case; nothing matched {}",
+                                                          test_value));
                 Universe::instance().output()->endLine();
             }
             return defaultCase_->execute();
@@ -368,12 +353,8 @@ namespace archetype {
         Value target{target_->evaluate()->attributeConversion()};
         target->assign(std::move(object_v));
         if (IStatement::Debug) {
-            ostringstream out;
-            out << "created new instance ";
-            result->display(out);
-            out << " assigned to ";
-            target->display(out);
-            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->put(format("created new instance {} assigned to {}",
+                                                      result, target));
             Universe::instance().output()->endLine();
         }
         // Intentionally return a clone of the object value, not the target, in order not to
@@ -401,10 +382,7 @@ namespace archetype {
         Value victim_v{victim_->evaluate()->objectConversion()};
         if (victim_v->isDefined()) {
             if (IStatement::Debug) {
-                ostringstream out;
-                out << "destroyed ";
-                victim_v->display(out);
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("destroyed {}", victim_v));
                 Universe::instance().output()->endLine();
             }
             Universe::instance().destroyObject(victim_v->getObject());
@@ -484,11 +462,7 @@ namespace archetype {
         for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
             if (writeType_ == Keywords::RW_DISPLAY) {
-                ostringstream out;
-                out << '[';
-                last_value->display(out);
-                out << ']';
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("[{}]", last_value));
             }
             Value v_s = last_value->stringConversion();
             if (v_s->isDefined()) {
@@ -627,15 +601,9 @@ namespace archetype {
             if (selectionValue->isTrueEnough()) {
                 result = action_->execute();
                 if (IStatement::Debug) {
-                    ostringstream out;
-                    out << "for each = ";
-                    ObjectValue each_value{object_id};
-                    each_value.display(out);
-                    out << "; ";
-                    selection_->prefixDisplay(out);
-                    out << " => ";
-                    selectionValue->display(out);
-                    Universe::instance().output()->put(out.str());
+                    Value each_value = make_unique<ObjectValue>(object_id);
+                    Universe::instance().output()->put(format("for each = {}; {} => {}",
+                                                              each_value, selection_, selectionValue));
                     Universe::instance().output()->endLine();
                 }
                 if (result->isSameValueAs(break_v)) {
@@ -650,10 +618,7 @@ namespace archetype {
             }
         }
         if (IStatement::Debug) {
-            ostringstream out;
-            out << "for-result => ";
-            result->display(out);
-            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->put(format("for-result => {}", result));
             Universe::instance().output()->endLine();
         }
         return result;
@@ -688,18 +653,9 @@ namespace archetype {
             Value condition_value = condition_->evaluate();
             bool true_enough = condition_value->isTrueEnough();
             if (IStatement::Debug) {
-                ostringstream out;
-                out << "while ";
-                condition_->prefixDisplay(out);
-                out << " => ";
-                condition_value->display(out);
-                out << "; ";
-                if (true_enough) {
-                    out << "continuing";
-                } else {
-                    out << "leaving";
-                }
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("while {} => {}; {}",
+                                                          condition_, condition_value,
+                                                          true_enough ? "continuing" : "leaving"));
                 Universe::instance().output()->endLine();
             }
             if (not true_enough) {
@@ -717,10 +673,7 @@ namespace archetype {
             }
         }
         if (IStatement::Debug) {
-            ostringstream out;
-            out << "while-result => ";
-            result->display(out);
-            Universe::instance().output()->put(out.str());
+            Universe::instance().output()->put(format("while-result => {}", result));
             Universe::instance().output()->endLine();
         }
         return result;

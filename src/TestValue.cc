@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include <format>
 #include <sstream>
 #include <string>
 
@@ -22,9 +23,7 @@ namespace archetype {
     ARCHETYPE_TEST_REGISTER(TestValue);
 
     string display(const Value& v) {
-        ostringstream out;
-        v->display(out);
-        return out.str();
+        return format("{}", v);
     }
 
     void TestValue::testSerialization_() {

@@ -7,6 +7,7 @@
 //
 
 #include <string>
+#include <format>
 #include <sstream>
 #include <list>
 #include <utility>
@@ -144,7 +145,6 @@ namespace archetype {
         string loop_str = "{while TRUE do { writes x.i, ' '; if (x.i := x.i + 1) > 5 then { break } } write; x.i}";
         Statement loop_w = make_stmt_from_str(loop_str);
         ARCHETYPE_TEST(loop_w != nullptr);
-        ostringstream out;
         Value val = loop_w->execute()->numericConversion();
         ARCHETYPE_TEST(val->isDefined());
         ARCHETYPE_TEST_EQUAL(val->getNumber(), 6);
@@ -195,9 +195,7 @@ namespace archetype {
                 mem >> stmt_back;
                 ARCHETYPE_TEST_EQUAL(mem.remaining(), 0);
                 if (not mem.remaining()) {
-                    ostringstream out;
-                    stmt_back->display(out);
-                    stmt_back_str = out.str();
+                    stmt_back_str = format("{}", stmt_back);
                 }
             } catch (const std::exception& e) {
                 stmt_back_str = "Could not deserialize; caught " + string(e.what());
