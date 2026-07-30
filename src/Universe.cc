@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <fstream>
+#include <format>
 #include <sstream>
 #include <cassert>
 #include <limits>
@@ -124,21 +125,16 @@ namespace archetype {
         } else if (existing_p->second == DEFINED_ATTRIBUTE_ID and kind == REFERENCED_ATTRIBUTE_ID) {
             // no-op
         } else if (kind != UNKNOWN_ID and existing_p->second != kind) {
-            ostringstream out;
-            out << "Identifier '" << Identifiers.get(identifier);
-            out << "' is already the name of " << existing_p->second << " but is used here as " << kind;
-            t.errorMessage(out.str());
+            t.errorMessage(format("Identifier '{}' is already the name of {} but is used here as {}",
+                                  Identifiers.get(identifier), existing_p->second, kind));
         }
     }
 
     void Universe::reportUndefinedIdentifiers() const {
         for (auto const& [identifier, kind] : kinds_) {
             if (kind == UNKNOWN_ID or kind == REFERENCED_ATTRIBUTE_ID) {
-                ostringstream out;
-                out << "Identifier \"";
-                out << Identifiers.get(identifier);
-                out << "\" was never defined";
-                output()->put(out.str());
+                output()->put(format("Identifier \"{}\" was never defined",
+                                     Identifiers.get(identifier)));
                 output()->endLine();
             }
         }

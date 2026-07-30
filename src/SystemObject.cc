@@ -10,6 +10,7 @@
 #include <string>
 #include <cassert>
 #include <iostream>
+#include <format>
 #include <sstream>
 
 #include "SystemObject.hh"
@@ -129,9 +130,7 @@ namespace archetype {
                         case CLOSE_PARSER:
                         case VERB_LIST:
                         case NOUN_LIST: {
-                            ostringstream out;
-                            out << "Cannot go to state " << state_ << " from IDLING; returning to idle" << endl;
-                            Universe::instance().output()->put(out.str());
+                            Universe::instance().output()->put(format("Cannot go to state {} from IDLING; returning to idle\n", static_cast<int>(state_)));
                             state_ = IDLING;
                             break;
                         }
@@ -172,9 +171,7 @@ namespace archetype {
             case INIT_SORTER:
             case NEXT_SORTED:
             case CLOSE_SORTER: {
-                ostringstream out;
-                out << "Unexpectedly found sorting instruction " << state_ << " at top of loop; idling" << endl;
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("Unexpectedly found sorting instruction {} at top of loop; idling\n", static_cast<int>(state_)));
                 state_ = IDLING;
                 break;
             }
@@ -206,9 +203,7 @@ namespace archetype {
             case VERB_LIST:
             case NOUN_LIST:
             case CLOSE_PARSER: {
-                ostringstream out;
-                out << "Unexpectedly found parsing instruction " << state_ << " at top of loop; idling" << endl;
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("Unexpectedly found parsing instruction {} at top of loop; idling\n", static_cast<int>(state_)));
                 state_ = IDLING;
                 break;
             }
@@ -280,17 +275,13 @@ namespace archetype {
             case ROLL_CALL:
             case PRESENT:
             case NEXT_OBJECT: {
-                ostringstream out;
-                out << "Unexpectedly found interpreter instruction " << state_ << " at top of loop; idling" << endl;
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("Unexpectedly found interpreter instruction {} at top of loop; idling\n", static_cast<int>(state_)));
                 state_ = IDLING;
                 break;
             }
 
             default: {
-                ostringstream out;
-                out << "Unexpectedly found UNHANDLED state " << state_ << " at top of loop; idling" << endl;
-                Universe::instance().output()->put(out.str());
+                Universe::instance().output()->put(format("Unexpectedly found UNHANDLED state {} at top of loop; idling\n", static_cast<int>(state_)));
                 state_ = IDLING;
                 break;
             }

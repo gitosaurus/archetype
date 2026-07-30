@@ -11,6 +11,8 @@
 
 #include <iostream>
 
+#include "Formatting.hh"
+
 namespace archetype {
     class Token {
     public:
@@ -40,5 +42,12 @@ namespace archetype {
 
     std::ostream& operator<<(std::ostream& out, const Token& t);
 }
+
+template <>
+struct std::formatter<archetype::Token> : archetype::StreamedFormatter {
+    auto format(const archetype::Token& token, std::format_context& ctx) const {
+        return render([&](std::ostream& out) { out << token; }, ctx);
+    }
+};
 
 #endif /* defined(__archetype__Token__) */

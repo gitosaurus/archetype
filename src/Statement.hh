@@ -13,6 +13,7 @@
 #include <list>
 #include <vector>
 
+#include "Formatting.hh"
 #include "TokenStream.hh"
 #include "Expression.hh"
 #include "Serialization.hh"
@@ -166,5 +167,18 @@ namespace archetype {
     [[nodiscard]] Statement make_statement(TokenStream& t);
     [[nodiscard]] Statement make_stmt_from_str(std::string src_str);
 }
+
+template <>
+struct std::formatter<archetype::Statement> : archetype::StreamedFormatter {
+    auto format(const archetype::Statement& stmt, std::format_context& ctx) const {
+        return render([&](std::ostream& out) {
+            if (stmt) {
+                stmt->display(out);
+            } else {
+                out << "nullptr";
+            }
+        }, ctx);
+    }
+};
 
 #endif /* defined(__archetype__Statement__) */

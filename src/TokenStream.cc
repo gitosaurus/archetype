@@ -8,6 +8,7 @@
 
 #include <set>
 #include <deque>
+#include <format>
 #include <sstream>
 #include <cctype>
 
@@ -216,9 +217,7 @@ namespace archetype {
                                 case 'n' : next_ch = '\n'; break;
                                 case '"' : next_ch = '"'; break;
                                 default: {
-                                    ostringstream out;
-                                    out << "Unknown escape character \\" << next_ch;
-                                    errorMessage(out.str());
+                                    errorMessage(format("Unknown escape character \\{}", next_ch));
                                     break;
                                 }
                             }  // switch

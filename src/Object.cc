@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <cassert>
+#include <format>
 #include <sstream>
 
 #include "Object.hh"
@@ -77,13 +78,9 @@ namespace archetype {
         Value result = make_unique<AbsentValue>();
         if (defined_message->isDefined()) {
             if (Debug) {
-                ostringstream out;
-                out << "dispatching ";
-                defined_message->display(out);
-                out << " to ";
-                ObjectValue target{id()};
-                target.display(out);
-                Universe::instance().output()->put(out.str());
+                Value target = make_unique<ObjectValue>(id());
+                Universe::instance().output()->put(format("dispatching {} to {}",
+                                                          defined_message, target));
                 Universe::instance().output()->endLine();
             }
             int message_id = defined_message->getMessage();
@@ -91,11 +88,8 @@ namespace archetype {
         }
         if (result->isSameValueAs(absence)) {
             if (Debug) {
-                ostringstream out;
-                out << "dispatching default method to ";
-                ObjectValue target{id()};
-                target.display(out);
-                Universe::instance().output()->put(out.str());
+                Value target = make_unique<ObjectValue>(id());
+                Universe::instance().output()->put(format("dispatching default method to {}", target));
                 Universe::instance().output()->endLine();
             }
             result = executeDefaultMethod();

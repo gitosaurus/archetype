@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <format>
 #include <sstream>
 #include <string>
 
@@ -75,11 +76,7 @@ namespace archetype {
                             break;
                         }
                         Value result = stmt->execute();
-                        ostringstream sout;
-                        sout << "=> ";
-                        result->display(sout);
-                        sout << endl;
-                        out->put(sout.str());
+                        out->put(format("=> {}\n", result));
                     }
                 }
             } catch (const std::exception& e) {

@@ -6,6 +6,7 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <format>
 #include <stdexcept>
 #include <cassert>
 #include <algorithm>
@@ -35,11 +36,7 @@ namespace archetype {
     };
 
     static void debug_expr(const IExpression& expr, const Value& result) {
-        ostringstream out;
-        expr.prefixDisplay(out);
-        out << " => ";
-        result->display(out);
-        Universe::instance().output()->put(out.str());
+        Universe::instance().output()->put(format("{} => {}", expr, result));
         Universe::instance().output()->endLine();
     }
 

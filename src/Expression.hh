@@ -14,6 +14,7 @@
 #include <stdexcept>
 #include <string>
 
+#include "Formatting.hh"
 #include "Keywords.hh"
 #include "TokenStream.hh"
 #include "Value.hh"
@@ -72,5 +73,28 @@ namespace archetype {
     Storage& operator<<(Storage& out, const Expression& expr);
     Storage& operator>>(Storage& in, Expression& expr);
 }
+
+// Expressions render in the prefix notation used throughout the diagnostics.
+// Both spellings are needed: diagnostics hold an Expression in some places and
+// take a reference to the interface in others.
+template <>
+struct std::formatter<archetype::IExpression> : archetype::StreamedFormatter {
+    auto format(const archetype::IExpression& expr, std::format_context& ctx) const {
+        return render([&](std::ostream& out) { expr.prefixDisplay(out); }, ctx);
+    }
+};
+
+template <>
+struct std::formatter<archetype::Expression> : archetype::StreamedFormatter {
+    auto format(const archetype::Expression& expr, std::format_context& ctx) const {
+        return render([&](std::ostream& out) {
+            if (expr) {
+                expr->prefixDisplay(out);
+            } else {
+                out << "nullptr";
+            }
+        }, ctx);
+    }
+};
 
 #endif /* defined(__archetype__Expression__) */
