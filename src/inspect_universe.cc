@@ -173,7 +173,7 @@ namespace archetype {
     void dump_universe_rdf(std::ostream& out, bool include_methods) {
         write_rdf_prefixes(out);
 
-        for (int obj_id = 0; obj_id < Universe::instance().objectCount(); obj_id++) {
+        for (int obj_id : std::views::iota(0, Universe::instance().objectCount())) {
             ObjectPtr obj = Universe::instance().getObject(obj_id);
             if (not obj) continue;
 

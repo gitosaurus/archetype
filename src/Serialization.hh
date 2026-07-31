@@ -10,6 +10,7 @@
 #define __archetype__Serialization__
 
 #include <iostream>
+#include <span>
 #include <string>
 #include <vector>
 
@@ -19,8 +20,12 @@ namespace archetype {
         typedef unsigned char Byte;
         virtual ~Storage() { }
         virtual int remaining() const = 0;
-        virtual int read(Byte* buf, int nbytes) = 0;
-        virtual void write(const Byte* buf, int nbytes) = 0;
+
+        // The buffer carries its own length, so a caller cannot hand over a
+        // pointer and a size that disagree.  read returns the count actually
+        // transferred, which may be less than the span for a truncated source.
+        virtual int read(std::span<Byte> buf) = 0;
+        virtual void write(std::span<const Byte> buf) = 0;
 
         int readInteger();
         void writeInteger(int value);
@@ -40,8 +45,8 @@ namespace archetype {
         virtual ~MemoryStorage() { }
         std::vector<Byte>& bytes() { return bytes_; }
         virtual int remaining() const override;
-        virtual int read(Byte* buf, int nbytes) override;
-        virtual void write(const Byte* buf, int nbytes) override;
+        virtual int read(std::span<Byte> buf) override;
+        virtual void write(std::span<const Byte> buf) override;
     };
 }
 

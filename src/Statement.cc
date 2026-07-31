@@ -7,6 +7,7 @@
 //
 
 #include <format>
+#include <ranges>
 #include <memory>
 #include <stdexcept>
 #include <sstream>
@@ -197,9 +198,10 @@ namespace archetype {
         in >> entries;
         cases_.clear();
         for (int i = 0; i < entries; ++i) {
-            Case case_pair;
-            in >> case_pair.match >> case_pair.action;
-            cases_.push_back(std::move(case_pair));
+            Expression match;
+            Statement action;
+            in >> match >> action;
+            cases_.push_back(Case{.match = std::move(match), .action = std::move(action)});
         }
         int default_exists;
         in >> default_exists;
@@ -254,12 +256,12 @@ namespace archetype {
                 }
             } else {
                 t.didNotConsume();
-                cases_.push_back(Case());
-                cases_.back().match = make_expr(t);
-                if (not cases_.back().match) return false;
+                Expression match = make_expr(t);
+                if (not match) return false;
                 if (not t.insistOn(Token(Token::PUNCTUATION, ':'))) return false;
-                cases_.back().action = make_statement(t);
-                if (not cases_.back().action) return false;
+                Statement action = make_statement(t);
+                if (not action) return false;
+                cases_.push_back(Case{.match = std::move(match), .action = std::move(action)});
             }
         }
         return true;
@@ -488,20 +490,16 @@ namespace archetype {
         int entries;
         in >> entries;
         vector<int> v(entries);
-        for (int i = 0; i < entries; ++i) {
-            int q;
+        for (int& q : v) {
             in >> q;
-            v[i] = q;
         }
         quoteLiterals_.swap(v);
     }
 
     void ParagraphOutputStatement::write(Storage& out) const {
         out << PARAGRAPH_OUTPUT;
-        int entries = static_cast<int>(quoteLiterals_.size());
-        out << entries;
-        for (int i = 0; i < entries; ++i) {
-            int q = quoteLiterals_[i];
+        out << static_cast<int>(quoteLiterals_.size());
+        for (int q : quoteLiterals_) {
             out << q;
         }
     }
@@ -590,7 +588,7 @@ namespace archetype {
         Value break_v = make_unique<BreakValue>();
         Value result = make_unique<UndefinedValue>();
         int object_count = Universe::instance().objectCount();
-        for (int object_id = Universe::UserObjectsBeginAt; object_id < object_count; ++object_id) {
+        for (int object_id : views::iota(Universe::UserObjectsBeginAt, object_count)) {
             ObjectPtr each_object = Universe::instance().getObject(object_id);
             if (not each_object or each_object->id() == Object::INVALID or each_object->isPrototype()) {
                 continue;

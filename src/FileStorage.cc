@@ -7,6 +7,7 @@
 //
 
 #include <iostream>
+#include <span>
 #include <string>
 
 #include "FileStorage.hh"
@@ -30,14 +31,14 @@ namespace archetype {
         return remaining_;
     }
 
-    int InFileStorage::read(Byte *buf, int nbytes) {
-        stream_.read(reinterpret_cast<char *>(buf), nbytes);
+    int InFileStorage::read(span<Byte> buf) {
+        stream_.read(reinterpret_cast<char*>(buf.data()), static_cast<streamsize>(buf.size()));
         int bytes_read = static_cast<int>(stream_.gcount());
         remaining_ -= bytes_read;
         return bytes_read;
     }
 
-    void InFileStorage::write(const Byte* /*buf*/, int /*nbytes*/) {
+    void InFileStorage::write(span<const Byte>) {
     }
 
     OutFileStorage::OutFileStorage(std::string filename)
@@ -53,11 +54,11 @@ namespace archetype {
         return 0;
     }
 
-    int OutFileStorage::read(Byte* /*buf*/, int /*nbytes*/) {
+    int OutFileStorage::read(span<Byte>) {
         return 0;
     }
 
-    void OutFileStorage::write(const Byte *buf, int nbytes) {
-        stream_.write(reinterpret_cast<const char*>(buf), nbytes);
+    void OutFileStorage::write(span<const Byte> buf) {
+        stream_.write(reinterpret_cast<const char*>(buf.data()), static_cast<streamsize>(buf.size()));
     }
 }

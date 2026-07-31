@@ -19,7 +19,7 @@ namespace archetype {
         virtual ~ConsoleOutput() { }
         virtual void put(const std::string& line) override { std::cout << line; std::cout.flush(); }
         virtual void endLine() override { std::cout << std::endl; }
-        virtual void banner(char ch) override { for (int i = 0; i < 80; ++i) std::cout << ch; endLine(); }
+        virtual void banner(char ch) override { std::cout << std::string(80, ch); endLine(); }
     };
 }
 
