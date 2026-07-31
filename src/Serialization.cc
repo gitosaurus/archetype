@@ -9,6 +9,7 @@
 // For Windows
 #define _SCL_SECURE_NO_WARNINGS
 
+#include <span>
 #include <stdexcept>
 #include <algorithm>
 #include <iterator>
@@ -31,7 +32,7 @@ namespace archetype {
             throw invalid_argument("No more bytes remaining; cannot read an integer");
         }
         Byte byte;
-        read(&byte, sizeof(byte));
+        read(span{&byte, 1});
         bool more = static_cast<bool>(byte & MoreBit);
         byte &= ~MoreBit;
         // The sign bit is the very first bit deserialized.
@@ -41,7 +42,7 @@ namespace archetype {
         int bits = 6;
         int result = byte;
         while (more) {
-            if (not read(&byte, sizeof(byte))) {
+            if (not read(span{&byte, 1})) {
                 throw invalid_argument("End of storage in the middle of a continued integer");
             }
             int next_part = (byte & PayloadBits);
@@ -71,7 +72,7 @@ namespace archetype {
             if (value) {
                 byte |= MoreBit;
             }
-            write(&byte, sizeof(byte));
+            write(span{&byte, 1});
             bits = 7;
             byte = (value & PayloadBits);
         } while (value);
@@ -90,7 +91,7 @@ namespace archetype {
     Storage& operator<<(Storage& out, std::string value) {
         int size = static_cast<int>(value.size());
         out << size;
-        out.write(reinterpret_cast<const Storage::Byte*>(value.data()), size);
+        out.write({reinterpret_cast<const Storage::Byte*>(value.data()), value.size()});
         return out;
     }
 
@@ -98,7 +99,7 @@ namespace archetype {
         int size;
         in >> size;
         value.resize(size);
-        int bytes_read = in.read(reinterpret_cast<Storage::Byte*>(&value[0]), size);
+        int bytes_read = in.read({reinterpret_cast<Storage::Byte*>(value.data()), value.size()});
         if (bytes_read != size) {
             throw invalid_argument(
                 format("Could not fully read string declared as {} bytes; only read {}",
@@ -115,16 +116,16 @@ namespace archetype {
         return int(bytes_.size() - seekIndex_);
     }
 
-    int MemoryStorage::read(Byte *buf, int nbytes) {
-        int bytes_read = min(nbytes, remaining());
+    int MemoryStorage::read(span<Byte> buf) {
+        int bytes_read = min(static_cast<int>(buf.size()), remaining());
         auto cursor = bytes_.begin() + seekIndex_;
-        copy(cursor, cursor + bytes_read, buf);
+        copy(cursor, cursor + bytes_read, buf.begin());
         seekIndex_ += bytes_read;
         return bytes_read;
     }
 
-    void MemoryStorage::write(const Byte *buf, int nbytes) {
-        copy(buf, buf + nbytes, back_inserter(bytes_));
+    void MemoryStorage::write(span<const Byte> buf) {
+        copy(buf.begin(), buf.end(), back_inserter(bytes_));
     }
 
 }

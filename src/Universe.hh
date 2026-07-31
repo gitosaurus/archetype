@@ -48,9 +48,12 @@ namespace archetype {
     class Universe {
     public:
 
-        static const int NullObjectId = 0;
-        static const int SystemObjectId = 1;
-        static const int UserObjectsBeginAt = 2;
+        // constexpr rather than const so that these are implicitly inline and
+        // may be bound to a reference; a plain static const int would need an
+        // out-of-line definition the moment anything odr-uses it.
+        static constexpr int NullObjectId = 0;
+        static constexpr int SystemObjectId = 1;
+        static constexpr int UserObjectsBeginAt = 2;
 
         struct Context {
             ObjectPtr selfObject;

@@ -25,8 +25,8 @@ namespace archetype {
         [[nodiscard]] bool ok() const;
         virtual ~InFileStorage() { }
         virtual int remaining() const override;
-        virtual int read(Byte* buf, int nbytes) override;
-        virtual void write(const Byte* buf, int nbytes) override;
+        virtual int read(std::span<Byte> buf) override;
+        virtual void write(std::span<const Byte> buf) override;
     private:
         std::ifstream stream_;
         int remaining_;
@@ -41,8 +41,8 @@ namespace archetype {
         [[nodiscard]] bool ok() const;
         virtual ~OutFileStorage() { }
         virtual int remaining() const override;
-        virtual int read(Byte* buf, int nbytes) override;
-        virtual void write(const Byte* buf, int nbytes) override;
+        virtual int read(std::span<Byte> buf) override;
+        virtual void write(std::span<const Byte> buf) override;
     private:
         std::ofstream stream_;
     };

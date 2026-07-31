@@ -36,7 +36,7 @@ namespace archetype {
         friend void dump_universe_rdf(std::ostream& out, bool include_methods);
 
     public:
-        static const int INVALID = -1;
+        static constexpr int INVALID = -1;
         static bool Debug;
 
         Object(int parent_id = INVALID):

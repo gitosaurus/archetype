@@ -304,10 +304,8 @@ namespace archetype {
 
     void StringValue::write(Storage& out) const {
         out << STRING;
-        int text_length = static_cast<int>(value_.size());
-        out << text_length;
-        const Storage::Byte* buffer = reinterpret_cast<const Storage::Byte*>(value_.data());
-        out.write(buffer, text_length);
+        out << static_cast<int>(value_.size());
+        out.write({reinterpret_cast<const Storage::Byte*>(value_.data()), value_.size()});
     }
 
     string StringValue::getString() const {
@@ -584,8 +582,7 @@ namespace archetype {
                 in >> text_size;
                 string text;
                 text.resize(text_size);
-                Storage::Byte* buffer = reinterpret_cast<Storage::Byte*>(&text[0]);
-                in.read(buffer, text_size);
+                in.read({reinterpret_cast<Storage::Byte*>(text.data()), text.size()});
                 v = make_unique<StringValue>(text);
                 break;
             }
