@@ -21,6 +21,18 @@ This produces a `build/archetype` binary. The source is also simple enough that 
 c++ src/*.cc -o archetype
 ```
 
+### Language standard
+
+Archetype requires **C++20**. The interpreter uses concepts, `std::span`, `std::source_location`, `std::format`, designated initializers and scoped enumerations throughout.
+
+### A note on modules
+
+C++20 modules are deliberately *not* used, neither for Archetype's own code nor by way of `import std;`. This is a build-tooling limitation rather than an architectural one — the header graph is a clean DAG with natural module boundaries, and `import std;` does compile against the module source that libc++ ships at `/usr/share/libc++/v1/std.cppm`.
+
+The obstacle is that CMake's `import std` support needs a `modules.json` manifest describing where that module source lives and how to build it, and Apple's libc++ does not ship one. Without it, using modules means building and tracking `.pcm` files outside the build system, keeping them in sync by hand, and pinning every developer to the same toolchain version — a `.pcm` is invalidated by a compiler update.
+
+The usual reward for all of that is compile-time scaling, and Archetype does not have a compile-time problem: a clean parallel build of its 42 translation units takes about three seconds. The trade will be worth revisiting once CMake ships `modules.json` support for Apple libc++ out of the box, at which point adopting `import std;` becomes a build-system setting plus a mechanical sweep of `#include` lines.
+
 ---
 
 ## Running a game
