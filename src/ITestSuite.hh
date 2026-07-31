@@ -10,6 +10,7 @@
 #define __archetype__ITestSuite__
 
 #include <iostream>
+#include <source_location>
 #include <string>
 
 namespace archetype {
@@ -19,18 +20,28 @@ namespace archetype {
         int errorCount_;
     protected:
 
+        void reportLocation_(const std::source_location& where) {
+            out() << where.file_name() << ":" << where.line()
+                  << " in " << where.function_name() << " ";
+        }
+
+        // The location defaults to wherever the check was written, so the test
+        // macros no longer pass __FILE__ and __LINE__ by hand.  They do still
+        // exist, since only a macro can stringify the expression being checked.
         template <class T>
-        void checkCondition_(std::string filename, int lineno, std::string expr, T actual, T expected) {
+        void checkCondition_(std::string expr, T actual, T expected,
+                             std::source_location where = std::source_location::current()) {
             if (actual != expected) {
-                out() << filename << ":" << lineno << " ";
+                reportLocation_(where);
                 out() << "{" << expr << "} -> {" << actual << "}; expected {" << expected << "}" << std::endl;
                 errorCount_++;
             }
         }
 
-        void checkCondition_(std::string filename, int lineno, std::string expr, bool success) {
+        void checkCondition_(std::string expr, bool success,
+                             std::source_location where = std::source_location::current()) {
             if (not success) {
-                out() << filename << ":" << lineno << " ";
+                reportLocation_(where);
                 out() << "{" << expr << "} was not true" << std::endl;
                 errorCount_++;
             }
@@ -65,7 +76,7 @@ namespace archetype {
     };
 }
 
-#define ARCHETYPE_TEST_EQUAL(actual, expected) checkCondition_(__FILE__, __LINE__, #actual, (actual), expected)
-#define ARCHETYPE_TEST(expr) checkCondition_(__FILE__, __LINE__, #expr, (expr));
+#define ARCHETYPE_TEST_EQUAL(actual, expected) checkCondition_(#actual, (actual), (expected))
+#define ARCHETYPE_TEST(expr) checkCondition_(#expr, (expr))
 
 #endif /* defined(__archetype__ITestSuite__) */
