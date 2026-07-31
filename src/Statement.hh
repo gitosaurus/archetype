@@ -146,7 +146,7 @@ namespace archetype {
         Keywords::Reserved_e writeType_;
         std::list<Expression> expressions_;
     public:
-        OutputStatement(Keywords::Reserved_e write_type = Keywords::RW_WRITE): writeType_(write_type) { }
+        OutputStatement(Keywords::Reserved_e write_type = Keywords::Reserved_e::RW_WRITE): writeType_(write_type) { }
         virtual void read(Storage& in) override;
         virtual void write(Storage& out) const override;
         virtual bool make(TokenStream& t) override;

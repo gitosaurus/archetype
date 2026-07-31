@@ -22,6 +22,7 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
 
     using enum Keywords::Operators_e;
 
@@ -168,7 +169,7 @@ namespace archetype {
         virtual void write(Storage& out) const override;
         virtual Value evaluate() const override;
         virtual void prefixDisplay(std::ostream& out) const override {
-            out << Keywords::instance().Reserved.get(word_);
+            out << Keywords::instance().reservedWord(word_);
         }
     };
 
@@ -307,10 +308,10 @@ namespace archetype {
                 default:
                     if (is_binary(op())) {
                         throw logic_error("Attempt to do UnaryOperator evaluation on binary operator " +
-                                          Keywords::instance().Operators.get(op()));
+                                          Keywords::instance().operatorName(op()));
                     } else {
                         throw logic_error("No unary operator evaluation written for " +
-                                          Keywords::instance().Operators.get(op()));
+                                          Keywords::instance().operatorName(op()));
                     }
             }
             if (IExpression::Debug) {
@@ -335,7 +336,7 @@ namespace archetype {
                 right_->prefixDisplay(out);
             } else {
                 out << '(';
-                out << Keywords::instance().Operators.get(int(op())) << ' ';
+                out << Keywords::instance().operatorName(op()) << ' ';
                 right_->prefixDisplay(out);
                 out << ')';
             }
@@ -661,10 +662,10 @@ namespace archetype {
                 default:
                     if (is_binary(op())) {
                         throw logic_error("No binary operator evaluation written for " +
-                                          Keywords::instance().Operators.get(op()));
+                                          Keywords::instance().operatorName(op()));
                     } else {
                         throw logic_error("Attempt to do BinaryOperator evaluation on unary operator " +
-                                          Keywords::instance().Operators.get(op()));
+                                          Keywords::instance().operatorName(op()));
                     }
             }
             if (IExpression::Debug) {
@@ -686,7 +687,7 @@ namespace archetype {
         }
 
         virtual void prefixDisplay(ostream& out) const override {
-            out << '(' << Keywords::instance().Operators.get(int(op())) << ' ';
+            out << '(' << Keywords::instance().operatorName(op()) << ' ';
             if (left_) {
                 left_->prefixDisplay(out);
             } else {
@@ -711,19 +712,19 @@ namespace archetype {
     Value ReservedWordNode::evaluate() const {
         Value result;
         switch (word_) {
-            case Keywords::RW_SELF:
+            case RW_SELF:
                 result = make_unique<ObjectValue>(Universe::instance().currentContext().selfObject->id());
                 break;
-            case Keywords::RW_SENDER:
+            case RW_SENDER:
                 result = make_unique<ObjectValue>(Universe::instance().currentContext().senderObject->id());
                 break;
-            case Keywords::RW_MESSAGE:
+            case RW_MESSAGE:
                 result = Universe::instance().currentContext().messageValue->clone();
                 break;
-            case Keywords::RW_EACH:
+            case RW_EACH:
                 result = make_unique<ObjectValue>(Universe::instance().currentContext().eachObject->id());
                 break;
-            case Keywords::RW_READ: {
+            case RW_READ: {
                 string line = Universe::instance().input()->getLine();
                 if (line.empty()  and  Universe::instance().input()->atEOF()) {
                     result = make_unique<UndefinedValue>();
@@ -732,7 +733,7 @@ namespace archetype {
                 }
                 break;
             }
-            case Keywords::RW_KEY: {
+            case RW_KEY: {
                 char key = Universe::instance().input()->getKey();
                 if (key == '\4'  ||  key == '\0') {
                     // Consider it UNDEFINED if the user hit ^D (to immediately cause EOF)
@@ -776,27 +777,27 @@ namespace archetype {
                 // Some reserved words are like zero-argument functions, others are constant values
                 Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());
                 switch (word) {
-                    case Keywords::RW_UNDEFINED:
+                    case RW_UNDEFINED:
                         scalar = make_unique<ValueExpression>(make_unique<UndefinedValue>());
                         break;
-                    case Keywords::RW_ABSENT:
+                    case RW_ABSENT:
                         scalar = make_unique<ValueExpression>(make_unique<AbsentValue>());
                         break;
-                    case Keywords::RW_BREAK:
+                    case RW_BREAK:
                         scalar = make_unique<ValueExpression>(make_unique<BreakValue>());
                         break;
-                    case Keywords::RW_TRUE:
+                    case RW_TRUE:
                         scalar = make_unique<ValueExpression>(make_unique<BooleanValue>(true));
                         break;
-                    case Keywords::RW_FALSE:
+                    case RW_FALSE:
                         scalar = make_unique<ValueExpression>(make_unique<BooleanValue>(false));
                         break;
-                    case Keywords::RW_READ:
-                    case Keywords::RW_KEY:
-                    case Keywords::RW_EACH:
-                    case Keywords::RW_SELF:
-                    case Keywords::RW_SENDER:
-                    case Keywords::RW_MESSAGE:
+                    case RW_READ:
+                    case RW_KEY:
+                    case RW_EACH:
+                    case RW_SELF:
+                    case RW_SENDER:
+                    case RW_MESSAGE:
                         scalar = make_unique<ReservedWordNode>(word);
                         break;
                     default:

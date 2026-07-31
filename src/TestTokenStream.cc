@@ -21,6 +21,7 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Operators_e;
     ARCHETYPE_TEST_REGISTER(TestTokenStream);
 
     ostream& operator<< (ostream& out, const deque<Token>& tokens) {
@@ -46,28 +47,28 @@ namespace archetype {
         Universe::destroy();
 
         deque<Token> actual1 = tokenize("3 + 4");
-        deque<Token> expected1 = {{Token::NUMERIC, 3}, {Token::OPERATOR, Keywords::OP_PLUS}, {Token::NUMERIC, 4}};
+        deque<Token> expected1 = {{Token::NUMERIC, 3}, {OP_PLUS}, {Token::NUMERIC, 4}};
         ARCHETYPE_TEST_EQUAL(actual1, expected1);
 
         deque<Token> actual2 = tokenize("*:=:=*");
         deque<Token> expected2 = {
-            {Token::OPERATOR, Keywords::OP_C_MULTIPLY},
-            {Token::OPERATOR, Keywords::OP_ASSIGN},
-            {Token::OPERATOR, Keywords::OP_MULTIPLY}};
+            {OP_C_MULTIPLY},
+            {OP_ASSIGN},
+            {OP_MULTIPLY}};
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
 
         deque<Token> actual3 = tokenize("'START' -> main");
         deque<Token> expected3 = {
             {Token::MESSAGE, 0},
-            {Token::OPERATOR, Keywords::OP_SEND},
+            {OP_SEND},
             {Token::IDENTIFIER, 2}};
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
 
         deque<Token> actual4 = tokenize("main.subj = main.dobj");
         deque<Token> expected4 = {
-            {Token::IDENTIFIER, 2}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 3},
-            {Token::OPERATOR, Keywords::OP_EQ},
-            {Token::IDENTIFIER, 2}, {Token::OPERATOR, Keywords::OP_DOT}, {Token::IDENTIFIER, 4}
+            {Token::IDENTIFIER, 2}, {OP_DOT}, {Token::IDENTIFIER, 3},
+            {OP_EQ},
+            {Token::IDENTIFIER, 2}, {OP_DOT}, {Token::IDENTIFIER, 4}
         };
         ARCHETYPE_TEST_EQUAL(actual4, expected4);
 

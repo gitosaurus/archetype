@@ -19,6 +19,8 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
+    using enum Keywords::Operators_e;
 
     enum StatementType_e {
         COMPOUND,
@@ -147,9 +149,9 @@ namespace archetype {
     bool IfStatement::make(TokenStream& t) {
         /* BNF:  <if_stmt> := if (<expr>) <statement> [else <statement>] */
         if (not (condition_ = make_expr(t))) return false;
-        if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_THEN))) return false;
+        if (not t.insistOn(Token(RW_THEN))) return false;
         if (not (thenBranch_ = make_statement(t))) return false;
-        if (t.fetch() and t.token() == Token(Token::RESERVED_WORD, Keywords::RW_ELSE)) {
+        if (t.fetch() and t.token() == Token(RW_ELSE)) {
             if (not (elseBranch_ = make_statement(t))) return false;
         } else {
             t.didNotConsume();
@@ -231,7 +233,7 @@ namespace archetype {
         /* BNF:  <case_stmt> := switch (<expr>) { (<expr> <statement>)+
          [default <statement>] } */
         if (not (testExpression_ = make_expr(t))) return false;
-        if (not (t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_OF)) and
+        if (not (t.insistOn(Token(RW_OF)) and
                  t.insistOn(Token(Token::PUNCTUATION, '{')))) {
             return false;
         }
@@ -245,7 +247,7 @@ namespace archetype {
                 break;
             }
 
-            if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT)) {
+            if (t.token() == Token(RW_DEFAULT)) {
                 if (defaultCase_) {
                     t.errorMessage("There is already a default for this case");
                     return false;
@@ -288,7 +290,7 @@ namespace archetype {
         Value test_value = testExpression_->evaluate()->valueConversion();
         for (auto const& case_pair : cases_) {
             Value case_value = case_pair.match->evaluate()->valueConversion();
-            if (eval_compare(Keywords::OP_EQ, test_value, case_value)) {
+            if (eval_compare(OP_EQ, test_value, case_value)) {
                 if (IStatement::Debug) {
                     Universe::instance().output()->put(format("{} matched case {}",
                                                               test_value, case_value));
@@ -340,7 +342,7 @@ namespace archetype {
             return false;
         }
         typeId_ = typeObject->id();
-        return t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_NAMED)) and (target_ = make_expr(t));
+        return t.insistOn(Token(RW_NAMED)) and (target_ = make_expr(t));
     }
 
     void CreateStatement::display(std::ostream &out) const {
@@ -443,7 +445,7 @@ namespace archetype {
     }
 
     void OutputStatement::display(std::ostream& out) const {
-        out << Keywords::instance().Reserved.get(writeType_);
+        out << Keywords::instance().reservedWord(writeType_);
         if (not expressions_.empty()) {
             out << ' ';
             for (auto expr_p = expressions_.begin(); expr_p != expressions_.end(); ++expr_p) {
@@ -458,12 +460,12 @@ namespace archetype {
     Value OutputStatement::execute() const {
         Value last_value = make_unique<UndefinedValue>();
         unique_ptr<ostringstream> centered;
-        if (writeType_ == Keywords::RW_WRITE_CENTERED) {
+        if (writeType_ == RW_WRITE_CENTERED) {
             centered = make_unique<ostringstream>();
         }
         for (auto const& expr : expressions_) {
             last_value = expr->evaluate();
-            if (writeType_ == Keywords::RW_DISPLAY) {
+            if (writeType_ == RW_DISPLAY) {
                 Universe::instance().output()->put(format("[{}]", last_value));
             }
             Value v_s = last_value->stringConversion();
@@ -477,10 +479,10 @@ namespace archetype {
         }
         if (centered) {
             Universe::instance().output()->center(centered->str());
-        } else if (writeType_ != Keywords::RW_WRITES) {
+        } else if (writeType_ != RW_WRITES) {
             Universe::instance().output()->endLine();
         }
-        if (writeType_ == Keywords::RW_STOP) {
+        if (writeType_ == RW_STOP) {
             throw QuitGame();
         }
         return last_value;
@@ -572,7 +574,7 @@ namespace archetype {
 
     bool ForStatement::make(TokenStream& t) {
         if (not (selection_ = make_expr(t))) return false;
-        if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
+        if (not t.insistOn(Token(RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
     }
@@ -632,7 +634,7 @@ namespace archetype {
 
     bool WhileStatement::make(TokenStream& t) {
         if (not (condition_ = make_expr(t))) return false;
-        if (not t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_DO))) return false;
+        if (not t.insistOn(Token(RW_DO))) return false;
         action_ = make_statement(t);
         return action_ != nullptr;
     }
@@ -712,29 +714,29 @@ namespace archetype {
         } else {
             Keywords::Reserved_e word = Keywords::Reserved_e(t.token().number());
             switch (word) {
-                case Keywords::RW_IF:
+                case RW_IF:
                     the_stmt = make_unique<IfStatement>();
                     break;
-                case Keywords::RW_CASE:
+                case RW_CASE:
                     the_stmt = make_unique<CaseStatement>();
                     break;
-                case Keywords::RW_CREATE:
+                case RW_CREATE:
                     the_stmt = make_unique<CreateStatement>();
                     break;
-                case Keywords::RW_DESTROY:
+                case RW_DESTROY:
                     the_stmt = make_unique<DestroyStatement>();
                     break;
-                case Keywords::RW_DISPLAY:
-                case Keywords::RW_WRITE:
-                case Keywords::RW_WRITES:
-                case Keywords::RW_WRITE_CENTERED:
-                case Keywords::RW_STOP:
+                case RW_DISPLAY:
+                case RW_WRITE:
+                case RW_WRITES:
+                case RW_WRITE_CENTERED:
+                case RW_STOP:
                     the_stmt = make_unique<OutputStatement>(word);
                     break;
-                case Keywords::RW_FOR:
+                case RW_FOR:
                     the_stmt = make_unique<ForStatement>();
                     break;
-                case Keywords::RW_WHILE:
+                case RW_WHILE:
                     the_stmt = make_unique<WhileStatement>();
                     break;
                 default:

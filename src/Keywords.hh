@@ -16,7 +16,7 @@
 namespace archetype {
     class Keywords {
     public:
-        enum Reserved_e {
+        enum class Reserved_e {
             RW_ABSENT,
             RW_FALSE,
             RW_TRUE,
@@ -57,7 +57,7 @@ namespace archetype {
             NumReserved
         };
 
-        enum Operators_e {
+        enum class Operators_e {
             OP_PAIR,
             OP_CONCAT,
             OP_C_CONCAT,
@@ -102,6 +102,15 @@ namespace archetype {
 
         StringIdIndex Reserved;
         StringIdIndex Operators;
+
+        // The tables are indexed by int; these are the only places that need
+        // to know the enumerators double as those indices.
+        const std::string& reservedWord(Reserved_e word) const {
+            return Reserved.get(static_cast<int>(word));
+        }
+        const std::string& operatorName(Operators_e op) const {
+            return Operators.get(static_cast<int>(op));
+        }
 
         static Keywords& instance();
         static void destroy();
