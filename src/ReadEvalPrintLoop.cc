@@ -20,6 +20,7 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
     inline TokenStream make_tokens_from_string(string name, string src_str) {
         stream_ptr in = make_unique<istringstream>(src_str);
         SourceFilePtr source{make_shared<SourceFile>(name, in)};
@@ -27,8 +28,8 @@ namespace archetype {
     }
 
     inline bool is_object_declaration(const Token& t) {
-        if (t == Token{Token::RESERVED_WORD, Keywords::RW_TYPE} ||
-            t == Token{Token::RESERVED_WORD, Keywords::RW_CLASS}) {
+        if (t == Token{RW_TYPE} ||
+            t == Token{RW_CLASS}) {
             return true;
         }
         if (t.type() != Token::IDENTIFIER) {

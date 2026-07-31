@@ -12,6 +12,7 @@
 #include <iostream>
 
 #include "Formatting.hh"
+#include "Keywords.hh"
 
 namespace archetype {
     class Token {
@@ -31,6 +32,11 @@ namespace archetype {
 
         Token();
         Token(Type_e type, int number);
+
+        // A reserved word or an operator already implies its token type, so
+        // these spellings cannot pair a keyword with the wrong kind of token.
+        Token(Keywords::Reserved_e word);
+        Token(Keywords::Operators_e op);
         Type_e type() const     { return type_; }
         int number() const      { return number_; }
 

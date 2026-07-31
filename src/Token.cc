@@ -20,6 +20,16 @@ namespace archetype {
     number_(number)
     { }
 
+    Token::Token(Keywords::Reserved_e word):
+    type_(RESERVED_WORD),
+    number_(static_cast<int>(word))
+    { }
+
+    Token::Token(Keywords::Operators_e op):
+    type_(OPERATOR),
+    number_(static_cast<int>(op))
+    { }
+
     std::ostream& operator<<(std::ostream& out, const Token& t) {
         using enum Token::Type_e;
         switch (t.type()) {

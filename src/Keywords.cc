@@ -13,6 +13,8 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
+    using enum Keywords::Operators_e;
     Keywords* Keywords::instance_ = nullptr;
 
     Keywords& Keywords::instance() {
@@ -27,9 +29,9 @@ namespace archetype {
         instance_ = nullptr;
     }
 
-#define RESERVE(key, str) if (Reserved.index(str) != key) \
+#define RESERVE(key, str) if (Reserved.index(str) != static_cast<int>(key)) \
         throw logic_error("Reserved word " #str " did not map to " #key)
-#define OPERATOR(key, str) if (Operators.index(str) != key) \
+#define OPERATOR(key, str) if (Operators.index(str) != static_cast<int>(key)) \
         throw logic_error("Operator " #str " did not map to " #key)
 
     Keywords::Keywords() {

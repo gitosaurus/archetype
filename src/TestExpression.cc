@@ -26,6 +26,7 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
     ARCHETYPE_TEST_REGISTER(TestExpression);
 
     inline TokenStream tokens_from_str(string src_str) {
@@ -113,7 +114,7 @@ namespace archetype {
         string expected7 = "(not (-> 'AFFIRM' main))";
         ARCHETYPE_TEST_EQUAL(actual7, expected7);
         ARCHETYPE_TEST(tokens7.fetch());
-        ARCHETYPE_TEST_EQUAL(tokens7.token(), Token(Token::RESERVED_WORD, Keywords::RW_THEN));
+        ARCHETYPE_TEST_EQUAL(tokens7.token(), Token(RW_THEN));
 
         Expression expr8 = make_expr_from_str("(x.i := x.i + 1) > 5");
         string actual8 = as_prefix(expr8);

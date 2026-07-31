@@ -23,6 +23,7 @@ using namespace std;
 #include "PagedOutput.hh"
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
     Universe* Universe::instance_ = nullptr;
     Universe& Universe::instance() {
         if (not instance_) {
@@ -205,10 +206,10 @@ namespace archetype {
 
     static ObjectPtr declare_object(TokenStream& t, ObjectPtr obj) {
         while (t.fetch()) {
-            if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
+            if (t.token() == Token(RW_END)) {
                 return obj;
             }
-            if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_METHODS)) {
+            if (t.token() == Token(RW_METHODS)) {
                 break;
             }
             if (t.token().type() != Token::IDENTIFIER) {
@@ -226,12 +227,12 @@ namespace archetype {
             }
             obj->setAttribute(attribute_id, std::move(expr));
         }
-        if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_METHODS)) {
+        if (t.token() == Token(RW_METHODS)) {
             while (t.fetch()) {
-                if (t.token() == Token(Token::RESERVED_WORD, Keywords::RW_END)) {
+                if (t.token() == Token(RW_END)) {
                     return obj;
                 }
-                if (t.token() != Token(Token::RESERVED_WORD, Keywords::RW_DEFAULT) and
+                if (t.token() != Token(RW_DEFAULT) and
                     t.token().type() != Token::MESSAGE) {
                     t.expectGeneral("message literal or 'default'");
                     return nullptr;
@@ -282,8 +283,8 @@ namespace archetype {
         ObjectPtr obj = Universe::instance().defineNewObject();
         obj->setPrototype(true);
         Universe::instance().assignObjectIdentifier(obj, t.token().number());
-        if (not (t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_BASED)) and
-                 t.insistOn(Token(Token::RESERVED_WORD, Keywords::RW_ON)))) {
+        if (not (t.insistOn(Token(RW_BASED)) and
+                 t.insistOn(Token(RW_ON)))) {
             return nullptr;
         }
         if (not t.fetch()) {
@@ -313,14 +314,14 @@ namespace archetype {
         while (t.fetch()) {
             if (t.token().type() == Token::RESERVED_WORD) {
                 switch (Keywords::Reserved_e(t.token().number())) {
-                    case Keywords::RW_TYPE:
-                    case Keywords::RW_CLASS:
+                    case RW_TYPE:
+                    case RW_CLASS:
                         if (not define_type(t)) {
                             return false;
                         } else {
                             break;
                         }
-                    case Keywords::RW_KEYWORD:
+                    case RW_KEYWORD:
                         if (not t.fetch() or t.token().type() != Token::IDENTIFIER) {
                             t.errorMessage("Must follow \"keyword\" with one or more identifiers");
                             return false;
@@ -337,7 +338,7 @@ namespace archetype {
                             t.didNotConsume();
                         }
                         break;
-                    case Keywords::RW_INCLUDE: {
+                    case RW_INCLUDE: {
                         if (not t.fetch() or  t.token().type() != Token::TEXT_LITERAL) {
                             t.errorMessage("Must follow \"include\" with string file name");
                             return false;
@@ -358,7 +359,7 @@ namespace archetype {
                         break;
                     }
                     default:
-                        t.expected(Token(Token::RESERVED_WORD, Keywords::RW_TYPE));
+                        t.expected(Token(RW_TYPE));
                         return false;
                 }
             } else if (t.token().type() == Token::IDENTIFIER) {

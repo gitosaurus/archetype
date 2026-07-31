@@ -19,6 +19,7 @@
 using namespace std;
 
 namespace archetype {
+    using enum Keywords::Reserved_e;
 
     // Escape a string for safe embedding in a quoted literal.
     static std::string escape_string(std::string_view s) {
@@ -125,7 +126,7 @@ namespace archetype {
     }
 
     void UndefinedValue::display(std::ostream &out) const {
-        out << Keywords::instance().Reserved.get(Keywords::RW_UNDEFINED);
+        out << Keywords::instance().reservedWord(RW_UNDEFINED);
     }
 
     std::string UndefinedValue::asRDF() const {
@@ -142,7 +143,7 @@ namespace archetype {
     }
 
     void AbsentValue::display(std::ostream &out) const {
-        out << Keywords::instance().Reserved.get(Keywords::RW_ABSENT);
+        out << Keywords::instance().reservedWord(RW_ABSENT);
     }
 
     std::string AbsentValue::asRDF() const {
@@ -159,7 +160,7 @@ namespace archetype {
     }
 
     void BreakValue::display(std::ostream &out) const {
-        out << Keywords::instance().Reserved.get(Keywords::RW_BREAK);
+        out << Keywords::instance().reservedWord(RW_BREAK);
     }
 
     std::string BreakValue::asRDF() const {
@@ -176,9 +177,7 @@ namespace archetype {
     }
 
     void BooleanValue::display(std::ostream &out) const {
-        out << Keywords::instance().Reserved.get(value_ ?
-                                                 Keywords::RW_TRUE :
-                                                 Keywords::RW_FALSE);
+        out << Keywords::instance().reservedWord(value_ ? RW_TRUE : RW_FALSE);
     }
 
     std::string BooleanValue::asRDF() const {
@@ -194,9 +193,7 @@ namespace archetype {
     }
 
     Value BooleanValue::stringConversion() const {
-        string bool_str = Keywords::instance().Reserved.get(value_ ?
-                                                            Keywords::RW_TRUE :
-                                                            Keywords::RW_FALSE);
+        string bool_str = Keywords::instance().reservedWord(value_ ? RW_TRUE : RW_FALSE);
         return make_unique<StringValue>(bool_str);
     }
 
