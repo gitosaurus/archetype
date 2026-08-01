@@ -72,7 +72,7 @@ Then run the compiled binary:
 ./build/archetype --update=gorreven.acx --input="look"
 ```
 
-The game's response is written to stdout, and the file is updated in place. Running `--update` again from the same file continues exactly where you left off.
+The game's response is written to stdout, and the file is updated in place. Running `--update` again from the same file continues exactly where you left off. Add `--width=N` to wrap that output at something other than 80 columns.
 
 ---
 
