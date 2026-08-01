@@ -7,6 +7,7 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 add_compile_options(-Wall -Wextra)
 
 add_executable(archetype
+Autosave.cc
 Capture.cc
 ConsoleInput.cc
 Expression.cc
@@ -21,6 +22,7 @@ Statement.cc
 SystemObject.cc
 SystemParser.cc
 SystemSorter.cc
+TestAutosave.cc
 TestExpression.cc
 TestIdIndex.cc
 TestInspectUniverse.cc

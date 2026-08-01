@@ -64,6 +64,36 @@ Then run the compiled binary:
 ./build/archetype --perform=gorreven.acx
 ```
 
+### Autosave
+
+`--autosave` keeps the state of a game on disk as it is played, rather than only at the moments a player remembers to type `save`:
+
+```shell
+./build/archetype --perform=games/gorreven.acx --autosave
+```
+
+Without a filename, the state is written *alongside* the game rather than over it: `gorreven.acx` becomes `gorreven.save.acx`, and the original binary is left untouched. This matters because a `.acx` holds the program and the state together — autosaving over the distributed binary would leave you with no way to start a fresh game. Resuming a save keeps updating that same save:
+
+```shell
+./build/archetype --perform=games/gorreven.save.acx --autosave
+```
+
+Give a filename to choose the target yourself. Naming the file being played is allowed, and is then a deliberate act:
+
+```shell
+./build/archetype --perform=mygame.acx --autosave=mygame.acx
+```
+
+By default a checkpoint is written after every completed turn and again on the way out, whether the player types `quit` or presses `^D`. Per-turn is what makes the save survive a `^C`, a closed terminal, or a crash, none of which give the interpreter a chance to run any exit code. Use `--autosave-at=exit` to checkpoint only when exiting cleanly:
+
+```shell
+./build/archetype --perform=games/gorreven.acx --autosave --autosave-at=exit
+```
+
+Each checkpoint rotates the previous one to `<file>.bak`, so the state as of the turn before last is always recoverable — copy it back over the save. That is one turn of undo, not an undo stack; the `save` command remains the way to keep a checkpoint you can return to later.
+
+Saves are written to a temporary file and renamed into place, so an interrupted write cannot leave a half-written game behind. If a checkpoint fails, the interpreter says so on stderr and turns autosave off for the rest of the session rather than failing silently every turn.
+
 ### Resume / update (stateless step-by-step)
 
 `--update` loads a `.acx` file, processes one command, and writes the mutated state back to the same file. This is the mechanism underlying the cloud driver:

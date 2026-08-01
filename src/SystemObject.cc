@@ -15,6 +15,7 @@
 
 #include "SystemObject.hh"
 #include "Universe.hh"
+#include "Autosave.hh"
 #include "FileStorage.hh"
 
 using namespace std;
@@ -262,6 +263,9 @@ namespace archetype {
                     if (load_file.ok()) {
                         load_file >> Universe::instance();
                         resetSystem_();
+                        // The whole object graph has just been replaced, so the
+                        // ids autosave watches for are no longer the right ones.
+                        Autosave::instance().rearm();
                         return make_unique<BooleanValue>(true);
                     } else {
                         return make_unique<BooleanValue>(false);
