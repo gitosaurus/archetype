@@ -93,6 +93,7 @@ void usage() {
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
         << "   --input=<string>          In combination with --update, provide command input as a string." << endl
+        << "   --width=N                 In combination with --update, wrap output at N columns (default 80)." << endl
         << "   --sitrep                  In combination with --update, append a situation report (RDF/Turtle)." << endl
         << "   --inspect                 In combination with --update, append post-turn world state (RDF/Turtle)." << endl
         << " --inspect=file.acx      Load a saved binary file and dump its world state as RDF/Turtle." << endl
@@ -200,11 +201,16 @@ int main(int argc, const char* argv[]) {
             std::string filename = args.front();
             args.pop_front();
             cout << "Loading " << filename << endl;
-            InFileStorage in(filename);
-            if (!in.ok()) {
-                throw runtime_error(format("Cannot open \"{}\"", filename));
+            try {
+                InFileStorage in(filename);
+                if (!in.ok()) {
+                    throw runtime_error(format("Cannot open \"{}\"", filename));
+                }
+                in >> Universe::instance();
+            } catch (const std::exception& e) {
+                cerr << "ERROR: " << e.what() << endl;
+                return 1;
             }
-            in >> Universe::instance();
         }
         if (int e = unknown_options_error()) return e;
         int errors = repl();
@@ -250,11 +256,24 @@ int main(int argc, const char* argv[]) {
             filename += ".acx";
         }
         int width = 80;
-        if (auto it_width = opts.find("width"); it_width != opts.end()) {
-            width = stoi(it_width->second);
-            opts.erase(it_width);
-        }
         try {
+          // Parsed inside the try: stoi throws on a non-numeric value, and
+          // outside it that exception would escape main uncaught.
+          if (auto it_width = opts.find("width"); it_width != opts.end()) {
+              string width_str = it_width->second;
+              opts.erase(it_width);
+              size_t consumed = 0;
+              int parsed = 0;
+              try {
+                  parsed = stoi(width_str, &consumed);
+              } catch (const std::exception&) {
+                  consumed = 0;
+              }
+              if (width_str.empty() or consumed != width_str.size() or parsed < 1) {
+                  throw invalid_argument(format("Invalid --width value: {}", width_str));
+              }
+              width = parsed;
+          }
           MemoryStorage in_mem;
           {
               ifstream f_in(filename.c_str());
