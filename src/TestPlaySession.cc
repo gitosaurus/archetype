@@ -30,12 +30,13 @@ namespace archetype {
     // tests pin the two paths to each other so the resident one cannot silently
     // drift.
     //
-    // Note what is *not* compared: the serialized bytes.  IdIndex::write walks a
-    // std::map keyed by the stored value, and for the object registry that value
-    // is a shared_ptr, so entries come out in heap-address order.  The content is
-    // order-independent on read, since each entry carries its own index, but two
-    // runs will not produce identical files.  dump_universe_rdf walks object ids
-    // in order and so is a stable picture of the same state.
+    // Note what is *not* compared: the serialized bytes.  IdIndex::write walks
+    // std::map index_, so records come out ordered by the stored value rather
+    // than by id -- lexicographically for the string indices, and by pointer
+    // for the object registry.  That is reproducible for a given allocation
+    // history, but it is not a property worth pinning a test to, and it says
+    // nothing about whether the two paths agree.  dump_universe_rdf walks
+    // object ids in order and is a direct picture of the state itself.
 
     // Every turn both consumes a command and leaves a mark on the world, so a
     // divergence in either input handling or state shows up.
