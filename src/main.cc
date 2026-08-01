@@ -276,7 +276,7 @@ int main(int argc, const char* argv[]) {
           }
           MemoryStorage in_mem;
           {
-              ifstream f_in(filename.c_str());
+              ifstream f_in(filename.c_str(), ios::in | ios::binary);
               if (!f_in) {
                 throw invalid_argument(format("Cannot read from {}", filename));
               }
@@ -297,11 +297,13 @@ int main(int argc, const char* argv[]) {
           }
           MemoryStorage out_mem;
           cout << update_universe(in_mem, out_mem, input, width, sitrep, inspect_after);
-          ofstream f_out(filename.c_str());
-          if (!f_out) {
-              throw invalid_argument(format("Cannot write to {}", filename));
+          // No backup: --update rewrites a file the caller already owns a copy
+          // of (the Cloud Run driver downloads a blob to a temp directory), so
+          // a .bak alongside it would be litter rather than safety.
+          string error;
+          if (not writeBytesAtomically(filename, out_mem.bytes(), /* keep_backup = */ false, error)) {
+              throw invalid_argument(format("Cannot write to {}: {}", filename, error));
           }
-          ranges::copy(out_mem.bytes(), ostreambuf_iterator<char>{f_out});
         } catch (const std::exception& e) {
             cerr << "ERROR: " << e.what() << endl;
             return 1;
