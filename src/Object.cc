@@ -11,6 +11,7 @@
 #include <format>
 #include <sstream>
 
+#include "Autosave.hh"
 #include "Object.hh"
 #include "Universe.hh"
 
@@ -76,6 +77,7 @@ namespace archetype {
         Value defined_message = Universe::instance().currentContext().messageValue->messageConversion();
         Value absence = make_unique<AbsentValue>();
         Value result = make_unique<AbsentValue>();
+        int message_id = -1;
         if (defined_message->isDefined()) {
             if (Debug) {
                 Value target = make_unique<ObjectValue>(id());
@@ -83,7 +85,7 @@ namespace archetype {
                                                           defined_message, target));
                 Universe::instance().output()->endLine();
             }
-            int message_id = defined_message->getMessage();
+            message_id = defined_message->getMessage();
             result = executeMethod(message_id);
         }
         if (result->isSameValueAs(absence)) {
@@ -93,6 +95,13 @@ namespace archetype {
                 Universe::instance().output()->endLine();
             }
             result = executeDefaultMethod();
+        }
+        // A completed 'UPDATE' -> main is one turn, the same boundary --update
+        // serializes at.  Safe here even though this dispatch's ContextScope is
+        // still alive in the caller: the context stack is not serialized, and
+        // writing the universe walks expression trees without evaluating them.
+        if (message_id >= 0 and Autosave::watchingTurns()) {
+            Autosave::instance().noteDispatch(id(), message_id);
         }
         return result;
     }

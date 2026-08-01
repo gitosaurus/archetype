@@ -18,6 +18,7 @@
 #include <string_view>
 #include <fstream>
 
+#include "Autosave.hh"
 #include "TestRegistry.hh"
 #include "ReadEvalPrintLoop.hh"
 #include "SourceFile.hh"
@@ -63,6 +64,7 @@ namespace archetype {
             if (not silent_) {
                 std::cerr << "Archetype " << VersionString << std::endl;
             }
+            Autosave::destroy();
             TestRegistry::destroy();
             Universe::destroy();
             Wellspring::destroy();
@@ -91,6 +93,10 @@ void usage() {
         << "   --include=path[:path...]  Colon-separated list of paths to search for source." << endl
         << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
+        << " --autosave[=file.acx]   Keep the game state on disk as it is played.  Without a" << endl
+        << "                         filename, writes alongside the game: g.acx -> g.save.acx." << endl
+        << "   --autosave-at=when        'turn' (default) saves after every turn and at exit;" << endl
+        << "                             'exit' saves only as the interpreter is going away." << endl
         << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
         << "   --input=<string>          In combination with --update, provide command input as a string." << endl
         << "   --width=N                 In combination with --update, wrap output at N columns (default 80)." << endl
@@ -101,7 +107,37 @@ void usage() {
     ;
 }
 
-static void from_source(map<std::string, std::string> &opts) {
+// Gathered from the command line before we know which file the game will come
+// from; the target is resolved against that file at arming time.
+struct AutosaveOptions {
+    bool requested = false;
+    string target;      // empty means "derive from the game file"
+    Autosave::Cadence cadence = Autosave::Cadence::Turn;
+};
+
+static void arm_autosave(const AutosaveOptions& options, const string& game_path) {
+    if (not options.requested) {
+        return;
+    }
+    string target = options.target;
+    if (target.empty()) {
+        target = Autosave::deriveTarget(game_path);
+    } else if (target.rfind('.') == string::npos) {
+        target += ".acx";
+    }
+    Autosave::instance().arm(target, options.cadence, /* keep_backup = */ true);
+}
+
+// Under the default per-turn cadence the last completed turn is already on
+// disk; this additionally captures a clean exit through quit or ^D.
+static void checkpoint_at_exit() {
+    if (Autosave::instance().armed()) {
+        Autosave::instance().checkpoint();
+    }
+}
+
+static void from_source(map<std::string, std::string> &opts,
+                        const AutosaveOptions& autosave_opts) {
     auto it_source = opts.find("source");
     string source_path = it_source->second;
     opts.erase(it_source);
@@ -124,6 +160,7 @@ static void from_source(map<std::string, std::string> &opts) {
     }
     Universe::instance().reportUndefinedIdentifiers();
     if (auto it_create = opts.find("create"); it_create == opts.end()) {
+        arm_autosave(autosave_opts, source_path);
         dispatch_to_universe("START");
     } else {
         string filename_out = it_create->second;
@@ -217,13 +254,38 @@ int main(int argc, const char* argv[]) {
         return errors;
     }
 
+    AutosaveOptions autosave_opts;
+    if (auto it_autosave = opts.find("autosave"); it_autosave != opts.end()) {
+        autosave_opts.requested = true;
+        autosave_opts.target = it_autosave->second;
+        opts.erase(it_autosave);
+    }
+    if (auto it_when = opts.find("autosave-at"); it_when != opts.end()) {
+        string when = it_when->second;
+        opts.erase(it_when);
+        if (not autosave_opts.requested) {
+            cerr << "ERROR: --autosave-at requires --autosave" << endl;
+            return 1;
+        }
+        if (when == "turn") {
+            autosave_opts.cadence = Autosave::Cadence::Turn;
+        } else if (when == "exit") {
+            autosave_opts.cadence = Autosave::Cadence::Exit;
+        } else {
+            cerr << format("ERROR: --autosave-at must be 'turn' or 'exit', not '{}'", when) << endl;
+            return 1;
+        }
+    }
+
     if (opts.contains("source")) {
         try {
-            from_source(opts);
+            from_source(opts, autosave_opts);
         } catch (const archetype::QuitGame&) {
+            checkpoint_at_exit();
             if (int e = unknown_options_error()) return e;
             return 0;
         } catch (const std::exception& e) {
+            checkpoint_at_exit();
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
@@ -241,11 +303,14 @@ int main(int argc, const char* argv[]) {
             throw runtime_error(format("Cannot open \"{}\"", filename));
           }
           in >> Universe::instance();
+          arm_autosave(autosave_opts, filename);
           dispatch_to_universe("START");
         } catch (const archetype::QuitGame&) {
+            checkpoint_at_exit();
             if (int e = unknown_options_error()) return e;
             return 0;
         } catch (const std::exception& e) {
+            checkpoint_at_exit();
             cerr << "ERROR: " << e.what() << endl;
             return 1;
         }
@@ -326,6 +391,7 @@ int main(int argc, const char* argv[]) {
             return 1;
         }
     }
+    checkpoint_at_exit();
     if (int e = unknown_options_error()) return e;
     return 0;
 }
