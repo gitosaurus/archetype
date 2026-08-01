@@ -243,13 +243,13 @@ namespace archetype {
                 Value filename_str = message->stringConversion();
                 if (filename_str->isDefined()) {
                     string filename = filename_str->getString();
-                    OutFileStorage save_file(filename);
-                    if (save_file.ok()) {
-                        save_file << Universe::instance();
-                        return make_unique<BooleanValue>(true);
-                    } else {
-                        return make_unique<BooleanValue>(false);
-                    }
+                    // Written atomically so that overwriting an existing save
+                    // cannot destroy it if this one fails part way through.  No
+                    // backup: an explicit save should not litter the player's
+                    // directory with .bak files.
+                    string error;
+                    bool saved = writeUniverseAtomically(filename, /* keep_backup = */ false, error);
+                    return make_unique<BooleanValue>(saved);
                 }
                 break;
             }
