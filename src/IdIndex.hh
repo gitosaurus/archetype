@@ -12,6 +12,7 @@
 #include <iostream>
 #include <map>
 #include <deque>
+#include <vector>
 #include <cassert>
 #include <algorithm>
 
@@ -105,8 +106,26 @@ namespace archetype {
             int total_entries = static_cast<int>(registry_.size());
             int indexed_entries = static_cast<int>(index_.size());
             out << total_entries << indexed_entries;
+            // Every record carries its own index, so read() does not care what
+            // order they arrive in -- but the file does.  index_ is keyed by
+            // the stored value, and for the object registry that value is a
+            // shared_ptr, so writing in map order wrote the file in heap
+            // address order:  two universes with identical contents produced
+            // different bytes.  Registry order is a property of the universe
+            // rather than of the allocator, so write in registry order.
+            //
+            // Which slots are occupied is what index_ claims, not what the
+            // stored value happens to look like; walking registry_ and
+            // skipping sentinels would give the same answer today only because
+            // no string index ever has a hole.
+            std::vector<const T*> occupant(total_entries, nullptr);
             for (auto const& [obj, obj_index] : index_) {
-                out << obj_index << obj;
+                occupant[obj_index] = &obj;
+            }
+            for (int ii = 0; ii < total_entries; ++ii) {
+                if (occupant[ii]) {
+                    out << ii << *occupant[ii];
+                }
             }
         }
 

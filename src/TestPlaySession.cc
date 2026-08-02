@@ -30,13 +30,19 @@ namespace archetype {
     // tests pin the two paths to each other so the resident one cannot silently
     // drift.
     //
-    // Note what is *not* compared: the serialized bytes.  IdIndex::write walks
-    // std::map index_, so records come out ordered by the stored value rather
-    // than by id -- lexicographically for the string indices, and by pointer
-    // for the object registry.  That is reproducible for a given allocation
-    // history, but it is not a property worth pinning a test to, and it says
-    // nothing about whether the two paths agree.  dump_universe_rdf walks
-    // object ids in order and is a direct picture of the state itself.
+    // The serialized bytes are compared as well as the state.  That assertion
+    // is only sound because IdIndex::write emits records in registry order:  it
+    // used to walk std::map index_, which for the object registry is keyed by
+    // shared_ptr, so the file came out in heap address order.  Every container
+    // that now reaches the file is ordered by id, which makes an .acx a pure
+    // function of the state it describes.
+    //
+    // Note that this test would have passed before that fix too:  both paths
+    // start from the same bytes in the same process and so allocate alike.  It
+    // is the guarantee that licenses the comparison, not the observation.
+    //
+    // The RDF comparison stays because it fails legibly -- a diff of two dumps
+    // says which object drifted, where a byte mismatch only says that one did.
 
     // Every turn both consumes a command and leaves a mark on the world, so a
     // divergence in either input handling or state shows up.
@@ -101,9 +107,13 @@ namespace archetype {
             resident_narrative += run_turn(command);
         }
         string resident_rdf = currentStateRdf_();
+        MemoryStorage resident_save;
+        save_universe(resident_save);
 
         ARCHETYPE_TEST_EQUAL(resident_narrative, stateless_narrative);
         ARCHETYPE_TEST_EQUAL(resident_rdf, stateless_rdf);
+        ARCHETYPE_TEST_EQUAL(resident_save.bytes().size(), carried.size());
+        ARCHETYPE_TEST(resident_save.bytes() == carried);
 
         // Guard against both paths being trivially empty or stuck on turn one.
         ARCHETYPE_TEST(resident_narrative.find("turn 1: alpha") != string::npos);

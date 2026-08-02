@@ -41,6 +41,26 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(holey.count(), 4);
         ARCHETYPE_TEST_EQUAL(holey.find("one"), IdIndex<string>::npos);
 
+        // read() ignores the order records arrive in, so nothing about a round
+        // trip can detect this:  the file has to be inspected directly.
+        // Records must come out in registry order, occupied slots only.
+        MemoryStorage ordered;
+        ordered << holey;
+        int total_entries, indexed_entries;
+        ordered >> total_entries >> indexed_entries;
+        ARCHETYPE_TEST_EQUAL(total_entries, 4);
+        ARCHETYPE_TEST_EQUAL(indexed_entries, 2);
+        int previous_slot = -1;
+        for (int ii = 0; ii < indexed_entries; ++ii) {
+            int slot;
+            string value;
+            ordered >> slot >> value;
+            ARCHETYPE_TEST(slot > previous_slot);
+            previous_slot = slot;
+        }
+        ARCHETYPE_TEST_EQUAL(previous_slot, 3);
+        ARCHETYPE_TEST_EQUAL(ordered.remaining(), 0);
+
         // A round trip has to arrive at an index that behaves the same, not
         // merely one that answers the same questions:  the holes are implied
         // by the counts rather than written out, and an index that forgot them
