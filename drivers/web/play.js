@@ -20,6 +20,7 @@
     entry: document.getElementById('entry'),
     status: document.getElementById('status'),
     game: document.getElementById('game'),
+    width: document.getElementById('width'),
     restart: document.getElementById('restart'),
     download: document.getElementById('download'),
     upload: document.getElementById('upload'),
@@ -93,8 +94,27 @@
     el.scroll.scrollTop = el.scroll.scrollHeight;
   }
 
-  function status(message) {
+  // Transient by default: a note about what just happened has said its piece
+  // once the player has read it, and leaving it up makes it look like a
+  // permanent condition of the game.  Errors and the end-of-game notice are
+  // sticky, since those describe a state rather than an event.
+  const STATUS_TTL = 5000;
+  let statusTimer = null;
+  let statusSticky = false;
+
+  function status(message, sticky) {
+    clearTimeout(statusTimer);
+    statusTimer = null;
+    statusSticky = Boolean(message && sticky);
     el.status.textContent = message || '';
+    if (message && !sticky) {
+      statusTimer = setTimeout(() => status(''), STATUS_TTL);
+    }
+  }
+
+  // The other half of "goes away by itself": acting is as good as waiting.
+  function clearTransientStatus() {
+    if (!statusSticky) status('');
   }
 
   // ------------------------------------------------------------------ layout
@@ -102,6 +122,14 @@
   // WrappedOutput wraps to a column count, so the page has to tell it how many
   // columns the transcript actually has.  Measuring a run of characters beats
   // assuming a ratio, since the font is whatever the platform's monospace is.
+  //
+  // What fits is only half the answer: a 200-column measure is miserable to
+  // read even on a monitor that can show it, so the player picks a ceiling and
+  // the window supplies the rest.  A fixed choice is still capped by what fits,
+  // because exceeding it would scroll the transcript sideways.
+  const WIDTH_KEY = 'archetype.columns';
+  let widthChoice = '120';
+
   function measureColumns() {
     el.ruler.textContent = 'M'.repeat(100);
     const perCharacter = el.ruler.getBoundingClientRect().width / 100;
@@ -110,7 +138,11 @@
     const styles = getComputedStyle(el.scroll);
     const usable = el.scroll.clientWidth
       - parseFloat(styles.paddingLeft) - parseFloat(styles.paddingRight);
-    return Math.max(40, Math.min(120, Math.floor(usable / perCharacter)));
+    // The floor is deliberate: on a phone, wrapping to a dozen columns reads
+    // worse than letting the transcript scroll.
+    const fits = Math.max(40, Math.floor(usable / perCharacter));
+    if (widthChoice === 'fit') return fits;
+    return Math.min(parseInt(widthChoice, 10) || 120, fits);
   }
 
   let resizeTimer = null;
@@ -184,7 +216,7 @@
 
   function finish() {
     setPlayable(false);
-    status('The game has ended.  Start over, or load a save.');
+    status('The game has ended.  Start over, or load a save.', true);
   }
 
   function takeTurn(input) {
@@ -193,7 +225,7 @@
     const narrative = arch.arch_turn(input, columns);
     const failure = arch.arch_last_error();
     if (failure) {
-      status('Error: ' + failure);
+      status('Error: ' + failure, true);
       busy = false;
       return Promise.resolve();
     }
@@ -214,6 +246,7 @@
     // "EOF; goodbye." (games/intrptr.arch), so it never gets sent.
     if (!input || busy) return;
     el.command.value = '';
+    clearTransientStatus();
     takeTurn(input);
   });
 
@@ -279,7 +312,7 @@
       return takeTurn('wait');
     }).catch((error) => {
       busy = false;
-      status('Error: ' + error.message);
+      status('Error: ' + error.message, true);
       console.error(error);
     });
   }
@@ -308,10 +341,25 @@
     dropSave(current.slug).then(() => start(current, null));
   });
 
+  el.width.addEventListener('change', () => {
+    widthChoice = el.width.value;
+    try {
+      localStorage.setItem(WIDTH_KEY, widthChoice);
+    } catch (ignored) {
+      // Private browsing can refuse; the choice just will not outlive the tab.
+    }
+    columns = measureColumns();
+    // Text already on screen was wrapped by the interpreter as it was emitted,
+    // and cannot be reflowed without re-running the game -- WrappedOutput also
+    // centers titles and sizes banner rules to the column count, so the wrap is
+    // not something CSS could redo.
+    status('Now ' + columns + ' columns, from the next turn on.');
+  });
+
   el.download.addEventListener('click', () => {
     const bytes = arch.arch_save();
     if (!bytes) {
-      status('Error: ' + (arch.arch_last_error() || 'could not save'));
+      status('Error: ' + (arch.arch_last_error() || 'could not save'), true);
       return;
     }
     const url = URL.createObjectURL(new Blob([bytes], { type: 'application/octet-stream' }));
@@ -334,11 +382,24 @@
       return start(current, { acx: bytes, narrative: '' })
         .then(() => autosave());
     }).catch((error) => {
-      status('Error: ' + error.message);
+      status('Error: ' + error.message, true);
     }).finally(() => { el.upload.value = ''; });
   });
 
   // ------------------------------------------------------------------- start
+
+  try {
+    const stored = localStorage.getItem(WIDTH_KEY);
+    if (stored) widthChoice = stored;
+  } catch (ignored) {
+    // Nothing stored is a perfectly good answer.
+  }
+  el.width.value = widthChoice;
+  if (!el.width.value) {
+    // A stored value no longer offered as an option.
+    widthChoice = '120';
+    el.width.value = widthChoice;
+  }
 
   status('Loading interpreter…');
 
@@ -359,7 +420,7 @@
     const game = gameBySlug(chosenSlug());
     return getSave(game.slug).then((saved) => start(game, saved));
   }).catch((error) => {
-    status('Could not start: ' + error.message);
+    status('Could not start: ' + error.message, true);
     console.error(error);
   });
 
