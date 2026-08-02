@@ -115,6 +115,13 @@ namespace archetype {
             int indexed_entries;
             in >> total_entries >> indexed_entries;
             registry_.resize(total_entries, sentinel_);
+            // Every registry slot is either indexed or a hole, so the count of
+            // holes is the difference and never has to be written down.  It
+            // does have to be restored:  left at zero, index() would append to
+            // a registry that still has free slots, and a resumed game would
+            // hand out different ids than a continuous one that took the same
+            // turns.
+            holes_ = total_entries - indexed_entries;
             for (int ii = 0; ii < indexed_entries; ++ii) {
                 int value_index;
                 in >> value_index;
