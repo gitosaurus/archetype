@@ -75,11 +75,11 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(resumed.get(3), string("three"));
         ARCHETYPE_TEST_EQUAL(resumed.find("one"), IdIndex<string>::npos);
 
-        // Holes are filled from the back, so both indexes must hand out 2 and
-        // then 1, and neither may reach a fifth slot.
-        ARCHETYPE_TEST_EQUAL(holey.index("four"), 2);
-        ARCHETYPE_TEST_EQUAL(resumed.index("four"), 2);
-        ARCHETYPE_TEST_EQUAL(resumed.index("five"), 1);
+        // Free slots are filled lowest first, so both indexes must hand out 1
+        // and then 2, and neither may reach a fifth slot until both are taken.
+        ARCHETYPE_TEST_EQUAL(holey.index("four"), 1);
+        ARCHETYPE_TEST_EQUAL(resumed.index("four"), 1);
+        ARCHETYPE_TEST_EQUAL(resumed.index("five"), 2);
         ARCHETYPE_TEST_EQUAL(resumed.count(), 4);
         ARCHETYPE_TEST_EQUAL(resumed.index("six"), 4);
     }
