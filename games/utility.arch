@@ -21,6 +21,38 @@ methods
 end
 
 
+# backdrop:  what stands behind several rooms at once.  An object can only be
+# in one location, but some things are in view from more than one -- a light
+# in a stairwell, a ceiling, a mountain in the distance -- and ought to answer
+# from any room that mentions them.
+#
+# Put them in a backdrop, and name it as the 'HORIZON' of every room that
+# describes them:
+#
+#   backdrop stairwell_shaft end
+#
+#   room stairwell2
+#   methods
+#     'HORIZON' : stairwell_shaft
+#   end
+#
+#   scenery stair_light
+#     location : stairwell_shaft
+#
+# Two mechanisms pick it up from there.  'ACCESS' compares an object's
+# location against 'HORIZON' -> player.location, which is what makes the
+# object reachable; 'ROLL CALL' announces the horizon's members, which is what
+# makes the parser treat them as near when two objects answer to the same
+# words.
+#
+# A backdrop is scenery hung behind the set, not furniture standing on it:  it
+# is never entered, described, or named.  It adds nothing to inventoried,
+# because the members list is the whole mechanism.
+
+type backdrop based on inventoried
+end
+
+
 Verb null
 
 full : 'open'
