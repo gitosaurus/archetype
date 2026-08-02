@@ -1,8 +1,12 @@
 name: CI
 
 on:
+  # Unfiltered on purpose.  Under pull_request, "branches" filters on the base
+  # branch, so [main] would skip a pull request aimed at another branch -- which
+  # is exactly what every pull request in a stack is.  Pushes stay limited to
+  # main; widening those too would run everything twice on a branch with a
+  # pull request open.
   pull_request:
-    branches: [main]
   push:
     branches: [main]
 
