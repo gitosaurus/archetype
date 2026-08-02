@@ -82,6 +82,36 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(resumed.index("five"), 2);
         ARCHETYPE_TEST_EQUAL(resumed.count(), 4);
         ARCHETYPE_TEST_EQUAL(resumed.index("six"), 4);
+
+        // Removing the last entry is not a hole at all:  the registry simply
+        // gets shorter.  And it keeps getting shorter for as long as the slot
+        // newly exposed at the end is free too, so a run of holes reachable
+        // from the end collapses in one call.
+        IdIndex<string> trimmed;
+        for (string s : {"zero", "one", "two", "three"}) {
+            trimmed.index(s);
+        }
+        trimmed.remove(2);
+        ARCHETYPE_TEST_EQUAL(trimmed.count(), 4);   // slot 3 still holds "three"
+        trimmed.remove(3);
+        // Freeing 3 pops it, which exposes the already-free 2, which pops too.
+        ARCHETYPE_TEST_EQUAL(trimmed.count(), 2);
+        ARCHETYPE_TEST_EQUAL(trimmed.get(1), string("one"));
+        ARCHETYPE_TEST(not trimmed.hasIndex(2));
+
+        // Nothing is free any more -- the trim gave those slots back by making
+        // them not exist -- so the next entry appends rather than reusing.
+        ARCHETYPE_TEST_EQUAL(trimmed.index("four"), 2);
+
+        // A trimmed registry has to come back at its shorter length, and
+        // total_entries is the only record of where it now ends.
+        MemoryStorage shortened;
+        shortened << trimmed;
+        IdIndex<string> reloaded;
+        shortened >> reloaded;
+        ARCHETYPE_TEST_EQUAL(reloaded.count(), 3);
+        ARCHETYPE_TEST_EQUAL(reloaded.get(2), string("four"));
+        ARCHETYPE_TEST_EQUAL(reloaded.index("five"), 3);
     }
 
 }
