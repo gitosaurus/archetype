@@ -336,7 +336,18 @@ end
 
 ################################# The Guard ##############################
 
-keyword under_cot
+# Where the body goes.  This was a bare keyword, which answered no messages at
+# all:  'ADD SELF' fell on the floor and the guard ended up nowhere rather than
+# under anything.  It works either way, since nothing asks, but a place that
+# holds what is put in it costs no more than one that doesn't.
+#
+# It belongs to the cot rather than to the cell, and it is deliberately not
+# 'TRANSPARENT', which is what keeps the body out of sight and out of reach
+# while the player is standing right next to it.
+
+inventoried under_cot
+  location : cot
+end
 
 scenery wall
   desc     : "the other wall"
