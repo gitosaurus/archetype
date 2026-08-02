@@ -157,6 +157,13 @@ methods
   'ANNOUNCE MEMBERS' -> player
   'ANNOUNCE MEMBERS' -> player.location
   'ANNOUNCE SELF'    -> player.location
+  # Whatever is on the horizon is in view without being underfoot, and
+  # 'ACCESS' already reaches it.  The parser has to hear about it too:  when
+  # two objects answer to the same words, it settles the tie in favor of the
+  # one that answered the roll, so anything left out here loses to a namesake
+  # halfway across the map.
+  if 'HORIZON' -> player.location then
+    'ANNOUNCE MEMBERS' -> ('HORIZON' -> player.location)
   }
 
 'UPDATE' : {
