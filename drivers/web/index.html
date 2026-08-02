@@ -129,6 +129,12 @@
   <h1>Archetype</h1>
   <select id="game" aria-label="Game"></select>
   <span class="spacer"></span>
+  <select id="width" aria-label="Text width" title="Columns the interpreter wraps to, capped by what the window can show">
+    <option value="fit">Fit window</option>
+    <option value="80">80 columns</option>
+    <option value="100">100 columns</option>
+    <option value="120">120 columns</option>
+  </select>
   <button id="download" type="button" title="Download a .acx the desktop interpreter can resume">Download save</button>
   <label class="filebutton" title="Resume a .acx saved here or by the desktop interpreter">Load save<input id="upload" type="file" accept=".acx"></label>
   <button id="restart" type="button">Start over</button>
