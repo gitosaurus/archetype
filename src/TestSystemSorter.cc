@@ -12,6 +12,7 @@
 #include <sstream>
 #include <deque>
 #include <iterator>
+#include <algorithm>
 
 #include "TestSystemSorter.hh"
 #include "TestRegistry.hh"
