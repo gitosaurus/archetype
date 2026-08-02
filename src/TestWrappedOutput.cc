@@ -11,6 +11,7 @@
 #include <sstream>
 #include <deque>
 #include <iterator>
+#include <algorithm>
 
 #include "TestWrappedOutput.hh"
 #include "TestRegistry.hh"
