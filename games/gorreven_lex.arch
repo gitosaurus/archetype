@@ -63,6 +63,7 @@ end
 
 Verb null
   full : 'pull'
+  syn  : 'pull at'
   normal : "I pull on it but nothing happens."
 end
 

@@ -716,11 +716,19 @@ end
 ################################# End of Guard's Possessions ############
 
 
+# The shaft is open through its whole height, so the light and the bugs are in
+# view from all three landings rather than belonging to any one of them.  Each
+# room names it as its 'HORIZON'; see backdrop in utility.
+
+backdrop stairwell_shaft end
+
 room stairwell
 
   desc      : "spiral stairwell"
 
 methods
+
+  'HORIZON' : stairwell_shaft
 
   'LONGDESC' : {
 >>I'm at the top of a stairwell containing a spiral staircase.  The stairs
@@ -742,6 +750,8 @@ room stairwell2
 
 methods
 
+  'HORIZON' : stairwell_shaft
+
   'LONGDESC' : {
 >>I am halfway down a spiral staircase.  There is a bright blue light set
 >>into the wall next to me.  I can see a littering of dead bugs on the
@@ -760,6 +770,8 @@ room stairwell3
 
 methods
 
+  'HORIZON' : stairwell_shaft
+
   'LONGDESC' : {
 >>I am standing at the bottom of a spiral staircase.  Halfway up, the blue
 >>light burns and buzzes.  It is fairly dark here but I can see the outline
@@ -769,6 +781,36 @@ methods
   'east'    : dark_hall
   'up'      : stairwell2
 
+end
+
+
+scenery stair_light
+  desc     : "bright blue light"
+  syn      : "blue light|light|lamp"
+  location : stairwell_shaft
+methods
+  'get'   : write "It's set into the wall, and I'd rather not touch it anyway."
+  'break' : 'get'
+  'look'  : {
+>>It burns fiercely behind a little cage of wire, buzzing all the while like
+>>something trapped.  It throws just enough light to climb the stairs by, and
+>>it makes everything it touches look like it has been dead for a week.
+    }
+end
+
+
+scenery dead_bugs
+  desc     : "littering of dead bugs"
+  syn      : "dead bugs|dead bug|bugs|bug|insects|insect"
+  location : stairwell_shaft
+methods
+  'get'   : write "I've got no use for those and I'm not that hungry."
+  'eat'   : 'get'
+  'look'  : {
+>>They are heaped thickest right under the light, which is presumably what
+>>brought them.  Whatever they were, they are dry and hollow now, and they
+>>crunch when I shift my feet.
+    }
 end
 
 
@@ -941,7 +983,8 @@ methods
   'look' : {
     writes "It is huge and looks like it's made of steel.  Shoot, for that "
     writes "size it could be made of tin and it would be just as secure.  "
-    writes "It is "
+    writes "There is no handle and no knob anywhere on it, only a thin slit "
+    writes "set into the center, about the width of a finger.  It is "
     if open then write "standing open." else write "closed tight."
     }
 
