@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Archetype</title>
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 16 16'><rect width='16' height='16' rx='3' fill='%23171614'/><text x='8' y='12' font-family='monospace' font-size='11' font-weight='700' fill='%23d9a066' text-anchor='middle'>&gt;</text></svg>">
+<style>
+  :root {
+    color-scheme: light dark;
+    --bg: #fbfaf7;
+    --fg: #24211c;
+    --dim: #7c766c;
+    --rule: #ddd8cd;
+    --accent: #8a5a2b;
+    --field: #ffffff;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #171614;
+      --fg: #ddd8cd;
+      --dim: #8a857a;
+      --rule: #35322c;
+      --accent: #d9a066;
+      --field: #201e1b;
+    }
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    background: var(--bg);
+    color: var(--fg);
+    font: 16px/1.45 ui-monospace, SFMono-Regular, "SF Mono", Menlo, Consolas,
+          "Liberation Mono", monospace;
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  header {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+    flex-wrap: wrap;
+    padding: 0.6rem 1rem;
+    border-bottom: 1px solid var(--rule);
+  }
+  header h1 {
+    font-size: 0.95rem;
+    font-weight: 600;
+    margin: 0;
+    letter-spacing: 0.02em;
+  }
+  header .spacer { flex: 1 1 auto; }
+
+  select, button, label.filebutton {
+    font: inherit;
+    font-size: 0.8rem;
+    color: var(--fg);
+    background: var(--field);
+    border: 1px solid var(--rule);
+    border-radius: 4px;
+    padding: 0.2rem 0.5rem;
+    cursor: pointer;
+  }
+  button:hover, label.filebutton:hover, select:hover { border-color: var(--accent); }
+  button[disabled] { opacity: 0.45; cursor: default; }
+  button[disabled]:hover { border-color: var(--rule); }
+  input[type="file"] { display: none; }
+
+  main {
+    flex: 1 1 auto;
+    overflow-y: auto;
+    padding: 1rem;
+  }
+
+  /* The interpreter has already wrapped the text to a column count we gave it,
+     so the transcript must not re-wrap or the two disagree. */
+  #transcript {
+    margin: 0;
+    white-space: pre;
+    overflow-x: auto;
+    font: inherit;
+  }
+  #transcript .b { font-weight: 700; color: var(--accent); }
+  #transcript .d { color: var(--dim); }
+
+  form {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    border-top: 1px solid var(--rule);
+  }
+  form span.caret { color: var(--accent); font-weight: 700; }
+  #command {
+    flex: 1 1 auto;
+    font: inherit;
+    color: var(--fg);
+    background: transparent;
+    border: 0;
+    outline: none;
+    padding: 0.2rem 0;
+  }
+  #command:disabled { color: var(--dim); }
+
+  #status {
+    padding: 0 1rem 0.6rem;
+    font-size: 0.8rem;
+    color: var(--dim);
+    min-height: 1.2em;
+  }
+
+  /* Off-screen, and deliberately the same font as the transcript: this is what
+     one character is measured against to convert pixels into columns. */
+  #ruler {
+    position: absolute;
+    visibility: hidden;
+    white-space: pre;
+    font: inherit;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>Archetype</h1>
+  <select id="game" aria-label="Game"></select>
+  <span class="spacer"></span>
+  <button id="download" type="button" title="Download a .acx the desktop interpreter can resume">Download save</button>
+  <label class="filebutton" title="Resume a .acx saved here or by the desktop interpreter">Load save<input id="upload" type="file" accept=".acx"></label>
+  <button id="restart" type="button">Start over</button>
+</header>
+
+<main id="scroll">
+  <pre id="transcript" aria-live="polite"></pre>
+</main>
+
+<div id="status"></div>
+
+<form id="entry">
+  <span class="caret" aria-hidden="true">&gt;</span>
+  <input id="command" type="text" autocomplete="off" autocapitalize="off"
+         autocorrect="off" spellcheck="false" aria-label="Command" disabled>
+</form>
+
+<span id="ruler" aria-hidden="true"></span>
+
+<script src="archetype.js"></script>
+<script src="play.js"></script>
+</body>
+</html>

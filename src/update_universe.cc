@@ -105,9 +105,19 @@ Value dispatch_to_universe(string message) {
   return result;
 }
 
-string update_universe(Storage& in, Storage& out, string input, int width,
-                       bool sitrep, bool inspect) {
-  // Paging, no; wrapping, yes.
+void load_universe(Storage& in) {
+  in >> Universe::instance();
+}
+
+void save_universe(Storage& out) {
+  out << Universe::instance();
+}
+
+string run_turn(string input, int width, bool sitrep, bool inspect) {
+  // Paging, no; wrapping, yes.  The output is rebuilt every turn because the
+  // StringOutput the narrative is collected from holds only this turn's text;
+  // deserialization leaves input_ and output_ alone, so nothing else here
+  // depends on whether a load has just happened.
   UserOutput str_output = make_shared<StringOutput>();
   UserOutput wrapped = make_shared<WrappedOutput>(str_output, width);
   Universe::instance().setOutput(wrapped);
@@ -115,7 +125,6 @@ string update_universe(Storage& in, Storage& out, string input, int width,
   UserInput str_input = make_shared<StringInput>(input);
   UserInput echo_input = make_shared<EchoingInput>(str_input, user_output);
   Universe::instance().setInput(echo_input);
-  in >> Universe::instance();
   try {
     dispatch_to_universe("UPDATE");
   } catch (const archetype::QuitGame&) {
@@ -145,7 +154,14 @@ string update_universe(Storage& in, Storage& out, string input, int width,
     result += rdf_out.str();
   }
 
-  out << Universe::instance();
+  return result;
+}
+
+string update_universe(Storage& in, Storage& out, string input, int width,
+                       bool sitrep, bool inspect) {
+  load_universe(in);
+  string result = run_turn(input, width, sitrep, inspect);
+  save_universe(out);
   return result;
 }
 
