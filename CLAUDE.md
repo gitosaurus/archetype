@@ -19,6 +19,16 @@ cmake --build build
 
 Always run the test suite and verify it passes before committing changes to C++ source.
 
+## Build the browser version
+
+Requires Emscripten on `PATH`. Builds the wasm interpreter, compiles the games
+with the native one, and assembles everything into `build-wasm/web`:
+
+```shell
+./drivers/web/build.sh
+(cd build-wasm/web && python3 -m http.server 8000)
+```
+
 ## Compile a game to binary
 
 ```shell
@@ -35,7 +45,8 @@ echo "look" | ./build/archetype --source=games/gorreven.arch --include=games
 
 - `src/` — C++ source for the interpreter
 - `games/` — Game sources (`.arch`) and compiled binaries (`.acx`)
-- `drivers/` — Cloud Run driver (Python/Flask); see `drivers/README.md`
+- `drivers/` — Cloud Run driver (Python/Flask) and the WebAssembly web driver
+  (`drivers/web/`); see `drivers/README.md`
 - `archetype-mode.el` — Emacs major mode for syntax highlighting
 
 ## Key conventions

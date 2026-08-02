@@ -6,3 +6,6 @@ archetype.xcodeproj/xcuserdata/*
 src/.vscode/
 drivers/build/
 build/
+build-wasm/
+# Compiled games are build output of --create, not repository content.
+*.acx

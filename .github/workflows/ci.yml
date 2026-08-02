@@ -20,3 +20,17 @@ jobs:
         run: cmake --build build --parallel
       - name: Test
         run: ./build/archetype --test
+
+  build-wasm:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: mymindstorm/setup-emsdk@v14
+        with:
+          version: latest
+      - name: Configure
+        run: emcmake cmake -S src -B build-wasm -DCMAKE_BUILD_TYPE=Release
+      - name: Build
+        run: cmake --build build-wasm --parallel
+      - name: Check artifacts
+        run: test -s build-wasm/archetype.js && test -s build-wasm/archetype.wasm

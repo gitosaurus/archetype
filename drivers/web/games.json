@@ -1,0 +1,17 @@
+{
+  "default": "gorreven",
+  "games": [
+    {
+      "slug": "gorreven",
+      "title": "The Gorreven Papers",
+      "source": "games/gorreven.arch",
+      "acx": "gorreven.acx"
+    },
+    {
+      "slug": "starship",
+      "title": "Starship Solitaire",
+      "source": "games/starship.arch",
+      "acx": "starship.acx"
+    }
+  ]
+}
