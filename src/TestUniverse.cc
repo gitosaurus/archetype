@@ -347,10 +347,11 @@ namespace archetype {
         look_stmt->execute();
         ARCHETYPE_TEST_EQUAL(look5.getCapture(), string("You have looked 5 times.\n"));
 
-        // Add a new dynamic object. It should take the place of the remote.
+        // Add a new dynamic object. It should take the place of the magazine,
+        // the lower of the two freed slots.
         Statement create_another = make_stmt_from_str("create stuff named coffee_table.napkin");
         int napkin_id = create_another->execute()->objectConversion()->getObject();
-        ARCHETYPE_TEST_EQUAL(napkin_id, objects.at(2));
+        ARCHETYPE_TEST_EQUAL(napkin_id, objects.at(1));
 
         // Restore old state!
         mem >> Universe::instance();
@@ -379,6 +380,18 @@ namespace archetype {
         int remote_id = find_remote->execute()->objectConversion()->getObject();
         ObjectPtr remote = Universe::instance().getObject(remote_id);
         ARCHETYPE_TEST(not remote);
+
+        // A restored universe must hand out ids the way the saved one did.  The
+        // napkin above took the magazine's slot; a coaster created after the
+        // undo has to take it as well, because the registry it was restored
+        // into has the same two slots free.  Nothing in the file says so -- the
+        // free slots are the ones its records never mention -- so this is the
+        // point where a load that failed to work them back out would show up,
+        // by appending past the end of the registry instead.
+        Statement create_after_undo =
+            make_stmt_from_str("create stuff named coffee_table.coaster");
+        int coaster_id = create_after_undo->execute()->objectConversion()->getObject();
+        ARCHETYPE_TEST_EQUAL(coaster_id, objects.at(1));
     }
 
     void TestUniverse::runTests_() {
