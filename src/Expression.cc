@@ -12,7 +12,6 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
-#include <random>
 #include <stack>
 
 #include "Expression.hh"
@@ -276,10 +275,11 @@ namespace archetype {
                 case OP_RANDOM: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined() and rv_n->getNumber() > 0) {
-                        random_device rd;
-                        mt19937 gen(rd());
-                        uniform_int_distribution<> dis(1, rv_n->getNumber());
-                        int r_i = dis(gen);
+                        // The sequence belongs to the universe, not to this
+                        // evaluation: it has to survive a save, and it has to
+                        // come back with the rest of the state when a turn is
+                        // rolled back and replayed.
+                        int r_i = Universe::instance().nextRandom(rv_n->getNumber());
                         result = make_unique<NumericValue>(r_i);
                     } else {
                         result = make_unique<UndefinedValue>();

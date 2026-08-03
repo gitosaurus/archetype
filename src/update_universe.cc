@@ -98,6 +98,10 @@ Value dispatch_to_universe(string_view message) {
   if (Universe::instance().ended()) {
     throw invalid_argument("Universe has ended");
   }
+  // Every way into a game comes through here and no way into --create does,
+  // so this is where a playthrough picks up its seed.  Idempotent, and a
+  // universe loaded from a save arrives already seeded.
+  Universe::instance().ensureSeeded();
   int start_id = Universe::instance().Messages.index(message);
   Value start = make_unique<MessageValue>(start_id);
   Value result = Object::send(main_object, std::move(start));
@@ -160,6 +164,11 @@ string run_turn(string input, int width, bool sitrep, bool inspect) {
 }
 
 TurnResult run_turn_collecting(TurnInputs inputs, int width) {
+  // Before the snapshot, not after: dispatch would otherwise seed inside the
+  // turn, the rollback would take the seed away again, and each replay would
+  // draw a different sequence than the attempt the player already saw.
+  Universe::instance().ensureSeeded();
+
   // The universe has to be exactly as it was if this turn turns out to be
   // incomplete, because the only answer to NeedsInput is to run the whole turn
   // again with one more item in hand: the stack the turn was standing on is

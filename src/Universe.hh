@@ -9,6 +9,7 @@
 #ifndef __archetype__Universe__
 #define __archetype__Universe__
 
+#include <cstdint>
 #include <string>
 #include <string_view>
 #include <map>
@@ -19,6 +20,7 @@
 
 #include "Formatting.hh"
 #include "IdIndex.hh"
+#include "Random.hh"
 #include "StringIdIndex.hh"
 #include "Object.hh"
 #include "Value.hh"
@@ -109,6 +111,15 @@ namespace archetype {
 
         bool make(TokenStream& t);
 
+        // A playthrough draws one seed at the outset and keeps it: '?' is then
+        // reproducible within a game and across a save, but a fresh start is a
+        // fresh sequence.  Compiling does not seed, so --create output stays
+        // byte-for-byte what it always was.
+        void ensureSeeded();
+        void seedWith(std::uint64_t seed);
+        bool seeded() const { return seeded_; }
+        int nextRandom(int bound);
+
         static Universe& instance();
         static void destroy();
 
@@ -125,6 +136,9 @@ namespace archetype {
 
         IdentifierMap reverseObjectIdentifiers_;
 
+        Random random_;
+        bool   seeded_ = false;
+
         static Universe* instance_;
 
         Universe();
@@ -133,6 +147,13 @@ namespace archetype {
         ~Universe();
 
         void createReservedObjects_();
+
+        // Where interpreter state that has to survive a save lives: an
+        // ordinary object under a name no Archetype author can spell.  See
+        // Universe.cc for why it is a prototype.
+        ObjectPtr globalObject_(bool create);
+        void storeSeed_();
+        void loadSeed_();
 
         friend Storage& operator<<(Storage& out, const Universe& u);
         friend Storage& operator>>(Storage& in, Universe& u);

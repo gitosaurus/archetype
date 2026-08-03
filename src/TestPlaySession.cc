@@ -6,6 +6,7 @@
 //  Copyright (c) 2026 Derek Jones. All rights reserved.
 //
 
+#include <cstdint>
 #include <sstream>
 #include <string>
 #include <vector>
@@ -63,10 +64,17 @@ namespace archetype {
         "alpha", "beta", "gamma", "delta"
     };
 
+    // Seeded before it is written, so that both paths below start from the
+    // same point in the random sequence.  Left to itself each would draw its
+    // own seed on its first turn and the saves could not be compared -- which
+    // is the whole point of this suite, and why --seed exists.
+    static const std::uint64_t PlaySessionSeed = 0x5EEDC0FFEEULL;
+
     static void compileProgram_(char* source, MemoryStorage& out) {
         Universe::destroy();
         TokenStream t(make_source_from_str("play_session_test", source));
         Universe::instance().make(t);
+        Universe::instance().seedWith(PlaySessionSeed);
         out << Universe::instance();
     }
 
