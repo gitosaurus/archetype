@@ -19,6 +19,8 @@ namespace archetype {
         void testSitrepAppendsParserRdf_();
         void testSitrepUnpacksPairs_();
         void testInspectAppendsStateRdf_();
+        void testTurnAsksForInput_();
+        void testDeclinedInputEndsTheTurn_();
     protected:
         virtual void runTests_() override;
     public:

@@ -7,12 +7,14 @@
 #include "StringInput.hh"
 #include "StringOutput.hh"
 #include "SystemObject.hh"
+#include "TurnInput.hh"
 #include "Value.hh"
 #include "inspect_universe.hh"
 
 #include <format>
 #include <sstream>
 #include <string_view>
+#include <utility>
 
 namespace archetype {
 
@@ -154,6 +156,39 @@ string run_turn(string input, int width, bool sitrep, bool inspect) {
     result += rdf_out.str();
   }
 
+  return result;
+}
+
+TurnResult run_turn_collecting(TurnInputs inputs, int width) {
+  // The universe has to be exactly as it was if this turn turns out to be
+  // incomplete, because the only answer to NeedsInput is to run the whole turn
+  // again with one more item in hand: the stack the turn was standing on is
+  // gone the moment the throw unwinds.  A MemoryStorage reads from the front
+  // no matter where writing left off, so the snapshot needs no rewinding.
+  MemoryStorage snapshot;
+  save_universe(snapshot);
+
+  UserOutput str_output = make_shared<StringOutput>();
+  UserOutput wrapped = make_shared<WrappedOutput>(str_output, width);
+  Universe::instance().setOutput(wrapped);
+  UserInput items = make_shared<TurnInput>(std::move(inputs));
+  UserInput echo_input =
+    make_shared<EchoingInput>(items, Universe::instance().output());
+  Universe::instance().setInput(echo_input);
+
+  TurnResult result;
+  try {
+    dispatch_to_universe("UPDATE");
+  } catch (const archetype::QuitGame&) {
+    Universe::instance().endItAll();
+  } catch (const NeedsInput& needed) {
+    // Deserialization leaves input_ and output_ alone, which is what lets this
+    // turn's prompt still be read out of str_output below.
+    load_universe(snapshot);
+    result.status = needed.want == NeedsInput::Want::Key ?
+      TurnResult::Status::NeedsKey : TurnResult::Status::NeedsLine;
+  }
+  result.text = dynamic_cast<StringOutput*>(str_output.get())->getOutput();
   return result;
 }
 
