@@ -6,6 +6,7 @@
 //  Copyright (c) 2026 Derek Jones. All rights reserved.
 //
 
+#include <cstdint>
 #include <optional>
 #include <string>
 #include <vector>
@@ -155,6 +156,12 @@ namespace archetype {
 
     void TestUpdateUniverse::testTurnAsksForInput_() {
         ARCHETYPE_TEST(loadPromptingProgram_());
+
+        // Seeded up front so the snapshot below has one: a turn seeds an
+        // unseeded universe before rolling anything back, and the comparison
+        // would otherwise be against a universe from before there was a seed.
+        // Pinning it also puts the random state under the rollback check.
+        Universe::instance().seedWith(0x5EEDC0FFEEULL);
 
         MemoryStorage before;
         before << Universe::instance();

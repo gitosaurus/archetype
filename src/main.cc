@@ -10,10 +10,12 @@
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
+#include <cstdint>
 #include <cstdlib>
 #include <format>
 #include <map>
 #include <list>
+#include <optional>
 #include <ranges>
 #include <string>
 #include <string_view>
@@ -86,6 +88,7 @@ void usage() {
         << " --source=file.arch      Read, compile, and run the given program." << endl
         << "   --include=path[:path...]  Colon-separated list of paths to search for source." << endl
         << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
+        << "   --seed=N                  Draw '?' from seed N, so that a run repeats exactly." << endl
         << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
         << " --autosave[=file.acx]   Keep the game state on disk as it is played.  Without a" << endl
         << "                         filename, writes alongside the game: g.acx -> g.save.acx." << endl
@@ -124,6 +127,22 @@ static void arm_autosave(const AutosaveOptions& options, const string& game_path
         target += ".acx";
     }
     Autosave::instance().arm(target, options.cadence, /* keep_backup = */ true);
+}
+
+// Set by --seed, so that a run can be repeated exactly.  Without it a
+// playthrough draws its own seed and keeps it, which is what a player wants
+// and what a transcript, a regression test, or a bug report cannot use.
+static std::optional<std::uint64_t> forced_seed;
+
+// Called where a universe has just been made or loaded and is about to be
+// played.  Dispatching would seed it anyway; the point here is that an
+// explicit seed has to win over the one a save arrived with.
+static void seed_universe() {
+    if (forced_seed) {
+        Universe::instance().seedWith(*forced_seed);
+    } else {
+        Universe::instance().ensureSeeded();
+    }
 }
 
 // Under the default per-turn cadence the last completed turn is already on
@@ -179,6 +198,7 @@ static void from_source(map<std::string, std::string> &opts,
     Universe::instance().reportUndefinedIdentifiers();
     if (auto it_create = opts.find("create"); it_create == opts.end()) {
         arm_autosave(autosave_opts, source_path);
+        seed_universe();
         dispatch_to_universe("START");
     } else {
         string filename_out = it_create->second;
@@ -243,6 +263,19 @@ int main(int argc, const char* argv[]) {
         session.silent(true);
         opts.erase(it_silent);
     }
+    if (auto it_seed = opts.find("seed"); it_seed != opts.end()) {
+        string requested = it_seed->second;
+        opts.erase(it_seed);
+        try {
+            size_t consumed = 0;
+            forced_seed = stoull(requested, &consumed);
+            if (consumed != requested.size()) throw invalid_argument(requested);
+        } catch (const std::exception&) {
+            cerr << format("ERROR: --seed must be a whole number, not '{}'",
+                           requested) << endl;
+            return 1;
+        }
+    }
     if (auto it_test = opts.find("test"); it_test != opts.end()) {
         opts.erase(it_test);
         if (int e = unknown_options_error()) return e;
@@ -262,6 +295,9 @@ int main(int argc, const char* argv[]) {
                     throw runtime_error(format("Cannot open \"{}\"", filename));
                 }
                 in >> Universe::instance();
+                // The REPL evaluates expressions without dispatching, so '?'
+                // can be reached here without ever passing the usual gate.
+                seed_universe();
             } catch (const std::exception& e) {
                 cerr << "ERROR: " << e.what() << endl;
                 return 1;
@@ -321,6 +357,7 @@ int main(int argc, const char* argv[]) {
             throw runtime_error(format("Cannot open \"{}\"", filename));
           }
           in >> Universe::instance();
+          seed_universe();
           arm_autosave(autosave_opts, filename);
           dispatch_to_universe("START");
         } catch (const archetype::QuitGame&) {

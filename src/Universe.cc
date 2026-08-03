@@ -12,6 +12,7 @@
 #include <sstream>
 #include <cassert>
 #include <limits>
+#include <random>
 
 using namespace std;
 
@@ -413,6 +414,83 @@ namespace archetype {
         return in;
     }
 
+    // Interpreter state that has to outlive a turn goes on an ordinary object
+    // under a name no Archetype author can spell: '%' cannot appear in an
+    // identifier the tokenizer will produce, so a game cannot reach this by
+    // accident, and it is a private namespace rather than a reserved one.
+    //
+    // Consequences worth spelling out, because they are what make it cheap:
+    // it takes a high object id, so no existing .acx has its ids shifted; it
+    // is a prototype, and ForStatement skips prototypes, so no 'for each' in
+    // any game will ever visit it; and it rides the object table that already
+    // round-trips, so the .acx format itself does not change to hold it.  An
+    // interpreter that predates it reads one object it has no use for.
+    //
+    // It is created on seeding, never on compiling, so --create output stays
+    // byte-for-byte what it always was.
+    static const char* GlobalObjectName = "%global";
+    static const char* SeedAttributeName = "%seed";
+
+    ObjectPtr Universe::globalObject_(bool create) {
+        if (ObjectPtr existing = getObject(string(GlobalObjectName))) {
+            return existing;
+        }
+        if (not create) return nullptr;
+        ObjectPtr global = defineNewObject();
+        global->setPrototype(true);
+        assignObjectIdentifier(global, string(GlobalObjectName));
+        return global;
+    }
+
+    // Sixteen hex digits.  A string rather than a number because an Archetype
+    // numeric is an int and this state is sixty-four bits wide.
+    void Universe::storeSeed_() {
+        ObjectPtr global = globalObject_(/* create = */ true);
+        int attribute_id = Identifiers.index(string(SeedAttributeName));
+        global->setAttribute(attribute_id,
+                             make_unique<StringValue>(format("{:016x}", random_.state())));
+    }
+
+    void Universe::loadSeed_() {
+        seeded_ = false;
+        ObjectPtr global = globalObject_(/* create = */ false);
+        if (not global) return;
+        int attribute_id = Identifiers.find(string(SeedAttributeName));
+        if (attribute_id < 0 or not global->hasAttribute(attribute_id)) return;
+        Value stored = global->getAttributeValue(attribute_id)->stringConversion();
+        if (not stored->isDefined()) return;
+        try {
+            random_.setState(stoull(stored->getString(), nullptr, 16));
+            seeded_ = true;
+        } catch (const std::exception&) {
+            // A %seed that is not sixteen hex digits is not one we wrote.
+            // Leaving it unseeded draws a fresh one, which is the same thing
+            // that happens to a save from before there were seeds at all.
+        }
+    }
+
+    void Universe::ensureSeeded() {
+        if (seeded_) return;
+        random_device rd;
+        uint64_t seed = (static_cast<uint64_t>(rd()) << 32) ^ rd();
+        seedWith(seed);
+    }
+
+    void Universe::seedWith(uint64_t seed) {
+        random_.setState(seed);
+        seeded_ = true;
+        storeSeed_();
+    }
+
+    int Universe::nextRandom(int bound) {
+        int drawn = random_.upTo(bound);
+        // Written back on every draw, so that a save taken at any moment
+        // resumes where the sequence actually stands rather than where the
+        // playthrough started.
+        storeSeed_();
+        return drawn;
+    }
+
     Storage& operator<<(Storage& out, const Universe& u) {
         out << static_cast<int>(u.ended_);
         out << u.Messages << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
@@ -436,6 +514,8 @@ namespace archetype {
         u.objects_.clear();
         u.createReservedObjects_();
         in >> u.objects_;
+        // The seed came in with the objects; this only has to find it again.
+        u.loadSeed_();
         return in;
     }
 
