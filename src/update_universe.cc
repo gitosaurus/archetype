@@ -26,10 +26,14 @@ namespace archetype {
       output_(output)
     { }
 
+    // A line is echoed because the transcript has to show the command that
+    // produced the turn.  A keystroke is not: ConsoleInput reads keys raw and
+    // echoes nothing, so a game that wants one seen prints it itself the way
+    // games/animal.arch does, and echoing here would show it twice under this
+    // driver and once under that one.  "Press any key" should show nothing at
+    // all.
     virtual char getKey() override {
-      std::string key_str(1, input_->getKey());
-      output_->put(key_str);
-      return key_str[0];
+      return input_->getKey();
     }
 
     virtual std::string getLine() override {
