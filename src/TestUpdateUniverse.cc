@@ -6,7 +6,9 @@
 //  Copyright (c) 2026 Derek Jones. All rights reserved.
 //
 
+#include <optional>
 #include <string>
+#include <vector>
 
 #include "TestUpdateUniverse.hh"
 #include "TestRegistry.hh"
@@ -128,10 +130,74 @@ namespace archetype {
         ARCHETYPE_TEST(result.find("archetype:parser a archetype:SystemParser") == string::npos);
     }
 
+    // A game that asks a question in the middle of a turn.  The first 'read' is
+    // the command, the way games/intrptr.arch consumes it; the second is the
+    // one a browser has no way to answer without replaying the turn.
+    static char program_with_prompt[] =
+    "null main\n"
+    "  cmd : UNDEFINED\n"
+    "  ans : UNDEFINED\n"
+    "methods\n"
+    "  'UPDATE' : {\n"
+    "    cmd := read\n"
+    "    writes \"combination? \"\n"
+    "    ans := read\n"
+    "    write \"[\", cmd, \"/\", ans, \"]\"\n"
+    "    }\n"
+    "end\n"
+    ;
+
+    static bool loadPromptingProgram_() {
+        Universe::destroy();
+        TokenStream t(make_source_from_str("update_test", program_with_prompt));
+        return Universe::instance().make(t);
+    }
+
+    void TestUpdateUniverse::testTurnAsksForInput_() {
+        ARCHETYPE_TEST(loadPromptingProgram_());
+
+        MemoryStorage before;
+        before << Universe::instance();
+
+        TurnResult asked = run_turn_collecting({ string("open") });
+        ARCHETYPE_TEST(asked.status == TurnResult::Status::NeedsLine);
+
+        // Everything the game wrote up to the question, and nothing past it.
+        ARCHETYPE_TEST(asked.text.find("combination?") != string::npos);
+        ARCHETYPE_TEST(asked.text.find("[open/") == string::npos);
+
+        // The turn did not happen.  'cmd := read' had already run and mutated
+        // main, so this only holds if the snapshot was rolled back -- and since
+        // the bytes are a pure function of state, comparing them is the whole
+        // check.
+        MemoryStorage after;
+        after << Universe::instance();
+        ARCHETYPE_TEST(before.bytes() == after.bytes());
+
+        // The same turn, replayed with the answer in hand, runs to completion.
+        TurnResult done = run_turn_collecting({ string("open"), string("472") });
+        ARCHETYPE_TEST(done.status == TurnResult::Status::Complete);
+        ARCHETYPE_TEST(done.text.find("[open/472]") != string::npos);
+    }
+
+    void TestUpdateUniverse::testDeclinedInputEndsTheTurn_() {
+        ARCHETYPE_TEST(loadPromptingProgram_());
+
+        // An absent item is the player pressing Escape, or ^D at a console.
+        // The turn finishes rather than asking again, which is what keeps a
+        // driver from being stuck in a conversation it has no way to end.
+        TurnResult declined = run_turn_collecting({ string("open"), nullopt });
+        ARCHETYPE_TEST(declined.status == TurnResult::Status::Complete);
+        ARCHETYPE_TEST(declined.text.find("[open/") != string::npos);
+        ARCHETYPE_TEST(declined.text.find("472") == string::npos);
+    }
+
     void TestUpdateUniverse::runTests_() {
         testPlainUpdate_();
         testSitrepAppendsParserRdf_();
         testSitrepUnpacksPairs_();
         testInspectAppendsStateRdf_();
+        testTurnAsksForInput_();
+        testDeclinedInputEndsTheTurn_();
     }
 }

@@ -94,6 +94,27 @@
     el.scroll.scrollTop = el.scroll.scrollHeight;
   }
 
+  // Text from a turn that has not happened yet: the game printed a prompt and
+  // stopped to ask a question.  It is shown but never remembered, because the
+  // next attempt replays the turn from the top and produces it again -- that
+  // time with the player's answer echoed into it.  Kept in an element of its
+  // own so it can be taken back off without disturbing the transcript.
+  let provisional = null;
+
+  function showProvisional(text) {
+    dropProvisional();
+    provisional = document.createElement('span');
+    provisional.innerHTML = ansiToHtml(text);
+    el.transcript.append(provisional);
+    el.scroll.scrollTop = el.scroll.scrollHeight;
+  }
+
+  function dropProvisional() {
+    if (!provisional) return;
+    provisional.remove();
+    provisional = null;
+  }
+
   // Transient by default: a note about what just happened has said its piece
   // once the player has read it, and leaving it up makes it look like a
   // permanent condition of the game.  Errors and the end-of-game notice are
@@ -219,28 +240,86 @@
     status('The game has ended.  Start over, or load a save.', true);
   }
 
-  function takeTurn(input) {
-    if (busy || arch.arch_ended()) return Promise.resolve();
+  // A mid-turn question, waiting to be answered.  While one is up the player is
+  // answering the game rather than commanding it, so the entry box is routed
+  // here instead of starting a new turn.
+  let pending = null;
+
+  function askPlayer(want) {
+    return new Promise((resolve) => {
+      pending = { want: want, resolve: resolve };
+      status(want === 'key'
+        ? 'The game is waiting for a keystroke — Esc to decline.'
+        : 'The game is waiting for an answer — Esc to decline.', true);
+      setPlayable(true);
+    });
+  }
+
+  // `value` is null when the player declines, which the interpreter reports as
+  // end-of-input: the same thing ^D does at a console prompt, so the game sees
+  // UNDEFINED and carries on rather than asking again.
+  function answerPlayer(value) {
+    const waiting = pending;
+    pending = null;
+    status('');
+    if (waiting) waiting.resolve(value);
+  }
+
+  // A turn is a conversation rather than a call.  The game may stop partway
+  // through at a 'read' or a 'key' the player has not answered yet; each answer
+  // is appended to the list and the turn run again from the top.  The
+  // interpreter rolls the universe back before handing the question over, so
+  // replaying is exactly as though the whole turn had been typed at once.
+  //
+  // Only a game that reads without ever being satisfied can run out of
+  // attempts, and one declined answer is always enough to end a turn.
+  const MAX_PROMPTS = 64;
+
+  async function takeTurn(input) {
+    if (busy || arch.arch_ended()) return;
     busy = true;
-    const narrative = arch.arch_turn(input, columns);
-    const failure = arch.arch_last_error();
-    if (failure) {
-      status('Error: ' + failure, true);
+    setPlayable(false);
+    const items = [input];
+    try {
+      for (let attempt = 0; attempt <= MAX_PROMPTS; attempt++) {
+        const turn = arch.arch_turn(items, columns);
+        if (turn.status === 'error') {
+          dropProvisional();
+          status('Error: ' + (arch.arch_last_error() || 'turn failed'), true);
+          return;
+        }
+        if (turn.status === 'complete') {
+          dropProvisional();
+          append(turn.text);
+          await autosave();
+          // A finished game is worth keeping: reloading the page should show
+          // how it ended rather than silently starting again.
+          if (arch.arch_ended()) finish();
+          return;
+        }
+        showProvisional(turn.text);
+        items.push(await askPlayer(turn.status === 'needs_key' ? 'key' : 'line'));
+      }
+      dropProvisional();
+      status('The game kept asking for input; the turn was abandoned.', true);
+    } finally {
       busy = false;
-      return Promise.resolve();
+      if (!arch.arch_ended()) setPlayable(true);
     }
-    append(narrative);
-    if (arch.arch_ended()) {
-      busy = false;
-      // A finished game is worth keeping: reloading the page should show how it
-      // ended rather than silently starting again.
-      return autosave().then(finish);
-    }
-    return autosave().then(() => { busy = false; });
   }
 
   el.entry.addEventListener('submit', (event) => {
     event.preventDefault();
+    if (pending) {
+      // Answering a question, not issuing a command.  Sent untrimmed and blank
+      // lines included, because that is what the game would have read from a
+      // console -- and what keeps a browser transcript replayable as a script.
+      if (pending.want !== 'line') return;
+      const answer = el.command.value;
+      el.command.value = '';
+      answerPlayer(answer);
+      return;
+    }
     const input = el.command.value.trim();
     // An empty command would reach 'UPDATE' as UNDEFINED and end the game with
     // "EOF; goodbye." (games/intrptr.arch), so it never gets sent.
@@ -248,6 +327,27 @@
     el.command.value = '';
     clearTransientStatus();
     takeTurn(input);
+  });
+
+  document.addEventListener('keydown', (event) => {
+    if (!pending || event.altKey || event.ctrlKey || event.metaKey) return;
+    if (event.key === 'Escape') {
+      event.preventDefault();
+      el.command.value = '';
+      answerPlayer(null);
+      return;
+    }
+    if (pending.want !== 'key') return;
+    // One printable character answers 'key'.  Return counts as a keystroke too,
+    // but is sent as a space: the interpreter echoes whatever it reads, and a
+    // newline there would break the line the prompt is sitting on.
+    if (event.key.length === 1) {
+      event.preventDefault();
+      answerPlayer(event.key);
+    } else if (event.key === 'Enter') {
+      event.preventDefault();
+      answerPlayer(' ');
+    }
   });
 
   // ------------------------------------------------------------------- games
@@ -329,7 +429,24 @@
 
   // ----------------------------------------------------------------- buttons
 
+  // Guards the controls that swap the universe out.  A turn used to be over in
+  // an instant; now it can span however long a player takes to answer a
+  // question, and the turn waiting on that answer will replay itself against
+  // whatever universe is loaded when it arrives.  Saving is left alone, since a
+  // turn that stopped to ask has been rolled back and the state is sound.
+  function interrupting() {
+    if (!busy) return false;
+    status(pending
+      ? 'Answer the question first, or press Esc to decline it.'
+      : 'A turn is still running.', true);
+    return true;
+  }
+
   el.game.addEventListener('change', () => {
+    if (interrupting()) {
+      el.game.value = current.slug;
+      return;
+    }
     const game = gameBySlug(el.game.value);
     const url = new URL(location.href);
     url.searchParams.set('game', game.slug);
@@ -338,6 +455,7 @@
   });
 
   el.restart.addEventListener('click', () => {
+    if (interrupting()) return;
     dropSave(current.slug).then(() => start(current, null));
   });
 
@@ -372,6 +490,10 @@
   });
 
   el.upload.addEventListener('change', () => {
+    if (interrupting()) {
+      el.upload.value = '';
+      return;
+    }
     const file = el.upload.files && el.upload.files[0];
     if (!file) return;
     file.arrayBuffer().then((buffer) => {

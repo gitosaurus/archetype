@@ -14,6 +14,7 @@
 
 #include <exception>
 #include <string>
+#include <utility>
 #include <vector>
 
 #include <emscripten/bind.h>
@@ -73,19 +74,49 @@ namespace archetype {
     }
   }
 
-  // One turn.  Returns the narrative text, which includes the prompt and the
-  // echoed command, exactly as the native interpreter's transcript would.
-  std::string arch_turn(std::string input, int width) {
+  // One turn, as { status, text }.  'inputs' is everything the player has
+  // supplied toward it: the command, plus an answer for each mid-turn 'read'
+  // or 'key' a previous attempt ran into.  A null answer is the player
+  // declining, which the interpreter reports as end-of-input.
+  //
+  // A turn that comes back needing more has not happened -- the universe is
+  // untouched and 'text' ends with the prompt the game stopped at -- so the
+  // page collects the answer, appends it, and calls again with the longer
+  // list.  What finally comes back is the whole turn's narrative, prompt and
+  // answer echoed in place, exactly as the native transcript would have it.
+  val arch_turn(val inputs, int width) {
+    val result = val::object();
     try {
       last_error.clear();
-      return run_turn(std::move(input), width);
+      TurnInputs items;
+      const unsigned count = inputs["length"].as<unsigned>();
+      items.reserve(count);
+      for (unsigned i = 0; i < count; ++i) {
+        val item = inputs[i];
+        if (item.isNull() or item.isUndefined()) {
+          items.emplace_back();
+        } else {
+          items.emplace_back(item.as<std::string>());
+        }
+      }
+      TurnResult turn = run_turn_collecting(std::move(items), width);
+      std::string status = "complete";
+      if (turn.status == TurnResult::Status::NeedsLine) {
+        status = "needs_line";
+      } else if (turn.status == TurnResult::Status::NeedsKey) {
+        status = "needs_key";
+      }
+      result.set("status", status);
+      result.set("text", turn.text);
+      return result;
     } catch (const std::exception& e) {
       last_error = e.what();
-      return std::string();
     } catch (...) {
       last_error = "Unknown error taking a turn";
-      return std::string();
     }
+    result.set("status", std::string("error"));
+    result.set("text", std::string());
+    return result;
   }
 
   // True once the game is over.  A page must check this before every turn:
