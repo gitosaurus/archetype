@@ -12,6 +12,12 @@
       "title": "Starship Solitaire",
       "source": "games/starship.arch",
       "acx": "starship.acx"
+    },
+    {
+      "slug": "animal",
+      "title": "Animal",
+      "source": "games/animal.arch",
+      "acx": "animal.acx"
     }
   ]
 }

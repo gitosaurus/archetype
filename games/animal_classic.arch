@@ -6,14 +6,11 @@
 #
 # Author:  DTJ  11/26/94
 #
-# Rewritten as an update loop, 8/3/2026.  The 1994 original ran the whole
-# session inside one 'START' and asked for a filename to save to; it is kept
-# as animal_classic.arch.  A driver that takes one turn at a time -- the
-# browser, or --update -- can only dispatch 'UPDATE', and autosave has since
-# made the file prompts unnecessary.  Dropping them also drops the one thing
-# in here that a replayed turn could not safely repeat: 'SAVE STATE' writes a
-# file, which is a side effect outside the universe and therefore outside
-# what a rolled-back turn can undo.
+# Superseded by animal.arch, which does the same thing as an update loop so
+# that a driver taking one turn at a time can dispatch it.  Kept for
+# reference: this is the original shape, where 'START' ran the whole session
+# and the question database was saved by asking for a filename.  It still
+# plays under --source at a terminal, which is all it was ever written for.
 
 null main
 
@@ -30,27 +27,30 @@ methods
     response
     }
 
-  # One round of the game per turn.  A driver hands over a line before
-  # anything else happens -- that is what a turn is -- so the "ready" prompt
-  # is a 'read' rather than a 'key', and consumes it.  Left to a 'key', the
-  # first character of whatever the player typed would answer it instead.
-  'UPDATE' : {
-    writes "Think of an animal; press Return when you're ready. "
-    read
-    'PLAY'
-    writes "Another game [y/n] ? "
-    if not 'AFFIRM' -> main then
-      stop "Thanks for playing."
-    }
-
-  # Playing at a console is the same loop, driven from the inside.  This is
-  # the shape games/intrptr.arch uses, and the reason a game written this way
-  # runs unchanged under --source, --update and the browser.
   'START' : {
-    while TRUE do { 'UPDATE' }
+    writes "Load old game? "
+    if 'AFFIRM' -> main then {
+      writes "Name of file? "
+      'LOAD STATE' -> system
+      read -> system
     }
+    while TRUE do {
+      'PLAY'
+      writes "Another game [y/n] ? "
+      if not 'AFFIRM' -> main then {
+        writes "Save this game? "
+        if 'AFFIRM' -> main then {
+          writes "Save to file: "
+          'SAVE STATE' -> system
+          read -> system
+        }
+        stop "Thanks for playing."
+      }
+    }
+  }
 
   'PLAY' : {
+    write "Think of an animal; hit any key when ready."; key
     branch := beginning
     while alternative := 'QUESTION' -> branch do
       branch := alternative
