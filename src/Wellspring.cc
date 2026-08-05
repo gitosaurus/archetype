@@ -47,6 +47,13 @@ namespace archetype {
                 stream_ptr source_stream{input.release()};
                 SourceFilePtr source{make_shared<SourceFile>(try_path.string(), source_stream)};
                 sources_[try_path.string()] = source;
+                // Record the name that was asked for, not the path it resolved
+                // to.  hasNeverBeenOpened is asked the question the way the
+                // includer wrote it, and sources_ is keyed by the resolved
+                // path -- and emptied again as soon as the file has been read
+                // -- so this set is the only lasting record that the question
+                // has already been answered once.
+                everBeenOpened_.insert(source_name);
                 return source;
             }
         }
@@ -67,6 +74,7 @@ namespace archetype {
 
     void Wellspring::closeAll() {
         sources_.clear();
+        everBeenOpened_.clear();
     }
 
     Wellspring* Wellspring::instance_ = nullptr;

@@ -19,6 +19,7 @@ namespace archetype {
         void testNullIsNull_();
         void testDynamicObjects_();
         void testInclusion_();
+        void testInclusionHappensOnce_();
         void testDefaultMethods_();
         void testMessagingKeywords_();
         void testSerialization_();
