@@ -6,6 +6,12 @@
 #
 ############################################################################
 
+# For the direction class itself, which lives in the interpreter.  Naming it
+# here costs nothing when standard.arch has already pulled it in, and lets
+# this file be compiled on its own.
+
+include "intrptr"
+
 direction  north       full: 'north'                    end
 direction  south       full: 'south'                    end
 direction  east        full: 'east'                     end

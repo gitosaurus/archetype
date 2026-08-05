@@ -2,6 +2,10 @@
 #
 # Directions within the starship.
 
+# For the direction class itself, which lives in the interpreter.
+
+include "intrptr"
+
 direction  null        full: 'fore'                     end
 direction  null        full: 'aft'                      end
 direction  null        full: 'port'                     end
