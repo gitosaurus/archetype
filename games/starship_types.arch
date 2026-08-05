@@ -20,8 +20,14 @@ methods
 
   'put_on' : 'wear'
   'wear' :
-    if location ~= player then
-      write "I don't have ", pronoun, "."
+    # Putting something on implies picking it up first.  Making the player
+    # say so is a Scott Adams reflex; there's no puzzle in the extra move.
+    # If the 'get' is refused it reports why, and location stays put, so
+    # the refusal is the only thing printed.
+    if location ~= player then {
+      'get'
+      if location = player then 'wear'
+      }
     else if wearing then
       write "I'm already wearing ", 'DEF' -> self, "."
     else {
@@ -76,7 +82,41 @@ type large_structure based on hollow_object
 
   why_not   : PartOfRoom
 
+  # Where this structure stands in the room that holds it: the direction you
+  # walk to get into it.  Given one, the structure knows the way back out,
+  # and stops reporting that its occupant is sealed in a room with no exits.
+  #
+  # Left UNDEFINED nothing changes at all, which the cryogenic coffin
+  # depends on -- the opening hint teaches the player to type "leave"
+  # precisely because there are no exits listed.
+
+  bearing   : UNDEFINED
+
 methods
+
+  # The reverse of the bearing: the direction that walks back out.
+  'WAY OUT' :
+    case bearing of {
+      "fore"      : "aft"
+      "aft"       : "fore"
+      "port"      : "starboard"
+      "starboard" : "port"
+      "up"        : "down"
+      "down"      : "up"
+      }
+
+  # Listing an exit and walking through it are the same question asked
+  # twice: 'INVENTORY NAME' and 'MOVE PLAYER' both send a direction's name
+  # to the player's location and use whatever room comes back.  So handing
+  # back the containing room is all it takes to be both named as an exit and
+  # usable as one.  Anything else falls through to hollow_object, which
+  # sends it on to the room class as before.
+
+  default :
+    if bearing and message = ('WAY OUT' -> self) then
+      location
+    else
+      message --> hollow_object
 
   'look in' :
     if 'TRANSPARENT' -> self then
@@ -105,27 +145,32 @@ type big_furniture based on furniture
 
 methods
 
-  'look'  : >>It looks big enough to go to.
+  # You approach any of these by sitting; proximity says which preposition
+  # the piece takes, so a desk reads "sit at" and a bed reads "sit on"
+  # without either one needing to spell it out.
+  'look'  : write "It looks big enough to sit ", proximity, "."
   'look in' : message --> large_structure
+
+  'sit'           : 'enter'
+  'sit at'        : 'enter'
+  'sit on'        : 'enter'
+  'sit onto'      : 'enter'
+  'get onto'      : 'enter'
+
+  'get up'        : 'leave'
+
   'get' :
     >>That's too bulky to pick up.
 
 end
 
 
+# Furniture you sit on rather than at.  The distinction is carried entirely
+# by proximity now, so this exists to name the common case.
+
 type sit_furniture based on big_furniture
 
   proximity       : "on"
-
-methods
-
-  'look'          : >>Looks big enough to sit on.
-  'sit'           : 'enter'
-  'sit on'        : 'enter'
-  'sit onto'      : 'enter'
-  'get onto'      : 'enter'
-
-  'get up'        : 'leave'
 
 end
 

@@ -383,6 +383,7 @@ type:hollow_object a rdfs:Class
     ; archetype:respondsTo msg:leave
     ; archetype:respondsTo msg:go%20to
     ; archetype:respondsTo msg:go%20in
+    ; archetype:respondsTo msg:get%20in
     ; archetype:respondsTo archetype:default .
 
 type:furniture a rdfs:Class
