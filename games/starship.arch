@@ -335,8 +335,6 @@ methods
     write "\"."
     }
 
-  'get into' : 'enter'
-
   'enter' :
     if locked then {
 >>I move up to the doors but all that happens is that the display above
@@ -440,6 +438,7 @@ room doctors_quarters
 methods
 
   'port' : hall5
+  'aft'  : closet
 
   'LONGDESC' : {
 >>I'm standing in the doctor's quarters, if the nameplate on the door is
@@ -557,6 +556,7 @@ large_structure closet
 
   desc      : "closet"
   location  : doctors_quarters
+  bearing   : "aft"
 
 methods
 
@@ -1091,6 +1091,11 @@ methods
 
   'fore'    : hall4
 
+  # Directions move the player straight into the destination without going
+  # through 'enter', so the way aft only exists once the chamber is open.
+  # Otherwise "go aft" would walk through a sealed reactor door.
+  'aft'     : if reactor.open then reactor
+
   'LONGDESC' : {
 >>I'm in what appears to be the engine room.  Complicated tangles of
 >>wires and gauges cover the wall; the only thing that looks simple
@@ -1288,6 +1293,7 @@ large_structure reactor
   syn       : "reactor"
   location  : engine_room
   open      : FALSE
+  bearing   : "aft"
 
 methods
 
@@ -1397,25 +1403,32 @@ methods
 end
 
 
-visible_part viewport
+# The view of interstellar space itself, kept apart from any one pane of
+# glass that frames it.  Every window on the ship forwards 'look' here, so
+# the count of how many times the player has bothered to stare outward is
+# shared:  the awe wears off the player, not the window.  Whichever window
+# is looked through first gets the full stare, and the boredom carries over
+# to the other one.
+#
+# The window that forwarded the message is 'sender', which is what lets the
+# opening line name the right piece of glass.
 
-  desc      : "viewport"
-  location  : antechamber
+object space_vista
 
-  InBulkhead : TRUE
+  visible : FALSE
 
-  seen      : 0
+  seen    : 0
 
 methods
 
-  'look out' : 'look'
   'look' :
     case seen +:= 1 of {
       1 : {
->>I stare out the viewport into the breathtaking beauty of space.  It is
->>so magnificently deep and beautiful.  I press my face against the
->>quartz, trying to take the splendor into my eyes that seem too
->>inadequate to behold properly.
+        writes "I stare out ", 'DEF' -> sender, " into the breathtaking "
+        writes "beauty of space.  It is so magnificently deep and beautiful.  "
+        writes "I press my face against the quartz, trying to take the "
+        write  "splendor into my eyes that seem too inadequate to behold ",
+               "properly."
         }
       2 : >>The big black space.  Yeah, yeah.  Seen it, done that.
       3 : >>What?  You've seen one star, you've seen 'em all.
@@ -1423,6 +1436,22 @@ methods
       5 : >>No!
       default : >>I steadfastly refuse.
       }
+
+end
+
+
+visible_part viewport
+
+  desc      : "viewport"
+  location  : antechamber
+
+  InBulkhead : TRUE
+
+methods
+
+  'look out'     : 'look'
+  'look through' : 'look'
+  'look'         : 'look' -> space_vista
 
 end
 
@@ -1665,10 +1694,6 @@ sit_furniture desk
   desc      : "desk"
   proximity : "at"
   location  : captains_quarters
-
-methods
-
-  'sit at' : 'enter'
 
 end
 
@@ -2204,6 +2229,27 @@ methods
 
   'aft'     : briefing_room
 
+  'LONGDESC' : {
+>>I'm on the observation deck.  The forward wall isn't a wall at all: it is
+>>one enormous curved pane of quartz running floor to ceiling, and beyond it
+>>hangs the whole of interstellar space.
+    }
+
+end
+
+
+visible_part observation_window
+
+  desc      : "enormous window"
+  syn       : "quartz|pane|wall|viewport"
+  location  : observation_deck
+
+methods
+
+  'look out'     : 'look'
+  'look through' : 'look'
+  'look'         : 'look' -> space_vista
+
 end
 
 
@@ -2467,7 +2513,6 @@ methods
 
   'TRANSPARENT' : TRUE
   'HORIZON'     : location
-  'sit at' : 'enter'
 
 end
 

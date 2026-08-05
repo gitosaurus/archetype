@@ -197,6 +197,7 @@ methods
   'go'    : 'enter'
   'go to' : 'enter'
   'go in' : 'enter'
+  'get in' : 'enter'
 
   'get' :
     if player.location = self then
