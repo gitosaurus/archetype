@@ -10,6 +10,9 @@
 #include <sstream>
 #include <memory>
 #include <vector>
+#include <filesystem>
+#include <fstream>
+#include <system_error>
 
 #include "TestUniverse.hh"
 #include "TestRegistry.hh"
@@ -169,6 +172,55 @@ namespace archetype {
         string actual = capture.getCapture();
         string expected = "A salty cracker is here.\n";
         ARCHETYPE_TEST_EQUAL(actual, expected);
+    }
+
+    static char program_double_inclusion[] =
+    "include \"snack\"\n"
+    "include \"snack\"\n"
+    "null larder\n"
+    "  desc: \"A cold larder off the kitchen.\"\n"
+    "  contents: cracker\n"
+    "methods\n"
+    "  'look' : write \"A \", contents.flavor, \" \", contents.desc, \" is here.\"\n"
+    "end\n"
+    ;
+
+    // A file named twice is read once.
+    //
+    // This has to go through a file on disk.  The inclusion test above hands
+    // its source to the Wellspring with put(), which lands it in sources_
+    // under the very name the include asks for -- so it is found by lookup and
+    // never by search.  Searching is the path every real include takes, and it
+    // was the path that forgot to record what it had opened.
+    void TestUniverse::testInclusionHappensOnce_() {
+        Universe::destroy();
+        Wellspring::destroy();
+
+        filesystem::path dir = filesystem::temp_directory_path() / "archetype_include_once";
+        error_code ec;
+        filesystem::remove_all(dir, ec);
+        filesystem::create_directories(dir, ec);
+        {
+            ofstream snack{dir / "snack.arch"};
+            snack << program_basic_2;
+        }
+        Wellspring::instance().addSearchPath(dir.string());
+
+        ARCHETYPE_TEST(Wellspring::instance().hasNeverBeenOpened("snack"));
+        TokenStream t(make_source_from_str("program_double_inclusion", program_double_inclusion));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+        ARCHETYPE_TEST(not Wellspring::instance().hasNeverBeenOpened("snack"));
+
+        // The second mention was skipped rather than re-read, and what the
+        // first one brought in is still intact.
+        Capture capture;
+        Statement stmt = make_stmt_from_str("'look' -> larder");
+        stmt->execute();
+        string actual = capture.getCapture();
+        string expected = "A salty cracker is here.\n";
+        ARCHETYPE_TEST_EQUAL(actual, expected);
+
+        filesystem::remove_all(dir, ec);
     }
 
     static char program_default_methods[] =
@@ -399,6 +451,7 @@ namespace archetype {
         testNullIsNull_();
         testDynamicObjects_();
         testInclusion_();
+        testInclusionHappensOnce_();
         testDefaultMethods_();
         testMessagingKeywords_();
         testSerialization_();
