@@ -140,8 +140,10 @@ All other single quotes (apostrophes, stray ticks) remain punctuation."
       (,val  . font-lock-constant-face)
       ;; Built-in identifiers
       (,blt  . font-lock-builtin-face)
-      ;; Message-send operators: --> (broadcast to class) and -> (send to object)
-      ("-->?" 0 ,op-face)
+      ;; Message-send operators: --> (broadcast to class), -> (send to object),
+      ;; and <- (send to object, yielding the object rather than the reply).
+      ;; "<-" is listed first so it wins over any shorter match.
+      ("<-\\|-->?" 0 ,op-face)
       ;; Assignment operators: := and the compound forms +:= -:= &:=
       ("[+\\-&]?:=" 0 ,op-face)))
   "Font-lock specification for `archetype-mode'.")
@@ -171,6 +173,7 @@ Syntax overview:
   object NAME  attr : value  methods  'MSG' : stmt  end
   'MESSAGE' -> object          # send a message, get return value
   'MESSAGE' --> class          # send to nearest ancestor class
+  object <- 'M1' <- 'M2'       # send for effect, get the object back
   expr := value                # assignment
   >>verbatim text here         # print exactly as written
 

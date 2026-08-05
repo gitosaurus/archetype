@@ -93,6 +93,12 @@ namespace archetype {
             OP_WITHIN,
             OP_HEAD,
             OP_TAIL,
+
+            // New operators go here, at the end.  These enumerators are the
+            // ints written into .acx files, so renumbering any of the ones
+            // above would invalidate every compiled game and save file.
+            OP_SEND_TO,
+
             NumOperators,
 
             // Kept outside of the range of valid operators, but

@@ -108,6 +108,7 @@ namespace archetype {
 
             case OP_SEND: return 6;
             case OP_PASS: return 6;
+            case OP_SEND_TO: return 6;
 
             case OP_EQ: return 5;
             case OP_NE: return 5;
@@ -484,6 +485,28 @@ namespace archetype {
                 return false;
             }
             bool result = true;
+
+            // "->" and "<-" share a precedence and both group to the left, so
+            // an unparenthesized mix of the two silently reassociates into
+            // nonsense:  (verb -> system <- 'X') sends 'X' to whatever object
+            // the reply happened to be.  The reading almost certainly meant is
+            // (verb -> (system <- 'X')), which puts the "<-" on the *right*
+            // side; only a left-hand child is ambiguous, so only that is
+            // refused.  This does also refuse a deliberate
+            // ((a -> b) <- c) -- send to whatever object came back -- which
+            // has to go through an intermediate attribute instead.
+            auto is_arrow = [](Keywords::Operators_e o) {
+                return o == OP_SEND or o == OP_PASS or o == OP_SEND_TO;
+            };
+            if (is_arrow(op())) {
+                if (auto left_arrow = dynamic_cast<const BinaryOperator*>(left_.get());
+                    left_arrow and is_arrow(left_arrow->op()) and
+                    (op() == OP_SEND_TO) != (left_arrow->op() == OP_SEND_TO)) {
+                    t.errorMessage("Cannot mix '->' and '<-' without parentheses");
+                    return false;
+                }
+            }
+
             switch (op()) {
                 case OP_DOT:
                     if (auto id_node = dynamic_cast<const IdentifierNode*>(right_.get())) {
@@ -668,6 +691,37 @@ namespace archetype {
                             result = Object::send(recipient, std::move(lv_v));
                         }
                     }
+                    break;
+                }
+
+                // The mirror image of OP_SEND in operand order, but not in
+                // value:  this yields the recipient, not the reply.  That is
+                // what lets sends chain -- (obj <- 'A' <- 'B') -- and what
+                // lets a stateful recipient be primed in place, as in
+                // (verb -> (system <- 'WHICH OBJECT')).
+                case OP_SEND_TO: {
+                    Value lv_o = left_->evaluate()->objectConversion();
+                    if (not lv_o->isDefined()) {
+                        // An undefined recipient quietly swallows the rest of
+                        // a chain, since every later <- then has an undefined
+                        // left side.  This is how OP_SEND degrades too.
+                        result = std::move(lv_o);
+                        break;
+                    }
+                    ObjectPtr recipient = Universe::instance().getObject(lv_o->getObject());
+                    if (not recipient) {
+                        result = make_unique<UndefinedValue>();
+                        break;
+                    }
+                    // Evaluated after the recipient, so that a chain sends in
+                    // the order written.
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    if (recipient->isPrototype()) {
+                        Object::pass(recipient, std::move(rv_v));
+                    } else {
+                        Object::send(recipient, std::move(rv_v));
+                    }
+                    result = make_unique<ObjectValue>(recipient->id());
                     break;
                 }
 
