@@ -107,6 +107,15 @@ namespace archetype {
         OPERATOR(OP_WITHIN, "within");
         OPERATOR(OP_HEAD, "head");
         OPERATOR(OP_TAIL, "tail");
+
+        // The list above is in ASCII order, but only for the reader's
+        // convenience: the scanner looks operators up by exact string, so
+        // position carries no meaning to it.  Position does fix the
+        // enumerator's value, though, and those values are serialized, so a
+        // new operator is appended here rather than filed alphabetically.
+        // "<-" would otherwise belong between "<" and "<=", which would
+        // renumber OP_LE onward and break every existing .acx file.
+        OPERATOR(OP_SEND_TO, "<-");
     }
 
     Keywords::~Keywords() {

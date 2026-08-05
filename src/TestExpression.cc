@@ -120,6 +120,20 @@ namespace archetype {
         string actual8 = as_prefix(expr8);
         string expected8 = "(> (:= (. x i) (+ (. x i) 1)) 5)";
         ARCHETYPE_TEST_EQUAL(actual8, expected8);
+
+        // "<-" groups to the left, which is what lets it chain:  each send
+        // yields the recipient back for the next one to use.
+        Expression expr9 = make_expr_from_str("system <- 'BANNER' <- '='");
+        string actual9 = as_prefix(expr9);
+        string expected9 = "(<- (<- system 'BANNER') '=')";
+        ARCHETYPE_TEST_EQUAL(actual9, expected9);
+
+        // Parenthesized, "<-" lands on the right side of "->", so it primes
+        // the recipient rather than consuming the reply.
+        Expression expr10 = make_expr_from_str("verb -> (system <- 'WHICH OBJECT')");
+        string actual10 = as_prefix(expr10);
+        string expected10 = "(-> verb (<- system 'WHICH OBJECT'))";
+        ARCHETYPE_TEST_EQUAL(actual10, expected10);
     }
 
     void TestExpression::testEvaluation_() {
@@ -246,6 +260,20 @@ namespace archetype {
             expect("'hello' -> scratch = ABSENT", make_unique<BooleanValue>(false));
             expect("'hello' -> scratch ~= ABSENT", make_unique<BooleanValue>(true));
 
+            // "<-" yields the recipient, not the reply, so a chain of them
+            // stays anchored on the same object.  scratch.x has been climbing
+            // by one for every 'hello' sent above; these two send two more.
+            expect("scratch.x := 0", make_unique<NumericValue>(0));
+            expect("(scratch <- 'hello' <- 'hello') = scratch", make_unique<BooleanValue>(true));
+            expect("scratch.x", make_unique<NumericValue>(2));
+            // An unknown message is still a send; it just accomplishes nothing.
+            expect("(scratch <- 'never') = scratch", make_unique<BooleanValue>(true));
+            expect("scratch.x", make_unique<NumericValue>(2));
+            // An undefined recipient swallows the whole chain rather than
+            // throwing:  every later "<-" then has an undefined left side.
+            expect("nowhere <- 'hello' <- 'hello'", make_unique<UndefinedValue>());
+            expect("scratch.x", make_unique<NumericValue>(2));
+
         for (auto& p : testing_pairs) {
             Expression expr = make_expr_from_str(p.first);
             out() << "Testing: {" << p.first << "}" << endl;
@@ -273,6 +301,10 @@ namespace archetype {
             {
                 "\"Hello \" & \"world\"",
                 "(& \"Hello \" \"world\")"
+            },
+            {
+                "read -> (system <- 'SAVE STATE')",
+                "(-> read (<- system 'SAVE STATE'))"
             }
         };
         for (auto const& p : expressions) {
@@ -321,6 +353,26 @@ namespace archetype {
         ARCHETYPE_TEST(expr6 == nullptr);
         Expression expr7 = make_expr_from_str("('hello' -> world).tricky := 5");
         ARCHETYPE_TEST(expr7 != nullptr);
+
+        // "->" and "<-" share a precedence and both group left, so mixing them
+        // unparenthesized reassociates into something nobody means.  Refused
+        // rather than quietly obeyed.
+        Expression expr8 = make_expr_from_str("verb -> system <- 'WHICH OBJECT'");
+        ARCHETYPE_TEST(expr8 == nullptr);
+        Expression expr9 = make_expr_from_str("system <- 'WHICH OBJECT' -> verb");
+        ARCHETYPE_TEST(expr9 == nullptr);
+        Expression expr10 = make_expr_from_str("message --> parent <- 'DONE'");
+        ARCHETYPE_TEST(expr10 == nullptr);
+
+        // Parentheses say which reading was meant, and both readings are legal.
+        Expression expr11 = make_expr_from_str("verb -> (system <- 'WHICH OBJECT')");
+        ARCHETYPE_TEST(expr11 != nullptr);
+
+        // Chains of a single arrow are never ambiguous.
+        Expression expr12 = make_expr_from_str("system <- 'BANNER' <- '='");
+        ARCHETYPE_TEST(expr12 != nullptr);
+        Expression expr13 = make_expr_from_str("'GENERATE' -> namesakes -> system");
+        ARCHETYPE_TEST(expr13 != nullptr);
     }
 
     void TestExpression::testListLiterals_() {

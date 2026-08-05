@@ -156,9 +156,63 @@ namespace archetype {
         ARCHETYPE_TEST(are_equal);
     }
 
+    // "<-" exists mainly for system's protocols, which are sequences of
+    // messages sent for effect.  These check the two shapes that buys:  a
+    // chain of effects, and a selector primed in place so that the argument's
+    // reply can be used in the same expression.
+    void TestSystemObject::testArrowSequencing_() {
+        Universe::destroy();
+
+        // The whole sorter protocol as one chain.  Each "<-" hands system back
+        // to the next, so the messages arrive in written order.
+        Statement stmt = make_stmt_from_str(
+            "system <- 'INIT SORTER' <- \"dog\" <- \"Ajax\" <- \"cat\" <- 'CLOSE SORTER'"
+        );
+        stmt->execute();
+        deque<string> expected = {"Ajax", "cat", "dog"};
+        stmt = make_stmt_from_str("'NEXT SORTED' -> system");
+        for (auto const& s : expected) {
+            Value ans = stmt->execute()->stringConversion();
+            ARCHETYPE_TEST(ans->isDefined());
+            ARCHETYPE_TEST_EQUAL(ans->getString(), s);
+        }
+        ARCHETYPE_TEST(not stmt->execute()->isDefined());
+
+        // A chain evaluates to the recipient, so it can be sent to again.
+        Value chained = make_stmt_from_str("(system <- 'INIT SORTER') = system")->execute();
+        ARCHETYPE_TEST(chained->isTrueEnough());
+        make_stmt_from_str("'CLOSE SORTER' -> system")->execute();
+
+        // 'WHICH OBJECT' followed by its argument is one logical operation,
+        // but it took two statements to write before.  This only comes out
+        // right because "->" evaluates its message first and its recipient
+        // second:  system is put into WHICH_OBJECT state after "grab" is
+        // evaluated and immediately before the send.
+        TokenStream t1(make_source_from_str("program1", program1));
+        Universe::instance().make(t1);
+        make_stmt_from_str(
+            "{'OPEN PARSER' -> system;"
+            "'BUILD' -> take;"
+            "'BUILD' -> money;"
+            "'CLOSE PARSER' -> system}"
+        )->execute();
+
+        int take_obj_id = Universe::instance().getObject("take")->id();
+        Value one_liner = make_stmt_from_str("\"grab\" -> (system <- 'WHICH OBJECT')")->execute();
+        Value take_obj = make_unique<ObjectValue>(take_obj_id);
+        ARCHETYPE_TEST(one_liner->isSameValueAs(take_obj));
+
+        // Same answer as the two-statement form it replaces.
+        Value two_statements = make_stmt_from_str(
+            "{'WHICH OBJECT' -> system; \"grab\" -> system}"
+        )->execute();
+        ARCHETYPE_TEST(two_statements->isSameValueAs(take_obj));
+    }
+
     void TestSystemObject::runTests_() {
         testSorting_();
         testParsing_();
         testEmptyPhraseNeverMatches_();
+        testArrowSequencing_();
     }
 }
