@@ -44,7 +44,7 @@ namespace archetype {
         ARCHETYPE_TEST(lines.size() > 1);
         // Paste it back together and make sure it matches the original
         ostringstream back_out;
-        copy(lines.begin(), lines.end(), ostream_iterator<string>(back_out, " "));
+        ranges::copy(lines, ostream_iterator<string>(back_out, " "));
         string back_out_s = back_out.str();
         back_out_s.resize(back_out_s.size() - 1);
         ARCHETYPE_TEST_EQUAL(back_out_s, utterance);

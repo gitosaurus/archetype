@@ -38,7 +38,7 @@ namespace archetype {
         mem >> derived;
 
         deque<string> sorted = to_sort;
-        sort(sorted.begin(), sorted.end());
+        ranges::sort(sorted);
 
         for (auto const& expected : sorted) {
             string actual = derived.nextSorted()->getString();
