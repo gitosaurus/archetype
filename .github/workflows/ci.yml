@@ -24,6 +24,11 @@ jobs:
         run: cmake --build build --parallel
       - name: Test
         run: ./build/archetype --test
+      # Runs here on Linux/libstdc++ against goldens generated on macOS/libc++,
+      # so this step is also the standing test of whether an .acx is
+      # toolchain-independent.  See tests/golden/README.md.
+      - name: Golden files
+        run: ./tests/golden/check.sh
 
   build-wasm:
     runs-on: ubuntu-latest

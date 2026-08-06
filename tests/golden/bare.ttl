@@ -1,0 +1,510 @@
+@base <http://derektjones.net/archetype/> .
+
+@prefix rdf:       <http://www.w3.org/1999/02/22-rdf-syntax-ns#> .
+@prefix rdfs:      <http://www.w3.org/2000/01/rdf-schema#> .
+@prefix xsd:       <http://www.w3.org/2001/XMLSchema#> .
+
+@prefix archetype: <schema/> .
+@prefix type:      <type/> .
+@prefix obj:       <object/> .
+@prefix attr:      <attr/> .
+@prefix msg:       <msg/> .
+
+type:null a rdfs:Class .
+
+obj:system a archetype:SystemObject .
+
+type:narrative_voice a rdfs:Class
+    ; rdfs:subClassOf type:null .
+
+type:first_person a rdfs:Class
+    ; rdfs:subClassOf type:narrative_voice
+    ; attr:Who "I"
+    ; attr:who "I"
+    ; attr:WhoIs "I'm"
+    ; attr:whois "I'm"
+    ; attr:prompt "What should I do now?" .
+
+type:second_person a rdfs:Class
+    ; rdfs:subClassOf type:narrative_voice
+    ; attr:Who "You"
+    ; attr:who "you"
+    ; attr:WhoIs "You're"
+    ; attr:whois "you're"
+    ; attr:prompt "What do you want to do now?" .
+
+type:pronoun_object a rdfs:Class
+    ; rdfs:subClassOf type:null
+    ; attr:IsApronoun "true"^^xsd:boolean
+    ; attr:IsAnoun "true"^^xsd:boolean
+    ; archetype:respondsTo msg:NAME .
+
+type:lex a rdfs:Class
+    ; rdfs:subClassOf type:null
+    ; attr:IsAlex "true"^^xsd:boolean
+    ; attr:on_menu "true"^^xsd:boolean
+    ; archetype:respondsTo msg:NAME .
+
+type:Verb a rdfs:Class
+    ; rdfs:subClassOf type:lex
+    ; attr:IsAVerb "true"^^xsd:boolean
+    ; attr:normal "false"^^xsd:boolean
+    ; archetype:respondsTo msg:DISABLED
+    ; archetype:respondsTo msg:INTERPRET
+    ; archetype:respondsTo msg:NORMAL .
+
+obj:main a type:null
+    ; attr:normal "[0m"
+    ; attr:started "false"^^xsd:boolean
+    ; attr:bold "[1m"
+    ; attr:dim "[2m"
+    ; attr:mentioned "false"^^xsd:boolean
+    ; archetype:respondsTo msg:INTERPRET
+    ; archetype:respondsTo msg:START
+    ; archetype:respondsTo msg:UPDATE
+    ; archetype:respondsTo msg:ROLL%20CALL
+    ; archetype:respondsTo msg:ASSEMBLE%20VOCABULARY
+    ; archetype:respondsTo msg:SITREP
+    ; archetype:respondsTo msg:NEXT%20LEX
+    ; archetype:respondsTo msg:NOUNS%20PRESENT
+    ; archetype:respondsTo msg:Semantic%20Error
+    ; archetype:respondsTo msg:MENTION .
+
+type:node a rdfs:Class
+    ; rdfs:subClassOf type:null .
+
+type:event_handler a rdfs:Class
+    ; rdfs:subClassOf type:null
+    ; attr:event "EVENT"^^archetype:message
+    ; archetype:respondsTo msg:SEND%20EVENT
+    ; archetype:respondsTo msg:REGISTER .
+
+obj:before a type:event_handler
+    ; attr:event "BEFORE"^^archetype:message .
+
+obj:after a type:event_handler
+    ; attr:event "AFTER"^^archetype:message .
+
+type:inventory_item a rdfs:Class
+    ; rdfs:subClassOf type:null
+    ; archetype:respondsTo msg:ANNOUNCE%20SELF
+    ; archetype:respondsTo msg:ASSEMBLE
+    ; archetype:respondsTo msg:MOVE .
+
+type:inventoried a rdfs:Class
+    ; rdfs:subClassOf type:inventory_item
+    ; attr:intro "There is"
+    ; attr:empty_intro "There is nothing in there."
+    ; archetype:respondsTo msg:ANNOUNCE%20MEMBERS
+    ; archetype:respondsTo msg:INVENTORY%20OBJECTS
+    ; archetype:respondsTo msg:DROP%20SELF
+    ; archetype:respondsTo msg:ADD%20SELF
+    ; archetype:respondsTo msg:INVENTORY
+    ; archetype:respondsTo msg:INVENTORY%20NAMES .
+
+obj:list_inventory a type:null
+    ; attr:number 0
+    ; archetype:respondsTo msg:INVENTORY%20OBJECTS
+    ; archetype:respondsTo msg:INVENTORY
+    ; archetype:respondsTo msg:INVENTORY%20NAMES .
+
+type:direction a rdfs:Class
+    ; rdfs:subClassOf type:inventory_item
+    ; attr:IsAlex "true"^^xsd:boolean
+    ; attr:interpret "true"^^xsd:boolean
+    ; attr:IsAdirection "true"^^xsd:boolean
+    ; archetype:respondsTo msg:NAME
+    ; archetype:respondsTo msg:INTERPRET
+    ; archetype:respondsTo msg:DEF
+    ; archetype:respondsTo msg:INDEF
+    ; archetype:respondsTo msg:INVENTORY%20NAME
+    ; archetype:respondsTo msg:IN%20THE%20DIRECTION
+    ; archetype:respondsTo msg:go
+    ; archetype:respondsTo msg:MOVE%20PLAYER .
+
+obj:compass a type:inventoried
+    ; attr:empty_intro "There are no visible exits."
+    ; attr:exitstr "|"
+    ; archetype:respondsTo msg:ADD%20SELF
+    ; archetype:respondsTo archetype:default .
+
+type:room a rdfs:Class
+    ; rdfs:subClassOf type:inventoried
+    ; attr:empty_intro "There is nothing of interest here."
+    ; attr:IsAroom "true"^^xsd:boolean
+    ; attr:visited "false"^^xsd:boolean
+    ; attr:desc "nondescript room"
+    ; archetype:respondsTo msg:ENTERED
+    ; archetype:respondsTo msg:BRIEF
+    ; archetype:respondsTo msg:ROOMVIEW
+    ; archetype:respondsTo msg:LONGDESC .
+
+obj:namesakes a type:null
+    ; archetype:respondsTo msg:GENERATE .
+
+type:object a rdfs:Class
+    ; rdfs:subClassOf type:inventoried
+    ; attr:IsAnoun "true"^^xsd:boolean
+    ; attr:pronoun "it"
+    ; attr:IsAobject "true"^^xsd:boolean
+    ; attr:desc "nondescript object"
+    ; attr:visible "true"^^xsd:boolean
+    ; attr:size 1
+    ; archetype:respondsTo msg:NAME
+    ; archetype:respondsTo msg:ACCESS
+    ; archetype:respondsTo msg:DEF
+    ; archetype:respondsTo msg:HORIZON
+    ; archetype:respondsTo msg:MENTION%20SELF
+    ; archetype:respondsTo msg:NEG%20INDEF
+    ; archetype:respondsTo msg:INDEF
+    ; archetype:respondsTo msg:MOVE
+    ; archetype:respondsTo msg:TRANSPARENT
+    ; archetype:respondsTo msg:INVENTORY%20NAME
+    ; archetype:respondsTo msg:GO%20TO%20PLAYER
+    ; archetype:respondsTo msg:INCREMENT%20VOCABULARY
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:pick%20up
+    ; archetype:respondsTo msg:pick_up
+    ; archetype:respondsTo msg:take
+    ; archetype:respondsTo msg:drop
+    ; archetype:respondsTo msg:put%20down
+    ; archetype:respondsTo msg:put_down .
+
+obj:player a type:inventoried
+    ; attr:capacity 8
+    ; archetype:respondsTo msg:UPDATE
+    ; archetype:respondsTo msg:ASSEMBLE
+    ; archetype:respondsTo msg:MOVE
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:START%20HERE
+    ; archetype:respondsTo msg:inventory
+    ; archetype:respondsTo msg:wait
+    ; archetype:respondsTo msg:look%20around
+    ; archetype:respondsTo msg:save
+    ; archetype:respondsTo msg:load
+    ; archetype:respondsTo msg:help
+    ; archetype:respondsTo msg:quit
+    ; archetype:respondsTo archetype:default .
+
+obj:everything a type:object
+    ; attr:full "everything"^^archetype:message
+    ; attr:syn "all"^^archetype:message
+    ; attr:visible "false"^^xsd:boolean
+    ; attr:size 0
+    ; archetype:respondsTo msg:ACCESS
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:drop
+    ; archetype:respondsTo archetype:default .
+
+obj:verb_filter a type:null
+    ; archetype:respondsTo msg:NAME
+    ; archetype:respondsTo msg:DEF
+    ; archetype:respondsTo msg:INITIAL
+    ; archetype:respondsTo msg:ASSEMBLE
+    ; archetype:respondsTo msg:INDEF
+    ; archetype:respondsTo msg:MOVE
+    ; archetype:respondsTo archetype:default .
+
+obj:north a type:direction
+    ; attr:full "north"^^archetype:message .
+
+obj:south a type:direction
+    ; attr:full "south"^^archetype:message .
+
+obj:east a type:direction
+    ; attr:full "east"^^archetype:message .
+
+obj:west a type:direction
+    ; attr:full "west"^^archetype:message .
+
+obj:northeast a type:direction
+    ; attr:full "northeast"^^archetype:message
+    ; attr:syn "ne"^^archetype:message .
+
+obj:northwest a type:direction
+    ; attr:full "northwest"^^archetype:message
+    ; attr:syn "nw"^^archetype:message .
+
+obj:southeast a type:direction
+    ; attr:full "southeast"^^archetype:message
+    ; attr:syn "se"^^archetype:message .
+
+obj:southwest a type:direction
+    ; attr:full "southwest"^^archetype:message
+    ; attr:syn "sw"^^archetype:message .
+
+obj:up a type:direction
+    ; attr:full "up"^^archetype:message
+    ; archetype:respondsTo msg:IN%20THE%20DIRECTION .
+
+obj:down a type:direction
+    ; attr:full "down"^^archetype:message
+    ; archetype:respondsTo msg:IN%20THE%20DIRECTION .
+
+obj:lookV a type:Verb
+    ; attr:full "look"^^archetype:message
+    ; attr:syn "look at|x|l|examine"^^archetype:message .
+
+_:object_35 a type:lex
+    ; attr:full "under"^^archetype:message .
+
+_:object_36 a type:lex
+    ; attr:full "in"^^archetype:message
+    ; attr:syn "inside|into"^^archetype:message .
+
+_:object_37 a type:lex
+    ; attr:full "inside of"^^archetype:message .
+
+_:object_38 a type:lex
+    ; attr:full "at"^^archetype:message .
+
+_:object_39 a type:Verb
+    ; attr:full "pick"^^archetype:message .
+
+obj:getV a type:Verb
+    ; attr:full "get"^^archetype:message .
+
+_:object_41 a type:Verb
+    ; attr:full "take"^^archetype:message .
+
+obj:dropV a type:Verb
+    ; attr:full "drop"^^archetype:message
+    ; attr:syn "put down"^^archetype:message .
+
+obj:putV a type:Verb
+    ; attr:full "put"^^archetype:message .
+
+_:object_44 a type:lex
+    ; attr:full "on"^^archetype:message .
+
+_:object_45 a type:lex
+    ; attr:full "off"^^archetype:message .
+
+_:object_46 a type:lex
+    ; attr:full "off of"^^archetype:message .
+
+_:object_47 a type:lex
+    ; attr:full "out"^^archetype:message .
+
+_:object_48 a type:lex
+    ; attr:full "with"^^archetype:message .
+
+obj:enterV a type:Verb
+    ; attr:full "enter"^^archetype:message .
+
+obj:exitV a type:Verb
+    ; attr:full "exit"^^archetype:message
+    ; attr:syn "leave|get out|get out of"^^archetype:message .
+
+obj:goV a type:Verb
+    ; attr:full "go"^^archetype:message
+    ; attr:syn "walk"^^archetype:message .
+
+_:object_52 a type:lex
+    ; attr:full "to"^^archetype:message .
+
+obj:sayV a type:Verb
+    ; attr:full "say"^^archetype:message
+    ; attr:syn "announce"^^archetype:message .
+
+obj:inventoryV a type:Verb
+    ; attr:full "inventory"^^archetype:message
+    ; attr:syn "i|inv"^^archetype:message .
+
+obj:waitV a type:Verb
+    ; attr:full "wait"^^archetype:message
+    ; attr:syn "z"^^archetype:message .
+
+_:object_56 a type:lex
+    ; attr:full "around"^^archetype:message .
+
+obj:quitV a type:Verb
+    ; attr:full "quit"^^archetype:message .
+
+obj:saveV a type:Verb
+    ; attr:full "save"^^archetype:message .
+
+obj:loadV a type:Verb
+    ; attr:full "load"^^archetype:message .
+
+obj:helpV a type:Verb
+    ; attr:full "help"^^archetype:message .
+
+type:scenery a rdfs:Class
+    ; rdfs:subClassOf type:object
+    ; attr:visible "false"^^xsd:boolean
+    ; attr:first_seen "true"^^xsd:boolean
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get .
+
+type:backdrop a rdfs:Class
+    ; rdfs:subClassOf type:inventoried .
+
+_:object_63 a type:Verb
+    ; attr:full "open"^^archetype:message
+    ; attr:normal "true"^^xsd:boolean
+    ; archetype:respondsTo msg:NORMAL .
+
+_:object_64 a type:Verb
+    ; attr:full "close"^^archetype:message
+    ; attr:syn "shut"^^archetype:message
+    ; archetype:respondsTo msg:NORMAL .
+
+type:openable a rdfs:Class
+    ; rdfs:subClassOf type:object
+    ; attr:open "false"^^xsd:boolean
+    ; archetype:respondsTo msg:TRANSPARENT
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:open
+    ; archetype:respondsTo msg:close
+    ; archetype:respondsTo msg:look%20inside%20of
+    ; archetype:respondsTo msg:look%20in .
+
+type:hollow_object a rdfs:Class
+    ; rdfs:subClassOf type:object
+    ; attr:intro "I can see"
+    ; attr:visited "false"^^xsd:boolean
+    ; attr:IsAhollow_object "true"^^xsd:boolean
+    ; attr:proximity "in"
+    ; archetype:respondsTo msg:ACCESS
+    ; archetype:respondsTo msg:go
+    ; archetype:respondsTo msg:BRIEF
+    ; archetype:respondsTo msg:LONGDESC
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:enter
+    ; archetype:respondsTo msg:exit
+    ; archetype:respondsTo msg:look%20inside%20of
+    ; archetype:respondsTo msg:look%20in
+    ; archetype:respondsTo msg:leave
+    ; archetype:respondsTo msg:go%20to
+    ; archetype:respondsTo msg:go%20in
+    ; archetype:respondsTo archetype:default .
+
+type:furniture a rdfs:Class
+    ; rdfs:subClassOf type:hollow_object
+    ; attr:proximity "on"
+    ; attr:IsAfurniture "true"^^xsd:boolean
+    ; archetype:respondsTo msg:HORIZON
+    ; archetype:respondsTo msg:TRANSPARENT
+    ; archetype:respondsTo archetype:default .
+
+type:container a rdfs:Class
+    ; rdfs:subClassOf type:object
+    ; attr:IsAcontainer "true"^^xsd:boolean
+    ; attr:holder "can"
+    ; attr:contents "stuff"
+    ; attr:filled "true"^^xsd:boolean
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:DESC .
+
+_:object_69 a type:Verb
+    ; attr:full "put...in"^^archetype:message
+    ; attr:normal "true"^^xsd:boolean
+    ; archetype:respondsTo msg:NORMAL .
+
+obj:start_room a type:room
+    ; attr:desc "starting room"
+    ; archetype:respondsTo msg:INITIAL
+    ; archetype:respondsTo msg:FIRSTDESC
+    ; archetype:respondsTo msg:LONGDESC
+    ; archetype:respondsTo msg:south
+    ; archetype:respondsTo msg:down .
+
+_:object_71 a type:Verb
+    ; attr:full "push"^^archetype:message
+    ; attr:syn "push down|push on"^^archetype:message
+    ; attr:normal "Nothing happens." .
+
+obj:trapdoor a type:object
+    ; attr:syn "door"
+    ; attr:desc "trapdoor"
+    ; attr:open "false"^^xsd:boolean
+    ; attr:stationary "true"^^xsd:boolean
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:push .
+
+obj:bedroom a type:room
+    ; attr:desc "bedroom"
+    ; archetype:respondsTo msg:LONGDESC
+    ; archetype:respondsTo msg:north .
+
+obj:bed a type:furniture
+    ; attr:desc "brass bed"
+    ; attr:stationary "true"^^xsd:boolean
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:get%20in .
+
+obj:closet a type:openable
+    ; attr:desc "closet"
+    ; attr:stationary "true"^^xsd:boolean
+    ; archetype:respondsTo msg:get .
+
+type:plural a rdfs:Class
+    ; rdfs:subClassOf type:object
+    ; attr:pronoun "them"
+    ; archetype:respondsTo msg:INDEF .
+
+obj:games a type:plural
+    ; attr:desc "board games" .
+
+obj:books a type:plural
+    ; attr:desc "books" .
+
+obj:coat a type:object
+    ; attr:desc "winter coat" .
+
+obj:chest a type:openable
+    ; attr:desc "small chest"
+    ; archetype:respondsTo msg:enter .
+
+obj:necklace a type:object
+    ; attr:desc "diamond necklace" .
+
+obj:drawers a type:openable
+    ; attr:pronoun "them"
+    ; attr:desc "dresser drawers"
+    ; attr:stationary "true"^^xsd:boolean
+    ; archetype:respondsTo msg:INDEF
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:enter .
+
+obj:basement a type:room
+    ; attr:desc "basement"
+    ; archetype:respondsTo msg:FIRSTDESC
+    ; archetype:respondsTo msg:LONGDESC
+    ; archetype:respondsTo msg:up .
+
+_:object_84 a type:Verb
+    ; attr:full "throw"^^archetype:message
+    ; attr:syn "toss|fling"^^archetype:message .
+
+obj:rope a type:object
+    ; attr:full "coil of rope"
+    ; attr:syn "coil|rope|rope coil|hook"
+    ; attr:desc "coil of rope with a hook on the end"
+    ; attr:connected "false"^^xsd:boolean
+    ; archetype:respondsTo msg:get
+    ; archetype:respondsTo msg:throw_up
+    ; archetype:respondsTo msg:throw%20up .
+
+obj:rats a type:object
+    ; attr:pronoun "them"
+    ; attr:desc "pack of rats"
+    ; attr:curious 0
+    ; archetype:respondsTo msg:INITIAL
+    ; archetype:respondsTo msg:AFTER
+    ; archetype:respondsTo msg:look
+    ; archetype:respondsTo msg:get .
+
+# Vocabulary
+
+# Parser state
+
+archetype:parser a archetype:SystemParser
+    ; archetype:mode "verbs" .
+

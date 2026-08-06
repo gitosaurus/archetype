@@ -9,3 +9,5 @@ build/
 build-wasm/
 # Compiled games are build output of --create, not repository content.
 *.acx
+# ...except the goldens, which are pinned on purpose.  See tests/golden/README.md.
+!tests/golden/*.acx
