@@ -68,24 +68,33 @@ namespace archetype {
         }
     }
 
+    // Turn one slot of a name list into the words a command would have to
+    // contain to match it.  A slot with nothing in it -- from a doubled '|',
+    // or from whitespace alone -- yields no words, and that is the one answer
+    // the matchers must never be given:  a phrase of no words is contained in
+    // every command, at the front, so it would attach its object to whatever
+    // the player typed.  Drop it here, where the words are counted, rather
+    // than guessing at the text in addParseable.
+    inline list<Value> phrase_words(const string& slot) {
+        istringstream in(slot);
+        list<Value> words;
+        ranges::transform(ranges::istream_view<string>(in), back_inserter(words),
+                          [](const string& s) { return make_string_value(s); });
+        return words;
+    }
+
     void SystemParser::close() {
         verbs_.sort(longest_phrase_first);
         for (auto const& verb_phrase : verbs_) {
-            verbMatches_.push_back(PhraseMatch{});
-            istringstream in(verb_phrase.first);
-            ranges::transform(ranges::istream_view<string>(in),
-                              back_inserter(verbMatches_.back().first),
-                              [](const string& s) { return make_string_value(s); });
-            verbMatches_.back().second = verb_phrase.second;
+            if (auto phrase = phrase_words(verb_phrase.first); not phrase.empty()) {
+                verbMatches_.push_back(PhraseMatch{std::move(phrase), verb_phrase.second});
+            }
         }
         nouns_.sort(longest_phrase_first);
         for (auto const& noun_phrase : nouns_) {
-            nounMatches_.push_back(PhraseMatch{});
-            istringstream in(noun_phrase.first);
-            ranges::transform(ranges::istream_view<string>(in),
-                              back_inserter(nounMatches_.back().first),
-                              [](const string& s) { return make_string_value(s); });
-            nounMatches_.back().second = noun_phrase.second;
+            if (auto phrase = phrase_words(noun_phrase.first); not phrase.empty()) {
+                nounMatches_.push_back(PhraseMatch{std::move(phrase), noun_phrase.second});
+            }
         }
     }
 
@@ -106,15 +115,15 @@ namespace archetype {
     // subrange rather than just where it starts.  That removes the advance()
     // by phrase.size(), and with it any way for the two ends to disagree.
     //
-    // The test for a miss stays positional rather than becoming
-    // match.empty(), because those are not the same question.  A miss is an
-    // empty subrange at the end of wordValues; an *empty phrase* is an empty
-    // subrange at the front, and has always matched here.  A game can produce
-    // one with a doubled '|' in a name list, so the difference is reachable.
+    // An empty result means a miss, and can only mean a miss, because close()
+    // keeps phrases of no words out of these lists.  Without that guarantee
+    // the two would be different questions:  ranges::search reports a miss as
+    // an empty subrange at the *end* of wordValues, but an empty phrase as an
+    // empty subrange at the *front*.
     void SystemParser::matchVerbs_(std::list<Value>& wordValues) {
         for (const auto& [phrase, verb_id] : verbMatches_) {
             auto match = ranges::search(wordValues, phrase, equal_string_values);
-            if (match.begin() != end(wordValues)) {
+            if (not match.empty()) {
                 auto after = wordValues.erase(match.begin(), match.end());
                 wordValues.insert(after, make_unique<ObjectValue>(verb_id));
             }
@@ -124,7 +133,7 @@ namespace archetype {
     void SystemParser::matchNouns_(std::list<Value>& wordValues) {
         for (auto np = begin(nounMatches_); np != end(nounMatches_); ++np) {
             auto match = ranges::search(wordValues, np->first, equal_string_values);
-            if (match.begin() != end(wordValues)) {
+            if (not match.empty()) {
                 size_t phrase_size = np->first.size();
                 int matched_obj_id = np->second;
                 // At this point we have at least one match.  If it's proximate, we're completely

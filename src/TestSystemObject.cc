@@ -107,8 +107,58 @@ namespace archetype {
         ARCHETYPE_TEST(are_equal);
     }
 
+    // Two ways to write a name list with nothing in one of its slots:  a
+    // doubled '|', and a slot holding only whitespace.  Both are typos, and
+    // both used to produce a phrase of no words -- which matched at the front
+    // of every command, whatever the player typed.
+    static char program2[] =
+    "type lexable based on null\n"
+    "methods\n"
+    "  'BUILD' : name -> system\n"
+    "end\n"
+    "\n"
+    "lexable take name : 'take||get' end\n"
+    "lexable money name : 'money| |cash'\n"
+    ;
+
+    void TestSystemObject::testEmptyPhraseNeverMatches_() {
+        Universe::destroy();
+
+        TokenStream t2(make_source_from_str("program2", program2));
+        Universe::instance().make(t2);
+        string build_vocab =
+            "{'OPEN PARSER' -> system;"
+            "'BUILD' -> take;"
+            "'BUILD' -> money;"
+            "'CLOSE PARSER' -> system;"
+            "'PLAYER CMD' -> system;"
+            "\"cash\" -> system;"
+            "'PARSE' -> system}"
+        ;
+        Statement stmt = make_stmt_from_str(build_vocab);
+        stmt->execute();
+
+        stmt = make_stmt_from_str("'NEXT OBJECT' -> system");
+        Value val = stmt->execute();
+        list<Value> parsed;
+        while (val->isDefined()) {
+            parsed.push_back(std::move(val));
+            val = stmt->execute();
+        }
+        // The one word the player typed, and nothing else.  Before the fix
+        // this came back as three:  the empty slot in each name list matched
+        // at the front, so both objects arrived ahead of what was asked for.
+        ARCHETYPE_TEST_EQUAL(parsed.size(), size_t(1));
+        list<Value> expected;
+        expected.push_back(make_unique<ObjectValue>(Universe::instance().getObject("money")->id()));
+        bool are_equal = ranges::equal(parsed, expected,
+                                       [](const Value& x, const Value& y){ return x->isSameValueAs(y);} );
+        ARCHETYPE_TEST(are_equal);
+    }
+
     void TestSystemObject::runTests_() {
         testSorting_();
         testParsing_();
+        testEmptyPhraseNeverMatches_();
     }
 }

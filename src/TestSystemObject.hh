@@ -17,6 +17,7 @@ namespace archetype {
     class TestSystemObject : public ITestSuite {
         void testSorting_();
         void testParsing_();
+        void testEmptyPhraseNeverMatches_();
     protected:
         virtual void runTests_() override;
     public:
