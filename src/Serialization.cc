@@ -125,7 +125,7 @@ namespace archetype {
     }
 
     void MemoryStorage::write(span<const Byte> buf) {
-        copy(buf.begin(), buf.end(), back_inserter(bytes_));
+        ranges::copy(buf, back_inserter(bytes_));
     }
 
 }

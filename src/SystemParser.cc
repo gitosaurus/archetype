@@ -26,7 +26,7 @@ namespace archetype {
     inline string lowercase(string_view s) {
         string r;
         r.reserve(s.size());
-        transform(begin(s), end(s), back_inserter(r), ::tolower);
+        ranges::transform(s, back_inserter(r), ::tolower);
         return r;
     }
 
@@ -73,18 +73,18 @@ namespace archetype {
         for (auto const& verb_phrase : verbs_) {
             verbMatches_.push_back(PhraseMatch{});
             istringstream in(verb_phrase.first);
-            transform(istream_iterator<string>{in}, istream_iterator<string>{},
-                      back_inserter(verbMatches_.back().first),
-                      [](const string& s) { return make_string_value(s); });
+            ranges::transform(ranges::istream_view<string>(in),
+                              back_inserter(verbMatches_.back().first),
+                              [](const string& s) { return make_string_value(s); });
             verbMatches_.back().second = verb_phrase.second;
         }
         nouns_.sort(longest_phrase_first);
         for (auto const& noun_phrase : nouns_) {
             nounMatches_.push_back(PhraseMatch{});
             istringstream in(noun_phrase.first);
-            transform(istream_iterator<string>{in}, istream_iterator<string>{},
-                      back_inserter(nounMatches_.back().first),
-                      [](const string& s) { return make_string_value(s); });
+            ranges::transform(ranges::istream_view<string>(in),
+                              back_inserter(nounMatches_.back().first),
+                              [](const string& s) { return make_string_value(s); });
             nounMatches_.back().second = noun_phrase.second;
         }
     }
@@ -130,7 +130,11 @@ namespace archetype {
                 if (not proximate_.contains(matched_obj_id)) {
                     auto next_np = np;
                     while (++next_np != end(nounMatches_) and next_np->first.size() == phrase_size) {
-                        if (equal(match, match_end, begin(next_np->first), equal_string_values) and
+                        // Two ranges, not three:  the sizes are equal by the
+                        // loop condition, and ranges::equal is the overload
+                        // that insists on it rather than trusting it.
+                        if (ranges::equal(ranges::subrange(match, match_end), next_np->first,
+                                          equal_string_values) and
                             proximate_.contains(next_np->second)) {
                             // This is a nearer version of the same match phrase
                             matched_obj_id = next_np->second;
@@ -146,20 +150,19 @@ namespace archetype {
 
     void SystemParser::parse(std::string command_line) {
         string unpunctuated;
-        copy_if(begin(command_line), end(command_line),
-                back_inserter(unpunctuated),
-                [](char ch) { return not ispunct(ch)  or  ch == '-'; });
+        ranges::copy_if(command_line, back_inserter(unpunctuated),
+                        [](char ch) { return not ispunct(ch)  or  ch == '-'; });
         // Read the command through before taking it:  the parser keeps the
         // player's own spelling of it, so the copy the caller made is the one
         // that gets stored.
         playerCommand_ = std::move(command_line);
         istringstream in(std::move(unpunctuated));
         list<string> words;
-        transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), lowercase);
+        ranges::transform(ranges::istream_view<string>(in), back_inserter(words), lowercase);
 
         ostringstream out;
         out << ' ';
-        copy(begin(words), end(words), ostream_iterator<string>{out, " "});
+        ranges::copy(words, ostream_iterator<string>{out, " "});
         normalized_ = out.str();
 
         parsedValues_.clear();
@@ -199,9 +202,8 @@ namespace archetype {
     Value SystemParser::whichObject(std::string phrase) {
         istringstream in(std::move(phrase));
         list<Value> words;
-        transform(istream_iterator<string>{in}, istream_iterator<string>{},
-                  back_inserter(words),
-                  [](const string& s) { return make_string_value(s); });
+        ranges::transform(ranges::istream_view<string>(in), back_inserter(words),
+                          [](const string& s) { return make_string_value(s); });
         remove_fillers(words);
         matchNouns_(words);
         matchVerbs_(words);

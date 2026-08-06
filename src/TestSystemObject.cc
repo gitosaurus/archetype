@@ -44,7 +44,7 @@ namespace archetype {
         stmt = make_stmt_from_str("'CLOSE SORTER' -> system");
         stmt->execute();
         deque<string> sorted = to_sort;
-        sort(sorted.begin(), sorted.end());
+        ranges::sort(sorted);
         stmt = make_stmt_from_str("'NEXT SORTED' -> system");
         for (auto const& s : sorted) {
             Value ans = stmt->execute();
@@ -100,8 +100,10 @@ namespace archetype {
         expected.push_back(make_unique<ObjectValue>(take_obj_id));
         expected.push_back(make_unique<StringValue>("all"));
         expected.push_back(make_unique<ObjectValue>(money_obj_id));
-        bool are_equal = equal(parsed.begin(), parsed.end(), expected.begin(),
-                               [](const Value& x, const Value& y){ return x->isSameValueAs(y);} );
+        // Two ranges:  a parse that came back short used to slip past the
+        // three-legged equal, which only ever walked the first one.
+        bool are_equal = ranges::equal(parsed, expected,
+                                       [](const Value& x, const Value& y){ return x->isSameValueAs(y);} );
         ARCHETYPE_TEST(are_equal);
     }
 
