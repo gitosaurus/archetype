@@ -78,7 +78,7 @@ namespace archetype {
   std::string arch_turn(std::string input, int width) {
     try {
       last_error.clear();
-      return run_turn(input, width);
+      return run_turn(std::move(input), width);
     } catch (const std::exception& e) {
       last_error = e.what();
       return std::string();

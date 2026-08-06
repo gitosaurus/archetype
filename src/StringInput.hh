@@ -10,6 +10,8 @@
 #define __archetype__StringInput__
 
 #include <sstream>
+#include <string>
+#include <utility>
 
 #include "UserInput.hh"
 
@@ -17,7 +19,7 @@ namespace archetype {
     class StringInput : public IUserInput {
         std::istringstream stream_;
     public:
-        StringInput(std::string input): stream_{input} { }
+        StringInput(std::string input): stream_{std::move(input)} { }
         virtual ~StringInput() { }
         virtual char getKey() override {
             char key{'\0'};

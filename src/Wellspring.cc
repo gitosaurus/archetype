@@ -9,6 +9,7 @@
 #include <filesystem>
 #include <fstream>
 #include <string>
+#include <string_view>
 #include <cstdlib>
 #include <stdexcept>
 
@@ -18,7 +19,7 @@ using namespace std;
 namespace fs = std::filesystem;
 
 namespace archetype {
-    SourceFilePtr Wellspring::primarySource(string file_path) {
+    SourceFilePtr Wellspring::primarySource(string_view file_path) {
         fs::path source_path{file_path};
         fs::path directory = source_path.parent_path();
         paths_.push_front(directory.empty() ? "." : directory.string());
@@ -28,12 +29,12 @@ namespace archetype {
     }
 
     void Wellspring::addSearchPath(std::string directory_path) {
-        paths_.push_back(directory_path);
+        paths_.push_back(std::move(directory_path));
     }
 
-    SourceFilePtr Wellspring::open(string source_name) {
+    SourceFilePtr Wellspring::open(string_view source_name) {
         if (auto result = sources_.find(source_name); result != sources_.end()) {
-            everBeenOpened_.insert(source_name);
+            everBeenOpened_.emplace(source_name);
             return result->second;
         }
         for (const auto& p : paths_) {
@@ -53,19 +54,19 @@ namespace archetype {
                 // path -- and emptied again as soon as the file has been read
                 // -- so this set is the only lasting record that the question
                 // has already been answered once.
-                everBeenOpened_.insert(source_name);
+                everBeenOpened_.emplace(source_name);
                 return source;
             }
         }
         return nullptr;
     }
 
-    bool Wellspring::hasNeverBeenOpened(std::string source_name) const {
+    bool Wellspring::hasNeverBeenOpened(std::string_view source_name) const {
         return not everBeenOpened_.contains(source_name);
     }
 
     void Wellspring::put(std::string source_name, SourceFilePtr source) {
-        sources_.insert(std::make_pair(source_name, source));
+        sources_.insert(std::make_pair(std::move(source_name), std::move(source)));
     }
 
     void Wellspring::close(SourceFilePtr source) {

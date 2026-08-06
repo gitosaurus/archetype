@@ -11,6 +11,7 @@
 
 #include <iostream>
 #include <list>
+#include <string_view>
 
 #include "Token.hh"
 #include "SourceFile.hh"
@@ -32,11 +33,11 @@ namespace archetype {
 
         Token token() const { return token_; }
         void didNotConsume();
-        void expectGeneral(std::string expected);
+        void expectGeneral(std::string_view expected);
         void expected(Token required);
         void hitEOF(Token required);
         [[nodiscard]] bool insistOn(Token required);
-        void errorMessage(std::string message);
+        void errorMessage(std::string_view message);
         void stopLooking();
     };
 }

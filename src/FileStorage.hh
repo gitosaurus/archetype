@@ -20,7 +20,7 @@
 namespace archetype {
     class InFileStorage : public Storage {
     public:
-        InFileStorage(std::string filename);
+        InFileStorage(const std::filesystem::path& filename);
         InFileStorage(const InFileStorage&) = delete;
         InFileStorage& operator=(const InFileStorage&) = delete;
 
@@ -36,7 +36,7 @@ namespace archetype {
 
     class OutFileStorage : public Storage {
     public:
-        OutFileStorage(std::string filename);
+        OutFileStorage(const std::filesystem::path& filename);
         OutFileStorage(const OutFileStorage&) = delete;
         OutFileStorage& operator=(const OutFileStorage&) = delete;
 

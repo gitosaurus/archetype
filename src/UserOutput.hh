@@ -9,7 +9,7 @@
 #ifndef __archetype__UserOutput__
 #define __archetype__UserOutput__
 
-#include <string>
+#include <string_view>
 #include <memory>
 
 namespace archetype {
@@ -20,11 +20,15 @@ namespace archetype {
         IUserOutput& operator=(const IUserOutput&) = delete;
         virtual ~IUserOutput() { }
 
-        virtual void put(const std::string& line) = 0;
+        // Text on its way out is only ever read, and never has to be
+        // NUL-terminated to be written, so a view is all an implementation is
+        // owed.  Most of the literal prompts in the interpreter -- "> ",
+        // "(more)...", "Goodbye." -- reach here without allocating anything.
+        virtual void put(std::string_view line) = 0;
         virtual void endLine() = 0;
         virtual void resetPager() { }
         virtual void banner(char ch) = 0;
-        virtual void center(const std::string& line) { put(line); endLine(); }
+        virtual void center(std::string_view line) { put(line); endLine(); }
     };
     typedef std::shared_ptr<IUserOutput> UserOutput;
 }

@@ -88,7 +88,7 @@ namespace archetype {
         return in;
     }
 
-    Storage& operator<<(Storage& out, std::string value) {
+    Storage& operator<<(Storage& out, std::string_view value) {
         int size = static_cast<int>(value.size());
         out << size;
         out.write({reinterpret_cast<const Storage::Byte*>(value.data()), value.size()});

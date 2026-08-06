@@ -180,7 +180,7 @@ namespace archetype {
     class StringValue : public Cloneable<StringValue> {
         std::string value_;
     public:
-        StringValue(std::string value): value_(value) { }
+        StringValue(std::string value): value_(std::move(value)) { }
 
         virtual bool isSameValueAs(const Value& other) const override;
         virtual void display(std::ostream& out) const override;

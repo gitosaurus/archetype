@@ -162,7 +162,7 @@ namespace archetype {
         }
     }
 
-    ObjectPtr Universe::getObject(std::string identifier) const {
+    ObjectPtr Universe::getObject(std::string_view identifier) const {
         int name_id = Identifiers.find(identifier);
         if (name_id != StringIdIndex::npos) {
             auto which = ObjectIdentifiers.find(name_id);
@@ -188,7 +188,7 @@ namespace archetype {
         objects_.remove(object_id);
     }
 
-    void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string identifier) {
+    void Universe::assignObjectIdentifier(const ObjectPtr& object, std::string_view identifier) {
         int identifier_id_for_object = Identifiers.index(identifier);
         assignObjectIdentifier(object, identifier_id_for_object);
     }

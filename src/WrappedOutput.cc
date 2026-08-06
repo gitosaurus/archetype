@@ -7,6 +7,7 @@
 //
 
 #include <string>
+#include <string_view>
 
 #include "WrappedOutput.hh"
 
@@ -31,14 +32,16 @@ namespace archetype {
 
     WrappedOutput::~WrappedOutput() { }
 
-    void WrappedOutput::put(const std::string& line) {
+    void WrappedOutput::put(std::string_view line) {
         if (maxColumns_ == 0) {
             // Sentinel meaning "do not wrap"
             output_->put(line);
             cursor_ += line.size();
             return;
         }
-        string s = line;
+        // The one output class that has to own its text:  wrapping consumes
+        // the line from the front as it hands out each row.
+        string s{line};
 
         int remaining = max(0, maxColumns_ - cursor_);
         // Keep trailing punctuation from being orphaned on the next line.
@@ -80,7 +83,7 @@ namespace archetype {
         resetCursor();
     }
 
-    void WrappedOutput::center(const std::string& line) {
+    void WrappedOutput::center(std::string_view line) {
         if (cursor_ != 0) {
             endLine();
         }

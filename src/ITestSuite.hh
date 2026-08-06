@@ -12,6 +12,8 @@
 #include <iostream>
 #include <source_location>
 #include <string>
+#include <string_view>
+#include <utility>
 
 namespace archetype {
     class ITestSuite {
@@ -29,7 +31,7 @@ namespace archetype {
         // macros no longer pass __FILE__ and __LINE__ by hand.  They do still
         // exist, since only a macro can stringify the expression being checked.
         template <class T>
-        void checkCondition_(std::string expr, T actual, T expected,
+        void checkCondition_(std::string_view expr, T actual, T expected,
                              std::source_location where = std::source_location::current()) {
             if (actual != expected) {
                 reportLocation_(where);
@@ -38,7 +40,7 @@ namespace archetype {
             }
         }
 
-        void checkCondition_(std::string expr, bool success,
+        void checkCondition_(std::string_view expr, bool success,
                              std::source_location where = std::source_location::current()) {
             if (not success) {
                 reportLocation_(where);
@@ -50,7 +52,7 @@ namespace archetype {
         virtual void runTests_() = 0;
 
         ITestSuite(std::string name):
-        name_(name),
+        name_(std::move(name)),
         out_(nullptr),
         errorCount_(0)
         { }

@@ -14,7 +14,7 @@ using namespace std;
 
 namespace archetype {
     SourceFile::SourceFile(std::string source, stream_ptr& in):
-    filename_{source},
+    filename_{std::move(source)},
     file_{std::move(in)},
     fileLine_{0},
     linePos_{0},
@@ -55,8 +55,8 @@ namespace archetype {
     }
 
     SourceFilePtr make_source_from_str(string name, string src_str) {
-        stream_ptr in = make_unique<istringstream>(src_str);
-        return SourceFilePtr{make_shared<SourceFile>(name, in)};
+        stream_ptr in = make_unique<istringstream>(std::move(src_str));
+        return SourceFilePtr{make_shared<SourceFile>(std::move(name), in)};
     }
 
 }

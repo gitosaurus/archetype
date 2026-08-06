@@ -12,6 +12,7 @@
 #include <iostream>
 #include <span>
 #include <string>
+#include <string_view>
 #include <vector>
 
 namespace archetype {
@@ -34,7 +35,9 @@ namespace archetype {
     Storage& operator<<(Storage& out, int value);
     Storage& operator>>(Storage& in, int& value);
 
-    Storage& operator<<(Storage& out, std::string value);
+    // Writing reads the characters and nothing else; reading has to grow a
+    // string, so it takes one to fill.
+    Storage& operator<<(Storage& out, std::string_view value);
     Storage& operator>>(Storage& in, std::string& value);
 
     class MemoryStorage : public Storage {

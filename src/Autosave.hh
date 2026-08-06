@@ -11,6 +11,7 @@
 #define __archetype__Autosave__
 
 #include <string>
+#include <string_view>
 
 namespace archetype {
 
@@ -28,7 +29,7 @@ namespace archetype {
         // is distributed as is never the thing being overwritten.  A file that
         // is already a save keeps its own name, so resuming a save goes on
         // updating that same file rather than making a save of a save.
-        static std::string deriveTarget(const std::string& game_path);
+        static std::string deriveTarget(std::string_view game_path);
 
         // Only meaningful once a universe has been loaded or compiled: arming
         // resolves the ids that identify a turn boundary.  A game with no
@@ -77,7 +78,7 @@ namespace archetype {
         void resolveIds_();
         bool turnBoundaryResolved_() const;
         void updateWatch_();
-        bool fail_(const std::string& reason);
+        bool fail_(std::string_view reason);
     };
 
 }

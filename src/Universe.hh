@@ -10,6 +10,7 @@
 #define __archetype__Universe__
 
 #include <string>
+#include <string_view>
 #include <map>
 #include <set>
 #include <memory>
@@ -90,14 +91,14 @@ namespace archetype {
 
         int objectCount() const;
         ObjectPtr getObject(int object_id) const;
-        ObjectPtr getObject(std::string identifier) const;
+        ObjectPtr getObject(std::string_view identifier) const;
         ObjectPtr defineNewObject(int parent_id = 0);
 
         // The post-condition is that the referenced object is gone, and all existing
         // references to it will be UNDEFINED.
         void destroyObject(int object_id);
 
-        void assignObjectIdentifier(const ObjectPtr& object, std::string identifier);
+        void assignObjectIdentifier(const ObjectPtr& object, std::string_view identifier);
         void assignObjectIdentifier(const ObjectPtr& object, int identifier_id);
 
         // Reverse lookup of ObjectIdentifiers.  Returns the identifier_id bound to

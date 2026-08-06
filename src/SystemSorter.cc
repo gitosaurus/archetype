@@ -14,14 +14,15 @@ using namespace std;
 
 namespace archetype {
     void SystemSorter::add(std::string s) {
-        sortedStrings_.insert(s);
+        sortedStrings_.insert(std::move(s));
     }
 
     Value SystemSorter::nextSorted() {
         if (not sortedStrings_.empty()) {
-            string result = *sortedStrings_.begin();
-            sortedStrings_.erase(sortedStrings_.begin());
-            return make_unique<StringValue>(result);
+            // extract rather than copy-then-erase:  the sorter is giving the
+            // string away, not lending it.
+            auto lowest = sortedStrings_.extract(sortedStrings_.begin());
+            return make_unique<StringValue>(std::move(lowest.value()));
         }
         return make_unique<UndefinedValue>();
     }
