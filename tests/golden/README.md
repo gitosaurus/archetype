@@ -47,15 +47,23 @@ because the game rolls dice. That nondeterminism is the game's, not the
 serializer's — it reproduces identically on any build. Pin what the compiler
 emits, never what a turn leaves behind.
 
-## Known open question
+## An `.acx` is toolchain-independent
 
-These goldens were generated on macOS/libc++. Whether the bytes are
-*toolchain-independent* has never been tested — CI's native job is
-Linux/libstdc++, and this check running there is the first real test of it.
+This was an open question when the goldens went in, and the first CI run
+answered it. The files here were generated on macOS with Clang and libc++; CI's
+native job is Linux with GCC and libstdc++, and it compiled both games to bytes
+identical to these. Different compiler, different standard library, same binary.
 
-The `.acx` half failing on Linux while the `.ttl` half passes would be the
-signal: same world, different bytes, meaning the binary format has a
-libc++/libstdc++ dependence worth finding. `check.sh` reports that case
-specifically rather than lumping it in with ordinary drift. The fix would be to
-scope the byte comparison to one platform and treat the Turtle as the
-cross-platform oracle.
+That is worth stating because nothing guarantees it in general. A serializer
+that leaned on `std::map` iteration order, on a hash, or on any container whose
+layout the standard leaves open would drift between the two — and it would drift
+silently, because the world state would still be correct. That is the case
+`check.sh` calls out on its own: same `.ttl`, different `.acx`.
+
+So this check is now doing two jobs at once. It guards against unintended format
+changes, and it stands watch over portability. If the `.acx` half ever fails on
+Linux while the `.ttl` half passes, something has acquired a dependence on the
+standard library's choices, and the failure names the byte offset to start from.
+The fallback would be to scope the byte comparison to one platform and let the
+Turtle be the cross-platform oracle — but that would be a retreat, and it is not
+needed today.
