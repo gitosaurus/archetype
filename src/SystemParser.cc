@@ -102,27 +102,30 @@ namespace archetype {
         });
     }
 
+    // Both matchers below use ranges::search, which hands back the matched
+    // subrange rather than just where it starts.  That removes the advance()
+    // by phrase.size(), and with it any way for the two ends to disagree.
+    //
+    // The test for a miss stays positional rather than becoming
+    // match.empty(), because those are not the same question.  A miss is an
+    // empty subrange at the end of wordValues; an *empty phrase* is an empty
+    // subrange at the front, and has always matched here.  A game can produce
+    // one with a doubled '|' in a name list, so the difference is reachable.
     void SystemParser::matchVerbs_(std::list<Value>& wordValues) {
         for (const auto& [phrase, verb_id] : verbMatches_) {
-            auto match = search(begin(wordValues), end(wordValues),
-                                begin(phrase), end(phrase), equal_string_values);
-            if (match != end(wordValues)) {
-                auto match_end = match;
-                advance(match_end, phrase.size());
-                wordValues.erase(match, match_end);
-                wordValues.insert(match_end, make_unique<ObjectValue>(verb_id));
+            auto match = ranges::search(wordValues, phrase, equal_string_values);
+            if (match.begin() != end(wordValues)) {
+                auto after = wordValues.erase(match.begin(), match.end());
+                wordValues.insert(after, make_unique<ObjectValue>(verb_id));
             }
         }
     }
 
     void SystemParser::matchNouns_(std::list<Value>& wordValues) {
         for (auto np = begin(nounMatches_); np != end(nounMatches_); ++np) {
-            auto match = search(begin(wordValues), end(wordValues),
-                                begin(np->first), end(np->first), equal_string_values);
-            if (match != end(wordValues)) {
+            auto match = ranges::search(wordValues, np->first, equal_string_values);
+            if (match.begin() != end(wordValues)) {
                 size_t phrase_size = np->first.size();
-                auto match_end = match;
-                advance(match_end, phrase_size);
                 int matched_obj_id = np->second;
                 // At this point we have at least one match.  If it's proximate, we're completely
                 // done.  But if it isn't, then we want to check all remaining matches at this
@@ -130,11 +133,10 @@ namespace archetype {
                 if (not proximate_.contains(matched_obj_id)) {
                     auto next_np = np;
                     while (++next_np != end(nounMatches_) and next_np->first.size() == phrase_size) {
-                        // Two ranges, not three:  the sizes are equal by the
-                        // loop condition, and ranges::equal is the overload
-                        // that insists on it rather than trusting it.
-                        if (ranges::equal(ranges::subrange(match, match_end), next_np->first,
-                                          equal_string_values) and
+                        // Sizes are equal by the loop condition, and
+                        // ranges::equal is the overload that insists on that
+                        // rather than trusting it.
+                        if (ranges::equal(match, next_np->first, equal_string_values) and
                             proximate_.contains(next_np->second)) {
                             // This is a nearer version of the same match phrase
                             matched_obj_id = next_np->second;
@@ -142,8 +144,8 @@ namespace archetype {
                         }
                     }
                 }
-                wordValues.erase(match, match_end);
-                wordValues.insert(match_end, make_unique<ObjectValue>(matched_obj_id));
+                auto after = wordValues.erase(match.begin(), match.end());
+                wordValues.insert(after, make_unique<ObjectValue>(matched_obj_id));
             }
         }
     }
