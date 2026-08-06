@@ -10,6 +10,7 @@
 #include <iomanip>
 #include <iterator>
 #include <algorithm>
+#include <cstdlib>
 #include <format>
 #include <map>
 #include <list>
@@ -33,13 +34,6 @@
 
 #include "update_universe.hh"
 #include "inspect_universe.hh"
-
-
-#if NDEBUG
-#  define SHOW(expr)
-#else
-#  define SHOW(expr) std::cerr << #expr << " == " << (expr) << std::endl
-#endif
 
 
 namespace archetype {
@@ -104,6 +98,10 @@ void usage() {
         << "   --inspect                 In combination with --update, append post-turn world state (RDF/Turtle)." << endl
         << " --inspect=file.acx      Load a saved binary file and dump its world state as RDF/Turtle." << endl
         << "   --full                    Add method signatures and parser vocabulary to the RDF output." << endl
+        << endl
+        << "Environment:" << endl
+        << " ARCHETYPE_INCLUDE       Colon-separated paths to search for source, after any" << endl
+        << "                         given by --include." << endl
     ;
 }
 
@@ -136,6 +134,21 @@ static void checkpoint_at_exit() {
     }
 }
 
+// A colon-separated list of directories, in the shape PATH taught everyone to
+// expect, searched in the order written.  Splitting the view in place rather
+// than through an istringstream means the only strings allocated are the ones
+// actually kept, which addSearchPath takes by value and moves.
+static void add_search_paths(string_view list) {
+    while (not list.empty()) {
+        auto colon = list.find(':');
+        Wellspring::instance().addSearchPath(string{list.substr(0, colon)});
+        if (colon == string_view::npos) {
+            break;
+        }
+        list.remove_prefix(colon + 1);
+    }
+}
+
 static void from_source(map<std::string, std::string> &opts,
                         const AutosaveOptions& autosave_opts) {
     auto it_source = opts.find("source");
@@ -146,13 +159,18 @@ static void from_source(map<std::string, std::string> &opts,
         throw invalid_argument(format("Cannot open \"{}\"", source_path));
     }
     if (auto it_include = opts.find("include"); it_include != opts.end()) {
-      string includes = it_include->second;
-      opts.erase(it_include);
-      istringstream in(includes);
-      string path; while (getline(in, path, ':')) {
-        SHOW(path);
-        Wellspring::instance().addSearchPath(path);
-      }
+        add_search_paths(it_include->second);
+        opts.erase(it_include);
+    }
+    // The environment comes second, so an explicit --include still wins.  This
+    // is what lets a packaged interpreter point at the library it ships with --
+    // the snap knows where standard.arch ended up, and the player should not
+    // have to.  Set but empty counts as unset, the way it usually does; an
+    // empty entry *within* a list still means the current directory, the way it
+    // does in PATH.
+    if (const char* from_env = getenv("ARCHETYPE_INCLUDE");
+        from_env != nullptr and *from_env != '\0') {
+        add_search_paths(from_env);
     }
     TokenStream tokens(source);
     if (not Universe::instance().make(tokens)) {
