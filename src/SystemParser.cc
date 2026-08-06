@@ -30,8 +30,14 @@ namespace archetype {
         return r;
     }
 
+    // Wraps a word that has already been through lowercase(), and that the
+    // caller is giving away rather than lending.
+    inline Value make_string_value_as_is(string s) {
+        return make_unique<StringValue>(std::move(s));
+    }
+
     inline Value make_string_value(string_view s) {
-        return make_unique<StringValue>(lowercase(s));
+        return make_string_value_as_is(lowercase(s));
     }
 
     SystemParser::SystemParser():
@@ -157,7 +163,11 @@ namespace archetype {
         normalized_ = out.str();
 
         parsedValues_.clear();
-        transform(begin(words), end(words), back_inserter(parsedValues_), make_string_value);
+        // The words are already lowercase -- that happened on the way out of
+        // the stream, and normalized_ above is built from them -- so hand each
+        // one over rather than lowercasing and copying it a second time.
+        transform(make_move_iterator(begin(words)), make_move_iterator(end(words)),
+                  back_inserter(parsedValues_), make_string_value_as_is);
 
         remove_fillers(parsedValues_);
         matchVerbs_(parsedValues_);
