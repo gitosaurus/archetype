@@ -1,0 +1,88 @@
+name: archetype
+title: Archetype
+base: core24
+adopt-info: interpreter
+license: MIT
+summary: A language for writing and playing text adventure games
+
+description: |
+  Archetype is a message-passing, object-oriented programming language for
+  writing text-based adventure games, and the interpreter that plays them.
+
+  Compile and run a game of your own:
+
+    archetype --source=mygame.arch --include=$SNAP/usr/share/archetype/games
+
+  The library sources -- standard.arch, intrptr.arch, utility.arch and the rest
+  -- are installed in that directory, which is what --include has to be pointed
+  at for `include "standard"` to resolve.
+
+  Three games come compiled and ready to play:
+
+    archetype --perform=$SNAP/usr/share/archetype/games/gorreven.acx
+
+  Those live on read-only squashfs, so --autosave needs a path of its own in
+  your home directory.  A save file is a mutated copy of the game binary, and
+  either one can be resumed with --perform.
+
+grade: stable
+confinement: strict
+
+platforms:
+  amd64:
+  arm64:
+
+apps:
+  archetype:
+    command: usr/bin/archetype
+    plugs:
+      # A game is a file the player names on the command line, and saves are
+      # written alongside it, so the interpreter has to see the directory it
+      # was invoked from.  'home' is auto-connected from the store;
+      # 'removable-media' is not, and needs `snap connect` to be of use.
+      - home
+      - removable-media
+
+parts:
+  interpreter:
+    plugin: cmake
+    source: .
+    # The CMakeLists.txt is in src/, not at the root of the repository.
+    source-subdir: src
+    cmake-parameters:
+      - -DCMAKE_INSTALL_PREFIX=/usr
+      - -DCMAKE_BUILD_TYPE=Release
+    build-packages:
+      # core24 is Ubuntu 24.04, so this is g++ 13 -- the reason the base had to
+      # move.  core18's g++ 7 cannot compile the C++20 this interpreter is
+      # written in.
+      - g++
+    override-pull: |
+      craftctl default
+      # Take the version from the interpreter itself rather than repeating it
+      # here, which is how the old file came to claim 2.0 for five years after
+      # the interpreter had moved on.
+      craftctl set version="$(sed -n 's/.*VersionString = "\([^"]*\)".*/\1/p' src/main.cc)"
+
+  games:
+    plugin: nil
+    source: games
+    # Compiling a game means running an interpreter, so the native one has to be
+    # built and staged before this part builds.  That also makes this the one
+    # step that cannot be cross-compiled: building for an architecture the
+    # builder cannot execute needs a native or emulated runner per platform.
+    after:
+      - interpreter
+    override-build: |
+      craftctl default
+      games="$CRAFT_PART_INSTALL/usr/share/archetype/games"
+      mkdir -p "$games"
+      # The sources ship too: they are the library an author's own game
+      # includes, not just the input that produced the .acx files below.
+      cp "$CRAFT_PART_SRC"/*.arch "$games/"
+      for game in gorreven starship animal; do
+        "$CRAFT_STAGE/usr/bin/archetype" --silent \
+          --source="$CRAFT_PART_SRC/$game.arch" \
+          --include="$CRAFT_PART_SRC" \
+          --create="$games/$game.acx"
+      done
