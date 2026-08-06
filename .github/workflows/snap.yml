@@ -1,0 +1,35 @@
+name: Snap
+
+# Only when the packaging itself changes, plus on demand.  Building a snap
+# spins up an LXD container and compiles the interpreter from scratch, which is
+# minutes rather than the seconds CI takes -- and a C++ change that fails to
+# compile has already failed in CI by the time it would fail here.
+on:
+  pull_request:
+    paths:
+      - 'snap/**'
+      - '.github/workflows/snap.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: snapcore/action-build@v1
+        id: snapcraft
+      # Building proves it packages; installing and playing a turn proves the
+      # binary runs under confinement and that the bundled games are where the
+      # snap's own description says they are.
+      - name: Install and play a turn
+        run: |
+          sudo snap install --dangerous "${{ steps.snapcraft.outputs.snap }}"
+          echo look | archetype \
+            --perform=/snap/archetype/current/usr/share/archetype/games/gorreven.acx
+      - uses: actions/upload-artifact@v4
+        with:
+          name: archetype-snap
+          path: ${{ steps.snapcraft.outputs.snap }}
