@@ -73,10 +73,10 @@ namespace archetype {
         return false;
     }
 
-    void TokenStream::expectGeneral(std::string required) {
+    void TokenStream::expectGeneral(std::string_view expected) {
         if (keepLooking_) {
             source_->showPosition(cout);
-            cout << "Expected " << required << "; found " << token_ << endl;
+            cout << "Expected " << expected << "; found " << token_ << endl;
         }
     }
 
@@ -88,7 +88,7 @@ namespace archetype {
 
     }
 
-    void TokenStream::errorMessage(std::string message) {
+    void TokenStream::errorMessage(std::string_view message) {
         if (keepLooking_) {
             source_->showPosition(cout);
             cout << message << endl;

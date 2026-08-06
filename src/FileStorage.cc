@@ -20,9 +20,9 @@
 using namespace std;
 
 namespace archetype {
-    InFileStorage::InFileStorage(std::string filename)
+    InFileStorage::InFileStorage(const filesystem::path& filename)
     {
-        stream_.open(filename.c_str(), ios::in | ios::binary);
+        stream_.open(filename, ios::in | ios::binary);
         stream_.seekg(0, ios::end);
         remaining_ = static_cast<int>(stream_.tellg());
         stream_.seekg(0, ios::beg);
@@ -46,10 +46,10 @@ namespace archetype {
     void InFileStorage::write(span<const Byte>) {
     }
 
-    OutFileStorage::OutFileStorage(std::string filename):
+    OutFileStorage::OutFileStorage(const filesystem::path& filename):
     failed_{false}
     {
-        stream_.open(filename.c_str(), ios::out | ios::binary);
+        stream_.open(filename, ios::out | ios::binary);
     }
 
     bool OutFileStorage::ok() const {
@@ -93,7 +93,7 @@ namespace archetype {
         filesystem::path temp_path = path;
         temp_path += ".tmp";
         {
-            OutFileStorage temp_file(temp_path.string());
+            OutFileStorage temp_file(temp_path);
             if (not temp_file.ok()) {
                 error_out = format("cannot create temporary file {}", temp_path.string());
                 return false;

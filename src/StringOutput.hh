@@ -19,7 +19,7 @@ namespace archetype {
         std::ostringstream stream_;
     public:
         virtual ~StringOutput() { }
-        virtual void put(const std::string& line) override { stream_ << line; }
+        virtual void put(std::string_view line) override { stream_ << line; }
         virtual void endLine() override { stream_ << std::endl; }
         virtual void banner(char ch) override { stream_ << std::string(80, ch); endLine(); }
 

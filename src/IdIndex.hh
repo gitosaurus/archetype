@@ -10,6 +10,8 @@
 #define __archetype__IdIndex__
 
 #include <iostream>
+#include <concepts>
+#include <functional>
 #include <map>
 #include <deque>
 #include <set>
@@ -20,9 +22,16 @@
 
 namespace archetype {
 
+    // A key the index can be asked about without first being handed a T:  a
+    // std::string_view or a string literal, against a registry of std::string.
+    // std::less<> is what makes the lookup heterogeneous, and this is what
+    // keeps the door open only to keys it can actually weigh.
+    template <class K, class T>
+    concept IndexKey = std::strict_weak_order<std::less<>, const K&, const T&>;
+
     template <class T>
     class IdIndex {
-        std::map<T, int> index_;
+        std::map<T, int, std::less<>> index_;
         std::deque<T> registry_;
         // Slots that remove() gave back.  A free slot still holds a T, because
         // a deque slot must hold something, and T{} is the natural nothing --
@@ -40,22 +49,29 @@ namespace archetype {
             free_.clear();
         }
 
-        int index(const T& obj) {
-            auto where = index_.find(obj);
+        // Takes any key std::less<> can weigh against a T, so that indexing a
+        // name spelled as a literal costs nothing when it hits -- which is the
+        // common case, since a name is looked up far more often than it is
+        // first seen.  A miss still materializes a T, which is exactly the
+        // moment a T is wanted.
+        template <IndexKey<T> K>
+            requires std::constructible_from<T, const K&>
+        int index(const K& key) {
+            auto where = index_.find(key);
             if (where == index_.end()) {
                 int new_index;
                 if (free_.empty()) {
                     new_index = static_cast<int>(registry_.size());
-                    registry_.push_back(obj);
+                    registry_.emplace_back(key);
                 } else {
                     // The lowest free slot, which keeps ids small and leaves
                     // the free ones bunched near the end of the registry --
                     // which is where remove()'s trim can give them back.
                     new_index = *free_.begin();
                     free_.erase(free_.begin());
-                    registry_[new_index] = obj;
+                    registry_[new_index] = T(key);
                 }
-                where = index_.insert(std::make_pair(obj, new_index)).first;
+                where = index_.insert(std::make_pair(T(key), new_index)).first;
             }
             return where->second;
         }
@@ -82,8 +98,9 @@ namespace archetype {
             return static_cast<int>(registry_.size());
         }
 
-        int find(const T& obj) const {
-            auto where = index_.find(obj);
+        template <IndexKey<T> K>
+        int find(const K& key) const {
+            auto where = index_.find(key);
             if (where == index_.end()) {
                 return npos;
             } else {
@@ -95,8 +112,9 @@ namespace archetype {
             return registry_.at(obj_index);
         }
 
-        bool has(const T& obj) const {
-            return index_.contains(obj);
+        template <IndexKey<T> K>
+        bool has(const K& key) const {
+            return index_.contains(key);
         }
 
         bool hasIndex(int i) const {

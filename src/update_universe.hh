@@ -10,12 +10,13 @@
 #define __archetype__update_universe__
 
 #include <string>
+#include <string_view>
 #include "Value.hh"
 #include "Serialization.hh"
 
 namespace archetype {
 
-  Value dispatch_to_universe(std::string message);
+  Value dispatch_to_universe(std::string_view message);
 
   // The three phases of a turn, separately available so that a driver which
   // keeps the universe resident between turns -- the browser, where there is

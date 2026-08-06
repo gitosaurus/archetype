@@ -802,7 +802,7 @@ namespace archetype {
     }
 
     Statement make_stmt_from_str(string src_str) {
-        stream_ptr in = make_unique<istringstream>(src_str);
+        stream_ptr in = make_unique<istringstream>(std::move(src_str));
         SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Statement stmt = make_statement(token_stream);

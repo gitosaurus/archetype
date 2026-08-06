@@ -23,13 +23,14 @@ using namespace std;
 
 namespace archetype {
 
-    inline string lowercase(string s) {
+    inline string lowercase(string_view s) {
         string r;
+        r.reserve(s.size());
         transform(begin(s), end(s), back_inserter(r), ::tolower);
         return r;
     }
 
-    inline Value make_string_value(string s) {
+    inline Value make_string_value(string_view s) {
         return make_unique<StringValue>(lowercase(s));
     }
 
@@ -39,7 +40,7 @@ namespace archetype {
 
     void SystemParser::addParseable(int sender, std::string names) {
         list<string> name_list;
-        istringstream in{names};
+        istringstream in{std::move(names)};
         string word;
         while (getline(in, word, '|')) {
             switch (mode_) {
@@ -68,7 +69,7 @@ namespace archetype {
             istringstream in(verb_phrase.first);
             transform(istream_iterator<string>{in}, istream_iterator<string>{},
                       back_inserter(verbMatches_.back().first),
-                      [](string s) { return make_string_value(lowercase(s)); });
+                      [](const string& s) { return make_string_value(s); });
             verbMatches_.back().second = verb_phrase.second;
         }
         nouns_.sort(longest_phrase_first);
@@ -77,7 +78,7 @@ namespace archetype {
             istringstream in(noun_phrase.first);
             transform(istream_iterator<string>{in}, istream_iterator<string>{},
                       back_inserter(nounMatches_.back().first),
-                      [](string s) { return make_string_value(lowercase(s)); });
+                      [](const string& s) { return make_string_value(s); });
             nounMatches_.back().second = noun_phrase.second;
         }
     }
@@ -138,12 +139,15 @@ namespace archetype {
     }
 
     void SystemParser::parse(std::string command_line) {
-        playerCommand_ = command_line;
         string unpunctuated;
         copy_if(begin(command_line), end(command_line),
                 back_inserter(unpunctuated),
                 [](char ch) { return not ispunct(ch)  or  ch == '-'; });
-        istringstream in(unpunctuated);
+        // Read the command through before taking it:  the parser keeps the
+        // player's own spelling of it, so the copy the caller made is the one
+        // that gets stored.
+        playerCommand_ = std::move(command_line);
+        istringstream in(std::move(unpunctuated));
         list<string> words;
         transform(istream_iterator<string>(in), istream_iterator<string>(), back_inserter(words), lowercase);
 
@@ -183,11 +187,11 @@ namespace archetype {
     }
 
     Value SystemParser::whichObject(std::string phrase) {
-        istringstream in(phrase);
+        istringstream in(std::move(phrase));
         list<Value> words;
         transform(istream_iterator<string>{in}, istream_iterator<string>{},
                   back_inserter(words),
-                  [](string s) { return make_string_value(lowercase(s)); });
+                  [](const string& s) { return make_string_value(s); });
         remove_fillers(words);
         matchNouns_(words);
         matchVerbs_(words);

@@ -72,7 +72,7 @@ namespace archetype {
         return out;
     }
 
-    inline Value numeric_value_from_string(string str) {
+    inline Value numeric_value_from_string(string_view str) {
         int number = 0;
         for (char ch : str) {
             if (not isdigit(ch)) {

@@ -10,10 +10,12 @@
 #define __archetype__Wellspring__
 
 #include <iostream>
+#include <functional>
 #include <map>
 #include <list>
 #include <set>
 #include <string>
+#include <string_view>
 #include <memory>
 
 #include "SourceFile.hh"
@@ -23,8 +25,10 @@ namespace archetype {
     // The "source of sources."
     class Wellspring {
         std::list<std::string> paths_;
-        std::set<std::string> everBeenOpened_;
-        std::map<std::string, SourceFilePtr> sources_;
+        // std::less<> so that asking about a source by name does not oblige
+        // the caller to have a std::string of it in hand.
+        std::set<std::string, std::less<>> everBeenOpened_;
+        std::map<std::string, SourceFilePtr, std::less<>> sources_;
     public:
         static Wellspring& instance();
         static void destroy();
@@ -34,15 +38,15 @@ namespace archetype {
         // including any which have been added so far through addSearchPath.
         // The given file must exist or invalid_argument will be thrown.
         // If it does exist, open and return.
-        SourceFilePtr primarySource(std::string file_path);
+        SourceFilePtr primarySource(std::string_view file_path);
 
         // Adds the given path to the list of paths to search for include files.
         // It will be searched after all the paths that have been added via this call so far.
         void addSearchPath(std::string directory_path);
 
-        bool hasNeverBeenOpened(std::string source_name) const;
+        bool hasNeverBeenOpened(std::string_view source_name) const;
         void put(std::string source_name, SourceFilePtr source);
-        SourceFilePtr open(std::string source_name);
+        SourceFilePtr open(std::string_view source_name);
         void close(SourceFilePtr source);
         void closeAll();
     private:

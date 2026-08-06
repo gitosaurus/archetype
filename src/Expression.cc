@@ -1026,7 +1026,7 @@ namespace archetype {
     }
 
     Expression make_expr_from_str(string src_str) {
-        stream_ptr in = make_unique<istringstream>(src_str);
+        stream_ptr in = make_unique<istringstream>(std::move(src_str));
         SourceFilePtr src{make_shared<SourceFile>("test", in)};
         TokenStream token_stream(src);
         Expression expr = make_expr(token_stream);

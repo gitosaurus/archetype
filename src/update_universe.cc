@@ -88,7 +88,7 @@ static void write_sitrep_rdf(ostream& out, const Value& sitrep_val) {
   out << " .\n\n";
 }
 
-Value dispatch_to_universe(string message) {
+Value dispatch_to_universe(string_view message) {
   ObjectPtr main_object = Universe::instance().getObject("main");
   if (not main_object) {
     throw invalid_argument("No 'main' object");
@@ -122,7 +122,7 @@ string run_turn(string input, int width, bool sitrep, bool inspect) {
   UserOutput wrapped = make_shared<WrappedOutput>(str_output, width);
   Universe::instance().setOutput(wrapped);
   UserOutput user_output = Universe::instance().output();
-  UserInput str_input = make_shared<StringInput>(input);
+  UserInput str_input = make_shared<StringInput>(std::move(input));
   UserInput echo_input = make_shared<EchoingInput>(str_input, user_output);
   Universe::instance().setInput(echo_input);
   try {
@@ -160,7 +160,7 @@ string run_turn(string input, int width, bool sitrep, bool inspect) {
 string update_universe(Storage& in, Storage& out, string input, int width,
                        bool sitrep, bool inspect) {
   load_universe(in);
-  string result = run_turn(input, width, sitrep, inspect);
+  string result = run_turn(std::move(input), width, sitrep, inspect);
   save_universe(out);
   return result;
 }

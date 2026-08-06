@@ -42,17 +42,19 @@ namespace archetype {
         watchingTurns_ = false;
     }
 
-    string Autosave::deriveTarget(const string& game_path) {
+    string Autosave::deriveTarget(string_view game_path) {
         constexpr string_view SaveSuffix = ".save.acx";
         if (game_path.ends_with(SaveSuffix)) {
-            return game_path;
+            return string{game_path};
         }
         auto last_slash = game_path.find_last_of('/');
         auto last_dot = game_path.rfind('.');
-        bool has_extension = last_dot != string::npos and
-                             (last_slash == string::npos or last_dot > last_slash);
-        string stem = has_extension ? game_path.substr(0, last_dot) : game_path;
-        return stem + string(SaveSuffix);
+        bool has_extension = last_dot != string_view::npos and
+                             (last_slash == string_view::npos or last_dot > last_slash);
+        string_view stem = has_extension ? game_path.substr(0, last_dot) : game_path;
+        string target{stem};
+        target += SaveSuffix;
+        return target;
     }
 
     void Autosave::resolveIds_() {
@@ -120,7 +122,7 @@ namespace archetype {
         return true;
     }
 
-    bool Autosave::fail_(const string& reason) {
+    bool Autosave::fail_(string_view reason) {
         cerr << format("Autosave to {} failed: {}", target_, reason) << endl;
         cerr << "Autosave is off for the rest of this session." << endl;
         disarm();
