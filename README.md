@@ -158,6 +158,7 @@ curl -X POST $ENDPOINT/update/gorreven.acx -F command="go north"
 | `src/` | C++ source for the Archetype interpreter |
 | `games/` | Adventure game sources (`.arch`) and compiled binaries (`.acx`) |
 | `drivers/` | Cloud Run driver (Python/Flask) and its `README.md` |
+| `demos/` | Optional demonstrations; nothing here is needed to build or play |
 
 ---
 
