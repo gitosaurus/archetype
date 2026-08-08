@@ -288,7 +288,22 @@ methods
     >>I push it up against the frame, but it doesn't stay, and sags out again.
     >>It looks as if it might break off if I were to pull on it.
 
+  # Breaking it off takes a yank and a twist, so twisting is the yank's
+  # equal and counts toward the same tally.
+
+  'turn' :
+    if broken_off then
+      message --> object
+    else
+      'pull'
+
+  # Taking it off the cot with no cot named.  Detaching is the whole of
+  # what "remove" can mean here.
+
+  'remove' : 'break off'
+
   'break off...from' : 'break...off of'
+  'remove...from'    : 'break...off of'
   'break...off of' :
     if broken_off then
       >>It's not part of anything anymore.
