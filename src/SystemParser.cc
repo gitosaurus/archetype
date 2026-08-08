@@ -26,7 +26,23 @@ namespace archetype {
     inline string lowercase(string_view s) {
         string r;
         r.reserve(s.size());
-        ranges::transform(s, back_inserter(r), ::tolower);
+        ranges::transform(s, back_inserter(r), [](char ch) {
+            return char(::tolower(static_cast<unsigned char>(ch)));
+        });
+        return r;
+    }
+
+    // The one spelling rule the parser has, applied to a command and to the
+    // names it gets matched against alike.  Both sides have to lose the same
+    // characters:  a command loses its apostrophes on the way in, so a name
+    // that keeps one is a name no command can still be spelled like.  Hyphens
+    // stay, leaving 'part-time' the single word it was typed as.
+    inline string unpunctuated(string_view text) {
+        string r;
+        r.reserve(text.size());
+        ranges::copy_if(text, back_inserter(r), [](char ch) {
+            return not ispunct(static_cast<unsigned char>(ch)) or ch == '-';
+        });
         return r;
     }
 
@@ -76,7 +92,7 @@ namespace archetype {
     // the player typed.  Drop it here, where the words are counted, rather
     // than guessing at the text in addParseable.
     inline list<Value> phrase_words(const string& slot) {
-        istringstream in(slot);
+        istringstream in(unpunctuated(slot));
         list<Value> words;
         ranges::transform(ranges::istream_view<string>(in), back_inserter(words),
                           [](const string& s) { return make_string_value(s); });
@@ -160,14 +176,12 @@ namespace archetype {
     }
 
     void SystemParser::parse(std::string command_line) {
-        string unpunctuated;
-        ranges::copy_if(command_line, back_inserter(unpunctuated),
-                        [](char ch) { return not ispunct(ch)  or  ch == '-'; });
+        string stripped = unpunctuated(command_line);
         // Read the command through before taking it:  the parser keeps the
         // player's own spelling of it, so the copy the caller made is the one
         // that gets stored.
         playerCommand_ = std::move(command_line);
-        istringstream in(std::move(unpunctuated));
+        istringstream in(std::move(stripped));
         list<string> words;
         ranges::transform(ranges::istream_view<string>(in), back_inserter(words), lowercase);
 
@@ -211,7 +225,7 @@ namespace archetype {
     }
 
     Value SystemParser::whichObject(std::string phrase) {
-        istringstream in(std::move(phrase));
+        istringstream in(unpunctuated(phrase));
         list<Value> words;
         ranges::transform(ranges::istream_view<string>(in), back_inserter(words),
                           [](const string& s) { return make_string_value(s); });

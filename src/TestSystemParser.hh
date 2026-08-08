@@ -20,6 +20,7 @@ namespace archetype {
         void testPartialParsing_();
         void testProximity_();
         void testSerialization_();
+        void testPunctuatedNames_();
     protected:
         virtual void runTests_() override;
     public:
