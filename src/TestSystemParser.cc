@@ -243,11 +243,62 @@ namespace archetype {
         ARCHETYPE_TEST(!v->isDefined());
     }
 
+    void TestSystemParser::testPunctuatedNames_() {
+        auto parser = make_unique<SystemParser>();
+
+        parser->setMode(SystemParser::VERBS);
+        int take_id = 40;
+        parser->addParseable(take_id, "take|get");
+
+        parser->setMode(SystemParser::NOUNS);
+        int uniform_id = 41;
+        parser->addParseable(uniform_id, "guard's uniform|his uniform");
+        int hat_id = 42;
+        parser->addParseable(hat_id, "part-time hat");
+
+        parser->close();
+
+        // A command loses its punctuation on the way in, so a name has to lose
+        // the same characters; otherwise one written with an apostrophe names
+        // an object no command can reach.
+        // getObject() throws on anything that is not an object reference, so
+        // ask for the id only once it is known to be there:  a miss here is
+        // the failure under test, and it should report as one rather than
+        // taking the rest of the suite down with it.
+        auto object_id = [](const Value& v) {
+            Value obj = v->objectConversion();
+            return obj->isDefined() ? obj->getObject() : -1;
+        };
+
+        parser->parse("take the guard's uniform");
+        Value v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        ARCHETYPE_TEST_EQUAL(object_id(v), take_id);
+
+        v = parser->nextObject();
+        ARCHETYPE_TEST(v->isDefined());
+        ARCHETYPE_TEST_EQUAL(object_id(v), uniform_id);
+
+        v = parser->nextObject();
+        ARCHETYPE_TEST(!v->isDefined());
+
+        // whichObject answers the same question and must spell it the same way.
+        auto names = [&parser, &object_id](const char* phrase) {
+            return object_id(parser->whichObject(phrase));
+        };
+        ARCHETYPE_TEST_EQUAL(names("guard's uniform"), uniform_id);
+        // Typed without the apostrophe, it is the same command.
+        ARCHETYPE_TEST_EQUAL(names("guards uniform"), uniform_id);
+        // A hyphen is not punctuation the parser drops, on either side.
+        ARCHETYPE_TEST_EQUAL(names("part-time hat"), hat_id);
+    }
+
     void TestSystemParser::runTests_() {
         testNormalization_();
         testBasicParsing_();
         testPartialParsing_();
         testProximity_();
         testSerialization_();
+        testPunctuatedNames_();
     }
 }
