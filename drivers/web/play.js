@@ -240,17 +240,41 @@
     status('The game has ended.  Start over, or load a save.', true);
   }
 
-  // A mid-turn question, waiting to be answered.  While one is up the player is
-  // answering the game rather than commanding it, so the entry box is routed
-  // here instead of starting a new turn.
+  // What the game has stopped to ask for, and the promise its turn is waiting
+  // on.  While one is up the entry box answers the game rather than starting a
+  // turn of its own.
+  //
+  // `opening` marks a request raised before the player had supplied anything.
+  // Nothing has been answered, the turn has been rolled back, and the universe
+  // is untouched -- so this is not a question interrupting a turn but the
+  // resting state of the page, which for a parser game is its command prompt.
   let pending = null;
 
-  function askPlayer(want) {
+  // Resolved with instead of an answer to tell a turn to give up without
+  // touching the universe, because the page is about to load another one.
+  const ABANDON = Symbol('abandon');
+
+  // Bumped whenever the universe is replaced.  A turn that was waiting when
+  // that happened must not hand `busy` and the command line back on its way
+  // out, since by then they belong to whatever replaced it.
+  let generation = 0;
+
+  function askPlayer(want, opening) {
     return new Promise((resolve) => {
-      pending = { want: want, resolve: resolve };
-      status(want === 'key'
-        ? 'The game is waiting for a keystroke — Esc to decline.'
-        : 'The game is waiting for an answer — Esc to decline.', true);
+      pending = { want: want, opening: opening, resolve: resolve };
+      if (want === 'key') {
+        // Worth saying even at rest: the box looks exactly as it does when it
+        // is taking text, and here it is not.
+        status(opening
+          ? 'The game is waiting for a keystroke.'
+          : 'The game is waiting for a keystroke — Esc to decline.', true);
+      } else if (opening) {
+        // An ordinary command prompt.  Announcing it would make the state a
+        // player spends most of a game in look like an interruption.
+        status('');
+      } else {
+        status('The game is waiting for an answer — Esc to decline.', true);
+      }
       setPlayable(true);
     });
   }
@@ -265,6 +289,19 @@
     if (waiting) waiting.resolve(value);
   }
 
+  // Give the page up from whatever turn is in flight.  Sound only where that
+  // turn is waiting at a prompt, since one that stopped to ask has already
+  // been rolled back and is holding no state of its own.
+  function abandonTurn() {
+    generation++;
+    if (pending) {
+      const waiting = pending;
+      pending = null;
+      status('');
+      waiting.resolve(ABANDON);
+    }
+  }
+
   // A turn is a conversation rather than a call.  The game may stop partway
   // through at a 'read' or a 'key' the player has not answered yet; each answer
   // is appended to the list and the turn run again from the top.  The
@@ -275,36 +312,80 @@
   // attempts, and one declined answer is always enough to end a turn.
   const MAX_PROMPTS = 64;
 
-  async function takeTurn(input) {
+  // Turns follow one another by themselves, so the page has to be the thing
+  // that stops.  A turn that asks the player something can go round forever --
+  // that is just play -- but one that completes having asked nothing at all
+  // would spin, so those are counted and capped.
+  const MAX_QUIET_TURNS = 8;
+
+  // A turn ordinarily starts with nothing in hand and stops at whatever prompt
+  // the game raises, which is what keeps the page from ever inventing a move
+  // the player did not make.  `seed` covers the one case left over: a command
+  // typed when the game is not asking for anything.
+  async function takeTurn(seed) {
     if (busy || arch.arch_ended()) return;
+    const mine = generation;
     busy = true;
     setPlayable(false);
-    const items = [input];
+    let items = seed === undefined ? [] : [seed];
+    let quiet = 0;
     try {
-      for (let attempt = 0; attempt <= MAX_PROMPTS; attempt++) {
-        const turn = arch.arch_turn(items, columns);
-        if (turn.status === 'error') {
+      for (;;) {
+        let asked = false;
+        let completed = false;
+        for (let attempt = 0; attempt <= MAX_PROMPTS; attempt++) {
+          const turn = arch.arch_turn(items, columns);
+          if (turn.status === 'error') {
+            dropProvisional();
+            status('Error: ' + (arch.arch_last_error() || 'turn failed'), true);
+            return;
+          }
+          if (turn.status === 'complete') {
+            dropProvisional();
+            append(turn.text);
+            await autosave();
+            // A finished game is worth keeping: reloading the page should show
+            // how it ended rather than silently starting again.
+            if (arch.arch_ended()) {
+              finish();
+              return;
+            }
+            completed = true;
+            break;
+          }
+          showProvisional(turn.text);
+          // Nothing supplied yet makes this the turn's own opening prompt, and
+          // the page's resting state rather than an interruption.
+          const answer = await askPlayer(
+            turn.status === 'needs_key' ? 'key' : 'line', items.length === 0);
+          if (answer === ABANDON) {
+            dropProvisional();
+            return;
+          }
+          asked = true;
+          items.push(answer);
+        }
+        if (!completed) {
           dropProvisional();
-          status('Error: ' + (arch.arch_last_error() || 'turn failed'), true);
+          status('The game kept asking for input; the turn was abandoned.', true);
           return;
         }
-        if (turn.status === 'complete') {
-          dropProvisional();
-          append(turn.text);
-          await autosave();
-          // A finished game is worth keeping: reloading the page should show
-          // how it ended rather than silently starting again.
-          if (arch.arch_ended()) finish();
+        quiet = asked ? 0 : quiet + 1;
+        if (quiet > MAX_QUIET_TURNS) {
+          status('The game has stopped asking for anything; type a command to go on.', true);
           return;
         }
-        showProvisional(turn.text);
-        items.push(await askPlayer(turn.status === 'needs_key' ? 'key' : 'line'));
+        // The next turn begins here rather than waiting to be asked for, so
+        // that the prompt a player answers is always one the game wrote.
+        items = [];
       }
-      dropProvisional();
-      status('The game kept asking for input; the turn was abandoned.', true);
     } finally {
-      busy = false;
-      if (!arch.arch_ended()) setPlayable(true);
+      // Only where this turn still owns the page.  An abandoned one was
+      // superseded by whatever universe took its place.
+      if (mine === generation) {
+        busy = false;
+        if (!arch.arch_ended()) setPlayable(true);
+      }
     }
   }
 
@@ -320,10 +401,13 @@
       answerPlayer(answer);
       return;
     }
+    if (busy) return;
+    // Reached only where no turn is running and the game is asking for
+    // nothing -- after the quiet cap, say.  An empty command would arrive as
+    // UNDEFINED and end the game with "EOF; goodbye." (games/intrptr.arch), so
+    // it never gets sent.
     const input = el.command.value.trim();
-    // An empty command would reach 'UPDATE' as UNDEFINED and end the game with
-    // "EOF; goodbye." (games/intrptr.arch), so it never gets sent.
-    if (!input || busy) return;
+    if (!input) return;
     el.command.value = '';
     clearTransientStatus();
     takeTurn(input);
@@ -332,6 +416,10 @@
   document.addEventListener('keydown', (event) => {
     if (!pending || event.altKey || event.ctrlKey || event.metaKey) return;
     if (event.key === 'Escape') {
+      // There is nothing to decline at a turn's opening prompt: the game has
+      // asked nothing yet, and end-of-input there means 'quit' rather than 'no
+      // answer' -- games/intrptr.arch says "EOF; goodbye." and stops.
+      if (pending.opening) return;
       event.preventDefault();
       el.command.value = '';
       answerPlayer(null);
@@ -339,8 +427,9 @@
     }
     if (pending.want !== 'key') return;
     // One printable character answers 'key'.  Return counts as a keystroke too,
-    // but is sent as a space: the interpreter echoes whatever it reads, and a
-    // newline there would break the line the prompt is sitting on.
+    // but is sent as a space: nothing echoes a keystroke -- a game that wants
+    // one seen writes it out itself -- and a newline written back would break
+    // the line the prompt is sitting on.
     if (event.key.length === 1) {
       event.preventDefault();
       answerPlayer(event.key);
@@ -400,16 +489,18 @@
       setPlayable(true);
       status(resumeBytes ? 'Resumed your save.' : '');
       if (resumeBytes) {
-        // The universe is mid-game; replaying a turn would advance it, so just
-        // hand control back to the player.
         append('\n[ Resumed. ]\n', false);
-        return;
       }
       // The first 'UPDATE' is what runs the game's setup and prints the intro
-      // and opening room (games/intrptr.arch).  It still needs a command to
-      // consume: "wait" costs one harmless line, where "look" would describe
-      // the room a second time.  This is what the Cloud Run driver defaults to.
-      return takeTurn('wait');
+      // and opening room (games/intrptr.arch); after that it asks what to do.
+      // It is handed nothing, so it stops at that question rather than eating
+      // a command the player never gave -- the page used to supply "wait",
+      // which is a real move, and a game where the opening turn matters would
+      // have had it spent on its behalf.
+      //
+      // A resumed universe is mid-game, and this advances it no further than
+      // the prompt: a turn that stops to ask has been rolled back.
+      return takeTurn();
     }).catch((error) => {
       busy = false;
       status('Error: ' + error.message, true);
@@ -434,8 +525,19 @@
   // question, and the turn waiting on that answer will replay itself against
   // whatever universe is loaded when it arrives.  Saving is left alone, since a
   // turn that stopped to ask has been rolled back and the state is sound.
+  //
+  // A turn waiting at its opening prompt is the exception, and has to be, since
+  // that is where a player sits for all of a game that is not mid-question:
+  // treating it as busy would mean never being able to restart or change game
+  // except in the instant a turn was running.  Nothing has been answered and
+  // the universe is as the rollback left it, so the turn is dropped instead of
+  // being defended.
   function interrupting() {
     if (!busy) return false;
+    if (pending && pending.opening) {
+      abandonTurn();
+      return false;
+    }
     status(pending
       ? 'Answer the question first, or press Esc to decline it.'
       : 'A turn is still running.', true);
