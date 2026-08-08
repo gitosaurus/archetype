@@ -15,6 +15,7 @@ namespace archetype {
     class TestWrappedOutput : public ITestSuite {
         void testBasicWrap_();
         void testCenter_();
+        void testWrapAcrossPuts_();
     protected:
         virtual void runTests_() override;
     public:
