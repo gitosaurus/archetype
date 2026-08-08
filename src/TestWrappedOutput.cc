@@ -87,8 +87,50 @@ namespace archetype {
         out() << "TestWrappedOutput::testCenter_ finished." << endl;
     }
 
+    void TestWrappedOutput::testWrapAcrossPuts_() {
+        UserOutput user_soutput = make_shared<StringOutput>();
+        StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
+        UserOutput user_output = make_shared<WrappedOutput>(user_soutput);
+        WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
+
+        auto delta = [&](size_t& mark) {
+            string all = strout.getOutput();
+            string d = all.substr(mark);
+            mark = all.size();
+            return d;
+        };
+        size_t mark = 0;
+
+        // 'write' hands over its arguments one at a time, so a word can begin
+        // with the cursor already up against the margin.  It belongs whole on
+        // the next line.
+        wrout.setMaxColumns(20);
+        user_output->put("aaa bbb ccc ddd eee");
+        user_output->put("center, but no handle.");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("aaa bbb ccc ddd eee\n"
+                                    "center, but no\n"
+                                    "handle.\n"));
+
+        // A word too long for any line gets split wherever it stands.  The
+        // break cannot be avoided, so it fills the line it started on.
+        wrout.resetCursor();
+        wrout.setMaxColumns(10);
+        user_output->put("see ");
+        user_output->put("supercalifragilistic");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("see superc\n"
+                                    "alifragili\n"
+                                    "stic\n"));
+
+        out() << "TestWrappedOutput::testWrapAcrossPuts_ finished." << endl;
+    }
+
     void TestWrappedOutput::runTests_() {
         testBasicWrap_();
         testCenter_();
+        testWrapAcrossPuts_();
     }
 }

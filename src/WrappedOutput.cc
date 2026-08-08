@@ -6,6 +6,8 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <algorithm>
+#include <cctype>
 #include <string>
 #include <string_view>
 
@@ -45,23 +47,32 @@ namespace archetype {
 
         int remaining = max(0, maxColumns_ - cursor_);
         // Keep trailing punctuation from being orphaned on the next line.
-        if (not s.empty() and ispunct(s[0])) {
+        if (not s.empty() and ispunct(static_cast<unsigned char>(s[0]))) {
             remaining += SafetyMargin;
         }
 
         while (int(s.size()) > remaining) {
             // Walk backward to find a breaking point.
             auto cut_p = s.begin() + remaining;
-            while (not isspace(*cut_p) and cut_p != s.begin()) {
+            while (not isspace(static_cast<unsigned char>(*cut_p)) and cut_p != s.begin()) {
                 --cut_p;
             }
 
-            // If we were unable to find a wrapping point, it means one of two
-            // things:  a) the string is too long to fit on one line, and must be
-            // split unnaturally; or b) we are near the end of a line and must wrap
-            // the entire string; i.e. print nothing, finish the line and go on.
-
-            if (cut_p == s.begin() and int(s.size()) > maxColumns_) {
+            // No breaking point within reach:  the word this string opens with
+            // runs past the margin.  What to do about it turns on that word
+            // alone and not on the rest of the string, which will get lines of
+            // its own.  A word that would fit on an empty line is owed one.
+            // Only a word too long for any line has to be broken, and that one
+            // fills the line it stands on, the break being unavoidable.
+            if (cut_p == s.begin()) {
+                auto first_space = ranges::find_if(s, [](unsigned char c) {
+                    return isspace(c);
+                });
+                if (first_space - s.begin() <= maxColumns_ and cursor_ != 0) {
+                    endLine();
+                    remaining = maxColumns_;
+                    continue;
+                }
                 cut_p = s.begin() + remaining;
             }
 
