@@ -30,13 +30,15 @@ methods
     response
     }
 
-  # One round of the game per turn.  A driver hands over a line before
-  # anything else happens -- that is what a turn is -- so the "ready" prompt
-  # is a 'read' rather than a 'key', and consumes it.  Left to a 'key', the
-  # first character of whatever the player typed would answer it instead.
+  # One round of the game per turn.  Nothing is handed to the turn to consume:
+  # animal has no vocabulary to command, so a driver starts it empty and it
+  # stops here, at its own prompt.  'key' rather than 'read' because being
+  # ready is a keystroke question; a page sends Return as a space, so that
+  # answers it too.  The keystroke is written out because nothing echoes it --
+  # ConsoleInput reads keys raw -- which is what 'AFFIRM' has always done.
   'UPDATE' : {
-    writes "Think of an animal; press Return when you're ready. "
-    read
+    writes "Think of an animal; hit any key when you're ready. "
+    write key
     'PLAY'
     writes "Another game [y/n] ? "
     if not 'AFFIRM' -> main then
