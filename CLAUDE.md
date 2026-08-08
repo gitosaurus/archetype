@@ -47,6 +47,8 @@ echo "look" | ./build/archetype --source=games/gorreven.arch --include=games
 - `games/` — Game sources (`.arch`) and compiled binaries (`.acx`)
 - `drivers/` — Cloud Run driver (Python/Flask) and the WebAssembly web driver
   (`drivers/web/`); see `drivers/README.md`
+- `demos/` — Optional demonstrations, standard library only; nothing in `src/`
+  refers to them and nothing builds them
 - `archetype-mode.el` — Emacs major mode for syntax highlighting
 
 ## Key conventions
