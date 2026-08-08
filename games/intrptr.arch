@@ -141,6 +141,11 @@ null main
 
   verbmsg   : UNDEFINED
 
+# What the subject made of the message it was last sent, kept only long
+# enough to tell an answer from an ABSENT one rung down the ladder.
+
+  answer    : UNDEFINED
+
   sitrep    : UNDEFINED
 
 methods
@@ -292,12 +297,30 @@ methods
              'WHICH OBJECT' -> system
              if (match := verbmsg -> system) and match.normal then
                { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
-             else {                            # try the verb alone
-               'WHICH OBJECT' -> system
-               if (match := verb -> system).IsAVerb and match.normal then
-                 { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
+             else {
+
+# Nothing here knows this verb and preposition together, and no Verb was
+# declared for the pair either, so the game has no notion of them as a
+# combination -- which is reason to doubt the preposition was ever the verb's
+# business.  "push button on hopper" asks for the button that is on the
+# hopper, and the parser has no way to hear it that way:  'on' is claimed as
+# a lex before any noun phrase is matched, so the phrase arrives here split
+# into a subject and a direct object.  Ask the object about the verb by
+# itself before falling back on a default written for every object at once.
+# Only worth asking when a preposition made the two messages differ; without
+# one, the answer above was already this question.
+
+               if prep then
+                 answer := verb -> send_to
                else
-                 'Semantic Error'
+                 answer := ABSENT
+               if answer = ABSENT then {         # try the verb alone
+                 'WHICH OBJECT' -> system
+                 if (match := verb -> system).IsAVerb and match.normal then
+                   { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
+                 else
+                   'Semantic Error'
+                 }
                }
              }  # no method defined for the verb message
          }     # no special interpretation for verb message
