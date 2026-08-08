@@ -56,6 +56,7 @@ type:Verb a rdfs:Class
 obj:main a type:null
     ; attr:normal "[0m"
     ; attr:started "false"^^xsd:boolean
+    ; attr:voice type:first_person
     ; attr:bold "[1m"
     ; attr:dim "[2m"
     ; attr:mentioned "false"^^xsd:boolean
@@ -112,6 +113,7 @@ type:direction a rdfs:Class
     ; rdfs:subClassOf type:inventory_item
     ; attr:IsAlex "true"^^xsd:boolean
     ; attr:interpret "true"^^xsd:boolean
+    ; attr:location obj:compass
     ; attr:IsAdirection "true"^^xsd:boolean
     ; archetype:respondsTo msg:NAME
     ; archetype:respondsTo msg:INTERPRET
@@ -420,6 +422,7 @@ _:object_71 a type:Verb
 
 obj:trapdoor a type:object
     ; attr:syn "door"
+    ; attr:location obj:start_room
     ; attr:desc "trapdoor"
     ; attr:open "false"^^xsd:boolean
     ; attr:stationary "true"^^xsd:boolean
@@ -433,6 +436,7 @@ obj:bedroom a type:room
     ; archetype:respondsTo msg:north .
 
 obj:bed a type:furniture
+    ; attr:location obj:bedroom
     ; attr:desc "brass bed"
     ; attr:stationary "true"^^xsd:boolean
     ; archetype:respondsTo msg:look
@@ -440,6 +444,7 @@ obj:bed a type:furniture
     ; archetype:respondsTo msg:get%20in .
 
 obj:closet a type:openable
+    ; attr:location obj:bedroom
     ; attr:desc "closet"
     ; attr:stationary "true"^^xsd:boolean
     ; archetype:respondsTo msg:get .
@@ -450,23 +455,29 @@ type:plural a rdfs:Class
     ; archetype:respondsTo msg:INDEF .
 
 obj:games a type:plural
+    ; attr:location obj:closet
     ; attr:desc "board games" .
 
 obj:books a type:plural
+    ; attr:location obj:closet
     ; attr:desc "books" .
 
 obj:coat a type:object
+    ; attr:location obj:closet
     ; attr:desc "winter coat" .
 
 obj:chest a type:openable
+    ; attr:location obj:bedroom
     ; attr:desc "small chest"
     ; archetype:respondsTo msg:enter .
 
 obj:necklace a type:object
+    ; attr:location obj:chest
     ; attr:desc "diamond necklace" .
 
 obj:drawers a type:openable
     ; attr:pronoun "them"
+    ; attr:location obj:bedroom
     ; attr:desc "dresser drawers"
     ; attr:stationary "true"^^xsd:boolean
     ; archetype:respondsTo msg:INDEF
@@ -486,6 +497,7 @@ _:object_84 a type:Verb
 obj:rope a type:object
     ; attr:full "coil of rope"
     ; attr:syn "coil|rope|rope coil|hook"
+    ; attr:location obj:basement
     ; attr:desc "coil of rope with a hook on the end"
     ; attr:connected "false"^^xsd:boolean
     ; archetype:respondsTo msg:get
@@ -494,6 +506,7 @@ obj:rope a type:object
 
 obj:rats a type:object
     ; attr:pronoun "them"
+    ; attr:location obj:basement
     ; attr:desc "pack of rats"
     ; attr:curious 0
     ; archetype:respondsTo msg:INITIAL

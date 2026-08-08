@@ -46,6 +46,27 @@ namespace archetype {
 
         virtual void prefixDisplay(std::ostream& out) const = 0;
         virtual Value evaluate() const = 0;
+
+        // True where this expression can be rendered as a value without either
+        // changing anything or misrepresenting itself.  An attribute declared in
+        // source holds the expression it was written as, not a value, and is
+        // evaluated afresh on every access -- so anything that renders one
+        // without the game having asked, --inspect above all, has to know which
+        // it may ask.
+        //
+        // No operator may be asked: '->' sends a message, and a method may do
+        // anything at all.  Nor may every leaf, which is the part that
+        // surprises: 'read' and 'key' take a line and a keystroke from the
+        // player, and 'sender', 'message' and 'each' want a dispatch context
+        // that an inspection is standing outside of.
+        //
+        // The bar is deliberately lower than a save file's.  An .acx has to
+        // round-trip a universe exactly; the RDF is a description of one, and is
+        // meant to be the lesser thing.  Where an expression cannot survive the
+        // trip as a value, the honest rendering is none at all -- serializing
+        // the expression instead would end at serializing statements, which is
+        // a different and much larger idea than describing a world.
+        virtual bool isMaterializable() const { return false; }
     };
 
     class ValueExpression : public IExpression {
@@ -55,6 +76,8 @@ namespace archetype {
         virtual void write(Storage& out) const override;
         virtual Value evaluate() const override { return value_->clone(); }
         virtual void prefixDisplay(std::ostream& out) const override { out << value_; }
+        // Already a value; evaluating it only hands back a copy.
+        virtual bool isMaterializable() const override { return true; }
     };
 
     bool is_binary(Keywords::Operators_e op);

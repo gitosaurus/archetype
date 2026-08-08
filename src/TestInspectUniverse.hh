@@ -19,6 +19,8 @@ namespace archetype {
         void testVocabSyntax_();
         void testProximateSyntax_();
         void testParserBlock_();
+        void testMaterializable_();
+        void testDeclaredAttributes_();
     protected:
         virtual void runTests_() override;
     public:

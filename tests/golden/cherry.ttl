@@ -56,6 +56,7 @@ type:Verb a rdfs:Class
 obj:main a type:null
     ; attr:normal "[0m"
     ; attr:started "false"^^xsd:boolean
+    ; attr:voice type:first_person
     ; attr:bold "[1m"
     ; attr:dim "[2m"
     ; attr:mentioned "false"^^xsd:boolean
@@ -112,6 +113,7 @@ type:direction a rdfs:Class
     ; rdfs:subClassOf type:inventory_item
     ; attr:IsAlex "true"^^xsd:boolean
     ; attr:interpret "true"^^xsd:boolean
+    ; attr:location obj:compass
     ; attr:IsAdirection "true"^^xsd:boolean
     ; archetype:respondsTo msg:NAME
     ; archetype:respondsTo msg:INTERPRET

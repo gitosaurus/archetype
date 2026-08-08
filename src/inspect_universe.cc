@@ -11,6 +11,7 @@
 #include "Universe.hh"
 #include "Object.hh"
 #include "Expression.hh"
+#include "Value.hh"
 #include "SystemObject.hh"
 
 namespace archetype {
@@ -196,11 +197,23 @@ namespace archetype {
             }
 
             for (auto const& [attribute_id, expr] : obj->attributes_) {
-                auto* val_expr = dynamic_cast<ValueExpression*>(expr.get());
-                if (not val_expr) continue;
+                // Assigned attributes arrive here already holding a value.  A
+                // declared one holds the expression it was written as, and is
+                // worth evaluating only where doing so is known to be free of
+                // consequences -- see IExpression::isMaterializable.  Skipping
+                // them altogether is what used to drop the edges of a graph
+                // built in source: games/animal.arch declares its opening
+                // question's two branches and never assigns them, so the tree
+                // came out rooted nowhere.
+                if (not expr->isMaterializable()) continue;
                 ContextScope c;
                 c->selfObject = obj;
-                Value value = val_expr->evaluate();
+                Value value = expr->evaluate();
+                // A name that resolves to an attribute of this very object is a
+                // reference, and rendering it would dereference into whatever
+                // expression sits behind it -- which this loop has just gone to
+                // some trouble not to evaluate blind.
+                if (dynamic_cast<AttributeValue*>(value.get())) continue;
                 if (value->isDefined()) {
                     out << "\n    ; attr:" << Universe::instance().Identifiers.get(attribute_id)
                         << " " << value->asRDF();
