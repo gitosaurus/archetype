@@ -170,6 +170,12 @@ namespace archetype {
         virtual void prefixDisplay(std::ostream& out) const override {
             out << Keywords::instance().reservedWord(word_);
         }
+        // 'self' is whatever the caller put in the context and costs nothing to
+        // read.  The rest of the lambdas below either take input from the
+        // player or reach for a sender, a message or an each that only a live
+        // dispatch has -- and reading one of those from an inspection would
+        // dereference a null.
+        virtual bool isMaterializable() const override { return word_ == RW_SELF; }
     };
 
     Expression tie_on_rside(Expression existing,
@@ -208,6 +214,12 @@ namespace archetype {
         virtual void prefixDisplay(ostream& out) const override {
             out << Universe::instance().Identifiers.get(id_);
         }
+        // A name resolves to an attribute reference, an object, or itself, and
+        // none of the three costs anything to work out.  Note that the first is
+        // a reference and not the value behind it: what is on the other end may
+        // be an expression with operators after all, so a caller that means to
+        // render one has to say what it does with an AttributeValue.
+        virtual bool isMaterializable() const override { return true; }
     };
 
     class Operator : public IExpression {

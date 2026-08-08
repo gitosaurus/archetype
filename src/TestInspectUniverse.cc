@@ -61,6 +61,23 @@ namespace archetype {
     "end\n"
     ;
 
+    // Every shape a declared attribute can take.  'alias' names an attribute of
+    // its own object, which is the aliasing the language has always allowed and
+    // which the RDF deliberately does not chase.
+    static char declared[] =
+    "null target\n"
+    "  desc : \"the target\"\n"
+    "end\n"
+    "\n"
+    "null holder\n"
+    "  spelled_out : \"a literal\"\n"
+    "  an_object   : target\n"
+    "  itself      : self\n"
+    "  alias       : spelled_out\n"
+    "  computed    : 3 + 4\n"
+    "end\n"
+    ;
+
     static string getTurtleOutput_(bool include_methods = false) {
         // Serialize the universe
         MemoryStorage mem;
@@ -168,10 +185,67 @@ namespace archetype {
         ARCHETYPE_TEST(ttl.find("archetype:normalized ") != string::npos);
     }
 
+    // An attribute written in source holds the expression it was written as and
+    // is evaluated afresh on every access, so the dump has to choose which ones
+    // it may ask.  The predicate is pinned here rather than through the Turtle
+    // because the interesting negative case is 'read': were it ever to become
+    // materializable, evaluating it would take a line from the player, and a
+    // test that discovered that by hanging would be a poor way to find out.
+    void TestInspectUniverse::testMaterializable_() {
+        Universe::destroy();
+
+        // No operator, nothing read, no context beyond self.
+        ARCHETYPE_TEST(make_expr_from_str("\"a literal\"")->isMaterializable());
+        ARCHETYPE_TEST(make_expr_from_str("target")->isMaterializable());
+        ARCHETYPE_TEST(make_expr_from_str("self")->isMaterializable());
+
+        // An operator can send a message, and a method may do anything.
+        ARCHETYPE_TEST(not make_expr_from_str("3 + 4")->isMaterializable());
+        ARCHETYPE_TEST(not make_expr_from_str("self -> 'NAME'")->isMaterializable());
+
+        // Leaves all, and none of them free: two take from the player, and the
+        // rest read a dispatch context an inspection is standing outside of.
+        ARCHETYPE_TEST(not make_expr_from_str("read")->isMaterializable());
+        ARCHETYPE_TEST(not make_expr_from_str("key")->isMaterializable());
+        ARCHETYPE_TEST(not make_expr_from_str("sender")->isMaterializable());
+        ARCHETYPE_TEST(not make_expr_from_str("message")->isMaterializable());
+        ARCHETYPE_TEST(not make_expr_from_str("each")->isMaterializable());
+    }
+
+    // The graph a game builds in source -- what contains what, which branch a
+    // question leads to -- lives in attributes that are declared and never
+    // assigned.  Dropping those left it undiscoverable from the RDF.
+    void TestInspectUniverse::testDeclaredAttributes_() {
+        Universe::destroy();
+
+        TokenStream t(make_source_from_str("declared_test", declared));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+
+        string ttl = getTurtleOutput_();
+
+        // A name standing for another object is the edge that was being lost.
+        ARCHETYPE_TEST(ttl.find("attr:an_object obj:target") != string::npos);
+
+        // Literals were never in doubt, and 'self' resolves to the holder.
+        ARCHETYPE_TEST(ttl.find("attr:spelled_out \"a literal\"") != string::npos);
+        ARCHETYPE_TEST(ttl.find("attr:itself obj:holder") != string::npos);
+
+        // An alias is a live reference to whatever the other attribute is now.
+        // Rendering it would mean evaluating that one, so it is left out: the
+        // RDF is meant to be less than the save file, not a second encoding of
+        // the program.
+        ARCHETYPE_TEST(ttl.find("attr:alias") == string::npos);
+
+        // Same reasoning, arrived at sooner: an operator is never asked.
+        ARCHETYPE_TEST(ttl.find("attr:computed") == string::npos);
+    }
+
     void TestInspectUniverse::runTests_() {
         testNullParentType_();
         testVocabSyntax_();
         testProximateSyntax_();
         testParserBlock_();
+        testMaterializable_();
+        testDeclaredAttributes_();
     }
 }
