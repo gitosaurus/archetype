@@ -21,6 +21,7 @@ namespace archetype {
         void testInspectAppendsStateRdf_();
         void testTurnAsksForInput_();
         void testDeclinedInputEndsTheTurn_();
+        void testSeedBetweenLoadAndTurn_();
     protected:
         virtual void runTests_() override;
     public:
