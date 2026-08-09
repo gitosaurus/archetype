@@ -173,6 +173,14 @@ static void from_source(map<std::string, std::string> &opts,
     } else {
         string filename_out = it_create->second;
         opts.erase(it_create);
+        // The one mode that never plays, so the seed has nowhere to go: a
+        // universe is seeded when it is first played, deliberately, so that
+        // --create output stays byte-for-byte what it always was.  Saying so
+        // beats accepting the option and quietly ignoring it.
+        if (forced_seed) {
+            throw invalid_argument("--seed has no effect with --create; a binary "
+                                   "draws its seed when it is first played");
+        }
         if (filename_out.empty()) {
             auto iext = source_path.rfind('.');
             filename_out = source_path.substr(0, iext);
@@ -385,7 +393,16 @@ int main(int argc, const char* argv[]) {
               opts.erase(it_input);
           }
           MemoryStorage out_mem;
-          cout << update_universe(in_mem, out_mem, input, width, sitrep, inspect_after);
+          // The three phases update_universe runs in one call, opened up so
+          // that an explicit seed lands on the loaded universe before the turn
+          // draws from it.  A save arrives already seeded and dispatching seeds
+          // whatever is not, so between the load and the turn is the only
+          // moment --seed can win -- which is the same moment the other three
+          // modes apply it.
+          load_universe(in_mem);
+          seed_universe();
+          cout << run_turn(std::move(input), width, sitrep, inspect_after);
+          save_universe(out_mem);
           // No backup: --update rewrites a file the caller already owns a copy
           // of (the Cloud Run driver downloads a blob to a temp directory), so
           // a .bak alongside it would be litter rather than safety.

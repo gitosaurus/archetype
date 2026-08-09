@@ -12,7 +12,10 @@
 #          encoding, field order, id assignment.
 #
 # Only compiled output is pinned.  A post-turn save is NOT a valid golden --
-# gorreven's turn is nondeterministic by design, because the game rolls dice.
+# every game's turn is nondeterministic by design, because a universe draws its
+# seed the first time it is played and writes it into the binary.  A turn taken
+# under --seed is deterministic, though, and this checks that too:  nothing else
+# here runs a turn, so nothing else notices --seed failing to reach one.
 #
 # Usage:  tests/golden/check.sh [path-to-archetype]
 #
@@ -97,8 +100,30 @@ for game in "${GAMES[@]}"; do
         game_failed=1
     fi
 
+    # A post-turn save is not a golden and cannot be one -- a universe draws its
+    # seed when it is first played and writes it into the binary, so an unseeded
+    # turn is nondeterministic on purpose.  Under --seed it becomes
+    # deterministic, and pinning that is worth doing on its own:  it is the only
+    # check here that runs a turn at all, and so the only one that can catch
+    # --seed going missing on the way to it.
+    cp "$work/$game.a.acx" "$work/$game.seed1.acx"
+    cp "$work/$game.a.acx" "$work/$game.seed2.acx"
+    if run "$ARCHETYPE" --silent --update="$work/$game.seed1.acx" \
+                        --input=look --seed=20260809 &&
+       run "$ARCHETYPE" --silent --update="$work/$game.seed2.acx" \
+                        --input=look --seed=20260809; then
+        if ! cmp -s "$work/$game.seed1.acx" "$work/$game.seed2.acx"; then
+            echo "FAIL  $game: two identically seeded turns produced different bytes."
+            echo "      --seed is not reaching the universe that takes the turn."
+            game_failed=1
+        fi
+    else
+        game_failed=1
+    fi
+
     if [ "$game_failed" -eq 0 ]; then
-        echo "ok    $game: deterministic, world state and bytes match the golden."
+        echo "ok    $game: deterministic, world state and bytes match the golden,"
+        echo "      and a seeded turn repeats."
     else
         failures=$((failures + 1))
     fi

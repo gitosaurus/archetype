@@ -56,7 +56,9 @@ namespace archetype {
 
         { .name = "seed", .takes = Takes::Required, .nested = true,
           .argname = "N",
-          .help = "Draw '?' from seed N, so that a run repeats exactly." },
+          .help = "Draw '?' from seed N, so that a run repeats exactly.  Also\n"
+                  "applies to --perform, --repl, and --update, where it seeds\n"
+                  "the universe about to take the turn." },
 
         { .name = "perform", .takes = Takes::Required, .argname = "file.acx",
           .help = "Load a saved binary file and send 'START' -> main." },

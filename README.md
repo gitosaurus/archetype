@@ -106,6 +106,15 @@ Saves are written to a temporary file and renamed into place, so an interrupted 
 
 The game's response is written to stdout, and the file is updated in place. Running `--update` again from the same file continues exactly where you left off. Add `--width=N` to wrap that output at something other than 80 columns.
 
+A universe draws its random seed the first time it is played and stores it in the binary, so an unseeded run is different every time. `--seed=N` forces it, which makes a whole scripted run repeatable — seed the first turn and the rest follow from the stored state:
+
+```shell
+./build/archetype --update=gorreven.acx --input="look" --seed=42
+./build/archetype --update=gorreven.acx --input="north"
+```
+
+`--seed` applies to whichever mode plays the game — `--source`, `--perform`, `--repl`, or `--update`. It is rejected with `--create`, which never plays and so has no generator to seed.
+
 ---
 
 ## The REPL

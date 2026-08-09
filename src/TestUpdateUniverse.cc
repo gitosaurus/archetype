@@ -33,9 +33,18 @@ namespace archetype {
     "end\n"
     ;
 
-    static void loadProgram_(MemoryStorage& out) {
+    // Draws from '?', so that what the turn writes depends on the generator
+    // state the universe is holding when the turn starts.
+    static char rolling_program[] =
+    "null main\n"
+    "methods\n"
+    "  'UPDATE' : { write \"roll \", ? 1000, \" \", ? 1000 }\n"
+    "end\n"
+    ;
+
+    static void loadProgram_(MemoryStorage& out, const char* text = program) {
         Universe::destroy();
-        TokenStream t(make_source_from_str("update_test", program));
+        TokenStream t(make_source_from_str("update_test", text));
         Universe::instance().make(t);
         out << Universe::instance();
     }
@@ -199,6 +208,40 @@ namespace archetype {
         ARCHETYPE_TEST(declined.text.find("472") == string::npos);
     }
 
+    void TestUpdateUniverse::testSeedBetweenLoadAndTurn_() {
+        // What --update has to do to honour --seed.  A save arrives already
+        // seeded, and dispatching seeds whatever is not, so between the load
+        // and the turn is the only moment an explicit seed can win -- which is
+        // why --update runs the three phases separately rather than calling
+        // update_universe.
+        auto seededTurn = [](uint64_t seed, MemoryStorage& saved) {
+            MemoryStorage in_mem;
+            loadProgram_(in_mem, rolling_program);
+            load_universe(in_mem);
+            Universe::instance().seedWith(seed);
+            string narrative = run_turn("");
+            save_universe(saved);
+            return narrative;
+        };
+
+        MemoryStorage first_save, second_save, other_save;
+        string first = seededTurn(7, first_save);
+        string second = seededTurn(7, second_save);
+        string other = seededTurn(8, other_save);
+
+        // The point of the option: the same seed replays the same draws, and
+        // the binary that results is byte-for-byte the same.
+        ARCHETYPE_TEST_EQUAL(first, second);
+        ARCHETYPE_TEST(first_save.bytes() == second_save.bytes());
+
+        // And the seed is reaching the draws at all, rather than being applied
+        // somewhere the turn never reads.
+        ARCHETYPE_TEST(first != other);
+        ARCHETYPE_TEST(first_save.bytes() != other_save.bytes());
+
+        out() << "TestUpdateUniverse::testSeedBetweenLoadAndTurn_ finished." << endl;
+    }
+
     void TestUpdateUniverse::runTests_() {
         testPlainUpdate_();
         testSitrepAppendsParserRdf_();
@@ -206,5 +249,6 @@ namespace archetype {
         testInspectAppendsStateRdf_();
         testTurnAsksForInput_();
         testDeclinedInputEndsTheTurn_();
+        testSeedBetweenLoadAndTurn_();
     }
 }
