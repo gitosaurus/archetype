@@ -41,6 +41,7 @@ update_universe.cc
 # the core refers to any of these and a build can simply leave them all out.
 set(ARCHETYPE_TEST_SOURCES
 TestAutosave.cc
+TestCommandLine.cc
 TestExpression.cc
 TestIdIndex.cc
 TestInspectUniverse.cc
@@ -82,9 +83,13 @@ if(EMSCRIPTEN)
 
 else()
 
+    # CommandLine.cc sits here rather than in the core: the browser build has
+    # no command line to parse, and the test suite needs the parser without
+    # needing main().
     add_executable(archetype
         ${ARCHETYPE_CORE_SOURCES}
         ${ARCHETYPE_TEST_SOURCES}
+        CommandLine.cc
         main.cc
     )
 

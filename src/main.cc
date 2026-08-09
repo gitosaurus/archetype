@@ -22,6 +22,7 @@
 #include <fstream>
 
 #include "Autosave.hh"
+#include "CommandLine.hh"
 #include "TestRegistry.hh"
 #include "ReadEvalPrintLoop.hh"
 #include "SourceFile.hh"
@@ -76,37 +77,6 @@ namespace archetype {
 
 using namespace std;
 using namespace archetype;
-
-void usage() {
-    cout
-        << "Usage: " << endl
-        << endl
-        << " --help                  Print this message and exit." << endl
-        << " --test                  Run all test suites." << endl
-        << " --repl [file.acx]       Enter the REPL (Read-Eval-Print Loop), optionally loading file.acx first" << endl
-        << " --silent                Produce only game output and no other advisory output." << endl
-        << " --source=file.arch      Read, compile, and run the given program." << endl
-        << "   --include=path[:path...]  Colon-separated list of paths to search for source." << endl
-        << "   --create[=file.acx]       Don't run, but write the program given by --source to a binary file." << endl
-        << "   --seed=N                  Draw '?' from seed N, so that a run repeats exactly." << endl
-        << " --perform=file.acx      Load a saved binary file and send 'START' -> main." << endl
-        << " --autosave[=file.acx]   Keep the game state on disk as it is played.  Without a" << endl
-        << "                         filename, writes alongside the game: g.acx -> g.save.acx." << endl
-        << "   --autosave-at=when        'turn' (default) saves after every turn and at exit;" << endl
-        << "                             'exit' saves only as the interpreter is going away." << endl
-        << " --update=file.acx       Load binary, send 'UPDATE' -> main, save resulting binary to the same file." << endl
-        << "   --input=<string>          In combination with --update, provide command input as a string." << endl
-        << "   --width=N                 In combination with --update, wrap output at N columns (default 80)." << endl
-        << "   --sitrep                  In combination with --update, append a situation report (RDF/Turtle)." << endl
-        << "   --inspect                 In combination with --update, append post-turn world state (RDF/Turtle)." << endl
-        << " --inspect=file.acx      Load a saved binary file and dump its world state as RDF/Turtle." << endl
-        << "   --full                    Add method signatures and parser vocabulary to the RDF output." << endl
-        << endl
-        << "Environment:" << endl
-        << " ARCHETYPE_INCLUDE       Colon-separated paths to search for source, after any" << endl
-        << "                         given by --include." << endl
-    ;
-}
 
 // Gathered from the command line before we know which file the game will come
 // from; the target is resolved against that file at arming time.
@@ -225,43 +195,41 @@ static void from_source(map<std::string, std::string> &opts,
 
 int main(int argc, const char* argv[]) {
     Session session;
-    list<string> args(argv + 1, argv + argc);
-    map<string, string> opts;
-    for (auto a = args.begin(); a != args.end();) {
-        if (not a->starts_with("--")) {
-            ++a;
-        } else {
-            auto iequal = ranges::find(*a, '=');
-            string opt_name(a->begin() + 2, iequal);
-            string opt_value;
-            if (iequal != a->end()) {
-                opt_value.assign(iequal + 1, a->end());
-            }
-            a = args.erase(a);
-            opts[opt_name] = opt_value;
-        }
+    CommandLine command_line = parseCommandLine(list<string>(argv + 1, argv + argc));
+    if (not command_line.ok()) {
+        cerr << "ERROR: " << command_line.error << endl;
+        return 1;
     }
+    map<string, string>& opts = command_line.opts;
+    list<string>& args = command_line.args;
     if (opts.empty() and args.empty()) {
-        usage();
+        usage(cout);
         return 0;
     }
-    auto unknown_options_error = [&]() -> int {
+    // Every option here was recognized at parse time, so anything still
+    // standing was understood but does not apply to the mode that ran --
+    // --width without --update, say.  That is worth a different complaint than
+    // a misspelling, which the parser has already rejected by name.
+    auto unused_options_error = [&]() -> int {
         if (opts.empty() and args.empty()) return 0;
-        cerr << "ERROR: unknown options or arguments:";
+        cerr << "ERROR: unused options or arguments:";
         for (auto const& opt_name : opts | views::keys) cerr << " --" << opt_name;
         for (auto const& a : args) cerr << " " << a;
         cerr << endl;
         return 1;
     };
-    if (auto it_help = opts.find("help"); it_help != opts.end()) {
-        opts.erase(it_help);
-        if (int e = unknown_options_error()) return e;
-        usage();
-        return 0;
-    }
+    // Silence is a modifier on whatever else runs, so it comes off the line
+    // before any mode claims it -- otherwise --silent --help reports --silent
+    // as the option nothing used.
     if (auto it_silent = opts.find("silent"); it_silent != opts.end()) {
         session.silent(true);
         opts.erase(it_silent);
+    }
+    if (auto it_help = opts.find("help"); it_help != opts.end()) {
+        opts.erase(it_help);
+        if (int e = unused_options_error()) return e;
+        usage(cout);
+        return 0;
     }
     if (auto it_seed = opts.find("seed"); it_seed != opts.end()) {
         string requested = it_seed->second;
@@ -278,16 +246,23 @@ int main(int argc, const char* argv[]) {
     }
     if (auto it_test = opts.find("test"); it_test != opts.end()) {
         opts.erase(it_test);
-        if (int e = unknown_options_error()) return e;
+        if (int e = unused_options_error()) return e;
         bool success = TestRegistry::instance().runAllTestSuites(cout);
         int exit_code = success ? 0 : 1;
         return exit_code;
     }
     if (auto it_repl = opts.find("repl"); it_repl != opts.end()) {
+        string filename = it_repl->second;
         opts.erase(it_repl);
-        if (!args.empty()) {
-            std::string filename = args.front();
+        // --repl can stand alone, so the parser will not hand it the next word;
+        // it arrives instead as the one positional argument the interpreter
+        // takes.  Both spellings work, and --repl=file.acx is the one the
+        // listing documents.
+        if (filename.empty() and not args.empty()) {
+            filename = args.front();
             args.pop_front();
+        }
+        if (not filename.empty()) {
             cout << "Loading " << filename << endl;
             try {
                 InFileStorage in(filename);
@@ -303,7 +278,7 @@ int main(int argc, const char* argv[]) {
                 return 1;
             }
         }
-        if (int e = unknown_options_error()) return e;
+        if (int e = unused_options_error()) return e;
         int errors = repl();
         return errors;
     }
@@ -336,7 +311,7 @@ int main(int argc, const char* argv[]) {
             from_source(opts, autosave_opts);
         } catch (const archetype::QuitGame&) {
             checkpoint_at_exit();
-            if (int e = unknown_options_error()) return e;
+            if (int e = unused_options_error()) return e;
             return 0;
         } catch (const std::exception& e) {
             checkpoint_at_exit();
@@ -362,7 +337,7 @@ int main(int argc, const char* argv[]) {
           dispatch_to_universe("START");
         } catch (const archetype::QuitGame&) {
             checkpoint_at_exit();
-            if (int e = unknown_options_error()) return e;
+            if (int e = unused_options_error()) return e;
             return 0;
         } catch (const std::exception& e) {
             checkpoint_at_exit();
@@ -403,13 +378,7 @@ int main(int argc, const char* argv[]) {
               copy(istreambuf_iterator<char>{f_in}, {}, back_inserter(in_mem.bytes()));
           }
           bool sitrep = opts.erase("sitrep") > 0;
-          // --inspect with an empty value pairs with --update; a non-empty value
-          // selects the standalone --inspect=file.acx path handled below.
-          bool inspect_after = false;
-          if (auto it_inspect = opts.find("inspect"); it_inspect != opts.end()) {
-              inspect_after = it_inspect->second.empty();
-              opts.erase(it_inspect);
-          }
+          bool inspect_after = opts.erase("universe") > 0;
           string input;
           if (auto it_input = opts.find("input"); it_input != opts.end()) {
               input = it_input->second;
@@ -447,6 +416,6 @@ int main(int argc, const char* argv[]) {
         }
     }
     checkpoint_at_exit();
-    if (int e = unknown_options_error()) return e;
+    if (int e = unused_options_error()) return e;
     return 0;
 }
