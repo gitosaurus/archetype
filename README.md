@@ -47,6 +47,8 @@ Games are in the `games/` directory and are written in `.arch` source files.
 
 `--include` tells the compiler where to find `standard.arch` and other shared library files.
 
+An option that always needs a value takes it either way, so `--source games/gorreven.arch` works as well as `--source=games/gorreven.arch`. The exceptions are the options that can stand alone — `--create`, `--autosave`, and `--repl` — where a following word cannot be told apart from an unrelated argument, so `=` is the only way to give them one. Run `--help` for the full listing.
+
 ### Compile to a binary, then run
 
 This is the preferred method if you are intending to share your game as a single file.
