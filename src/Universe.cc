@@ -428,17 +428,17 @@ namespace archetype {
     //
     // It is created on seeding, never on compiling, so --create output stays
     // byte-for-byte what it always was.
-    static const char* GlobalObjectName = "%global";
-    static const char* SeedAttributeName = "%seed";
+    static constexpr string_view GlobalObjectName = "%global";
+    static constexpr string_view SeedAttributeName = "%seed";
 
     ObjectPtr Universe::globalObject_(bool create) {
-        if (ObjectPtr existing = getObject(string(GlobalObjectName))) {
+        if (ObjectPtr existing = getObject(GlobalObjectName)) {
             return existing;
         }
         if (not create) return nullptr;
         ObjectPtr global = defineNewObject();
         global->setPrototype(true);
-        assignObjectIdentifier(global, string(GlobalObjectName));
+        assignObjectIdentifier(global, GlobalObjectName);
         return global;
     }
 
@@ -446,7 +446,7 @@ namespace archetype {
     // numeric is an int and this state is sixty-four bits wide.
     void Universe::storeSeed_() {
         ObjectPtr global = globalObject_(/* create = */ true);
-        int attribute_id = Identifiers.index(string(SeedAttributeName));
+        int attribute_id = Identifiers.index(SeedAttributeName);
         global->setAttribute(attribute_id,
                              make_unique<StringValue>(format("{:016x}", random_.state())));
     }
@@ -455,7 +455,7 @@ namespace archetype {
         seeded_ = false;
         ObjectPtr global = globalObject_(/* create = */ false);
         if (not global) return;
-        int attribute_id = Identifiers.find(string(SeedAttributeName));
+        int attribute_id = Identifiers.find(SeedAttributeName);
         if (attribute_id < 0 or not global->hasAttribute(attribute_id)) return;
         Value stored = global->getAttributeValue(attribute_id)->stringConversion();
         if (not stored->isDefined()) return;
