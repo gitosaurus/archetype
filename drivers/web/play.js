@@ -474,6 +474,13 @@
     return source.then((bytes) => {
       loadBytes(bytes);
       busy = false;
+      if (resume && resume.persist) {
+        // Now that the bytes have proven loadable, they are the stored
+        // session: a reload before the first turn must resume this, not
+        // whatever it replaced.  Waiting for a turn to autosave would leave
+        // that window open for as long as the player sits at the prompt.
+        putSave(game.slug, { acx: bytes, narrative: '' });
+      }
       if (resume && resume.narrative) {
         // Put back what the player had been reading.  It was wrapped at
         // whatever width they had then, which is why it is replayed verbatim
@@ -603,8 +610,7 @@
       // A save carries no record of which game it came from, so it is loaded
       // against whichever game is on screen.  It arrives with no transcript --
       // it may well have come from the desktop interpreter.
-      return start(current, { acx: bytes, narrative: '' })
-        .then(() => autosave());
+      return start(current, { acx: bytes, narrative: '', persist: true });
     }).catch((error) => {
       status('Error: ' + error.message, true);
     }).finally(() => { el.upload.value = ''; });
