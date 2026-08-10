@@ -128,7 +128,7 @@ string run_turn(string input, int width, bool sitrep, bool inspect) {
   // StringOutput the narrative is collected from holds only this turn's text;
   // deserialization leaves input_ and output_ alone, so nothing else here
   // depends on whether a load has just happened.
-  UserOutput str_output = make_shared<StringOutput>();
+  auto str_output = make_shared<StringOutput>();
   UserOutput wrapped = make_shared<WrappedOutput>(str_output, width);
   Universe::instance().setOutput(wrapped);
   UserOutput user_output = Universe::instance().output();
@@ -140,7 +140,7 @@ string run_turn(string input, int width, bool sitrep, bool inspect) {
   } catch (const archetype::QuitGame&) {
     Universe::instance().endItAll();
   }
-  string result = dynamic_cast<StringOutput*>(str_output.get())->getOutput();
+  string result = str_output->getOutput();
 
   if (sitrep and not Universe::instance().ended()) {
     ostringstream rdf_out;
@@ -181,7 +181,7 @@ TurnResult run_turn_collecting(TurnInputs inputs, int width) {
   MemoryStorage snapshot;
   save_universe(snapshot);
 
-  UserOutput str_output = make_shared<StringOutput>();
+  auto str_output = make_shared<StringOutput>();
   UserOutput wrapped = make_shared<WrappedOutput>(str_output, width);
   Universe::instance().setOutput(wrapped);
   UserInput items = make_shared<TurnInput>(std::move(inputs));
@@ -201,7 +201,7 @@ TurnResult run_turn_collecting(TurnInputs inputs, int width) {
     result.status = needed.want == NeedsInput::Want::Key ?
       TurnResult::Status::NeedsKey : TurnResult::Status::NeedsLine;
   }
-  result.text = dynamic_cast<StringOutput*>(str_output.get())->getOutput();
+  result.text = str_output->getOutput();
   return result;
 }
 
