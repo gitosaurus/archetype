@@ -243,9 +243,13 @@ int main(int argc, const char* argv[]) {
         string requested = it_seed->second;
         opts.erase(it_seed);
         try {
-            size_t consumed = 0;
-            forced_seed = stoull(requested, &consumed);
-            if (consumed != requested.size()) throw invalid_argument(requested);
+            // Digits only, checked here because stoull would accept a sign
+            // and quietly wrap a negative into a huge seed.
+            if (requested.empty() or
+                requested.find_first_not_of("0123456789") != string::npos) {
+                throw invalid_argument(requested);
+            }
+            forced_seed = stoull(requested);
         } catch (const std::exception&) {
             cerr << format("ERROR: --seed must be a whole number, not '{}'",
                            requested) << endl;
