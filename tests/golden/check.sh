@@ -35,9 +35,9 @@ fi
 work="$(mktemp -d)"
 trap 'rm -rf "$work"' EXIT
 
-# A debug build compiles in main.cc's SHOW(), which narrates the include path to
-# stderr on every run.  Swallow the interpreter's chatter, but keep it if the
-# command actually fails -- that is when it is worth reading.
+# Capture both streams on every run: stdout because the RDF inspection is read
+# back out of out.log, and stderr so a failing command can be shown with its
+# own complaint attached -- that is the only time it is worth reading.
 run() {
     if ! "$@" > "$work/out.log" 2> "$work/err.log"; then
         echo "FAIL  interpreter exited nonzero: $*"
