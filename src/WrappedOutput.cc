@@ -70,6 +70,15 @@ namespace archetype {
                 });
                 if (first_space - s.begin() <= maxColumns_ and cursor_ != 0) {
                     endLine();
+                    // What stands at the front may itself be the whitespace
+                    // that a break would have fallen on -- the cursor can be
+                    // right up against the margin when a separating space
+                    // arrives on its own.  The break spends it; it does not
+                    // belong at the head of the new line.
+                    auto word_p = ranges::find_if_not(s, [](unsigned char c) {
+                        return isspace(c);
+                    });
+                    s.erase(s.begin(), word_p);
                     remaining = maxColumns_;
                     continue;
                 }

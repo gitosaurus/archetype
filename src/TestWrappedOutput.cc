@@ -125,6 +125,30 @@ namespace archetype {
                                     "alifragili\n"
                                     "stic\n"));
 
+        // A paragraph hands over the space between two of its lines as a put
+        // of its own, which can arrive with the cursor exactly on the margin.
+        // The break falls on that space, and spends it:  no line begins with
+        // the whitespace that ended the one before it.
+        wrout.resetCursor();
+        wrout.setMaxColumns(20);
+        user_output->put("aaa bbb ccc ddd eeee");
+        user_output->put(" ");
+        user_output->put("fff ggg");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("aaa bbb ccc ddd eeee\n"
+                                    "fff ggg\n"));
+
+        // The same, for the two spaces that a paragraph puts after a sentence.
+        wrout.resetCursor();
+        user_output->put("aaa bbb ccc ddd eee.");
+        user_output->put("  ");
+        user_output->put("Fff ggg");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("aaa bbb ccc ddd eee.\n"
+                                    "Fff ggg\n"));
+
         out() << "TestWrappedOutput::testWrapAcrossPuts_ finished." << endl;
     }
 
