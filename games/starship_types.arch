@@ -151,13 +151,13 @@ methods
   'look'  : write "It looks big enough to sit ", proximity, "."
   'look in' : message --> large_structure
 
+  # Getting on and off is furniture's business now, and inherited from
+  # there; only the sitting words are this game's, since only its lexicon
+  # knows "sit".
   'sit'           : 'enter'
   'sit at'        : 'enter'
   'sit on'        : 'enter'
   'sit onto'      : 'enter'
-  'get onto'      : 'enter'
-
-  'get up'        : 'leave'
 
   'get' :
     >>That's too bulky to pick up.

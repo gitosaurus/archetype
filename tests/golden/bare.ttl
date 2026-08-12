@@ -392,6 +392,11 @@ type:furniture a rdfs:Class
     ; attr:IsAfurniture "true"^^xsd:boolean
     ; archetype:respondsTo msg:HORIZON
     ; archetype:respondsTo msg:TRANSPARENT
+    ; archetype:respondsTo msg:get%20on
+    ; archetype:respondsTo msg:get%20onto
+    ; archetype:respondsTo msg:get%20off
+    ; archetype:respondsTo msg:get%20off%20of
+    ; archetype:respondsTo msg:get%20up
     ; archetype:respondsTo archetype:default .
 
 type:container a rdfs:Class
