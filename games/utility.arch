@@ -242,6 +242,19 @@ methods
   'TRANSPARENT' : TRUE
   'HORIZON'     : location
 
+# You get on furniture rather than in it, so you get off it rather than
+# out of it.  'get in' and 'get out' are already handled above, by the
+# hollow_object this is based on; these are the same pair worded for
+# something you sit on, and they have to come in pairs.  A player who was
+# allowed on has to be allowed off again.
+
+  'get on'      : 'enter'
+  'get onto'    : 'enter'
+
+  'get off'     : 'exit'
+  'get off of'  : 'exit'
+  'get up'      : 'exit'
+
   default : {
     if message -> compass then
       message -> location
