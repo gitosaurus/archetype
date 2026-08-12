@@ -9,6 +9,7 @@
 // For Windows
 #define _SCL_SECURE_NO_WARNINGS
 
+#include <array>
 #include <span>
 #include <stdexcept>
 #include <algorithm>
@@ -108,6 +109,28 @@ namespace archetype {
         return in;
     }
 
+    void writeFormatHeader(Storage& out) {
+        out.write(FormatCookie);
+        out << CurrentFormatVersion;
+    }
+
+    int readFormatHeader(Storage& in) {
+        array<Storage::Byte, FormatCookie.size()> cookie{};
+        if (in.peek(cookie) != static_cast<int>(cookie.size()) or
+            not ranges::equal(cookie, FormatCookie)) {
+            return UnversionedFormat;
+        }
+        in.read(cookie);
+        int version = in.readInteger();
+        if (version <= UnversionedFormat or version > CurrentFormatVersion) {
+            throw invalid_argument(
+                format("Archetype format version {} is not one this interpreter "
+                       "understands; it reads up to version {}",
+                       version, CurrentFormatVersion));
+        }
+        return version;
+    }
+
     MemoryStorage::MemoryStorage():
     seekIndex_{0}
     { }
@@ -126,6 +149,12 @@ namespace archetype {
 
     void MemoryStorage::write(span<const Byte> buf) {
         ranges::copy(buf, back_inserter(bytes_));
+    }
+
+    int MemoryStorage::peek(span<Byte> buf) {
+        int bytes_read = read(buf);
+        seekIndex_ -= bytes_read;
+        return bytes_read;
     }
 
 }

@@ -46,6 +46,17 @@ namespace archetype {
     void InFileStorage::write(span<const Byte>) {
     }
 
+    int InFileStorage::peek(span<Byte> buf) {
+        int bytes_read = read(buf);
+        // A short read at the end of the file sets eofbit, and seekg does
+        // nothing at all while a stream is in a failed state, so the flags have
+        // to come off before the position can be put back.
+        stream_.clear();
+        stream_.seekg(-bytes_read, ios::cur);
+        remaining_ += bytes_read;
+        return bytes_read;
+    }
+
     OutFileStorage::OutFileStorage(const filesystem::path& filename):
     failed_{false}
     {
@@ -75,6 +86,10 @@ namespace archetype {
     }
 
     int OutFileStorage::read(span<Byte>) {
+        return 0;
+    }
+
+    int OutFileStorage::peek(span<Byte>) {
         return 0;
     }
 
