@@ -1840,12 +1840,16 @@ plural_noun keys
 end
 
 
-object wallet
+# The wallet has always carried an "open" attribute, which was enough for the
+# global open verb to answer "I opened the wallet" and enough for nothing else:
+# no message read it, "look in wallet" was refused, and what the wallet holds
+# had never been seen by anybody.  openable is where that attribute means
+# something.
+
+openable wallet
 
   desc      : "wallet"
   location  : pants
-
-  open      : FALSE
 
 end
 
@@ -1853,6 +1857,7 @@ end
 object captains_ID
 
   desc      : "captain's ID card"
+  syn       : "id|card|ID card|captain's ID"
   location  : wallet
 
 end
