@@ -11,10 +11,12 @@
 
 #include <iostream>
 #include <concepts>
+#include <format>
 #include <functional>
 #include <map>
 #include <deque>
 #include <set>
+#include <stdexcept>
 #include <vector>
 #include <cassert>
 
@@ -153,9 +155,26 @@ namespace archetype {
         }
 
         void read(Storage& in) {
-            int total_entries;
-            int indexed_entries;
-            in >> total_entries >> indexed_entries;
+            // Both of these arrive from the file, and both used to be believed
+            // on sight.  A registry cannot hold more records than the stream
+            // has bytes to encode them in, and cannot hold more records than it
+            // has slots.
+            //
+            // Bounding the slot count by the bytes remaining is the one place
+            // this is stricter than the format strictly requires: a free slot
+            // costs nothing to write, so a registry whose holes outnumbered the
+            // whole file would now be refused.  Free slots are reused rather
+            // than accumulated, so that registry would have to come from a game
+            // that had once held more objects than its save has bytes -- and if
+            // one ever does, the answer is to write the holes down rather than
+            // to stop checking.
+            int total_entries = readCount(in, "registry size");
+            int indexed_entries = readCount(in, "registry record count");
+            if (indexed_entries > total_entries) {
+                throw std::invalid_argument(
+                    std::format("Registry of {} slots cannot hold {} records",
+                                total_entries, indexed_entries));
+            }
             registry_.resize(total_entries, T{});
             // Nothing about the holes is written down, and nothing needs to be.
             // Each record names the slot it belongs in, so the occupied slots
@@ -171,6 +190,15 @@ namespace archetype {
             for (int ii = 0; ii < indexed_entries; ++ii) {
                 int value_index;
                 in >> value_index;
+                // A record naming a slot the registry does not have was an
+                // out-of-bounds write straight into the deque, reachable from
+                // any file at all: thirteen crafted bytes segfaulted the
+                // interpreter here.
+                if (value_index < 0 or value_index >= total_entries) {
+                    throw std::invalid_argument(
+                        std::format("Record names slot {} in a registry of {}",
+                                    value_index, total_entries));
+                }
                 in >> registry_[value_index];
                 index_[registry_[value_index]] = value_index;
                 occupied[value_index] = true;

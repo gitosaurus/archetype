@@ -63,6 +63,18 @@ namespace archetype {
     // written by no one and still readable by everyone.
     inline constexpr int UnversionedFormat = 0;
 
+    // Read a number that counts something the stream still has to supply.
+    //
+    // Such a count is a promise about bytes that follow, and no stream can make
+    // good on a promise bigger than what is left in it: every element, however
+    // small, costs at least one byte to encode.  Checking that before believing
+    // the number is the whole point -- believing it first is how a file of
+    // thirteen bytes used to ask for a vector of fifty million.
+    //
+    // "what" names the thing being counted, for the message thrown if the count
+    // is negative or larger than the stream can back.
+    int readCount(Storage& in, std::string_view what);
+
     void writeFormatHeader(Storage& out);
 
     // The format version the stream declares, with the header consumed if there

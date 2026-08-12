@@ -405,8 +405,10 @@ namespace archetype {
 
     Storage& operator>>(Storage&in, IdentifierMap& m) {
         m.clear();
-        int entries;
-        in >> entries;
+        // The loop below would have run out of stream and thrown eventually, so
+        // this buys a sensible complaint rather than safety -- but a count is a
+        // count, and they are all checked the same way now.
+        int entries = readCount(in, "identifier map size");
         for (int i = 0; i < entries; ++i) {
             int first, second;
             in >> first >> second;

@@ -19,6 +19,7 @@ namespace archetype {
         virtual void runTests_() override;
         void testPeek_();
         void testFormatHeader_();
+        void testCountsAreBounded_();
     public:
         TestSerialization(std::string name): ITestSuite(name) { }
     };

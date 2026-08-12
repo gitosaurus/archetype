@@ -575,11 +575,20 @@ namespace archetype {
                 break;
             }
             case STRING: {
-                int text_size;
-                in >> text_size;
+                // Not operator>>(string&) only because the value has to be
+                // built from the characters; the care it takes is the same, and
+                // going without it here left a truncated literal reading back
+                // as a run of NUL bytes rather than as an error.
+                int text_size = readCount(in, "string value length");
                 string text;
                 text.resize(text_size);
-                in.read({reinterpret_cast<Storage::Byte*>(text.data()), text.size()});
+                int bytes_read =
+                    in.read({reinterpret_cast<Storage::Byte*>(text.data()), text.size()});
+                if (bytes_read != text_size) {
+                    throw invalid_argument(
+                        format("Could not fully read string value declared as {} bytes; only read {}",
+                               text_size, bytes_read));
+                }
                 v = make_unique<StringValue>(text);
                 break;
             }

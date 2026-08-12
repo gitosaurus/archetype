@@ -13,6 +13,7 @@
 #include "TestSerialization.hh"
 #include "TestRegistry.hh"
 #include "Serialization.hh"
+#include "StringIdIndex.hh"
 #include <stdexcept>
 
 using namespace std;
@@ -48,6 +49,82 @@ namespace archetype {
 
         testPeek_();
         testFormatHeader_();
+        testCountsAreBounded_();
+    }
+
+    // A count in the stream is a promise about bytes that follow, and every one
+    // of these used to be believed without checking whether the stream could
+    // keep it.  The registry case is the one that mattered most: it reached an
+    // out-of-bounds write and took the process down with it.
+    void TestSerialization::testCountsAreBounded_() {
+        auto rejects = [](MemoryStorage& mem) {
+            try {
+                readCount(mem, "test count");
+            } catch (const invalid_argument&) {
+                return true;
+            }
+            return false;
+        };
+
+        MemoryStorage negative;
+        negative.writeInteger(-99);
+        ARCHETYPE_TEST(rejects(negative));
+
+        // Three bytes cannot be followed by a million of anything.
+        MemoryStorage overlong;
+        overlong.writeInteger(1000000);
+        ARCHETYPE_TEST(rejects(overlong));
+
+        // A count the stream can actually back is none of this function's
+        // business, and comes through untouched.
+        MemoryStorage honest;
+        honest.writeInteger(3);
+        honest.write(array<Storage::Byte, 3>{'a', 'b', 'c'});
+        ARCHETYPE_TEST_EQUAL(readCount(honest, "test count"), 3);
+
+        // A string is the commonest promise of all, and the one an .acx makes
+        // hundreds of times.
+        MemoryStorage lying;
+        lying.writeInteger(500);
+        lying.write(array<Storage::Byte, 2>{'h', 'i'});
+        string scratch;
+        bool threw = false;
+        try {
+            lying >> scratch;
+        } catch (const invalid_argument&) {
+            threw = true;
+        }
+        ARCHETYPE_TEST(threw);
+
+        // The registry: two slots claimed, one record, and that record naming a
+        // slot fifty million past the end.  This is the shape that segfaulted.
+        MemoryStorage out_of_range;
+        out_of_range.writeInteger(2);
+        out_of_range.writeInteger(1);
+        out_of_range.writeInteger(50000000);
+        out_of_range.writeInteger(0);
+        StringIdIndex index;
+        threw = false;
+        try {
+            index.read(out_of_range);
+        } catch (const invalid_argument&) {
+            threw = true;
+        }
+        ARCHETYPE_TEST(threw);
+
+        // A registry cannot hold more records than it has slots either.
+        MemoryStorage overfull;
+        overfull.writeInteger(1);
+        overfull.writeInteger(2);
+        overfull.writeInteger(0);
+        overfull.writeInteger(0);
+        threw = false;
+        try {
+            index.read(overfull);
+        } catch (const invalid_argument&) {
+            threw = true;
+        }
+        ARCHETYPE_TEST(threw);
     }
 
     void TestSerialization::testPeek_() {
