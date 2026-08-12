@@ -97,8 +97,7 @@ namespace archetype {
     }
 
     Storage& operator>>(Storage& in, std::string& value) {
-        int size;
-        in >> size;
+        int size = readCount(in, "string length");
         value.resize(size);
         int bytes_read = in.read({reinterpret_cast<Storage::Byte*>(value.data()), value.size()});
         if (bytes_read != size) {
@@ -107,6 +106,19 @@ namespace archetype {
                        size, bytes_read));
         }
         return in;
+    }
+
+    int readCount(Storage& in, string_view what) {
+        int count = in.readInteger();
+        if (count < 0) {
+            throw invalid_argument(format("A {} cannot be negative: {}", what, count));
+        }
+        if (count > in.remaining()) {
+            throw invalid_argument(
+                format("A {} of {} is more than the {} bytes remaining can supply",
+                       what, count, in.remaining()));
+        }
+        return count;
     }
 
     void writeFormatHeader(Storage& out) {
