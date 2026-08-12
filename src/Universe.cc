@@ -13,6 +13,7 @@
 #include <cassert>
 #include <limits>
 #include <random>
+#include <stdexcept>
 
 using namespace std;
 
@@ -491,7 +492,13 @@ namespace archetype {
         return drawn;
     }
 
+    // Every path that writes a universe -- --create, a save, an autosave, the
+    // snapshot a mid-turn rollback stands on -- comes through here, and every
+    // path that reads one comes through its opposite, so the header needs
+    // writing and checking in exactly these two places.
+
     Storage& operator<<(Storage& out, const Universe& u) {
+        writeFormatHeader(out);
         out << static_cast<int>(u.ended_);
         out << u.Messages << u.TextLiterals << u.Identifiers << u.ObjectIdentifiers;
         out << u.objects_;
@@ -499,6 +506,21 @@ namespace archetype {
     }
 
     Storage& operator>>(Storage& in, Universe& u) {
+        if (readFormatHeader(in) == UnversionedFormat) {
+            // No cookie, so this is either an .acx from before the header or
+            // not an .acx at all.  The unversioned layout opens with ended_, a
+            // bool written as a one-byte varint, so its first byte can only be
+            // 0 or 2 -- enough to turn away a text file, an image, or an
+            // archive at the door instead of letting it in to fail later on
+            // some absurd string length.  When there are no more headerless
+            // files left to care about, this whole branch can go.
+            Storage::Byte first{};
+            if (in.peek({&first, 1}) != 1 or (first != 0x00 and first != 0x02)) {
+                throw std::invalid_argument(
+                    "Not an Archetype binary: no format header, and what is "
+                    "there does not look like one of the older headerless ones");
+            }
+        }
         int ended;
         in >> ended;
         u.ended_ = static_cast<bool>(ended);

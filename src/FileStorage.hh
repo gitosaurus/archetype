@@ -29,6 +29,7 @@ namespace archetype {
         virtual int remaining() const override;
         virtual int read(std::span<Byte> buf) override;
         virtual void write(std::span<const Byte> buf) override;
+        virtual int peek(std::span<Byte> buf) override;
     private:
         std::ifstream stream_;
         int remaining_;
@@ -53,6 +54,7 @@ namespace archetype {
         virtual int remaining() const override;
         virtual int read(std::span<Byte> buf) override;
         virtual void write(std::span<const Byte> buf) override;
+        virtual int peek(std::span<Byte> buf) override;
     private:
         std::ofstream stream_;
         bool failed_;

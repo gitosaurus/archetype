@@ -17,6 +17,8 @@ namespace archetype {
     class TestSerialization : public ITestSuite {
     protected:
         virtual void runTests_() override;
+        void testPeek_();
+        void testFormatHeader_();
     public:
         TestSerialization(std::string name): ITestSuite(name) { }
     };

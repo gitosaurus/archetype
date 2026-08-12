@@ -55,4 +55,5 @@ echo "look" | ./build/archetype --source=games/gorreven.arch --include=games
 
 - `include "file"` in Archetype source uses implicit `.arch` extension; do not include the extension explicitly.
 - Compiled `.acx` files are fully resumable — a save file is a mutated copy of the original binary.
+- An `.acx` begins with the four bytes `7F 41 43 58` and a format version. The version describes the byte layout only; it is not the interpreter's version, and it must not move when a release changes no layout. Files written before the header still load.
 - The `--include=games` flag is needed when compiling from source so the compiler can find `standard.arch` and other shared library files.
