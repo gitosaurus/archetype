@@ -13,6 +13,7 @@
 
 namespace archetype {
     class ConsoleInput : public IUserInput {
+        bool at_eof_ = false;
     public:
         virtual ~ConsoleInput() { }
         virtual char getKey() override;

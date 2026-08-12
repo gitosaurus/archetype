@@ -11,6 +11,8 @@
 
 #include <iostream>
 #include <stdexcept>
+#include <cerrno>
+#include <cstdio>
 #include <cstring>
 
 #ifdef _XOPEN_VERSION
@@ -37,11 +39,14 @@ namespace archetype {
             throw runtime_error("Could not set terminal: " + string(strerror(errno)));
         }
         char key;
-        size_t read_stat = read(0, &key, sizeof(key));
+        ssize_t read_stat;
+        do {
+            read_stat = read(0, &key, sizeof(key));
+        } while (read_stat < 0 and errno == EINTR); // e.g. resuming from a stop
         if (tcsetattr(0, TCSANOW, &prev) < 0) {
             throw runtime_error("Could not restore terminal: " + string(strerror(errno)));
         }
-        if (read_stat != sizeof(key)) {
+        if (read_stat != static_cast<ssize_t>(sizeof(key))) {
             throw runtime_error("Could not even read key from terminal");
         }
 #else
@@ -59,12 +64,24 @@ namespace archetype {
 
     string ConsoleInput::getLine() {
         string line;
-        getline(cin, line);
+        while (not getline(cin, line)) {
+            // Suspending the interpreter interrupts the pending read, and
+            // returning to the foreground finds cin failed and the error flag
+            // set on stdin underneath it.  Neither clears itself, so without
+            // this every later turn would see an end of input that never came.
+            if (feof(stdin) or errno != EINTR) {
+                at_eof_ = true;
+                break;
+            }
+            clearerr(stdin);
+            cin.clear();
+            line.clear();
+        }
         Universe::instance().output()->resetPager();
         return line;
     }
 
     bool ConsoleInput::atEOF() const {
-        return cin.eof();
+        return at_eof_;
     }
 }
