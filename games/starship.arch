@@ -1761,28 +1761,26 @@ wearable pants
   wearing    : FALSE
   never_worn : TRUE
 
-  stuff_in_pockets : FALSE
-
 methods
 
   'get in' : 'enter'
   'get on' : 'enter'
 
+# Whether anything is in the pockets is a question to ask, not a fact to
+# remember:  members already says so.  The flag this used to keep was set
+# only by the search that emptied the pockets, so the pants stayed silent
+# while there was something to find and announced bulges afterwards.
+
   'look' :
-    if stuff_in_pockets then
+    if members then
       >>There seem to be some bulges in the pockets.
     else
-      message --> wearable
+      >>The pockets are empty.
 
   'look through' : 'look in'
   'look in' : {
     writes "I'm looking... "
-    stuff_in_pockets := FALSE
-    for each.location = self do {
-      stuff_in_pockets := TRUE
-      break
-      }
-    if not stuff_in_pockets then
+    if not members then
       write "Nothing in the pants."
     else {
       write "The following objects fall out:"
@@ -1794,11 +1792,22 @@ methods
       }   # else
     }   # 'look in'
 
+# Pulling on a pair of pants tells you what is in the pockets whether you
+# thought to look or not.  Both lines belong to the first wearing:  'wear'
+# reaches this twice when the pants have to be picked up first, and
+# never_worn is what keeps the inner pass from being echoed by the outer.
+
   'wear' : {
     message --> wearable
     if wearing and never_worn then {
-      >>The pants give me an exaggerated sense of my own importance.
       never_worn := FALSE
+      # The braces are load-bearing:  consecutive >> lines are gathered into
+      # a single paragraph, so without them the boast below would join this
+      # sentence and be governed by the same "if".
+      if members then {
+        >>I can feel something in the pockets as I pull them on.
+        }
+      >>The pants give me an exaggerated sense of my own importance.
       }
     }
 
