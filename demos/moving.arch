@@ -1,0 +1,230 @@
+# MOVING.ARCH
+#
+# A message that carries its destination, and what that changes.
+#
+# The shipped protocol in intrptr.arch moves a thing in two steps:  write
+# the new location into it, then tell it that you did.  It works out where
+# it came from by having kept the old value in "last_location", because by
+# the time it hears about the move there is no other record of the origin.
+# A guard can therefore only run after the mutation, and refusing means
+# putting everything back.
+#
+# Here the destination rides along in the message, so both ends of the move
+# are in hand at once and a refusal is just an answer.
+#
+# Nothing here includes the standard library:  the protocol is the whole
+# program.  Run it with
+#
+#   ./build/archetype --source=demos/moving.arch
+#
+# It demonstrates a protocol.  It does not replace the one in intrptr.arch,
+# which shipped games subclass.
+
+
+#############################################################################
+# Places
+#
+# A place is asked to take something and asked to give it up.  It is never
+# told after the fact, so it can still say no while no still means
+# something.
+
+class place based on null
+
+  name     : "somewhere"
+  contents : UNDEFINED
+
+  # The first thing a handler wants is a name for its argument.  There are
+  # no locals, so that name is an attribute.
+  it_      : UNDEFINED
+  rest_    : UNDEFINED
+
+methods
+
+  # Asked before anything has moved.  A place with a reason to refuse
+  # overrides this one and gives it.
+  'WILL ACCEPT' : TRUE
+
+  'ACCEPT' : contents := head tail message @ contents
+
+  'RELEASE' : {
+    it_   := head tail message
+    rest_ := UNDEFINED
+    while contents do {
+      if head contents ~= it_ then rest_ := head contents @ rest_
+      contents := tail contents
+      }
+    while rest_ do {
+      contents := head rest_ @ contents
+      rest_ := tail rest_
+      }
+    }
+
+  'ROLL CALL' : {
+    writes "  ", name, " holds:"
+    rest_ := contents
+    if rest_ = UNDEFINED then writes " nothing"
+    while rest_ do {
+      writes " ", (head rest_).name
+      rest_ := tail rest_
+      }
+    write ""
+    }
+
+end
+
+
+#############################################################################
+# Things
+#
+# A thing knows where it is.  It never knows where it was, because it is
+# never asked to work that out:  when ['MOVE TO' dest] arrives, "location"
+# is still the origin and the destination is in the message.  That is the
+# whole reason there is no "last_location" here.
+
+class thing based on null
+
+  name     : "something"
+  location : UNDEFINED
+
+  dest_    : UNDEFINED
+
+methods
+
+  # Assembly is not movement.  "location" was written down in the source
+  # and the place has never heard of it.  The shipped protocol fakes this
+  # up by clearing last_location and calling it a move; with no such
+  # attribute there is nothing to clear, so it gets its own message.
+  'PLACE' : if location then ['ACCEPT' self] -> location
+
+  'MOVE TO' : {
+    dest_ := head tail message
+    if dest_ = location then
+      TRUE
+    else if not ['WILL ACCEPT' self] -> dest_ then
+      FALSE
+    else {
+      ['RELEASE' self] -> location
+      ['ACCEPT'  self] -> dest_
+      location := dest_
+      TRUE
+      }
+    }
+
+end
+
+
+# Forwarding is free:  the whole list goes up the chain, arguments and all,
+# and by the time the parent is done "location" is the destination.
+
+class announced based on thing
+
+methods
+
+  'MOVE TO' :
+    if message --> thing then {
+      write name, " goes to ", location.name, "."
+      TRUE
+      }
+    else
+      FALSE
+
+end
+
+
+#############################################################################
+# Two places with reasons to refuse
+
+place bench   name : "the workbench"   end
+
+
+# starship_types.arch does this check the other way round:  the power source
+# looks at location.contains *after* being moved into it, complains, and
+# writes location := last_location to undo the move.  Here the socket
+# answers for its own occupancy, before anything happens.
+
+place socket
+
+  name : "the socket"
+
+methods
+
+  'WILL ACCEPT' :
+    if contents then {
+      write "There is already something in the socket."
+      FALSE
+      }
+    else
+      TRUE
+
+end
+
+
+place hand
+
+  name     : "my hand"
+  capacity : 2
+
+methods
+
+  'WILL ACCEPT' :
+    # An empty list has no length -- it reads as UNDEFINED, the same as an
+    # attribute nobody set -- so emptiness is tested before size.
+    if contents and length contents >= capacity then {
+      write "My hand is full."
+      FALSE
+      }
+    else
+      TRUE
+
+end
+
+
+thing     bulb    name : "the bulb"    location : bench   end
+thing     fuse    name : "the fuse"    location : bench   end
+announced wrench  name : "the wrench"  location : bench   end
+
+
+#############################################################################
+
+null main
+
+methods
+
+  'ROLL CALL' : {
+    'ROLL CALL' -> bench
+    'ROLL CALL' -> socket
+    'ROLL CALL' -> hand
+    write ""
+    }
+
+  'START' : {
+
+    for each do 'PLACE' -> each
+
+    write "Everything starts on the bench."
+    'ROLL CALL'
+
+    write "Putting the bulb in the socket."
+    if ['MOVE TO' socket] -> bulb then
+      write "Done."
+    'ROLL CALL'
+
+    write "Putting the fuse in the socket, which is spoken for."
+    if not ['MOVE TO' socket] -> fuse then
+      write "So the fuse never left the bench."
+    'ROLL CALL'
+
+    write "Picking up the fuse and the wrench."
+    ['MOVE TO' hand] -> fuse
+    ['MOVE TO' hand] -> wrench
+    'ROLL CALL'
+
+    write "Reaching for the bulb with both hands full."
+    if not ['MOVE TO' hand] -> bulb then
+      write "So the bulb is still in the socket."
+    'ROLL CALL'
+
+    stop "Nothing was moved and put back."
+    }
+
+end

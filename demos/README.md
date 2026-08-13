@@ -75,3 +75,61 @@ It reads the Turtle that `--inspect` emits, in the shape it emits it. It is not
 a general Turtle parser, and it will not do anything sensible with Turtle from
 somewhere else. For real queries, load the dump into a triplestore and use
 SPARQL; this exists to make a picture.
+
+## moving.arch — a message that carries its destination
+
+```shell
+./build/archetype --source=demos/moving.arch
+```
+
+It includes nothing, parses nothing, and asks for no input. The protocol is the
+whole program.
+
+A message can dispatch on the head of a list, which lets the rest of the list
+be arguments: `['MOVE TO' socket] -> bulb`. What that buys is visible in the
+one place a text adventure feels it most. The shipped protocol in
+`intrptr.arch` moves a thing in two steps — write the new location into it,
+then send it `'MOVE'` — so the thing is told about the move only after the move
+has happened. It recovers the origin from `last_location`, which it kept for
+exactly that purpose, and a handler that wants to refuse can only put things
+back afterward. `starship_types.arch` has the canonical version: a power source
+moved into an occupied socket complains and writes `location := last_location`.
+
+When the destination arrives in the message, `location` is still the origin, so
+both ends of the move are in hand at once. The demo's `thing` class has no
+`last_location` and needs none. A refusal is an answer:
+
+```
+    if not ['WILL ACCEPT' self] -> dest_ then
+      FALSE
+```
+
+and the caller reads it as one, because a send is an expression:
+
+```
+    if not ['MOVE TO' hand] -> bulb then
+      write "So the bulb is still in the socket."
+```
+
+Three smaller things the demo is built to show:
+
+- **`'ADD SELF'` and `'DROP SELF'` sharpen rather than dissolve.** They were
+  always argument-passing, over a channel that holds exactly one argument:
+  `sender`. Spelling them `['ACCEPT' thing]` and `['RELEASE' thing]` separates
+  who is asking from what is moving, and makes room for the message that could
+  not exist before — `'WILL ACCEPT'`, the question. Note where the capacity
+  check ends up: in `intrptr.arch` the mover reaches into the destination
+  (`if location.capacity then location.capacity -:= size`) because it has no
+  way to ask; here the place answers for itself.
+- **Forwarding is free.** `announced` overrides `'MOVE TO'`, and
+  `message --> thing` hands the whole list to the parent, arguments and all,
+  with nothing unpacked and nothing rebuilt.
+- **Assembly is not movement.** `'ASSEMBLE'` in `intrptr.arch` clears
+  `last_location` and calls `'MOVE'`, using the field as a "never placed" flag.
+  With no such field there is nothing to clear, so the demo gives the initial
+  placement its own message. That is the one job `last_location` was doing that
+  was not smuggling.
+
+It is a demonstration of a protocol, not a replacement for one. The `'MOVE'`
+protocol in `intrptr.arch` is subclassed by shipped games and is not going
+anywhere.
