@@ -426,6 +426,19 @@ namespace archetype {
             Value ordered = make_expr_from_str(source)->evaluate()->valueConversion();
             ARCHETYPE_TEST(not ordered->isDefined());
         }
+
+        // Text surgery stops at the edge of a list rather than cutting up the
+        // form it prints as, leaving "within" free to mean membership one day.
+        for (auto const& source : {"\"2\" within [1 2 3]", "[1 2] within \"[1 2 3]\"",
+                                   "[1 2 3] leftfrom 3", "[1 2 3] rightfrom 4"}) {
+            Value surgery = make_expr_from_str(source)->evaluate()->valueConversion();
+            ARCHETYPE_TEST(not surgery->isDefined());
+        }
+
+        // But "&" still asks for text, and a list still has some
+        Value joined = make_expr_from_str("\"items \" & [1 2 3]")->evaluate()->stringConversion();
+        ARCHETYPE_TEST(joined->isDefined());
+        ARCHETYPE_TEST_EQUAL(joined->getString(), string{"items [1 2 3]"});
     }
 
     void TestExpression::testReplDisplay_() {

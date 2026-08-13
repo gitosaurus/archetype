@@ -583,8 +583,7 @@ namespace archetype {
                     result = make_unique<PairValue>(std::move(lv_v), std::move(rv_v));
                     break;
                 }
-                case OP_CONCAT:
-                case OP_WITHIN: {
+                case OP_CONCAT: {
                     Value lv_s = left_->evaluate()->stringConversion();
                     Value rv_s = right_->evaluate()->stringConversion();
                     if (lv_s->isDefined() and rv_s->isDefined()) {
@@ -594,11 +593,32 @@ namespace archetype {
                     }
                     break;
                 }
+                // The text surgery operators go no further than text.  Cutting up
+                // the form a list prints as would answer a question nobody asked,
+                // and "within" is where membership would want to live one day, so
+                // a list leaves them unanswered rather than answered wrongly.
+                case OP_WITHIN: {
+                    Value lv_v = left_->evaluate()->valueConversion();
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    Value lv_s = lv_v->stringConversion();
+                    Value rv_s = rv_v->stringConversion();
+                    if (lv_v->isList() or rv_v->isList()) {
+                        result = make_unique<UndefinedValue>();
+                    } else if (lv_s->isDefined() and rv_s->isDefined()) {
+                        result = eval_ss(op(), lv_s->getString(), rv_s->getString());
+                    } else {
+                        result = make_unique<UndefinedValue>();
+                    }
+                    break;
+                }
                 case OP_LEFTFROM:
                 case OP_RIGHTFROM: {
-                    Value lv_s = left_->evaluate()->stringConversion();
+                    Value lv_v = left_->evaluate()->valueConversion();
                     Value rv_n = right_->evaluate()->numericConversion();
-                    if (lv_s->isDefined() and rv_n->isDefined()) {
+                    Value lv_s = lv_v->stringConversion();
+                    if (lv_v->isList()) {
+                        result = make_unique<UndefinedValue>();
+                    } else if (lv_s->isDefined() and rv_n->isDefined()) {
                         result = eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
                         result = make_unique<UndefinedValue>();
