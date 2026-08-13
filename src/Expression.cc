@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <optional>
 #include <stack>
 
 #include "Expression.hh"
@@ -305,6 +306,11 @@ namespace archetype {
                     break;
                 }
                 case OP_LENGTH: {
+                    if (rv->isList()) {
+                        // How many things are in it, not how wide it prints
+                        result = make_unique<NumericValue>(rv->listLength());
+                        break;
+                    }
                     Value rv_s = rv->stringConversion();
                     if (rv_s->isDefined()) {
                         result = make_unique<NumericValue>(static_cast<int>(rv_s->getString().size()));
@@ -403,6 +409,22 @@ namespace archetype {
                 throw logic_error("number-op-number attempted on this operator");
         }
         return make_unique<NumericValue>(result);
+    }
+
+    // A list compares by what it is made of, or it does not compare.  Two lists
+    // are equal when their elements are, a list and anything else are simply not
+    // the same value, and no list is less than another: the only ordering on
+    // offer would be the order of the text they print as, which is an ordering
+    // in appearance rather than in fact.
+    optional<Value> compare_lists(Keywords::Operators_e op, const Value& lv, const Value& rv) {
+        if (not (lv->isList() or rv->isList())) {
+            return nullopt;
+        }
+        switch (op) {
+            case OP_EQ: return as_boolean_value(lv->isSameValueAs(rv));
+            case OP_NE: return as_boolean_value(not lv->isSameValueAs(rv));
+            default:    return Value{make_unique<UndefinedValue>()};
+        }
     }
 
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
@@ -650,11 +672,16 @@ namespace archetype {
                 case OP_LT:
                 case OP_LE:
                 case OP_GE:
-                case OP_GT:
-                    result = as_boolean_value(eval_compare(op(),
-                                                         left_->evaluate()->valueConversion(),
-                                                         right_->evaluate()->valueConversion()));
+                case OP_GT: {
+                    Value lv_v = left_->evaluate()->valueConversion();
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    if (optional<Value> as_lists = compare_lists(op(), lv_v, rv_v)) {
+                        result = std::move(*as_lists);
+                    } else {
+                        result = as_boolean_value(eval_compare(op(), lv_v, rv_v));
+                    }
                     break;
+                }
 
                 case OP_ASSIGN: {
                     Value lv_a = left_->evaluate()->attributeConversion();

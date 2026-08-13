@@ -480,6 +480,22 @@ namespace archetype {
         return tail_->clone();
     }
 
+    int PairValue::listLength() const {
+        // Walked rather than remembered, the way std::list::size once was: the
+        // spine is the only record of how long a list is.
+        int length = 0;
+        for (const PairValue* node = this; node; ) {
+            ++length;
+            const PairValue* next = dynamic_cast<const PairValue*>(node->tail_.get());
+            if (not next and node->tail_->isDefined()) {
+                // An improper tail is a thing in the list too: (1 @ 2) holds two
+                ++length;
+            }
+            node = next;
+        }
+        return length;
+    }
+
     Value PairValue::stringConversion() const {
         // A list's printed form is its string form: the same thing the REPL
         // echoes and a message trace shows.  Without this, "write" put out

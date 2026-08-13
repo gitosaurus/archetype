@@ -62,6 +62,13 @@ namespace archetype {
         virtual Value head() const;
         virtual Value tail() const;
 
+        // Not every question about a value is answerable by conversion.  An
+        // operator whose meaning depends on what a value is made of -- how many
+        // things are in it, whether it can be ordered against another -- has to
+        // ask, and these are what it asks with.
+        virtual bool isList() const           { return false; }
+        virtual int listLength() const        { return 0; }
+
         virtual Value assign(Value new_value);
     };
 
@@ -275,6 +282,9 @@ namespace archetype {
 
         virtual Value head() const override;
         virtual Value tail() const override;
+
+        virtual bool isList() const override { return true; }
+        virtual int listLength() const override;
 
         virtual Value stringConversion() const override;
 

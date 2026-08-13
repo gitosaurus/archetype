@@ -396,6 +396,36 @@ namespace archetype {
         // Curly braces in expression position no longer form a list literal.
         Expression curly_expr = make_expr_from_str("{1 2 3}");
         ARCHETYPE_TEST(curly_expr == nullptr);
+
+        // "length" counts what is in a list rather than measuring how wide it
+        // prints, and it counts an improper tail as one of them.
+        Value length_val = make_expr_from_str("length [1 2 3]")->evaluate()->numericConversion();
+        ARCHETYPE_TEST(length_val->isDefined());
+        ARCHETYPE_TEST_EQUAL(length_val->getNumber(), 3);
+        Value nested_length = make_expr_from_str("length [[1 2] [3 4]]")->evaluate()->numericConversion();
+        ARCHETYPE_TEST_EQUAL(nested_length->getNumber(), 2);
+        Value pair_length = make_expr_from_str("length (1 @ 2)")->evaluate()->numericConversion();
+        ARCHETYPE_TEST_EQUAL(pair_length->getNumber(), 2);
+        Value empty_length = make_expr_from_str("length []")->evaluate()->numericConversion();
+        ARCHETYPE_TEST(not empty_length->isDefined());
+
+        // Equality asks what a list is made of; it does not settle for the two
+        // of them printing alike.
+        Value same = make_expr_from_str("[1 2 3] = [1 2 3]")->evaluate()->valueConversion();
+        ARCHETYPE_TEST(same->isTrueEnough());
+        Value different = make_expr_from_str("[1 2 3] ~= [1 2 4]")->evaluate()->valueConversion();
+        ARCHETYPE_TEST(different->isTrueEnough());
+        Value list_vs_text = make_expr_from_str("[1 2 3] = \"[1 2 3]\"")->evaluate()->valueConversion();
+        ARCHETYPE_TEST(list_vs_text->isDefined());
+        ARCHETYPE_TEST(not list_vs_text->isTrueEnough());
+
+        // Ordering a list against anything is UNDEFINED rather than FALSE:
+        // there is no answer, which is not the same as the answer being no.
+        for (auto const& source : {"[1 2] < [3]", "[1 2] > [3]", "[1 2] <= [3]",
+                                   "[1 2] >= [3]", "[1 2] < 5", "\"a\" < [1 2]"}) {
+            Value ordered = make_expr_from_str(source)->evaluate()->valueConversion();
+            ARCHETYPE_TEST(not ordered->isDefined());
+        }
     }
 
     void TestExpression::testReplDisplay_() {
