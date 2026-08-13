@@ -1,6 +1,31 @@
 # LEXICON.ACH
 #
 # Archetype's baseline lexicon.
+#
+# A word belongs to whichever definition claims it first, and a later claim on
+# a word already spoken for is dropped without complaint.  This file is
+# included ahead of any game's own lexicon, so a word named here is a word no
+# game can take back.  Adding one is not an additive change.
+
+
+# Looking, and the rungs above it.
+#
+# There are three questions a player can put to an object, and they are not
+# the same question:
+#
+#   look          what is here?
+#   look at, x    what is this thing showing me?
+#   search        what is this thing withholding?
+#
+# Examining takes what an object offers.  Searching takes what it keeps back.
+# Examining leaves the world alone; searching usually does not -- it opens, it
+# spills, it moves the player closer.
+#
+# 'examine' is a synonym of 'look' below, and not of the thorough thing its
+# English sense suggests.  That is the convention rather than the semantics:
+# players' fingers type "examine" when they mean "look at", and the parser
+# that argues with them loses.  The third rung has no baseline verb, so a game
+# that wants one defines it -- as "The Gorreven Papers" does.
 
 Verb lookV full : 'look'    syn : 'look at|x|l|examine'       end
 
