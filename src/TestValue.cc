@@ -90,6 +90,15 @@ namespace archetype {
         actual = display(node2);
         expected = "[\"hello\" \"world\"]";
         ARCHETYPE_TEST_EQUAL(actual, expected);
+
+        // A list converts to the string it displays as, so that "write" of one
+        // shows the list rather than nothing
+        Value written = node2->stringConversion();
+        ARCHETYPE_TEST(written->isDefined());
+        ARCHETYPE_TEST_EQUAL(written->getString(), display(node2));
+
+        Value pair_written = ab->stringConversion();
+        ARCHETYPE_TEST_EQUAL(pair_written->getString(), string{"(1 @ 2)"});
     }
 
     void TestValue::runTests_() {

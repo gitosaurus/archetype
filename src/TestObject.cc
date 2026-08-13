@@ -178,7 +178,7 @@ namespace archetype {
                                            "  } }\n"));
         // The default method sees the message the sender wrote, list and all
         vase->setMethod(DefaultMethod,
-                        make_stmt_from_str("write \"the vase ignores \", head message"));
+                        make_stmt_from_str("write \"the vase ignores \", head message, \" in \", message"));
 
         Statement stmt1 = make_stmt_from_str("['MOVE TO' \"the attic\"] -> vase");
         Capture capture1;
@@ -201,7 +201,8 @@ namespace archetype {
         Statement stmt3 = make_stmt_from_str("{ ['SHATTER' 3] -> vase; [42 7] -> vase }");
         Capture capture3;
         stmt3->execute();
-        string expected3 = "the vase ignores SHATTER\nthe vase ignores 42\n";
+        string expected3 = "the vase ignores SHATTER in ['SHATTER' 3]\n"
+                           "the vase ignores 42 in [42 7]\n";
         string actual3 = capture3.getCapture();
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
 

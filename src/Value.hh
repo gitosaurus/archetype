@@ -276,6 +276,8 @@ namespace archetype {
         virtual Value head() const override;
         virtual Value tail() const override;
 
+        virtual Value stringConversion() const override;
+
         virtual void display(std::ostream& out) const override;
         virtual std::string asRDF() const override;
         virtual void write(Storage& out) const override;

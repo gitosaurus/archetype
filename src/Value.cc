@@ -8,6 +8,7 @@
 
 #include <string>
 #include <string_view>
+#include <sstream>
 #include <optional>
 #include <memory>
 #include <cctype>
@@ -477,6 +478,16 @@ namespace archetype {
 
     Value PairValue::tail() const {
         return tail_->clone();
+    }
+
+    Value PairValue::stringConversion() const {
+        // A list's printed form is its string form: the same thing the REPL
+        // echoes and a message trace shows.  Without this, "write" put out
+        // nothing at all for a list -- the one way of being wrong that leaves
+        // nothing behind to notice it by.
+        ostringstream out;
+        display(out);
+        return make_unique<StringValue>(out.str());
     }
 
     void PairValue::display(ostream &out) const {
