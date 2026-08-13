@@ -91,6 +91,11 @@ namespace archetype {
             case OP_STRING: return 12;
             case OP_RANDOM: return 12;
             case OP_LENGTH: return 12;
+            // Selectors, and they bind like the rest of this family: "head list"
+            // is one operand, so "head list = x" compares the head rather than
+            // taking the head of a comparison
+            case OP_HEAD: return 12;
+            case OP_TAIL: return 12;
 
             case OP_POWER: return 11;
 
@@ -121,10 +126,10 @@ namespace archetype {
             case OP_AND: return 3;
             case OP_OR: return 2;
 
-            // TODO:  What's the right precedence here?  LISP never has to decide
+            // LISP never has to decide this, but a language with infix operators
+            // does.  Building stays loose: whatever computes an element finishes
+            // before the element is joined on, so "a + 1 @ rest" is a list.
             case OP_PAIR: return 2;
-            case OP_HEAD: return 2;
-            case OP_TAIL: return 2;
 
             case OP_C_MULTIPLY: return 1;
             case OP_C_DIVIDE: return 1;

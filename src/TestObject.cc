@@ -170,11 +170,8 @@ namespace archetype {
         ObjectPtr vase = Universe::instance().defineNewObject();
         Universe::instance().assignObjectIdentifier(vase, "vase");
         int move_to_id = Universe::instance().Messages.index("MOVE TO");
-        // The parentheses around "head tail message" are not decoration: head and
-        // tail bind more loosely than "=", so without them the comparison would
-        // happen first, against the message itself
         vase->setMethod(move_to_id,
-                        make_stmt_from_str("{ if (head tail message) = UNDEFINED then {\n"
+                        make_stmt_from_str("{ if head tail message = UNDEFINED then {\n"
                                            "    write \"the vase stays put\"\n"
                                            "  } else {\n"
                                            "    write \"the vase moves to \", head tail message\n"
@@ -211,7 +208,7 @@ namespace archetype {
         // The reply comes back from a list message like any other, which is what
         // lets a method refuse an argument instead of undoing it
         int bump_id = Universe::instance().Messages.index("BUMP");
-        vase->setMethod(bump_id, make_stmt_from_str("(head tail message) + 1"));
+        vase->setMethod(bump_id, make_stmt_from_str("head tail message + 1"));
         Expression expr4 = make_expr_from_str("['BUMP' 41] -> vase");
         Value val4 = expr4->evaluate()->numericConversion();
         ARCHETYPE_TEST(val4->isDefined());
