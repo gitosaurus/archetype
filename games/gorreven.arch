@@ -107,7 +107,7 @@ methods
 >>I have become intimately familiar with the four bare walls of my cell and
 >>the dirty yellow light bulb that glares down from the ceiling.  My cell
 >>has no door, but an alert guard blocks the doorway twenty-four hours a
->>day - or at least as far as I can tell.  I have to sleep sometimes.  They
+>>day---or at least as far as I can tell.  I have to sleep sometimes.  They
 >>leave the guard in a doorless doorway so that he will constantly remain
 >>alert.  No napping on the other side of a supposedly secure steel door.
 >>It doesn't surprise me; if I wanted to keep myself prisoner I would have
@@ -703,8 +703,8 @@ methods
     if main.dobj ~= guard then
       write "It isn't on ", 'DEF' -> main.dobj, "."
     else {
->>Struggling, I manage to get the guard's uniform off of his fat, sweaty -
->>and increasingly cold - body.
+>>Struggling, I manage to get the guard's uniform off of his fat,
+>>sweaty---and increasingly cold---body.
       wearing := FALSE
       'get'
       }
@@ -1358,7 +1358,7 @@ methods
         1 : { write "Velchny is sitting at his desk and glances up, annoyed.  ",
               "\"How many times,\" he begins, \"must I tell you drooling ",
               "Neanderthal peons to KNOCK before...\"  He suddenly sees my ",
-              "face.  \"You - you - \" he chokes, groping for his weapon."
+              "face.  \"You---you---\" he chokes, groping for his weapon."
               'MENTION SELF'
               will_chase := TRUE
             }
@@ -1389,8 +1389,8 @@ methods
       1 : { write "For some reason I don't think he's completely dead.  I leap ",
                "upon him, wielding my sharp piece of metal like a knife.  In ",
                "fact he is alive, but too weak to fight me off.  It takes ",
-               "longer than I would expect - Velchny has a strong physical ",
-               "constitution - but eventually I am the victor."
+               "longer than I would expect---Velchny has a strong physical ",
+               "constitution---but eventually I am the victor."
           alive := FALSE
           }
       }  # case
@@ -1481,7 +1481,7 @@ methods
 >>                you are now holding is saturated with a
 >>                powerful neurotoxin that is absorbed through
 >>                the skin.  By this time you have already
->>                assimilated a fatal dose - even if you are a
+>>                assimilated a fatal dose---even if you are a
 >>                very fast reader.  Ha!  Ha!  Know as you die
 >>                that you have been outsmarted by the inimitable
 >>                Commandant Velchny!
@@ -1742,7 +1742,7 @@ methods
       case tries +:= 1 of {
         1 : >>Most unthinkable!
         2 : >>Absolutely unspeakable!
-        3 : write "Oh, very well.  I flip open the manila folder and - ",
+        3 : write "Oh, very well.  I flip open the manila folder and---",
                   "no, I can't do this.  It wouldn't be right."
         4 : write "Fine!  Fine!  I open the folder and take a peek.  ",
                   "It's all pretty much unintelligible technical gibberish ",
@@ -2012,7 +2012,7 @@ methods
             "grabbing their guns and shouting.  I keep my head low."
     else
       write "Several guards are sleeping on ",
-      "their cots - I'm gratified to see that their cots are not much more ",
+      "their cots---I'm gratified to see that their cots are not much more ",
       "luxurious than the one I had in my cell.  Periodically a guard enters ",
       "or leaves.  The light is low; in one corner I can hear a couple of ",
       "guards gambling."
@@ -2071,8 +2071,8 @@ methods
   'FIRSTDESC' : { write "As I enter the room I have to duck because the ",
                 "ceiling is only five and a half feet tall.  Clearly this ",
                 "is an area not often entered by humans.  All around me ",
-                "hideous demonic dogs - Rottweilers, Dobermans, pit bulls, ",
-                "and German Shepherds - are snarling and biting the bars of ",
+                "hideous demonic dogs---Rottweilers, Dobermans, pit bulls, ",
+                "and German Shepherds---are snarling and biting the bars of ",
                 "their cages.  They're looking at me with bloodlust in ",
                 "their eyes; they already know there's something wrong about ",
                 "me.  Maybe they've already been taught my scent."
@@ -2526,7 +2526,7 @@ fence sfence     location : south_fence    otherside : got_killed  end
 room wasteland   desc     : "wasteland"    methods
 
   'ENTERED' : stop "I run a short ways out into the wasteland at top ",
-                   "speed.  It is a valiant effort - if somewhat quixotic.  ",
+                   "speed.  It is a valiant effort---if somewhat quixotic.  ",
                    "I'm barely a hundred yards away when I'm spotted and ",
                    "a rifle shot sends me stumbling to the ground.  The ",
                    "shots that follow push me painfully into oblivion."
@@ -2561,7 +2561,7 @@ methods
               "I trudge quietly into the woods, grim and dejected."
       else
         stop "And they still do.  I've escaped, but with what?  My miserable ",
-             "life - which, now, may not be worth the trouble I took to ",
+             "life---which, now, may not be worth the trouble I took to ",
              "save it.  I slink, shameful, into the woods, like a rat or a ",
              "weasel, trying desperately to think of other things."
       }
@@ -2575,6 +2575,6 @@ methods
   'ENTERED' : stop "But as I drop over the other side, it is too late.  The ",
                    "nearby guards at the entrance have spotted me and my ",
                    "furtive actions make me the immediate target of ",
-                   "suspicion - and a target, anyway.  The crescendoing ",
+                   "suspicion---and a target, anyway.  The crescendoing ",
                    "pain lancing through my body is mercifully short-lived."
 end
