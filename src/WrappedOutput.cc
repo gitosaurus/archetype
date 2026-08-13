@@ -18,6 +18,37 @@ using namespace std;
 namespace archetype {
     const int SafetyMargin = 3;
 
+    namespace {
+        // A mark that clings to the word in front of it:  the "--" and "---"
+        // that stand in for an em dash, and the "..." of an ellipsis.  A lone
+        // hyphen belongs to the word it joins and a lone period ends a
+        // sentence, so neither of those needs a rule here.
+        bool isClingingMark(char c) {
+            return c == '-' or c == '.';
+        }
+
+        // Does the text at p open with such a mark?  No break is chosen that
+        // would put one at the head of a line.  A break forced for want of
+        // anywhere else to put it is another matter:  the margin is held to
+        // in that case, the same as for a word too long to fit.
+        bool opensWithMark(std::string::const_iterator p,
+                           std::string::const_iterator end) {
+            return end - p >= 2 and isClingingMark(p[0]) and p[1] == p[0];
+        }
+
+        // Would a line ending at p end with such a mark, and the next one
+        // open with a word?  This is the one position inside a word where a
+        // break may fall:  "the chair---" | "sort of".  The word on the far
+        // side is the point of the test -- breaking "am I..." from "?" would
+        // strand the question mark, which is the very thing being avoided.
+        bool followsMark(std::string::const_iterator begin,
+                         std::string::const_iterator p) {
+            return p - begin >= 2 and
+                   isClingingMark(p[-1]) and p[-2] == p[-1] and
+                   isalnum(static_cast<unsigned char>(*p));
+        }
+    }
+
     WrappedOutput::WrappedOutput(UserOutput output, int max_columns):
     output_{output} {
         setMaxColumns(max_columns);
@@ -47,14 +78,46 @@ namespace archetype {
 
         int remaining = max(0, maxColumns_ - cursor_);
         // Keep trailing punctuation from being orphaned on the next line.
+        // The concession is meant for a stub -- a period, a comma, a closing
+        // quote -- and not for a whole clause that merely opens with a mark,
+        // which is what a fragment beginning with a dash looks like from
+        // here.  Handing those three columns to fifty characters of prose
+        // just prints a line past the margin.
         if (not s.empty() and ispunct(static_cast<unsigned char>(s[0]))) {
-            remaining += SafetyMargin;
+            auto first_space = ranges::find_if(s, [](unsigned char c) {
+                return isspace(c);
+            });
+            if (first_space - s.begin() <= SafetyMargin) {
+                remaining += SafetyMargin;
+            }
         }
 
         while (int(s.size()) > remaining) {
+            // Whether a break may fall at p.  Whitespace is the usual place;
+            // the far side of a dash or an ellipsis is the other.  Neither
+            // will do if what follows opens with such a mark, because a line
+            // may not begin with one:  the mark belongs to the word behind it
+            // and has to travel with it.
+            auto marksNextLine = [&s](string::const_iterator p) {
+                while (p != s.cend() and isspace(static_cast<unsigned char>(*p))) {
+                    ++p;
+                }
+                return opensWithMark(p, s.cend());
+            };
+            auto breakable = [&](string::const_iterator p) {
+                if (p == s.cbegin()) {
+                    return false;
+                }
+                if (not isspace(static_cast<unsigned char>(*p)) and
+                    not followsMark(s.cbegin(), p)) {
+                    return false;
+                }
+                return not marksNextLine(p);
+            };
+
             // Walk backward to find a breaking point.
             auto cut_p = s.begin() + remaining;
-            while (not isspace(static_cast<unsigned char>(*cut_p)) and cut_p != s.begin()) {
+            while (cut_p != s.begin() and not breakable(cut_p)) {
                 --cut_p;
             }
 
