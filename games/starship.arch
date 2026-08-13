@@ -635,7 +635,7 @@ methods
       >>It isn't on.
 
   'TechnicalIndexLookup' : {
->>This portable counter reports the radation present in its surroundings.
+>>This portable counter reports the radiation present in its surroundings.
 >>The light shows green when levels are safe, and red when levels are
 >>too high to be safe when not wearing protective clothing.
     if not activated then {
@@ -1377,8 +1377,8 @@ methods
 >>The reactor chamber is a part of the engine that's the size of a room.
 >>The hexagonal space aft of the engine room is the vessel itself, and fueling
 >>it is a question of what is present in the reactor.  The chamber door is
->>shielding and not decorative.  Engines are started from the panel in the engine
->>room, and the panel will say what it believes the chamber to contain.
+>>shielding and not decorative.  Engines are started from the panel in the
+>>engine room, and the panel will say what it believes the chamber to contain.
 
 end
 
@@ -1392,11 +1392,10 @@ gravhalf lead_waste
 
 methods
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Spent fuel is inert and none the lighter for it.  A block of it stands in
 >>the reactor chamber between firings and is swapped out rather than carried
->>off.  Like unspect fuel, it is fitted for gravlifting.
-    }
+>>off.  Like unspent fuel, it is fitted for gravlifting.
 
 end
 
@@ -1486,7 +1485,7 @@ methods
       write "I don't think ", 'DEF' -> main.dobj, " is working."
 
   'TechnicalIndexLookup' :
->>This standard out-of-ship equipment is comprised primarily of this rubber and
+>>This standard out-of-ship equipment is comprised primarily of a rubber and
 >>vinyl spacesuit.  The suit is one piece all the way through the gloves and
 >>boots; the only separate pieces are the helmet and air tanks.
 
@@ -2565,9 +2564,8 @@ methods
         }
       }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>INDEX: see INDEX.
-    }
 
 end
 
