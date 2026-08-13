@@ -84,7 +84,7 @@ methods
 >>I am awake.
 >>
 >>There is nothing to see; my eyes cannot focus on anything.
->>Something is happening around me - happening to me.  I feel sharp,
+>>Something is happening around me---happening to me.  I feel sharp,
 >>prickling pains along my arms and in my neck, and the sound of tiny
 >>motors, a sense of something withdrawing from my body.
 >>
@@ -150,14 +150,13 @@ methods
       times -:= 1
       }            # else
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The cryogenic suspension cell, or "coffin", as it is commonly called
 >>because of its appearance, is used for keeping the occupant alive and
 >>monitoring their health.  It performs the functions of initial freezing,
 >>maintenance, and thawing of the suspended individual.  These functions are
 >>tied into the main computer so that a given individual can be awakened
 >>should the computer determine that their specialty is required.
-    }
 
 end
 
@@ -370,13 +369,12 @@ methods
 >>There are no visible controls or buttons of any kind.
     }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The turbolift serves all six levels and takes its instructions by voice,
 >>there being deliberately no controls inside it for the benefit of a crew
 >>member arriving with full hands.  It says what it wants and will wait
 >>indefinitely to be told.  It will not open onto a level with no
 >>atmosphere.
-    }
 
 end
 
@@ -504,7 +502,7 @@ methods
   'read' : {
     if not viewed then {
 >>The diary seems to belong to the doctor; he has kept extensive notes
->>on his patients - which are of course the crewmembers.  The paper is
+>>on his patients---which are of course the crewmembers.  The paper is
 >>old by now and crackles when I turn the pages.  I am struck by the
 >>fact that it has probably been many years since all of us went into
 >>those glass coffins. Most of the entries are personal and I feel like
@@ -514,7 +512,7 @@ methods
 >>
     viewed := TRUE
     }
->>  "May 17, 2321 - This morning we made the last of the preparations
+>>  "May 17, 2321---This morning we made the last of the preparations
 >>  before Nap Time, as we have started to refer to the upcoming cryogenic
 >>  suspension.  All ship's stores have been removed to the far end of the
 >>  ship and sealed off until arrival.  The navigator has laid in our
@@ -637,15 +635,12 @@ methods
       >>It isn't on.
 
   'TechnicalIndexLookup' : {
->>The portable counter reports on its surroundings and not on its operator.
->>The light shows green in clear air and flashes red near anything active.
->>It draws so little power that its switch is the only thing standing between
->>it and a reading.  Note that protective clothing shields the wearer and not
->>the instrument: a red light inside a suit that is keeping you alive is the
->>counter working exactly as designed.
+>>This portable counter reports the radation present in its surroundings.
+>>The light shows green when levels are safe, and red when levels are
+>>too high to be safe when not wearing protective clothing.
     if not activated then {
 >>I should remember, next time I have it in my hands, that a counter which is
->>switched off is a counter with nothing to say.
+>>switched off doesn't do any counting.
       }
     }
 
@@ -772,13 +767,12 @@ methods
   'lie down on' : 'sit on'
   'lay down on' : 'sit on'
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The automated medical couch located in Sickbay is a sophisticated device
 >>capable of diagnosing and curing a wide range of commonly recognized
 >>ailments.  Its primary function is to detect and repair cell damage; it can
->>recognize other ailments but cannot always cure them - there is no
+>>recognize other ailments but cannot always cure them---there is no
 >>substitute for a knowledgeable physician.
-    }
 
 end
 
@@ -943,12 +937,9 @@ methods
 >>they look pretty heavy.
     }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Lead-lined coveralls are heavy, unlovely, and the only thing aboard that
->>makes the storage areas somewhere a person can linger.  They protect
->>whoever is wearing them, which is worth stating plainly: carrying them is
->>not wearing them.
-    }
+>>lets the wearer linger in a place where radiation levels are high.
 
 end
 
@@ -1083,13 +1074,10 @@ stop "overcome... my last sensations are of pain and heat."
         }
       }
 
-  'TechnicalIndexLookup' : {
->>Reactor fuel is cast in blocks and stored well away from the engine room
->>until it is wanted.  A block is far past anything that can be lifted and is
->>fitted underneath for gravlifting.  Exposure without protective clothing
->>accumulates rather than passes, and the early symptoms are mild enough to
->>be mistaken for the ship's own stale air.
-    }
+  'TechnicalIndexLookup' :
+>>The highly radioactive reactor fuel is cast in blocks and stored well
+>>away from the engine room until it is wanted.  A block is far too heavy
+>>to lift and is fitted underneath for gravlifting.
 
 end
 
@@ -1132,11 +1120,10 @@ methods
       location := player.location; 'MOVE'
       }
 
-  'TechnicalIndexLookup' : {
->>Sheet stock is carried against hull damage and is welded into place rather
->>than fastened; there is nothing in the ship's kit that will hold a plate
->>against vacuum by gripping it.
-    }
+  'TechnicalIndexLookup' :
+>>Sheet stock is carried to repair hull damage and must be welded into place.
+>>There is nothing in the ship's stores that will hold something this heavy
+>>by gripping it.
 
 end
 
@@ -1172,14 +1159,13 @@ powersource antimatter_cell
 
 methods
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Small antimatter cells are the standard high-output power source aboard,
 >>and drive everything from the gravlifter's hand unit to sidearms.  The
 >>output is prodigious and cannot be throttled: a device built around a cell
 >>is built to survive one, while a device that merely accepts one will do the
 >>most violent thing it is capable of doing.  Where fine work is wanted, a
 >>weaker source is called for.
-    }
 
 end
 
@@ -1280,16 +1266,14 @@ methods
       main.subj.location := UNDEFINED; 'MOVE' -> main.subj
       }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Apparently its primary feature is the power focusing crystal in the barrel;
 >>it is normally powered with an antimatter cell so that it acts as a
 >>destructive weapon, but when powered with a much weaker source, it can act
 >>as either a light, a surgical instrument, or even an arc welder, depending
 >>on the strength of the power cell.  A power source as weak as a calculator
 >>battery is usually sufficient for arc welding.  Eye protection is not
->>optional at welding intensities: the flash is bright enough to take a
->>person's sight, and does so at once rather than by degrees.
-    }
+>>optional at welding intensities.
 
 end
 
@@ -1334,7 +1318,7 @@ methods
       writes "There is a shuddering roar that I can feel through the floor "
       writes "and walls"
       if reactor.open then {
-        writes " - but like an idiot I have left the reactor open!  Blazing "
+        writes "---but like an idiot I have left the reactor open!  Blazing "
         writes "lethal radiation pours out over me and cooks me like a "
         stop "microwave dinner."
         }
@@ -1389,13 +1373,12 @@ methods
                 "vents, and rods cover the walls.  The room is hexagonal ",
                 "and barely large enough to stand in."
 
-  'TechnicalIndexLookup' : {
->>The reactor chamber is a room rather than a machine: the hexagonal space
->>aft of the engine room is the vessel itself, and fuelling it is a question
->>of what is standing in it and what is not.  The chamber door is shielding
->>and not a formality.  Engines are started from the panel in the engine
+  'TechnicalIndexLookup' :
+>>The reactor chamber is a part of the engine that's the size of a room.
+>>The hexagonal space aft of the engine room is the vessel itself, and fueling
+>>it is a question of what is present in the reactor.  The chamber door is
+>>shielding and not decorative.  Engines are started from the panel in the engine
 >>room, and the panel will say what it believes the chamber to contain.
-    }
 
 end
 
@@ -1412,7 +1395,7 @@ methods
   'TechnicalIndexLookup' : {
 >>Spent fuel is inert and none the lighter for it.  A block of it stands in
 >>the reactor chamber between firings and is swapped out rather than carried
->>off; like the fuel it stands in for, it is fitted for gravlifting.
+>>off.  Like unspect fuel, it is fitted for gravlifting.
     }
 
 end
@@ -1459,12 +1442,10 @@ methods
     write
     }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The helmet seals to the suit collar and holds a few minutes of air on its
 >>own.  That reserve is meant to cover the moment between one supply and the
->>next, and nothing more ambitious than that.  It is counted as a separate
->>piece of equipment because it is separately fatal to forget.
-    }
+>>next, and nothing more ambitious than that.
 
 end
 
@@ -1504,11 +1485,10 @@ methods
     else
       write "I don't think ", 'DEF' -> main.dobj, " is working."
 
-  'TechnicalIndexLookup' : {
->>Standard out-of-ship equipment is comprised primarily of this rubber and
+  'TechnicalIndexLookup' :
+>>This standard out-of-ship equipment is comprised primarily of this rubber and
 >>vinyl spacesuit.  The suit is one piece all the way through the gloves and
 >>boots; the only separate pieces are the helmet and air tanks.
-    }
 
 end
 
@@ -1665,12 +1645,10 @@ methods
       'exit' --> hollow_object
       }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Cycling the airlock evacuates the antechamber, and it does not ask whether
->>anybody standing in the antechamber is ready.  Full kit is a suit without
->>holes, a helmet worn rather than carried, and a charged air supply.  The
->>absence of any one of them is sufficient by itself.
-    }
+>>anybody standing in the antechamber is ready.  Be wearing an intact spacesuit
+>>with full air tanks and a helmet.
 
 end
 
@@ -1847,19 +1825,9 @@ methods
     else
       write "I try ", 'DEF' -> main.dobj, ", but I still can't open it."
 
-  'TechnicalIndexLookup' : {
->>Personal instruments are the owner's affair, but the standard scientific
->>calculator earns a line here for its back cover, which is not meant to come
->>off in the field.
-    if open then {
->>This one is open already, which the manufacturer would want recorded as a
->>violation of the warranty.
-      }
-    else {
->>The thin slot beside it wants something flat, and nothing in the ship's
->>tool kit is flat enough.
-      }
-    }
+  'TechnicalIndexLookup' :
+>>The standard scientific calculator doesn't do anything the ship's
+>>computer can't.  Powered by a nine-volt battery.
 
 end
 
@@ -1871,13 +1839,12 @@ powersource battery
 
 methods
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The nine-volt dry cell is the humblest source in the catalogue, carried for
 >>instruments rather than for equipment: clocks, calculators, hand tools with
 >>nothing in them that turns.  It fits the same standard socket as far more
 >>serious cells, which is a convenience to the technician and ought to be a
 >>caution to everybody else.
-    }
 
 end
 
@@ -2003,9 +1970,8 @@ object captains_ID
 
 methods
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Unfortunately the entry seems to be corrupted; I can't make it out.
-    }
 
 end
 
@@ -2061,11 +2027,10 @@ methods
       'MENTION SELF' -> gatorade
       }
 
-  'TechnicalIndexLookup' : {
->>The kitchenette dispenser is coin-operated, a decision taken by somebody
->>who had never been three years away from the nearest coin.  It does not
->>give change.  It does not give anything back.
-    }
+  'TechnicalIndexLookup' :
+>>The kitchenette dispenser is coin-operated, a decision which strikes
+>>me as remarkably penny-pinching.  Or quarter-pinching.
+>>It does not give change.  It does not give anything back.
 
 end
 
@@ -2233,12 +2198,10 @@ methods
     write "A gauge on the tanks says there are ", minutes,
           " minutes remaining."
 
-  'TechnicalIndexLookup' : {
->>Air tanks are charged to thirty minutes and are refilled from the
->>compressor in the recreation area, ship's air being at the wrong pressure
->>for the purpose.  The gauge on the side is honest.  It is meant to be read
->>before going out rather than during.
-    }
+  'TechnicalIndexLookup' :
+>>Air tanks are charged to thirty minutes and must be refilled using
+>>an air compressor.  The gauge on the side is meant to be read
+>>before going out as well as during.
 
 end
 
@@ -2316,12 +2279,9 @@ methods
       fueled := TRUE
       }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The compressor in the recreation area is an antique and runs on liquid
->>fuel, which is why a can of the stuff is kept in the janitor's closet and
->>nowhere else aboard.  It is started by hand.  It has been known to want
->>encouragement.
-    }
+>>fuel.  Quaint.  It is started by hand.  Quainter.
 
 end
 
@@ -2499,7 +2459,7 @@ methods
     else
       write "It's not plugged into ", 'DEF' -> main.dobj, "."
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>The anti-gravitational gravlifter, or "lifter", is a device which
 >>temporarily neutralizes the ship's artificial gravity over a small region.
 >>The portable hand-held unit is only half of the device; the other half is a
@@ -2507,7 +2467,6 @@ methods
 >>generally covers the entire lower surface of the object to be lifted.  The
 >>hand-held unit contains all the power and must be supplied with an
 >>antimatter cell in order to work.
-    }
 
 end
 
@@ -2548,17 +2507,15 @@ methods
 
   'get' : >>Not much point; there's nothing to read them with but the room.
 
-  'look' : {
+  'look' :
 >>Thousands of them, racked from the deck to well above my head: each one a
 >>finger's length of dull grey plastic with a printed number on the end and
 >>nothing else to say for itself.
-    }
 
-  'TechnicalIndexLookup' : {
+  'TechnicalIndexLookup' :
 >>Library cartridges are read by the room and not by hand; there has been no
 >>portable reader aboard since the refit before last.  The index is the way
 >>in.
-    }
 
 end
 
@@ -2733,7 +2690,7 @@ bridge_furniture captains_chair
 methods
 
   'LONGDESC' : {
->>I'm sitting in the captain's chair - sort of.  There is an enormous
+>>I'm sitting in the captain's chair---sort of.  There is an enormous
 >>meteor in the way, smashed directly into the center of the chair.
     meteor_seen := TRUE
     }
@@ -2888,7 +2845,7 @@ methods
 >>navigational array.  Looks like there was a slight course deviation
       writes "three years ago"
       if captains_chair.meteor_seen then
-        writes " - probably that meteor sitting in the captain's chair -"
+        writes "---probably that meteor sitting in the captain's chair---"
       writes " that has been steadily getting worse.  "
       if panel.engine_started then {
         writes "Deftly I make the corrections, feeling the floor vibrate "
