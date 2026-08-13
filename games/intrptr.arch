@@ -417,7 +417,7 @@ methods
   'SEND EVENT' : {
     temp := subscribers
     while temp do {
-      event -> (head temp)
+      event -> head temp
       temp := tail temp
       }
     }
@@ -489,14 +489,14 @@ methods
     temp_ := UNDEFINED
     while members do {
       if sender ~= head members then {
-        temp_ := (head members) @ temp_
+        temp_ := head members @ temp_
         }
       members := tail members
       }
     # temp_ is now members reversed; put it back
     members := UNDEFINED
     while temp_ do {
-      members := (head temp_) @ members
+      members := head temp_ @ members
       temp_ := tail temp_
       }
     }
@@ -527,7 +527,7 @@ methods
     temp    := sender.members
     while temp do {
       if 'INVENTORY NAME' -> head temp then
-        items := (head temp) @ items
+        items := head temp @ items
       temp := tail temp
       }
     items
