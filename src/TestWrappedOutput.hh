@@ -16,6 +16,7 @@ namespace archetype {
         void testBasicWrap_();
         void testCenter_();
         void testWrapAcrossPuts_();
+        void testClingingMarks_();
     protected:
         virtual void runTests_() override;
     public:

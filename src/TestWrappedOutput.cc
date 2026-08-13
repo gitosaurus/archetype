@@ -152,9 +152,100 @@ namespace archetype {
         out() << "TestWrappedOutput::testWrapAcrossPuts_ finished." << endl;
     }
 
+    void TestWrappedOutput::testClingingMarks_() {
+        UserOutput user_soutput = make_shared<StringOutput>();
+        StringOutput& strout(*dynamic_cast<StringOutput*>(user_soutput.get()));
+        UserOutput user_output = make_shared<WrappedOutput>(user_soutput);
+        WrappedOutput& wrout(*dynamic_cast<WrappedOutput*>(user_output.get()));
+
+        auto delta = [&](size_t& mark) {
+            string all = strout.getOutput();
+            string d = all.substr(mark);
+            mark = all.size();
+            return d;
+        };
+        size_t mark = 0;
+
+        // An em dash joins two words into one long token.  The break falls on
+        // the far side of the dash, so the line ends with it and the next one
+        // opens with a word.
+        wrout.setMaxColumns(20);
+        user_output->put("I sat in a chair---sort of, anyway.");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("I sat in a chair---\n"
+                                    "sort of, anyway.\n"));
+
+        // The same for an ellipsis that runs into the next word.
+        wrout.resetCursor();
+        user_output->put("I waited and then...something moved.");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("I waited and then...\n"
+                                    "something moved.\n"));
+
+        // But never between the mark and punctuation:  breaking "am I..."
+        // from "?" would strand the question mark at the head of a line.
+        wrout.resetCursor();
+        user_output->put("I cannot say who am I...?");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("I cannot say who am\n"
+                                    "I...?\n"));
+
+        // A single hyphen is not a dash:  it belongs to the word it joins,
+        // and is no place to break a line.
+        wrout.resetCursor();
+        user_output->put("the lead-lined coveralls are heavy");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("the lead-lined\n"
+                                    "coveralls are heavy\n"));
+
+        // A fragment arriving with the line already full has nowhere to put
+        // its dash but the head of the next line.  No break was chosen to do
+        // that; there was no room to choose anything.  The margin is what is
+        // held to here, since overrunning it is the fault that shows.
+        wrout.resetCursor();
+        user_output->put("aaa bbb ccc ddd eeee");
+        user_output->put("---probably that meteor");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("aaa bbb ccc ddd eeee\n"
+                                    "---probably that\n"
+                                    "meteor\n"));
+
+        // The punctuation safety margin is for a stub and not for a clause.
+        // A dash-led fragment used to collect it and print past the margin.
+        wrout.resetCursor();
+        user_output->put("aaa bbb ccc ddd");
+        user_output->put("---and a long tail of words");
+        user_output->endLine();
+        for (const string& line : {string("aaa bbb ccc ddd---"),
+                                   string("and a long tail of"),
+                                   string("words")}) {
+            ARCHETYPE_TEST(line.size() <= 20);
+        }
+        ARCHETYPE_TEST_EQUAL(delta(mark),
+                             string("aaa bbb ccc ddd---\n"
+                                    "and a long tail of\n"
+                                    "words\n"));
+
+        // A stub still gets its concession:  a lone period arriving on the
+        // margin stays with the sentence it ends.
+        wrout.resetCursor();
+        user_output->put("aaa bbb ccc ddd eeee");
+        user_output->put(".");
+        user_output->endLine();
+        ARCHETYPE_TEST_EQUAL(delta(mark), string("aaa bbb ccc ddd eeee.\n"));
+
+        out() << "TestWrappedOutput::testClingingMarks_ finished." << endl;
+    }
+
     void TestWrappedOutput::runTests_() {
         testBasicWrap_();
         testCenter_();
         testWrapAcrossPuts_();
+        testClingingMarks_();
     }
 }
