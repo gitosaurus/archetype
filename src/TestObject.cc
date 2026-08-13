@@ -166,6 +166,77 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
     }
 
+    void TestObject::testListMessages_() {
+        ObjectPtr vase = Universe::instance().defineNewObject();
+        Universe::instance().assignObjectIdentifier(vase, "vase");
+        int move_to_id = Universe::instance().Messages.index("MOVE TO");
+        // The parentheses around "head tail message" are not decoration: head and
+        // tail bind more loosely than "=", so without them the comparison would
+        // happen first, against the message itself
+        vase->setMethod(move_to_id,
+                        make_stmt_from_str("{ if (head tail message) = UNDEFINED then {\n"
+                                           "    write \"the vase stays put\"\n"
+                                           "  } else {\n"
+                                           "    write \"the vase moves to \", head tail message\n"
+                                           "  } }\n"));
+        // The default method sees the message the sender wrote, list and all
+        vase->setMethod(DefaultMethod,
+                        make_stmt_from_str("write \"the vase ignores \", head message"));
+
+        Statement stmt1 = make_stmt_from_str("['MOVE TO' \"the attic\"] -> vase");
+        Capture capture1;
+        stmt1->execute();
+        string expected1 = "the vase moves to the attic\n";
+        string actual1 = capture1.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual1, expected1);
+
+        // A plain message still dispatches, and asking it for arguments is not an
+        // error; a list with nothing after its head is the very same silence.
+        Statement stmt2 = make_stmt_from_str("{ 'MOVE TO' -> vase; ['MOVE TO'] -> vase }");
+        Capture capture2;
+        stmt2->execute();
+        string expected2 = "the vase stays put\nthe vase stays put\n";
+        string actual2 = capture2.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual2, expected2);
+
+        // An unclaimed head falls to the default method, as an unclaimed message
+        // always has; a head that is no kind of message falls there too.
+        Statement stmt3 = make_stmt_from_str("{ ['SHATTER' 3] -> vase; [42 7] -> vase }");
+        Capture capture3;
+        stmt3->execute();
+        string expected3 = "the vase ignores SHATTER\nthe vase ignores 42\n";
+        string actual3 = capture3.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual3, expected3);
+
+        // The reply comes back from a list message like any other, which is what
+        // lets a method refuse an argument instead of undoing it
+        int bump_id = Universe::instance().Messages.index("BUMP");
+        vase->setMethod(bump_id, make_stmt_from_str("(head tail message) + 1"));
+        Expression expr4 = make_expr_from_str("['BUMP' 41] -> vase");
+        Value val4 = expr4->evaluate()->numericConversion();
+        ARCHETYPE_TEST(val4->isDefined());
+        ARCHETYPE_TEST_EQUAL(val4->getNumber(), 42);
+
+        // Passing hands the whole list up, so arguments survive the trip to a
+        // parent's method without anyone naming them along the way
+        ObjectPtr furniture = Universe::instance().defineNewObject();
+        furniture->setPrototype(true);
+        Universe::instance().assignObjectIdentifier(furniture, "furniture");
+        furniture->setMethod(move_to_id,
+                             make_stmt_from_str("write \"the furniture moves to \", head tail message"));
+        ObjectPtr crate = Universe::instance().defineNewObject(furniture->id());
+        Universe::instance().assignObjectIdentifier(crate, "crate");
+        crate->setMethod(move_to_id,
+                         make_stmt_from_str("{ message --> furniture; write \"the crate settles\" }"));
+
+        Statement stmt5 = make_stmt_from_str("['MOVE TO' \"the cellar\"] -> crate");
+        Capture capture5;
+        stmt5->execute();
+        string expected5 = "the furniture moves to the cellar\nthe crate settles\n";
+        string actual5 = capture5.getCapture();
+        ARCHETYPE_TEST_EQUAL(actual5, expected5);
+    }
+
     void TestObject::testReadDoesNotMutate_() {
         ObjectPtr subject = Universe::instance().defineNewObject();
         Universe::instance().assignObjectIdentifier(subject, "subject");
@@ -207,6 +278,7 @@ namespace archetype {
         testInheritance_();
         testMethods_();
         testMessagePassing_();
+        testListMessages_();
         testReadDoesNotMutate_();
     }
 }

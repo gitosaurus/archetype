@@ -74,15 +74,25 @@ namespace archetype {
     }
 
     Value Object::dispatch() {
-        Value defined_message = Universe::instance().currentContext().messageValue->messageConversion();
+        const Value& sent = Universe::instance().currentContext().messageValue;
+        Value defined_message = sent->messageConversion();
+        if (not defined_message->isDefined()) {
+            // A list dispatches on its head, so that ['MOVE TO' player] finds the
+            // 'MOVE TO' method and the rest of the list rides along as arguments.
+            // Nothing that dispatched before dispatches differently now: every
+            // value that is not a pair has an undefined head.
+            defined_message = sent->head()->messageConversion();
+        }
         Value absence = make_unique<AbsentValue>();
         Value result = make_unique<AbsentValue>();
         int message_id = -1;
         if (defined_message->isDefined()) {
             if (Debug) {
                 Value target = make_unique<ObjectValue>(id());
+                // The whole message, not just the head it dispatched on: a trace
+                // that hid the arguments would hide what one wants to trace.
                 Universe::instance().output()->put(format("dispatching {} to {}",
-                                                          defined_message, target));
+                                                          sent, target));
                 Universe::instance().output()->endLine();
             }
             message_id = defined_message->getMessage();
