@@ -76,7 +76,7 @@ a general Turtle parser, and it will not do anything sensible with Turtle from
 somewhere else. For real queries, load the dump into a triplestore and use
 SPARQL; this exists to make a picture.
 
-## moving.arch — a message that carries its destination
+## moving.arch — preconditions, and the one argument left over
 
 ```shell
 ./build/archetype --source=demos/moving.arch
@@ -85,50 +85,61 @@ SPARQL; this exists to make a picture.
 It includes nothing, parses nothing, and asks for no input. The protocol is the
 whole program.
 
-A message can dispatch on the head of a list, which lets the rest of the list
-be arguments: `['MOVE TO' socket] -> bulb`. What that buys is visible in the
-one place a text adventure feels it most. The shipped protocol in
-`intrptr.arch` moves a thing in two steps — write the new location into it,
-then send it `'MOVE'` — so the thing is told about the move only after the move
-has happened. It recovers the origin from `last_location`, which it kept for
-exactly that purpose, and a handler that wants to refuse can only put things
-back afterward. `starship_types.arch` has the canonical version: a power source
-moved into an occupied socket complains and writes `location := last_location`.
+The shipped protocol in `intrptr.arch` moves a thing in two steps — write the
+new location into it, then send it `'MOVE'` — so the thing is told about the
+move only after the move has happened. It recovers the origin from
+`last_location`, kept for exactly that purpose, and a handler that wants to
+refuse can only put things back afterward. `starship_types.arch` has the
+canonical version: a power source moved into an occupied socket complains and
+writes `location := last_location`.
 
-When the destination arrives in the message, `location` is still the origin, so
-both ends of the move are in hand at once. The demo's `thing` class has no
-`last_location` and needs none. A refusal is an answer:
+Nearly all of that is fixed by asking first, and asking needs no arguments.
+A precondition is a method that is ABSENT for everything with no objection —
+which is almost everything — so only the rare exception mentions it at all:
 
 ```
-    if not ['WILL ACCEPT' self] -> dest_ then
-      FALSE
+  'CANNOT MOVE' : ABSENT
 ```
 
-and the caller reads it as one, because a send is an expression:
+ABSENT is already false enough to fall through an `if`, so the common case
+costs nothing and stays invisible. The vise in the demo is the exception, and
+it is the entire implementation of being bolted down.
+
+`'ADD SELF'` and `'DROP SELF'` are unchanged, and want no arguments either: the
+thing being added is the thing doing the asking, so `sender` already names it.
+
+**One thing is left over**, and it is the only list message in the file. A
+precondition about the *destination* has to be given the destination, and a
+thing has exactly one channel for that — `sender` — which is already saying
+which thing is moving. So the destination rides in the message:
 
 ```
-    if not ['MOVE TO' hand] -> bulb then
-      write "So the bulb is still in the socket."
+  'MOVE TO' : {
+    dest_ := head tail message
+    if dest_ = location then          TRUE
+    else if 'CANNOT MOVE' -> self then   FALSE
+    else if 'CANNOT ACCEPT' -> dest_ then FALSE
+    else { ... }
+    }
 ```
 
-Three smaller things the demo is built to show:
+That is the whole case for arguments, and the whole price of them: one
+attribute, `dest_`, in one handler, to give the argument a name. Everything
+else in the protocol was already expressible.
 
-- **`'ADD SELF'` and `'DROP SELF'` sharpen rather than dissolve.** They were
-  always argument-passing, over a channel that holds exactly one argument:
-  `sender`. Spelling them `['ACCEPT' thing]` and `['RELEASE' thing]` separates
-  who is asking from what is moving, and makes room for the message that could
-  not exist before — `'WILL ACCEPT'`, the question. Note where the capacity
-  check ends up: in `intrptr.arch` the mover reaches into the destination
-  (`if location.capacity then location.capacity -:= size`) because it has no
-  way to ask; here the place answers for itself.
+Two smaller things it shows:
+
 - **Forwarding is free.** `announced` overrides `'MOVE TO'`, and
   `message --> thing` hands the whole list to the parent, arguments and all,
   with nothing unpacked and nothing rebuilt.
 - **Assembly is not movement.** `'ASSEMBLE'` in `intrptr.arch` clears
   `last_location` and calls `'MOVE'`, using the field as a "never placed" flag.
-  With no such field there is nothing to clear, so the demo gives the initial
-  placement its own message. That is the one job `last_location` was doing that
-  was not smuggling.
+  With the guards moved ahead of the mutation there is no such field, so the
+  initial placement gets its own message.
+
+Worth noticing where the capacity check ends up. In `intrptr.arch` the mover
+reaches into the destination — `if location.capacity then location.capacity -:=
+size` — because it has no way to ask. Here the place answers for itself.
 
 It is a demonstration of a protocol, not a replacement for one. The `'MOVE'`
 protocol in `intrptr.arch` is subclassed by shipped games and is not going

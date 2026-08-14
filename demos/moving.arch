@@ -1,16 +1,23 @@
 # MOVING.ARCH
 #
-# A message that carries its destination, and what that changes.
+# Where a message with arguments earns its keep, and where it does not.
 #
 # The shipped protocol in intrptr.arch moves a thing in two steps:  write
-# the new location into it, then tell it that you did.  It works out where
-# it came from by having kept the old value in "last_location", because by
-# the time it hears about the move there is no other record of the origin.
-# A guard can therefore only run after the mutation, and refusing means
-# putting everything back.
+# the new location into it, then send it 'MOVE'.  The thing hears about the
+# move only after the move, works out where it came from by having kept
+# "last_location" for that purpose, and a handler that wants to refuse can
+# only put things back afterward.
 #
-# Here the destination rides along in the message, so both ends of the move
-# are in hand at once and a refusal is just an answer.
+# Almost all of that is fixed by asking first, and asking needs no
+# arguments at all.  A precondition is a method that is ABSENT for the
+# things that have no objection -- which is nearly all of them -- and only
+# the rare exception says otherwise.  ABSENT is already false enough to
+# fall through an "if", so the common case costs nothing and is invisible.
+#
+# One thing is left over, and it is the only list message in this file.  A
+# precondition about the *destination* has to be given the destination, and
+# a thing has exactly one channel for that -- "sender" -- which is already
+# saying which thing is moving.  So the destination comes in the message.
 #
 # Nothing here includes the standard library:  the protocol is the whole
 # program.  Run it with
@@ -24,33 +31,29 @@
 #############################################################################
 # Places
 #
-# A place is asked to take something and asked to give it up.  It is never
-# told after the fact, so it can still say no while no still means
-# something.
+# 'ADD SELF' and 'DROP SELF' are unchanged from the shipped protocol, and
+# want no arguments:  the thing being added is the thing doing the asking,
+# so "sender" already names it.
 
 class place based on null
 
   name     : "somewhere"
   contents : UNDEFINED
 
-  # The first thing a handler wants is a name for its argument.  There are
-  # no locals, so that name is an attribute.
-  it_      : UNDEFINED
   rest_    : UNDEFINED
 
 methods
 
-  # Asked before anything has moved.  A place with a reason to refuse
-  # overrides this one and gives it.
-  'WILL ACCEPT' : TRUE
+  # The precondition.  Nearly every place has no opinion, and says so by
+  # never mentioning it.
+  'CANNOT ACCEPT' : ABSENT
 
-  'ACCEPT' : contents := head tail message @ contents
+  'ADD SELF' : contents := sender @ contents
 
-  'RELEASE' : {
-    it_   := head tail message
+  'DROP SELF' : {
     rest_ := UNDEFINED
     while contents do {
-      if head contents ~= it_ then rest_ := head contents @ rest_
+      if head contents ~= sender then rest_ := head contents @ rest_
       contents := tail contents
       }
     while rest_ do {
@@ -76,35 +79,42 @@ end
 #############################################################################
 # Things
 #
-# A thing knows where it is.  It never knows where it was, because it is
+# A thing knows where it is and never knows where it was, because it is
 # never asked to work that out:  when ['MOVE TO' dest] arrives, "location"
-# is still the origin and the destination is in the message.  That is the
-# whole reason there is no "last_location" here.
+# is still the origin.  Both preconditions run before anything is written,
+# so a refusal leaves nothing to undo -- and there is no last_location.
 
 class thing based on null
 
   name     : "something"
   location : UNDEFINED
 
+  # The argument, named.  This is the whole cost of the list message, and
+  # it is one attribute, in one class, in the one handler that takes an
+  # argument.
   dest_    : UNDEFINED
 
 methods
 
+  # The other precondition:  whether this thing can move at all, which has
+  # nothing to do with where it is going and so needs nothing passed in.
+  'CANNOT MOVE' : ABSENT
+
   # Assembly is not movement.  "location" was written down in the source
-  # and the place has never heard of it.  The shipped protocol fakes this
-  # up by clearing last_location and calling it a move; with no such
-  # attribute there is nothing to clear, so it gets its own message.
-  'PLACE' : if location then ['ACCEPT' self] -> location
+  # and the place has never heard of it.
+  'PLACE' : if location then 'ADD SELF' -> location
 
   'MOVE TO' : {
     dest_ := head tail message
     if dest_ = location then
       TRUE
-    else if not ['WILL ACCEPT' self] -> dest_ then
+    else if 'CANNOT MOVE' -> self then
+      FALSE
+    else if 'CANNOT ACCEPT' -> dest_ then
       FALSE
     else {
-      ['RELEASE' self] -> location
-      ['ACCEPT'  self] -> dest_
+      'DROP SELF' -> location
+      'ADD SELF'  -> dest_
       location := dest_
       TRUE
       }
@@ -132,15 +142,15 @@ end
 
 
 #############################################################################
-# Two places with reasons to refuse
+# The exceptions, which are few and say so themselves
 
 place bench   name : "the workbench"   end
 
 
-# starship_types.arch does this check the other way round:  the power source
-# looks at location.contains *after* being moved into it, complains, and
-# writes location := last_location to undo the move.  Here the socket
-# answers for its own occupancy, before anything happens.
+# starship_types.arch has this the other way round:  the power source is
+# moved into an occupied socket, notices afterward, complains, and writes
+# location := last_location to undo it.  Asked first, the socket answers
+# for its own occupancy and nothing needs undoing.
 
 place socket
 
@@ -148,13 +158,11 @@ place socket
 
 methods
 
-  'WILL ACCEPT' :
+  'CANNOT ACCEPT' :
     if contents then {
       write "There is already something in the socket."
-      FALSE
-      }
-    else
       TRUE
+      }
 
 end
 
@@ -166,15 +174,13 @@ place hand
 
 methods
 
-  'WILL ACCEPT' :
+  'CANNOT ACCEPT' :
     # An empty list has no length -- it reads as UNDEFINED, the same as an
     # attribute nobody set -- so emptiness is tested before size.
     if contents and length contents >= capacity then {
       write "My hand is full."
-      FALSE
-      }
-    else
       TRUE
+      }
 
 end
 
@@ -182,6 +188,24 @@ end
 thing     bulb    name : "the bulb"    location : bench   end
 thing     fuse    name : "the fuse"    location : bench   end
 announced wrench  name : "the wrench"  location : bench   end
+
+
+# The destination-independent refusal, which is the common kind and wants
+# no message with arguments at all.
+
+thing vise
+
+  name     : "the vise"
+  location : bench
+
+methods
+
+  'CANNOT MOVE' : {
+    write "The vise is bolted to the bench."
+    TRUE
+    }
+
+end
 
 
 #############################################################################
@@ -212,6 +236,11 @@ methods
     write "Putting the fuse in the socket, which is spoken for."
     if not ['MOVE TO' socket] -> fuse then
       write "So the fuse never left the bench."
+    'ROLL CALL'
+
+    write "Picking up the vise, which is not going anywhere."
+    if not ['MOVE TO' hand] -> vise then
+      write "No argument was needed to find that out."
     'ROLL CALL'
 
     write "Picking up the fuse and the wrench."
