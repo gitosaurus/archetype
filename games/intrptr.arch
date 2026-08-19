@@ -192,8 +192,7 @@ methods
     stop "EOF; goodbye."
   }
 
-  'PLAYER CMD' -> system
-  command -> system
+  ['PLAYER CMD' command] -> system
 
   'SEND EVENT' -> before
 
@@ -273,14 +272,12 @@ methods
 # as a message.
 
    if send_to then {
-     'WHICH OBJECT' -> system
-     if (match := verb -> system).interpret then
+     if (match := ['WHICH OBJECT' verb] -> system).interpret then
        'INTERPRET' -> match
      else if match.disabled then
        'DISABLED' -> match
      else {
-       'WHICH OBJECT' -> system
-       if (match := verbmsg -> system).interpret then
+       if (match := ['WHICH OBJECT' verbmsg] -> system).interpret then
          'INTERPRET' -> match
        else if match.disabled then
          'DISABLED' -> match
@@ -294,8 +291,7 @@ methods
 # Now it's time to actually send the message.  If who we're sending to has
 # an ABSENT method, give the appropriate error messages.
            if verbmsg -> send_to = ABSENT then {
-             'WHICH OBJECT' -> system
-             if (match := verbmsg -> system) and match.normal then
+             if (match := ['WHICH OBJECT' verbmsg] -> system) and match.normal then
                { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
              else {
 
@@ -315,8 +311,7 @@ methods
                else
                  answer := ABSENT
                if answer = ABSENT then {         # try the verb alone
-                 'WHICH OBJECT' -> system
-                 if (match := verb -> system).IsAVerb and match.normal then
+                 if (match := ['WHICH OBJECT' verb] -> system).IsAVerb and match.normal then
                    { if 'NORMAL' -> match = ABSENT then 'Semantic Error' }
                  else
                    'Semantic Error'
@@ -361,8 +356,7 @@ methods
 
   'MENTION' : {
     mentioned := TRUE
-    'WHICH OBJECT' -> system
-    if it := sender.pronoun -> system then
+    if it := ['WHICH OBJECT' sender.pronoun] -> system then
       it.referent := sender
     else {
       create pronoun_object named it
@@ -676,12 +670,12 @@ methods
       }
 
   'ROOMVIEW' : {
-    'BANNER' -> system; '-' -> system
+    ['BANNER' '-'] -> system
     if not visited then 'FIRSTDESC'
     'LONGDESC'
     'INVENTORY'
     'INVENTORY' -> compass
-    'BANNER' -> system; '-' -> system
+    ['BANNER' '-'] -> system
     }  # ROOMVIEW
 
   'BRIEF' :
@@ -890,8 +884,7 @@ methods
 
   'save' : {
     writes "Save current state to what file? "
-    'SAVE STATE' -> system
-    if read -> system then
+    if ['SAVE STATE' read] -> system then
       write "Game saved."
     else
       write "Could not save game."
@@ -899,8 +892,7 @@ methods
 
   'load' : {
     writes "Load game from what file? "
-    'LOAD STATE' -> system
-    if read -> system then
+    if ['LOAD STATE' read] -> system then
       write "Game loaded."
     else
       write "Could not load game."
