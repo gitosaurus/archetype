@@ -110,10 +110,15 @@ namespace archetype {
     }
 
     Value IValue::head() const {
-        return make_unique<UndefinedValue>();
+        // An atom is the head of itself: every value reads as a list of at
+        // least one, which is what lets dispatch always go by the head.
+        return clone();
     }
 
     Value IValue::tail() const {
+        // The tail is what tells an atom from a list of one, and it stays
+        // undefined here on purpose: if an atom were its own tail as well,
+        // every loop that walks a list would never find the end of it.
         return make_unique<UndefinedValue>();
     }
 

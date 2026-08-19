@@ -75,14 +75,11 @@ namespace archetype {
 
     Value Object::dispatch() {
         const Value& sent = Universe::instance().currentContext().messageValue;
-        Value defined_message = sent->messageConversion();
-        if (not defined_message->isDefined()) {
-            // A list dispatches on its head, so that ['MOVE TO' player] finds the
-            // 'MOVE TO' method and the rest of the list rides along as arguments.
-            // Nothing that dispatched before dispatches differently now: every
-            // value that is not a pair has an undefined head.
-            defined_message = sent->head()->messageConversion();
-        }
+        // Dispatch always goes by the head.  A list supplies its own, so that
+        // ['MOVE TO' player] finds the 'MOVE TO' method and the rest rides
+        // along as arguments; an atom is the head of itself, so a bare message
+        // is a list of one and there is no second case.
+        Value defined_message = sent->head()->messageConversion();
         Value absence = make_unique<AbsentValue>();
         Value result = make_unique<AbsentValue>();
         int message_id = -1;

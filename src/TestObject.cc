@@ -197,12 +197,16 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(actual2, expected2);
 
         // An unclaimed head falls to the default method, as an unclaimed message
-        // always has; a head that is no kind of message falls there too.
-        Statement stmt3 = make_stmt_from_str("{ ['SHATTER' 3] -> vase; [42 7] -> vase }");
+        // always has; a head that is no kind of message falls there too.  And
+        // an atom is the head of itself, so "head message" names the message
+        // whether or not it arrived in a list: one spelling of the question.
+        Statement stmt3 = make_stmt_from_str("{ ['SHATTER' 3] -> vase; [42 7] -> vase;"
+                                             "  'VANISH' -> vase }");
         Capture capture3;
         stmt3->execute();
         string expected3 = "the vase ignores SHATTER in ['SHATTER' 3]\n"
-                           "the vase ignores 42 in [42 7]\n";
+                           "the vase ignores 42 in [42 7]\n"
+                           "the vase ignores VANISH in VANISH\n";
         string actual3 = capture3.getCapture();
         ARCHETYPE_TEST_EQUAL(actual3, expected3);
 

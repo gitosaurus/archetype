@@ -59,6 +59,8 @@ namespace archetype {
         virtual Value attributeConversion() const;
         virtual Value valueConversion() const { return clone(); }
 
+        // Every value is a list of at least itself: an atom's head is the
+        // atom, and only its undefined tail tells it from a list of one.
         virtual Value head() const;
         virtual Value tail() const;
 

@@ -439,6 +439,21 @@ namespace archetype {
         Value joined = make_expr_from_str("\"items \" & [1 2 3]")->evaluate()->stringConversion();
         ARCHETYPE_TEST(joined->isDefined());
         ARCHETYPE_TEST_EQUAL(joined->getString(), string{"items [1 2 3]"});
+
+        // An atom is the head of itself: every value is a list of at least
+        // one.  The tail is what tells an atom from a list of one, and the
+        // head of nothing is still nothing.
+        Value atom_head = make_expr_from_str("head 5")->evaluate()->numericConversion();
+        ARCHETYPE_TEST(atom_head->isDefined());
+        ARCHETYPE_TEST_EQUAL(atom_head->getNumber(), 5);
+        Value string_head = make_expr_from_str("head \"abc\"")->evaluate()->stringConversion();
+        ARCHETYPE_TEST_EQUAL(string_head->getString(), string{"abc"});
+        Value single = make_expr_from_str("head [5] = head 5")->evaluate()->valueConversion();
+        ARCHETYPE_TEST(single->isTrueEnough());
+        Value atom_tail = make_expr_from_str("tail 5")->evaluate()->valueConversion();
+        ARCHETYPE_TEST(not atom_tail->isDefined());
+        Value undef_head = make_expr_from_str("head UNDEFINED")->evaluate()->valueConversion();
+        ARCHETYPE_TEST(not undef_head->isDefined());
     }
 
     void TestExpression::testReplDisplay_() {
