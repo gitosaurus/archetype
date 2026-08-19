@@ -1,0 +1,165 @@
+# How to Play an Archetype Adventure
+
+In order to play an adventure you need two things: the `archetype`
+interpreter, and the adventure's `.acx` file — `gorreven.acx`, for example.
+
+```shell
+archetype --perform=gorreven.acx
+```
+
+You can also play an adventure straight from its source, which compiles it
+first and then runs it:
+
+```shell
+archetype --source=games/gorreven.arch --include=games
+```
+
+Type English phrases when the game asks you "What should I do now?"
+
+```
+What should I do now? look
+What should I do now? open the closet
+What should I do now? look inside it
+What should I do now? get the coat
+What should I do now? inventory
+What should I do now? look at it
+What should I do now? put it on
+What should I do now? i
+What should I do now? take it off
+What should I do now? put it down
+```
+
+...and so forth. If you want to see a list of some of the verbs and
+prepositions that the game understands, type `help`. It will not be a complete
+list, since it will not show all the synonyms that the game understands, and it
+does not show all the nouns that the game knows (since that could give things
+away), but it does show you what kinds of actions you can do.
+
+Note above: the command `i`, or `inventory`, shows all the objects you are
+currently carrying.
+
+## Pronouns
+
+The game can understand a variety of pronouns, and also understands that
+different pronouns refer to different kinds of things:
+
+```
+What should I do now? look at the sunglasses
+What should I do now? look at the cupboard
+What should I do now? put them in it
+```
+
+However, that kind of thing won't work when both objects have the same pronoun.
+
+You can also use the word `everything` to refer to all the objects available:
+
+```
+What should I do now? take everything
+What should I do now? drop everything
+What should I do now? put everything in the bag
+```
+
+## Special commands
+
+There are a number of special commands, such as `help`, that consist of a
+single word typed at the prompt. These will work for nearly every adventure:
+
+| Command | What it does |
+|---|---|
+| `save` | Save your current state in a file. The game will ask you for the file's name after you type `save`. |
+| `load` | Load a previously saved game state. The game will ask you for the file's name after you type `load`. |
+| `quit` | Quit playing the adventure. |
+| `help` | Display part of the game's vocabulary. |
+| `look` | Look around the current location. |
+| `leave` (or `exit`) | Leave the current location. This only works if you are in or at an object which is inside of a room — for example, on a couch. "leave the couch" also works. |
+
+## Getting around
+
+When you are in a room, you will be informed of the obvious exits. Type the
+name of the direction at the prompt in order to move in that direction. Most
+directions have an abbreviation, usually the first letter of the direction's
+name. For some directions, such as "southeast" and "northwest", the
+abbreviations are "se", "nw", and so on. Most games use the cardinal
+directions: north (n), south (s), east (e), west (w), northeast (ne),
+northwest (nw), southeast (se), southwest (sw), as well as up (u) and down (d).
+However, some games may define different directions.
+
+You can "go to" some objects in a room, for example, certain kinds of
+furniture. To say "enter" the object will almost always work, and many objects
+respond to more natural synonyms. For example, all of the following could be
+ways to indicate that you wanted to visit the desk:
+
+```
+What should I do now? enter desk
+What should I do now? go to the desk
+What should I do now? sit at the desk
+```
+
+Once there, you can leave the object and return to the room it was in:
+
+```
+What should I do now? leave the desk
+```
+
+or just
+
+```
+What should I do now? leave
+```
+
+When the game gives your "visible exits", those are only the exits in the
+compass directions, such as north and south. You might be in a closet, for
+example, and it says there are "no visible exits"; however, typing `leave` puts
+you back in the room which contains the closet. This "visible exits" list also
+does not list exits which you might be able to accomplish by entering some
+object, such as "enter the dark hole". It depends on the way the author of the
+adventure has written it.
+
+In general, it helps to remember that you move from room to room by means of
+typing a direction, such as "north", "n", or "go north". Those directions do
+not work in any other context. Some games define their own directions. In
+`starship`, instead of north, south, east, and west, you move fore, aft,
+starboard, and port, abbreviated as f, a, s, and p respectively.
+
+## If you get stuck
+
+If you seem to be getting stuck, remember that you should explore every
+location, and most of all, "look at" every object in the room. "examine" is a
+synonym for "look at"; some games also define "search", which usually implies a
+closer examination still. When you enter a room, the game does not consider it
+to be a detailed examination. Just taking a
+second look can give a lot of hints.
+
+If you're still stuck, some games have a `hint` command. Just type `hint` by
+itself and it will give you a hint as to what course of action you might want
+to pursue next.
+
+Don't be discouraged if you find yourself "dying" or "losing" a lot. Some games
+(such as `gorreven`) have a high danger level, and the wrong timing or a few
+wrong moves will doom you. Use `save` a lot, and learn from the past!
+
+## Talking to the parser
+
+If the game seems to be misunderstanding what you're typing, try rephrasing it.
+Most well-written games respond at least to the names by which objects are
+described in the adventure. The game cannot understand complex sentences
+containing conjunctions or conditions:
+
+```
+What should I do now? get either the axe or gun and kill the dwarf with it
+```
+
+...but it can understand simple imperative sentences with a subject and direct
+object. If your goal is to confuse the game, you will get bored quickly, since
+it is not very hard to do. You will probably have the most fun if you just play
+along. It helps to remember that by and large, the game only understands these
+sentence constructions:
+
+| Construction | Examples |
+|---|---|
+| *verb* | "save", "load", "quit", "look", "i", "north" |
+| *verb phrase* *subject noun phrase* | "get the fur coat", "push the button", "look at the diary" |
+| *verb phrase* *subject noun phrase* *preposition* | "pick it up", "take the coat off" |
+| *verb phrase* *subject noun phrase* *preposition* *direct object noun phrase* | "open the closet with the keys", "put the battery in the calculator" |
+
+Enjoy!

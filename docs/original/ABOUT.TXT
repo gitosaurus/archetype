@@ -1,0 +1,60 @@
+ABOUT ARCHETYPE
+
+Archetype is a simple, stripped-down object-oriented programming
+language designed for the writing of text adventure games; for example,
+the interpreter has a partial natural language parser, and the language's
+"write" statement pauses every 24 lines during long pieces of text so
+that it will not get lost off the top of the screen.
+
+However, Archetype does not have everything necessary for quickly
+creating an adventure game because the language is more general-purpose
+than that.  There are about a thousand lines of code in the files
+INTRPTR.ACH, LEXICON.ACH, and CARDINAL.ACH, all of which are included
+when your adventure includes STANDARD.ACH .  Thus much of Archetype is
+itself written in Archetype.
+
+The language consists of a translator, called CREATE.EXE, and an
+interpreter called PERFORM.EXE .  The interpreter expects a file that
+has been syntactically and semantically verified by CREATE.EXE and
+turned into a binary format.  This half-a-compiler/interpreter pair
+design is found in other languages, such as Icon and certain versions of
+LISP.  It is not a full interpreter, such as BASIC, nor a full compiler,
+such as Pascal.
+
+Archetype was developed using Turbo Pascal 5.5 on an IBM-compatible
+laptop with an 8088 processor, two disk drives (no hard drive), and a
+10 MHz clock.  Because of this, the compiler and interpreter were
+designed to minimize disk use, getting things into memory as quickly as
+possible and working with them there.  As a result it makes tremendous
+use of dynamic memory.  On a higher-end machine, the disk may actually
+be faster than dynamically allocating memory, so this architecture may
+not run as much faster as you might expect on a faster machine.
+
+I'd like to know what you think of both the games in this archive and the
+language itself.  If you would like to try writing an adventure game, I
+would really like to know how easy or difficult you found it using
+Archetype and the STANDARD.ACH include files.
+
+But what I would like to know even more is if you can think of an
+application for Archetype other than writing adventure games.  Somebody
+once said that the best tool is one which is used for a purpose other than
+the one for which it was designed.  The file ANIMAL.ACH in this archive
+shows one different way to use Archetype.
+
+Archetype 1.0 was distributed as shareware.  Archetype 1.01 (this version)
+is distributed public-domain, along with its Turbo Pascal source code and
+the Archetype source code for the adventures.  You are free to copy this
+source code and publish it anywhere, so long as no fee is charged for it
+and my name remains on it.
+
+
+
+Enjoy!
+
+Derek T. Jones
+
+Snail mail:  9642 E. 32nd Street
+             Tucson, AZ  85748
+
+E-mail:      dtj@primenet.com
+             dtj@socrates.ed.asu.edu
