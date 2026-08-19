@@ -40,7 +40,7 @@
 
 
 namespace archetype {
-  static constexpr std::string_view VersionString = "3.0";
+  static constexpr std::string_view VersionString = "4.0";
 
   class CompilationFailure : public std::runtime_error {
   public:
