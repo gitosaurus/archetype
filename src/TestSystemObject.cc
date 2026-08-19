@@ -209,10 +209,63 @@ namespace archetype {
         ARCHETYPE_TEST(two_statements->isSameValueAs(take_obj));
     }
 
+    // A list message is the staged dance in one send:  the head first, then
+    // each element of the tail in order, with the reply of the whole being
+    // the reply of the last.
+    void TestSystemObject::testListMessages_() {
+        Universe::destroy();
+
+        // The sorter loaded in one message.  The reply is the last add's
+        // echo, the same value the staged dance would have ended on.
+        Value last = make_stmt_from_str(
+            "['INIT SORTER' \"dog\" \"Ajax\" \"cat\"] -> system"
+        )->execute()->stringConversion();
+        ARCHETYPE_TEST(last->isDefined());
+        ARCHETYPE_TEST_EQUAL(last->getString(), string{"cat"});
+        make_stmt_from_str("'CLOSE SORTER' -> system")->execute();
+        deque<string> expected = {"Ajax", "cat", "dog"};
+        Statement stmt = make_stmt_from_str("'NEXT SORTED' -> system");
+        for (auto const& s : expected) {
+            Value ans = stmt->execute()->stringConversion();
+            ARCHETYPE_TEST(ans->isDefined());
+            ARCHETYPE_TEST_EQUAL(ans->getString(), s);
+        }
+        ARCHETYPE_TEST(not stmt->execute()->isDefined());
+
+        // A list of one is the bare message, to system like to everything.
+        Value singleton = make_stmt_from_str("['NEXT SORTED'] -> system")->execute();
+        ARCHETYPE_TEST(not singleton->isDefined());
+
+        // A control message rides in a tail like any other element, so a
+        // whole open-feed-close protocol fits in one send.
+        make_stmt_from_str("['INIT SORTER' \"b\" \"a\" 'CLOSE SORTER'] -> system")->execute();
+        Value first = make_stmt_from_str("'NEXT SORTED' -> system")->execute()->stringConversion();
+        ARCHETYPE_TEST(first->isDefined());
+        ARCHETYPE_TEST_EQUAL(first->getString(), string{"a"});
+        make_stmt_from_str("'NEXT SORTED' -> system")->execute();
+        ARCHETYPE_TEST(not make_stmt_from_str("'NEXT SORTED' -> system")->execute()->isDefined());
+
+        // One-shot 'WHICH OBJECT':  no priming, no second send, and the
+        // answer comes back as the reply of the only send there is.
+        TokenStream t1(make_source_from_str("program1", program1));
+        Universe::instance().make(t1);
+        make_stmt_from_str(
+            "{'OPEN PARSER' -> system;"
+            "'BUILD' -> take;"
+            "'BUILD' -> money;"
+            "'CLOSE PARSER' -> system}"
+        )->execute();
+        int take_obj_id = Universe::instance().getObject("take")->id();
+        Value one_shot = make_stmt_from_str("['WHICH OBJECT' \"grab\"] -> system")->execute();
+        Value take_obj = make_unique<ObjectValue>(take_obj_id);
+        ARCHETYPE_TEST(one_shot->isSameValueAs(take_obj));
+    }
+
     void TestSystemObject::runTests_() {
         testSorting_();
         testParsing_();
         testEmptyPhraseNeverMatches_();
         testArrowSequencing_();
+        testListMessages_();
     }
 }

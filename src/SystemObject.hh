@@ -53,6 +53,7 @@ namespace archetype {
         std::unique_ptr<SystemParser> parser_;
 
         bool figureState_(const Value& message);
+        Value interpret_(const Value& message);
         void resetSystem_();
 
         friend void write_parser_rdf(std::ostream& out, bool with_prefixes);

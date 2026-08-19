@@ -19,6 +19,7 @@ namespace archetype {
         void testParsing_();
         void testEmptyPhraseNeverMatches_();
         void testArrowSequencing_();
+        void testListMessages_();
     protected:
         virtual void runTests_() override;
     public:
