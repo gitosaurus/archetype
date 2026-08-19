@@ -8,6 +8,7 @@
 
 #include <string>
 #include <string_view>
+#include <sstream>
 #include <optional>
 #include <memory>
 #include <cctype>
@@ -109,10 +110,15 @@ namespace archetype {
     }
 
     Value IValue::head() const {
-        return make_unique<UndefinedValue>();
+        // An atom is the head of itself: every value reads as a list of at
+        // least one, which is what lets dispatch always go by the head.
+        return clone();
     }
 
     Value IValue::tail() const {
+        // The tail is what tells an atom from a list of one, and it stays
+        // undefined here on purpose: if an atom were its own tail as well,
+        // every loop that walks a list would never find the end of it.
         return make_unique<UndefinedValue>();
     }
 
@@ -477,6 +483,32 @@ namespace archetype {
 
     Value PairValue::tail() const {
         return tail_->clone();
+    }
+
+    int PairValue::listLength() const {
+        // Walked rather than remembered, the way std::list::size once was: the
+        // spine is the only record of how long a list is.
+        int length = 0;
+        for (const PairValue* node = this; node; ) {
+            ++length;
+            const PairValue* next = dynamic_cast<const PairValue*>(node->tail_.get());
+            if (not next and node->tail_->isDefined()) {
+                // An improper tail is a thing in the list too: (1 @ 2) holds two
+                ++length;
+            }
+            node = next;
+        }
+        return length;
+    }
+
+    Value PairValue::stringConversion() const {
+        // A list's printed form is its string form: the same thing the REPL
+        // echoes and a message trace shows.  Without this, "write" put out
+        // nothing at all for a list -- the one way of being wrong that leaves
+        // nothing behind to notice it by.
+        ostringstream out;
+        display(out);
+        return make_unique<StringValue>(out.str());
     }
 
     void PairValue::display(ostream &out) const {

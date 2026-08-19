@@ -12,6 +12,7 @@
 #include <algorithm>
 #include <sstream>
 #include <cmath>
+#include <optional>
 #include <stack>
 
 #include "Expression.hh"
@@ -91,6 +92,11 @@ namespace archetype {
             case OP_STRING: return 12;
             case OP_RANDOM: return 12;
             case OP_LENGTH: return 12;
+            // Selectors, and they bind like the rest of this family: "head list"
+            // is one operand, so "head list = x" compares the head rather than
+            // taking the head of a comparison
+            case OP_HEAD: return 12;
+            case OP_TAIL: return 12;
 
             case OP_POWER: return 11;
 
@@ -121,10 +127,10 @@ namespace archetype {
             case OP_AND: return 3;
             case OP_OR: return 2;
 
-            // TODO:  What's the right precedence here?  LISP never has to decide
+            // LISP never has to decide this, but a language with infix operators
+            // does.  Building stays loose: whatever computes an element finishes
+            // before the element is joined on, so "a + 1 @ rest" is a list.
             case OP_PAIR: return 2;
-            case OP_HEAD: return 2;
-            case OP_TAIL: return 2;
 
             case OP_C_MULTIPLY: return 1;
             case OP_C_DIVIDE: return 1;
@@ -300,6 +306,11 @@ namespace archetype {
                     break;
                 }
                 case OP_LENGTH: {
+                    if (rv->isList()) {
+                        // How many things are in it, not how wide it prints
+                        result = make_unique<NumericValue>(rv->listLength());
+                        break;
+                    }
                     Value rv_s = rv->stringConversion();
                     if (rv_s->isDefined()) {
                         result = make_unique<NumericValue>(static_cast<int>(rv_s->getString().size()));
@@ -398,6 +409,22 @@ namespace archetype {
                 throw logic_error("number-op-number attempted on this operator");
         }
         return make_unique<NumericValue>(result);
+    }
+
+    // A list compares by what it is made of, or it does not compare.  Two lists
+    // are equal when their elements are, a list and anything else are simply not
+    // the same value, and no list is less than another: the only ordering on
+    // offer would be the order of the text they print as, which is an ordering
+    // in appearance rather than in fact.
+    optional<Value> compare_lists(Keywords::Operators_e op, const Value& lv, const Value& rv) {
+        if (not (lv->isList() or rv->isList())) {
+            return nullopt;
+        }
+        switch (op) {
+            case OP_EQ: return as_boolean_value(lv->isSameValueAs(rv));
+            case OP_NE: return as_boolean_value(not lv->isSameValueAs(rv));
+            default:    return Value{make_unique<UndefinedValue>()};
+        }
     }
 
     bool eval_compare(Keywords::Operators_e op, const Value& lv, const Value& rv) {
@@ -556,8 +583,7 @@ namespace archetype {
                     result = make_unique<PairValue>(std::move(lv_v), std::move(rv_v));
                     break;
                 }
-                case OP_CONCAT:
-                case OP_WITHIN: {
+                case OP_CONCAT: {
                     Value lv_s = left_->evaluate()->stringConversion();
                     Value rv_s = right_->evaluate()->stringConversion();
                     if (lv_s->isDefined() and rv_s->isDefined()) {
@@ -567,11 +593,32 @@ namespace archetype {
                     }
                     break;
                 }
+                // The text surgery operators go no further than text.  Cutting up
+                // the form a list prints as would answer a question nobody asked,
+                // and "within" is where membership would want to live one day, so
+                // a list leaves them unanswered rather than answered wrongly.
+                case OP_WITHIN: {
+                    Value lv_v = left_->evaluate()->valueConversion();
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    Value lv_s = lv_v->stringConversion();
+                    Value rv_s = rv_v->stringConversion();
+                    if (lv_v->isList() or rv_v->isList()) {
+                        result = make_unique<UndefinedValue>();
+                    } else if (lv_s->isDefined() and rv_s->isDefined()) {
+                        result = eval_ss(op(), lv_s->getString(), rv_s->getString());
+                    } else {
+                        result = make_unique<UndefinedValue>();
+                    }
+                    break;
+                }
                 case OP_LEFTFROM:
                 case OP_RIGHTFROM: {
-                    Value lv_s = left_->evaluate()->stringConversion();
+                    Value lv_v = left_->evaluate()->valueConversion();
                     Value rv_n = right_->evaluate()->numericConversion();
-                    if (lv_s->isDefined() and rv_n->isDefined()) {
+                    Value lv_s = lv_v->stringConversion();
+                    if (lv_v->isList()) {
+                        result = make_unique<UndefinedValue>();
+                    } else if (lv_s->isDefined() and rv_n->isDefined()) {
                         result = eval_sn(op(), lv_s->getString(), rv_n->getNumber());
                     } else {
                         result = make_unique<UndefinedValue>();
@@ -645,11 +692,16 @@ namespace archetype {
                 case OP_LT:
                 case OP_LE:
                 case OP_GE:
-                case OP_GT:
-                    result = as_boolean_value(eval_compare(op(),
-                                                         left_->evaluate()->valueConversion(),
-                                                         right_->evaluate()->valueConversion()));
+                case OP_GT: {
+                    Value lv_v = left_->evaluate()->valueConversion();
+                    Value rv_v = right_->evaluate()->valueConversion();
+                    if (optional<Value> as_lists = compare_lists(op(), lv_v, rv_v)) {
+                        result = std::move(*as_lists);
+                    } else {
+                        result = as_boolean_value(eval_compare(op(), lv_v, rv_v));
+                    }
                     break;
+                }
 
                 case OP_ASSIGN: {
                     Value lv_a = left_->evaluate()->attributeConversion();

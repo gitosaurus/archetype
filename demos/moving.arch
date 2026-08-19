@@ -1,0 +1,259 @@
+# MOVING.ARCH
+#
+# Where a message with arguments earns its keep, and where it does not.
+#
+# The shipped protocol in intrptr.arch moves a thing in two steps:  write
+# the new location into it, then send it 'MOVE'.  The thing hears about the
+# move only after the move, works out where it came from by having kept
+# "last_location" for that purpose, and a handler that wants to refuse can
+# only put things back afterward.
+#
+# Almost all of that is fixed by asking first, and asking needs no
+# arguments at all.  A precondition is a method that is ABSENT for the
+# things that have no objection -- which is nearly all of them -- and only
+# the rare exception says otherwise.  ABSENT is already false enough to
+# fall through an "if", so the common case costs nothing and is invisible.
+#
+# One thing is left over, and it is the only list message in this file.  A
+# precondition about the *destination* has to be given the destination, and
+# a thing has exactly one channel for that -- "sender" -- which is already
+# saying which thing is moving.  So the destination comes in the message.
+#
+# Nothing here includes the standard library:  the protocol is the whole
+# program.  Run it with
+#
+#   ./build/archetype --source=demos/moving.arch
+#
+# It demonstrates a protocol.  It does not replace the one in intrptr.arch,
+# which shipped games subclass.
+
+
+#############################################################################
+# Places
+#
+# 'ADD SELF' and 'DROP SELF' are unchanged from the shipped protocol, and
+# want no arguments:  the thing being added is the thing doing the asking,
+# so "sender" already names it.
+
+class place based on null
+
+  name     : "somewhere"
+  contents : UNDEFINED
+
+  rest_    : UNDEFINED
+
+methods
+
+  # The precondition.  Nearly every place has no opinion, and says so by
+  # never mentioning it.
+  'CANNOT ACCEPT' : ABSENT
+
+  'ADD SELF' : contents := sender @ contents
+
+  'DROP SELF' : {
+    rest_ := UNDEFINED
+    while contents do {
+      if head contents ~= sender then rest_ := head contents @ rest_
+      contents := tail contents
+      }
+    while rest_ do {
+      contents := head rest_ @ contents
+      rest_ := tail rest_
+      }
+    }
+
+  'ROLL CALL' : {
+    writes "  ", name, " holds:"
+    rest_ := contents
+    if rest_ = UNDEFINED then writes " nothing"
+    while rest_ do {
+      writes " ", (head rest_).name
+      rest_ := tail rest_
+      }
+    write ""
+    }
+
+end
+
+
+#############################################################################
+# Things
+#
+# A thing knows where it is and never knows where it was, because it is
+# never asked to work that out:  when ['MOVE TO' dest] arrives, "location"
+# is still the origin.  Both preconditions run before anything is written,
+# so a refusal leaves nothing to undo -- and there is no last_location.
+
+class thing based on null
+
+  name     : "something"
+  location : UNDEFINED
+
+  # The argument, named.  This is the whole cost of the list message, and
+  # it is one attribute, in one class, in the one handler that takes an
+  # argument.
+  dest_    : UNDEFINED
+
+methods
+
+  # The other precondition:  whether this thing can move at all, which has
+  # nothing to do with where it is going and so needs nothing passed in.
+  'CANNOT MOVE' : ABSENT
+
+  # Assembly is not movement.  "location" was written down in the source
+  # and the place has never heard of it.
+  'PLACE' : if location then 'ADD SELF' -> location
+
+  'MOVE TO' : {
+    dest_ := head tail message
+    if dest_ = location then
+      TRUE
+    else if 'CANNOT MOVE' -> self then
+      FALSE
+    else if 'CANNOT ACCEPT' -> dest_ then
+      FALSE
+    else {
+      'DROP SELF' -> location
+      'ADD SELF'  -> dest_
+      location := dest_
+      TRUE
+      }
+    }
+
+end
+
+
+# Forwarding is free:  the whole list goes up the chain, arguments and all,
+# and by the time the parent is done "location" is the destination.
+
+class announced based on thing
+
+methods
+
+  'MOVE TO' :
+    if message --> thing then {
+      write name, " goes to ", location.name, "."
+      TRUE
+      }
+    else
+      FALSE
+
+end
+
+
+#############################################################################
+# The exceptions, which are few and say so themselves
+
+place bench   name : "the workbench"   end
+
+
+# starship_types.arch has this the other way round:  the power source is
+# moved into an occupied socket, notices afterward, complains, and writes
+# location := last_location to undo it.  Asked first, the socket answers
+# for its own occupancy and nothing needs undoing.
+
+place socket
+
+  name : "the socket"
+
+methods
+
+  'CANNOT ACCEPT' :
+    if contents then {
+      write "There is already something in the socket."
+      TRUE
+      }
+
+end
+
+
+place hand
+
+  name     : "my hand"
+  capacity : 2
+
+methods
+
+  'CANNOT ACCEPT' :
+    # An empty list has no length -- it reads as UNDEFINED, the same as an
+    # attribute nobody set -- so emptiness is tested before size.
+    if contents and length contents >= capacity then {
+      write "My hand is full."
+      TRUE
+      }
+
+end
+
+
+thing     bulb    name : "the bulb"    location : bench   end
+thing     fuse    name : "the fuse"    location : bench   end
+announced wrench  name : "the wrench"  location : bench   end
+
+
+# The destination-independent refusal, which is the common kind and wants
+# no message with arguments at all.
+
+thing vise
+
+  name     : "the vise"
+  location : bench
+
+methods
+
+  'CANNOT MOVE' : {
+    write "The vise is bolted to the bench."
+    TRUE
+    }
+
+end
+
+
+#############################################################################
+
+null main
+
+methods
+
+  'ROLL CALL' : {
+    'ROLL CALL' -> bench
+    'ROLL CALL' -> socket
+    'ROLL CALL' -> hand
+    write ""
+    }
+
+  'START' : {
+
+    for each do 'PLACE' -> each
+
+    write "Everything starts on the bench."
+    'ROLL CALL'
+
+    write "Putting the bulb in the socket."
+    if ['MOVE TO' socket] -> bulb then
+      write "Done."
+    'ROLL CALL'
+
+    write "Putting the fuse in the socket, which is spoken for."
+    if not ['MOVE TO' socket] -> fuse then
+      write "So the fuse never left the bench."
+    'ROLL CALL'
+
+    write "Picking up the vise, which is not going anywhere."
+    if not ['MOVE TO' hand] -> vise then
+      write "No argument was needed to find that out."
+    'ROLL CALL'
+
+    write "Picking up the fuse and the wrench."
+    ['MOVE TO' hand] -> fuse
+    ['MOVE TO' hand] -> wrench
+    'ROLL CALL'
+
+    write "Reaching for the bulb with both hands full."
+    if not ['MOVE TO' hand] -> bulb then
+      write "So the bulb is still in the socket."
+    'ROLL CALL'
+
+    stop "Nothing was moved and put back."
+    }
+
+end

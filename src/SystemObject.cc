@@ -67,7 +67,21 @@ namespace archetype {
     }
 
     Value SystemObject::executeDefaultMethod() {
-        Value message = Universe::instance().currentContext().messageValue->clone();
+        const Value& sent = Universe::instance().currentContext().messageValue;
+        // A list message is the staged dance in one send:  the head first,
+        // then each element of the tail in order, with the reply of the whole
+        // being the reply of the last.  So ['LOAD STATE' "file.acx"] keeps
+        // its Boolean, and no send can be caught mid-dance by a save.  An
+        // atom is the head of itself with an undefined tail, so a bare
+        // message walks the same walk in one step.
+        Value result = interpret_(sent->head());
+        for (Value node = sent->tail(); node->isDefined(); node = node->tail()) {
+            result = interpret_(node->head());
+        }
+        return result;
+    }
+
+    Value SystemObject::interpret_(const Value& message) {
         switch (state_) {
             case IDLING:
                 if (figureState_(message)) {
