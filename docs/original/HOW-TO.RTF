@@ -1,0 +1,628 @@
+{\rtf1\pc \deff0{\fonttbl{\f0\fmodern pica;}{\f1\fmodern Courier;}
+{\f2\fmodern elite;}{\f3\fmodern prestige;}{\f4\fmodern lettergothic;}
+{\f5\fmodern gothicPS;}{\f6\fmodern cubicPS;}{\f7\fmodern 
+lineprinter;}{\f8\fswiss Helvetica;}{\f9\fmodern avantegarde;}
+{\f10\fmodern spartan;}{\f11\fmodern metro;}{\f12\fmodern 
+presentation;}{\f13\fmodern APL;}{\f14\fmodern OCRA;}{\f15\fmodern 
+OCRB;}{\f16\froman boldPS;}{\f17\froman emperorPS;}{\f18\froman 
+madaleine;}{\f19\froman zapf humanist;}{\f20\froman classic;}
+{\f21\froman roman f;}{\f22\froman roman g;}{\f23\froman roman h;}
+{\f24\froman timesroman;}{\f25\froman century;}{\f26\froman 
+palantino;}{\f27\froman souvenir;}{\f28\froman garamond;}{\f29\froman 
+caledonia;}{\f30\froman bodini;}{\f31\froman university;}{\f32\fscript 
+script;}{\f33\fscript scriptPS;}{\f34\fscript script c;}{\f35\fscript 
+script d;}{\f36\fscript commercial script;}{\f37\fscript park avenue;}
+{\f38\fscript coronet;}{\f39\fscript script h;}{\f40\froman greek;}
+{\f41\froman kana;}{\f42\froman hebrew;}{\f43\froman roman s;}
+{\f44\froman russian;}{\f45\froman roman u;}{\f46\froman roman v;}
+{\f47\froman roman w;}{\f48\fdecor narrator;}{\f49\fdecor emphasis;}
+{\f50\fdecor zapf chancery;}{\f51\fdecor decor d;}{\f52\fdecor old 
+english;}{\f53\fdecor decor f;}{\f54\fdecor decor g;}{\f55\ftech 
+cooper black;}{\f56\ftech Symbol;}{\f57\ftech linedraw;}{\f58\ftech 
+math7;}{\f59\ftech math8;}{\f60\ftech bar3of9;}{\f61\ftech EAN;}
+{\f62\ftech pcline;}{\f63\ftech tech h;}}\margl1440\margr1440
+\sectd\titlepg{\footer \pard\plain\qc - \chpgn  -\par }\pard\qc 
+\plain\b\f4 How To Quickly Write An Adventure Game\par \par by Derek 
+T. Jones\par \ql \b0 \par This document describes how to write your 
+own adventure game quickly and easily, and also how to take advantage 
+of more advanced features when your game becomes more complex.  You 
+should already be familiar with what playing an adventure game is 
+like.  If you aren't, try the adventures that came with this package 
+to understand the "feel" of moving through an artificial universe by 
+text and imagination alone.\par \par Archetype is more than just a 
+language for writing adventures.  It is a more general-purpose 
+language that was designed with the writing of adventure games in 
+mind.  For this reason, there is a good deal of existing Archetype co
+de that must be combined with your own adventure's objects and rooms 
+in order for them to behave like a text adventure.  Here's an example 
+of the simplest adventure possible:\par \par \f2\fs20 include 
+"standard"\par \par room first_room\par \par methods\par \par   
+'INITIAL' : 'START HERE' -> player\par \par end\par \f4\fs24 \par \par 
+\sa240 Try it.  Type that into a text file; name it TEST1.ACH .  You 
+can create a text file by using a text editor such as vi, SLED, QEDIT, 
+or the DOS 6.2 EDIT command, among others.  You can also create a text 
+file on a word processor, as long as you make sure that you don't save 
+the file in the word processor's native format.  For example, using 
+WordPerfect to create your adventure, you would have to use Text Out 
+to save the file.  Using Microsoft Works, you would use the Save As 
+option and check the "Text" box.  Most word processors have an option 
+for storing your file without any special formatting codes.\par Now 
+create the adventure.  Before the adventure can actually be played, it 
+has to be translated into a binary format so that it can be loaded and 
+executed quickly.  During this translation the program you wrote is 
+also checked for any syntax errors, meaning errors in Archetype 
+grammar (not English grammar!).  Throughout this document, anything in 
+an example typed in \b boldface\b0  indicates something you have to 
+type; plain text indicates program output or prompts.  So now create 
+your adventure:\par C:\\>\b create test1\b0 \par This may take about a 
+minute, if you're using a 10MHz 8088 with floppy drives, like I have.  
+Probably it runs much faster on your more advanced machine.  If you 
+get the error "Cannot open STANDARD.ACH", simply make sure that all 
+the .ACH files that came with the package are in the same directory as 
+the CREATE.EXE program.\par To play the adventure, type:\par C:\\>\b 
+perform test1\b0 \par Not much to do, is there?  Find out just what 
+you \i can\i0  do:\par What should I do now? \b help\b0 \par You will 
+see a list of some of the verbs that the program will understand.  
+Synonyms for verbs will not appear in this list.  In other words, if 
+"shoot" and "kill" are defined simply as synonyms for "attack", only 
+the verb "attack" will show up in this list.\par Notice that the 
+system verbs\~\_ help, save, load, quit\~\_ and the direction 
+verbs\~\_ north, south, east, west, northeast, northwest, southeast, 
+southwest, up, and down\~\_ are all in this list.  These verbs were 
+defined in the STANDARD.ACH Archetype file that you 
+{\*\bkmkstart include}{\*\bkmkend include}
+included when you typed \b include "standard"\b0  at the top of your 
+program.\par Other things were defined as well, for example, the 
+"room" type.  When you typed \b room first_room\b0 , it created a room 
+object named "first_room".  The properties of this room were defined 
+in STANDARD.ACH:  the ability to have exits in the cardinal directions 
+(north, south, northwest, etc.); the ability to contain any objects 
+dropped in it, descriptions that vary based on whether or not this is 
+the player's first visit to it, and so forth.\par The 'INITIAL' 
+message and its significance were also defined in STANDARD.ACH .  
+Before anything else starts in the game, this message is broadcast to 
+every object defined\~\_ objects you created as well as those created 
+in STANDARD.ACH .  By putting this message in the \b methods\b0  
+section and following it with a colon and a statement, you indicated 
+that "first_room" had some specific action to take when it received 
+the 'INITIAL' message.\par In this case, the action is to send the 
+message 'START HERE' to the player object.  The player object is also 
+defined in STANDARD.ACH; it contains attributes having to do with the 
+player's location, how much they can carry, etc.  The player object 
+defines the 'START HERE' message, and has a method for it which causes 
+it to move into the room which sent the message.\par The "->" symbol, 
+meaning "send this message to that object", is \i not\i0  defined in 
+STANDARD.ACH .  Neither is the word "include", the word "methods" or 
+"end", or even the general structure of your room definition.  Those 
+are defined by Archetype itself\f0\up8 \chftn {\footnote \pard 
+\plain\up8 \chftn \up0 A computer language such as Archetype is 
+actually only a standard.  What enforces this standard is the CRE
+ATE.EXE program, which will refuse to create a binary, executable file 
+from your source code (your .ACH file) if any of the rules of this 
+standard are broken.}\f4\up0 .\par However, it is important to 
+remember that much of what you will come to think of as "Archetype" is 
+actually STANDARD.ACH, and especially INTRPTR.ACH, which are 
+themselves written in Archetype!  Once you know more about writing a
+dventure games, you might want to go in yourself and make your own 
+modifications.\par \pard\box\brdrs\sa240 HOWEVER IT IS AN EXTREMELY 
+BAD PLAN TO MAKE CHANGES TO INTRPTR.ACH UNLESS YOU ARE VERY CERTAIN 
+YOU KNOW WHAT YOU ARE DOING.  In fact you should never actually change 
+INTRPTR.ACH.  You should make a copy with a different name which you 
+use yourself.  If you screw up INTRPTR.ACH, adventure games you make 
+with it will work erratically or not at all.  Beware!\par \pard\sa240 
+But enough with the alarmist injunctions.  On to more and greater 
+things.  First of all, how about giving your room an interesting 
+description.\f0   Right now it's just "a nondescript room."  The 
+room's description is one of its \i attributes\i0 , named "desc".  
+Attributes are listed before the word \b methods\b0  when an object is 
+described.  You might change your object definition as followed:\par 
+\sa0 \f2\fs20 room first_room\par \par   desc : "room with the word 
+START painted on the ceiling"\par \par methods\par \par   'INITIAL' : 
+'START HERE' -> player\par \par end\par \sa240 \f0\fs24 \par The 
+"desc" attribute is actually defined to "nondescript room" in the 
+"room" type defined in INTRPTR.ACH; if you don't redefine it yourself, 
+your room object will \i inherit\i0  the "desc" attribute's value just 
+by virtue of being based on the "room" type.  The interesting 
+attributes and methods of the room type are shown below:\par \sa0 type 
+room\par \par   IsAroom   : TRUE\par   desc      : "nondescript 
+room"\par \par   intro       : "I can see"\par   empty_intro : "There 
+is nothing of interest here."\par \par methods\par \par   'FIRSTDESC' 
+: UNDEFINED\par \par   'BRIEF'     : write "In the ", desc, "."\par 
+\par   'LONGDESC'  : write "I'm in the ", desc, "."\par \par end\par 
+\par \par \sa240 \i\f4 Attributes:\i0 \par \li2160\fi-2160 IsAroom\tab 
+Always TRUE.  It should not be changed.  If every type defines an 
+attribute called "IsA<type name>", it makes it easy to test for the 
+type of an unknown object with a test such as "if obj.IsAroom 
+then..."\par desc\tab A short description of the room.  It should not 
+contain any detailed description; just the name of the room.  It 
+should also not contain any article at the front such as "a", "an", or 
+"the".\par intro\tab As can be seen from its default value, this is 
+what is written at the beginning of the room's inventory list when the 
+player types "look" at the prompt.  If the room is dark, you might 
+want to define it as "I can barely make out" or something.  But you 
+will usually want to leave it alone.\par empty_intro\tab What is 
+written when the room is empty.  Again, you will usually want to leave 
+this one alone.\par \li0\fi0 \i Methods:\par \li2160\fi-2160 \i0 
+'FIRSTDESC'\tab This method is invoked whenever the player first 
+enters the room, and never again.  A good place to put description 
+that causes your story to unfold; or to put first-time traps or 
+surprises.  It is important to remember that more than just written 
+output statements can appear in a method.\par 'LONGDESC'\tab Invoked 
+whenever the room is first entered or when the player types "look" at 
+the prompt.\par 'BRIEF'\tab Invoked whenever the player re-enters a 
+previously entered room.  Usually this is just a brief reminder of 
+what the room is.  The fact that this method is invoked on subsequent 
+visits helps your adventure feel like a book that is "unfolding"; 
+'FIRSTDESC' is reactions the character has initially and never again; 
+'LONGDESC' is the result of a long slow look, and 'BRIEF' is when the 
+character is just passing through.\par \li0\fi0 The methods section 
+also contains the \i exits\i0  out of the room.  The name of the 
+message should be the name of the exit.  It should return a single 
+value\~\_ the room into which it exits.  For example, a room with the 
+following methods:\par \sa0 'east' : kitchen\par \sa240 'west' : if 
+door.open then bedroom\par will have an exit to the east leading into 
+the kitchen, and, if the \b open\b0  attribute of the \b door\b0  
+object is TRUE, an exit to the west.  Methods always return a value to 
+the sender:  the last expression executed within them.  The 'east' 
+method will always return the "kitchen" object; the 'west' method 
+returns the value of an \b if\b0  statement, which in turn returns its 
+last executed expression.  Suppose we fill out our example room a li
+ttle more:\par \sa0 \f2\fs20 room first_room\par \par   desc : "room 
+with the word START painted on the ceiling"\par \par methods\par \par  
+ 'INITIAL' : 'START HERE' -> player\par \par   'LONGDESC' :\par     
+write "I'm standing in a small bare room with ",\par           "the 
+word \\"START\\" "painted on the ceiling in neon ",\par \tab \tab 
+"green paint.  The plaster is chipped a little and ",\par \tab \tab 
+"the dirty white linoleum floor is something I ",\par \tab \tab 
+"wouldn't want to have to touch with anything ",\par           "but my 
+shoes."\par \par   'FIRSTDESC' :\par     write "Welcome to my first 
+adventure!  Hope you enjoy it.  ",\par           "I was walking 
+innocently along the sidewalk on my ",\par \tab \tab "way to the store 
+one day when a flash of light just ",\par \tab \tab "to my left 
+blinded me.  When my vision cleared I ",\par \tab \tab "found 
+myself... somewhere else... without ",\par \tab \tab 
+"explanation..."\par \par # Exits\par \par   'north' : hallway\tab 
+\tab # no other obvious way\par \par end\par \sa240 \f4\fs24 \par 
+There are a few new things here:\par The pound sign (#), the comment, 
+causes itself and everything to the end of the line to be ignored by 
+the CREATE.EXE program.  You can use this operator to make notes to 
+yourself or to someone else who might need to read it later.\par Note 
+the usage of the \b write\b0  statement.  No \i string\i0  (characters 
+surrounded by double quotes) can be longer than 256 characters, and 
+usually they're easier to see and use if they're not longer than one 
+line.  But the \b write\b0  statement takes any number of 
+comma-separated strings and writes them out to the screen in such a 
+way that they "wrap" at the end of a line, like a word processor.  
+This way you don't have to worry about fitting them carefully to 
+screen margins yourself.  Furthermore, if you have a very long 
+description that goes beyond the screen, Archetype will pause and give 
+the player a "Hit any key to continue" message, so that none of the 
+text is lost off the top.\par Also notice the \\" used in the 
+'FIRSTDESC' method.  We want double quotes within double quotes, but 
+of course the presence of (") means the end of a string.  Putting a 
+backslash (\\) in front of a double quote means that the double quote 
+is part of the ongoing string.\par \i More About Exits\par \i0 An exit 
+usually goes both ways.  Take a look at the north exit in your first 
+room.  It points to the hallway, which we have not yet defined.  
+Define it as follows:\par \sa0 \f2\fs20 room hallway\par \par   desc : 
+"long north-south hallway"\par \par methods\par \par   'LONGDESC' : 
+>>I'm standing in a narrow hallway north of the START room.\par \par   
+'south' : first_room\par \par end\par \par \sa240 \f4\fs24 Before any 
+other exits you might define for the hallway, you should first make an 
+exit going south back to the original room.  Otherwise, the north exit 
+from the start_room will be a one-way exit.  This is something to 
+watch out for, since no room has any exits other than the ones you 
+define for it.  Of course, sometimes you might do this on purpose:  a 
+trapdoor or hole, for example.\par \i Objects\par \i0 How about 
+putting some objects in your adventure?  Objects that you can pick up 
+and carry around?  Try the following:\par \sa0 \f2\fs20 object 
+necklace\par \par   desc     : "diamond necklace"\par   location : 
+start_room\par \par end\par \sa240 \f4\fs24 \par Be sure that all your 
+room and object definitions are in the same TEST1.ACH file.  CREATE it 
+again and PERFORM it.  Notice that without any other information about 
+the diamond necklace, you can pick it up, look at it, drop it, and so 
+forth, referring to it as "the diamond necklace", "a diamond 
+necklace", "the necklace", "a necklace", or just "necklace".  Of 
+course, the necklace itself isn't very interesting yet since you 
+didn't define anything special for it.  It merely \i inherited\i0  the 
+attributes of an object type (defined in STANDARD.ACH), enough 
+structure to allow it to behave like an object.  These inherited 
+attributes are shown below:\par \sa0 \f2\fs20 type object\par \par   
+IsAobject : TRUE\par \par   desc     : "nondescript object"\par   
+visible  : TRUE\par   location : UNDEFINED\par   pronoun  : "it"\par 
+\par   full     : UNDEFINED\par   syn      : UNDEFINED\par \par   size 
+    : 1\par   capacity : UNDEFINED\par \par methods\par \par   'look' 
+:\par     write "Nothing strikes me as unusual about ", 'DEF' -> self, 
+"."\par \par   'get' :\par     if location = player then\par       
+write "I've already got ", 'DEF' -> self, "."\par     else if size > 
+player.capacity then\par       >>I can't carry that much.\par     else 
+\{\par       location := player; 'MOVE'\par       write "I picked up 
+", 'DEF' -> self, "."\par       \}\par \par   'pick up' : 'get'\par   
+'pick_up' : 'get'\par   'take'    : 'get'\par \par   'drop' :\par     
+if location ~= player then\par       write "I don't have ", 'DEF' -> 
+self, "."\par     else \{\par       location := player.location; 
+'MOVE'\par       write "I put down ", 'DEF' -> self, "."\par       
+\}\par \par   'put down' : 'drop'\par   'put_down' : 'drop'\par \par 
+end\par \sa240 \f4\fs24 \par \i Attributes:\par \li2160\fi-2160 \i0 
+IsAobject\tab Serves the same function as IsAroom in the room type 
+above.  However it is even more important since the interpreter 
+depends on it.\par desc\tab A very important attribute; it must almost 
+always be defined.  It is the full name of your object the way it 
+appears on screen, and, if \b full\b0  is not defined, indicates how 
+the player can talk about it as well.  The interpreter assumes that 
+you have defined \b desc\b0  in the form "adjective adjective ... 
+adjective noun", so that if desc was "great big red ball", the player 
+could refer to it as "ball", "red ball", "big red ball", or "great big 
+red ball", but not "great ball", "red big ball", or any other 
+combination.\par full\tab The full name of your object; the way the 
+player would talk about it at the prompt.  For example, with the 
+diamond necklace this would be "diamond necklace".  You need to use 
+this attribute if you \i don't\i0  want to allow some of the names 
+that the interpreter might generate, given your particular \b desc\b0  
+attribute, since its presence prevents the interpreter from using the 
+\b desc\b0  attribute to generate vocabulary names.  One example might 
+be "ball of wax", where the interpreter will accept "of wax" as a 
+valid name for the object.  You might then set \b full\b0  to "ball of 
+wax" and set \b syn\b0  to "ball|wax" (see below).\par syn\tab 
+Synonyms for your object.  If there is more than one synonym you can 
+put them all in the same string, separated by vertical bars.  You can 
+use this attribute whether or not you define the \b full\b0  
+attribute.  For example, if you have an object whose desc attribute is 
+"scientific calculator", and you want the player to be able to refer 
+to it as "calc" as well as "scientific calculator" and "calculator" 
+(which the interpreter will generate if \b full \b0 is not defined), 
+just set \b syn\b0  to "calc".\par visible\tab Whether or not the 
+object will show up in an inventory of the room.  Usually TRUE; you 
+might make it FALSE if the object is not really what the player might 
+think of as an object, like a magic word or something.  If your 
+adventure required that the player type "say sesame" at some point, 
+there would actually have to be an object named "sesame" to handle the 
+action.  This object would have \b visible\b0  set to FALSE and 
+probably 'ACCESS' set to return TRUE.  (See \i Methods\i0  below.)\par 
+location\tab Another very important attribute.  It is set to the 
+location of the object and indicates the object's physical position.  
+NOTE:  just setting this attribute equal to some other object is not 
+enough to actually change its position.  It must be set and then the 
+'MOVE' method must be invoked.  (See \i Methods\i0  below.)\par 
+pronoun\tab Indicates what pronoun should be used for the object.  
+Although usually "it", it can be any pronoun, such as "them", "him", 
+"her", etc.  If the player has just mentioned this object, they can 
+continue to refer to it by this pronoun, until they refer to another 
+object with the same pronoun.\par size\tab The size of the object.  
+Size in what?  Cubic inches?  Square feet?  Well, you decide.  It is 
+used to determine how much more the player can carry.  If it is zero, 
+or UNDEFINED, it means that it has no significant weight; the player 
+can carry as many of these kinds of objects as he wants.  If it is 
+larger than one, the player will be able to carry fewer.  When the 
+total of all the \b size\b0 s of the objects the player is carrying 
+exceeds player.capacity, the player gets the message "I can't carry 
+any more."  Thus, if the weight of objects is important in your game, 
+you might need to set player.capacity yourself in the 'INITIAL' method 
+of your starting room.\par capacity\tab How many objects can be put 
+inside this object (if all sizes are equal to 1).  When the total of 
+all the \b size\b0 s of the objects whose location attribute points to 
+this object exceeds \b capacity\b0 , no more objects can be put 
+"inside".\par \pard\box\brdrs\sa240 NOTICE that the most important 
+attributes, the attributes without which you would not be able to see 
+or mention the object, are the \b desc\b0  and \b location\b0  
+attributes.  Without \b desc\b0 , the interpreter cannot put its name 
+on screen or know what names can be used by the player to describe it. 
+ Without \b location\b0 , the object is not actually anywhere within 
+your game.  All the others default to "reasonable" values.\par 
+\pard\sa240 \i Methods\i0 \par There are no methods which are 
+mandatory in order to make your object accessible.  Note that the 
+necklace defined above only required two attributes in order to be 
+part of the game.  But the methods section of an object contains three 
+kinds of messages:\par \li720\fi-720 1.\tab System messages, like 
+'DEF', 'INDEF', 'BEFORE', 'AFTER', etc.  These messages are in all 
+uppercase letters.  It is a bad idea to define your own messages which 
+are in all capital letters; it only increases the possibility of 
+colliding with the system messages.\par 2.\tab Verb messages, like 
+'get', 'north', 'kill...with', etc.  These are in all lowercase 
+letters.  How to define your own verbs will be covered below, in 
+"Parsing and Verb Messages".\par 3.\tab General purpose messages.  Any 
+other message you put in the \b methods\b0  section of an object, just 
+to group certain commonly invoked actions together.  In order to 
+conflict neither with system messages or verbs, these are usually 
+lowercase with the first letters capitalized, like 'Wake Up' or 'Begi
+n'.\par \li0\fi0 \i Parsing and Verb Messages\i0 \par When the player 
+enters a command, the interpreter puts the subject of the sentence in 
+main.subj and the direct object into main.dobj.  It then creates a 
+single verb message that incorporates both the main verb and 
+prepositional phrases, and sends the message to main.subj.  (For 
+completeness, the verb is put into main.verb and the prepositional 
+phrase into verb.prep.)  The message is constructed as follows:\par 
+\li720\fi-720 *\tab If there is just one main verb phrase and a 
+subject, then the message is simply the verb phrase, words separated 
+by one space.  Examples:  "get object" sends the 'get' message to 
+<object>.  "put down the object" sends the 'put down' message to 
+<object>.\par *\tab If there is a verb phrase, a subject, and a 
+prepositional phrase, then the message is the verb phrase followed by 
+an underscore (_) and then the prepositional phrase.  Examples:  "pick 
+the object up" sends 'pick_up' to <object>; "take the coat off" sends 
+'take_off' to <coat>.\par *\tab If there is a verb phrase, a subject, 
+a prepositional phrase, and a direct object, then the message is the 
+verb phrase followed by an ellipsis (...) and the prepositional 
+phrase.  Examples:  "take the uniform off of the dead guard" sends 
+'take...off of' to <dead guard>; "pick up the key with the wad of 
+chewing gum" sends 'pick up...with' to <chewing\~gum>.  Methods tied 
+to messages with ellipses can count on main.dobj being defined.\par 
+*\tab If there is a verb phrase but no subject or direct object, then 
+it is sent to the object that the player is "in".  This is how hollow 
+objects handle verbs like "leave" or "get out".\par \li0\fi0 \i Moving 
+Things Around\i0 \par One of the very first things that you will 
+probably want to do is to move some object from one place to another.  
+This involves doing two things:  changing the object's location, and 
+then sending it the 'MOVE' message.  If you forget the 'MOVE' message, 
+the adventure will behave strangely.  Somtimes the object will act 
+like it's there, and sometimes it won't.  Even if an object changes 
+its \i own\i0  location, it still must send the 'MOVE' message to 
+itself.  (Where the definition of the 'MOVE' method comes from is 
+covered in "Inheritance" below.)\par The first example here is from an 
+object which is a rock.  When this rock is thrown at a glass vase, we 
+want the glass vase to shatter and disappear.  The player would type 
+"Throw the rock at the vase" causing the message 'throw...at' to be 
+sent to "rock", with main.dobj set to glass_vase.  The object 
+definitions are shown below:\par \sa0 \f2\fs20 object glass_vase\par   
+location : start_room\par   desc     : "glass vase"\par end\par \par 
+object rock\par   location : start_room\par   desc     : "big ugly 
+rock"\par methods\par   'throw...at' : \{\par     if main.dobj = 
+glass_vase then \{\par       write "It shatters into miniscule pieces! 
+ It's gone!"\par       glass_vase.location = UNDEFINED   # 
+Nowheresville\par       'MOVE' -> glass_vase\par     \}\par     
+else\par       write "It bounces off of ", 'DEF' -> main.dobj, "."\par 
+  \}  # throw...at\par end\par \sa240 \f4\fs24 \par Note the 'DEF' 
+message sent to main.dobj.  It means the "definite" name of the 
+object.  'INDEF' means the "indefinite" name.  For the glass vase, the 
+'DEF' method returns "the glass vase" and 'INDEF' returns "a glass 
+vase".  There is also the message 'NEG INDEF', for "Negative 
+Indefinite".  It is used for the message "I don't see ... here".  For 
+most objects it is usually the same as 'INDEF', but for an object 
+where 'INDEF' is "some apples", 'NEG INDEF' would be "any apples".\par 
+\i Inheritance\i0 \par How can the glass_vase object above respond to 
+messages like 'DEF', 'INDEF', and 'MOVE' since they aren't defined in 
+the \b methods\b0  section of glass_vase?  Because they were \i 
+inherited\i0  from the "object" type.  All of the attributes and 
+methods of the "object" type are part of glass_vase unless glass_vase 
+redefines them.\par \i Doing Things Up Front\i0 \par There are some 
+actions that have to be taken before the game even gets underway, 
+before the player has a chance to type the first command.  Many of 
+these can be done just by initializing an attribute to the right 
+value, like setting the initial locations of all the objects.  But 
+sometimes the action taken needs to be several statements.  In this ca
+se, simply define an 'INITIAL' method for your object.  Every object 
+in the game receives the 'INITIAL' method before the player ever 
+begins the game.\par \i Doing Things Periodically\i0 \par Sometimes 
+there are actions that an object should take once per turn, or things 
+that should happen every so often.  There is a 'BEFORE' message sent 
+out before the player is asked for input and an 'AFTER' message which 
+is sent out after the player's actions have taken effect.\par To 
+receive these messages, however, an object has to ask up front to be 
+on the list of objects which will be sent such a message, by sending 
+the message 'REGISTER' to the correct event handler:  the object 
+"before" for the 'BEFORE' message, and the object "after" for the 
+'AFTER' message.  Registering is usually done in the 'INITIAL' method. 
+ The object in the example below puts out a random scary message about 
+once out of every ten turns that the player takes:\par \sa0 \f2\fs20 
+object scary_sounds\par \par methods\par \par   'INITIAL' : 'REGISTER' 
+-> before\par   'BEFORE' : \{\par     if ?10 = 1 then\par       case 
+?5 of \{\par         1 : write "I hear a far-off groan..."\par         
+2 : write "A bat flaps by close overhead!"\par         3 : write "I 
+seem to hear a shuffling step behind me...!"\par         4 : write "A 
+sense of dread weighs on me..."\par         5 : write "There is a 
+clammy draft of air on the back ",\par \tab \tab \tab    "of my 
+neck..."\par       \} # case\par    \}  # if\par end\par \sa240 
+\f4\fs24 \par In the example above, the scary_sounds object has no \b 
+desc\b0  or \b location\b0  attribute since it isn't a tangible 
+object.  It only writes things to the screen.\par However, for 
+tangible objects with a 'BEFORE' or 'AFTER' method, it's important to 
+know whether the object is accessible to the player before doing 
+anything.  Otherwise the object acts "out of nowhere".  The 'ACCESS' 
+method, inherited from the "object" type, returns TRUE if the object 
+is accessible to the player and FALSE if it is not.  An object is 
+"accessible" if:  the player has the object, the player and the object 
+are in the same location, or the player is "in" the object.  The 
+example below is a monster that will roar in protest, and snatch away 
+the Wand of Power if the player is carrying it:\par \sa0 \f2\fs20 
+object monster\par   location : dungeon\par   desc     : "monster"\par 
+methods\par   'INITIAL' : 'REGISTER' -> after\par   'AFTER' :\par     
+if 'ACCESS' -> self and wand.location = player then \{\par       write 
+"The monster lets out a roar of protest and ",\par \tab \tab "snatches 
+", 'DEF' -> wand, " from me."\par       wand.location := self\par      
+ 'MOVE' -> wand\par     \}\par \sa240 end\f4\fs24 \par If the 'AFTER' 
+method didn't check for 'ACCESS' -> self to be true, the monster would 
+roar and take the wand the moment the player acquired it, even if the 
+player was nowhere near the monster.\par \i Did I Happen to 
+Mention...?  (The 'MENTION' Message)\i0 \par The pronouns in Archetype 
+usually refer to the last time an object with that pronoun was 
+referred to in a player command.  Sometimes it may appropriate, 
+however, to cause a different object to become the object of interest. 
+ Take, for example, the following exchange:\par \li360 \b What should 
+I do now?\b0  pick up the wallet\par I picked up the wallet.\par \b 
+What should I do now?\b0  open it\par I opened the wallet.  A driver's 
+license fell out!\par \b What should I do now?\b0  get it\par I 
+already have the wallet.\par \li0 At that point, the player probably 
+expected "it" to refer to the most interesting object just mentioned.  
+This can be done by having the driver's license object send the 
+'MENTION' message to the "main" object ('MENTION' -> main).  
+Additionally, an object can be directed to mention itself by sending 
+it the 'MENTION\~SELF' message.  The code below implements the 
+situation above, with the difference that when the user finally types 
+"get\~it", they will pick up the license, not the wallet.\par \sa0 
+\f2\fs20 object wallet\par   location:\tab dresser\par   desc:\tab 
+"wallet"\par methods\par   'open' : \{\par     writes "I opened the 
+wallet.  "\par     if license.location <> self then\par       write 
+"Nothing happened."\par     else \{\par       write "A driver's 
+license fell out!"\par       license.location = player.location\par    
+   'MOVE' -> license\par       'MENTION SELF' -> license\par     
+\}\par end\par \sa240 \i\f4\fs24 \par Customizing the Game Environment
+\i0 \par The interpreter is comprised of several objects, such as 
+"main", "player", and the various basic verbs ("get", "drop").  You 
+can change certain default attributes of these objects to different 
+values to give your adventure a different "look and feel".\par \b 
+main.prompt\b0 , for example, is the string that is printed just 
+before asking the player for input.  It defaults to the string 
+"\\nWhat should I do now? ".  The \\n means a new line, so that the 
+prompt will print a blank line and then the words.\par \b 
+main.wait_message\b0  is the string that is printed when the player 
+simply types a RETURN in response to \b main.prompt\b0 .  It defaults 
+to "I wait patiently."\par \b compass.intro\b0  is the string printed 
+out before giving the list of visible exits.  Defaults to "I can 
+exit".\par \b compass.empty_intro\b0  is the string printed if there 
+are no visible exits.  Defaults to "There are no visible exits."\par 
+\b player.intro\b0  is printed before listing the player's inventory.  
+Defaults to "I am carrying".\par \b player.empty_intro\b0  is printed 
+when the player is carrying nothing.  Defaults to "I am empty-handed."
+\b \par player.capacity\b0  is generally the number of objects that 
+the player can carry before getting the message "I can't carry that 
+much."  It is actually, however, the upper limit of the sum of the \b 
+size\b0  attributes of the player's objects.  In other words, if any 
+object has a \b size\b0  attribute that is greater than one, \b 
+player.capacity\b0  will be reached more quickly.  Defaults to 8.\par 
+Some other parts of the environment, like the strings that are printed 
+out when a room is entered, cannot be changed by direct assignment, 
+since they are part of a type definition.  But you can define your own 
+type based on the interpreter's type and modify anything you want 
+about it.  As an example, below, suppose that when the player enters a 
+room you want the game to say, "You can see" before giving a list of 
+visible objects or "Nothing here." if there aren't any:\par \sa0 
+\f2\fs20 type my_room based on room\par   intro\tab \tab : "You can 
+see"\par   empty_intro\tab : "Nothing here."\par end\par \sa240 
+\f4\fs24 \par After this, of course, make sure that all your rooms are 
+of type "my_room" and not of type "room".\par Remember that the entire 
+main interpreter, INTRPTR.ACH, is written in Archetype.  Once you read 
+the Archetype manual you may be able to understand the code in there 
+better and modify it to suit your taste.\par \i Disabling Verbs\i0 
+\par As in the previous examples, the handling of a verb is usually 
+left up to the main subject of the sentence.  If there is some 
+universal sense to a verb (like 'get'), then it is usually defined in 
+a type on which objects are based, so that all objects inherited from 
+that type appear to handle that verb the same way.\par Once in awhile, 
+however, it may make more sense to disable the verb "at the source", 
+before the subject of the sentence gets a chance at it.  You can do 
+this by setting the \b disabled\b0  attribute of the verb you wish to 
+disable to a string which should be printed instead of passing the 
+message to the main subject.\par One verb in particular, "lookV" (the 
+verb 'look'), will affect the interpreter when disabled.  No room des
+criptions will be printed upon entering a room and 'i' (inventory) 
+will not respond either.  Instead, lookV.disabled will be written.  
+This is a convenient way to make the player blind if the "lights" 
+should go out in the adventure.\par \i Defining Your Own Verbs\i0 \par 
+Normally, the only verbs and prepositions that Archetype will parse 
+and process are those defined in LEXICON.ACH .  If you want the parser 
+to recognize a verb or preposition of your own, you must define a 
+"Verb" or "lex" object.  The interesting attributes of a "lex" object 
+are as below, using the preposition "in" as an example:\par \sa0 
+\f2\fs20 type lex based on null\par \par   full : 'in'\tab \tab \tab # 
+the full or "true" name\par   syn  : 'inside|into'\tab \tab # 
+bar-separated synonyms, all translated\par \tab \tab \tab \tab \tab #  
+to .full if encountered\par   on_menu : TRUE\tab \tab \tab # whether 
+this shows up when the player\par \tab \tab \tab \tab \tab #  types 
+"help"\par end\par \par \sa240 \f4\fs24 The \b full\b0  attribute is 
+what anything in \b syn\b0  becomes, before it is combined with other 
+verbs.  If an example object "box" defines a method for the verb 
+message 'look in', it will receive that message if the player types 
+"look in the box", "look inside the box", or "look into the box".  
+NOTE that if the "box" object defines a method for the verb message 
+'look inside', it will never be invoked.  "inside" will translate to 
+"in" before it is combined with "look".\par These kinds of objects are 
+usually never referred to by name within the adventure (none of your 
+programming code needs to reference them), so they are usually left 
+"nameless" by giving them a name of "null":\par \f2\fs20 lex null full 
+: 'under'     end\par \f4\fs24 The "Verb" type is based on "lex", 
+meaning that it has all of the above attributes, plus:\par \sa0 
+\f2\fs20 type Verb based on lex\par \par   disabled  : UNDEFINED\tab 
+\tab \tab # see "Disabling Verbs" above\par   interpret : 
+UNDEFINED\tab \tab \tab # who should receive the verb\par \tab \tab 
+\tab \tab \tab \tab #  message (if not main.subj)\par   normal    : 
+FALSE\tab \tab \tab # whether this verb has a normal,\par \tab \tab 
+\tab \tab \tab \tab #  "default" action\par \par end\par \sa240 
+\f4\fs24 \par All three of these attributes have three associated 
+methods:  'DISABLED', 'INTERPRET', and 'NORMAL'.  If an attribute is 
+neither FALSE nor UNDEFINED, the method associated with that attribute 
+is invoked.\par As described above in "Disabling Verbs", the typical 
+way to disable a verb is simply to assign a value to its \b disabled 
+\b0 attribute.  However, if you are defining your own verb, you can 
+supply a 'DISABLED' method which does something other than just write 
+the string in \b disabled\b0  to the screen.  Remember that the verb's 
+.disabled attribute must still be set to TRUE for its 'DISABLED' 
+method to be invoked.\par The 'INTERPRET' method, invoked if \b 
+interpret\b0  is defined, normally just makes sure that ('ACCESS' -> 
+interpret) is true, then sends its \b full\b0  attribute to whatever 
+object \b interpret\b0  is pointing to.  Be sure that you assign an \i 
+object\i0  to this attribute, not a string as with the \b disabled\b0  
+attribute.\par The 'NORMAL' method is invoked if \b normal \b0 is 
+defined, and \i if the recipient of the verb message doesn't have a 
+method defined for the verb\i0 .  The 'NORMAL' method just writes the 
+string in the attribute \b normal\b0  by default.  Here's an example 
+of the verb 'kill' (just as it is defined for \i The Gorreven Papers
+\i0 ):\par \sa0 \f2\fs20 Verb null\par   full : 'kill'\par   syn  : 
+'attack|fight'\par   normal : "That's not the kind of thing I can 
+kill."\par end\par \f0\fs24 \par \sa240 \f4 Whenever the player tries 
+to 'kill' something, or 'attack' it, or 'fight' it, and the object 
+named has no method defined for the 'kill' verb, the game will print, 
+"That's not the kind of thing I can kill."\par If there is a more 
+complicated "default" action, \b normal\b0  can simply be set to TRUE 
+and the 'NORMAL' method can be defined as complicated as necessary.  
+Here is another example from \i The Gorreven Papers\i0 , this time for 
+the verb 'search':\par \sa0 \f2\fs20 Verb null\par   full : 
+'search'\par   syn : 'examine'\par   normal   : TRUE\par methods\par   
+'NORMAL' :\par     if main.subj.IsAhollow_object then \{\par       >>I 
+get closer for a more thorough look.\par       player.location := 
+main.subj; 'MOVE' -> player\par       \}\par     else if 
+main.subj.IsAguard_type and main.subj.alive then\par       write "He's 
+not going to permit that kind of scrutiny; ",\par \tab \tab \tab "not 
+while he's alive."\par     else if ('look' -> main.subj) = ABSENT 
+then\par       write "I find nothing unusual even upon a close 
+search."\par end\par \sa240 \f4\fs24 \par The 'NORMAL' method will be 
+invoked if the player tries to 'search' an object that has no 'search' 
+method defined.  Note at the bottom that it finally sends 'look' to 
+the main.subj, so that a 'search' is at least as good as a 'look'.  
+However, if this sending returns ABSENT, showing that there is no 
+'look' method defined for the object, then it writes out a message of 
+its own.\par This is more important than it probably seems.  If 
+sending that verb to main.subj is ABSENT, it means that \i nothing \i0 
+was done at all, and the player will be greeted with a blank line.  Of 
+course, if a 'look' method was defined anywhere in main.subj's 
+ancestry, so that main.subj could inherit the method, then that is the 
+method that will have been invoked.\par Another way of defining a 
+default action for a verb is to create a type based on the object type 
+and then define everything in your game as being of that type, so that 
+they will all inherit the default handlings of those verbs.  The 
+methods just described, however, allow you to customize your own verbs 
+without having the cooperation of a carefully planned inheritance 
+tree.\par The order of handling of the methods described are:\par 
+\li720\fi-720 1.\tab The interpreter determines both the verb and the 
+verb message.  (If the player typed "open the box with the key", then 
+'open' is the verb and 'open...with' is the verb message.)\par 2.\tab 
+If the verb has its \b interpret\b0  attribute defined, then 
+'INTERPRET' is sent to it.  Nothing more is done; the verb is expected 
+to handle the rest.  Remember that the inherited 'INTERPRET' method 
+simply sends the verb message to the object pointed to by \b interpret
+\b0 .  Thus, if you have a verb that is better handled by the direct 
+object than the subject, the \b interpret\b0  attribute can be defined 
+as main.dobj.\par 3.\tab If the verb has its \b disabled \b0 attribute 
+defined, then 'DISABLED' is sent to it.  Nothing more is done.\par 
+4.\tab Steps 2 and 3 are done for the \i verb message\i0 .  In other 
+words, it is possible to define a Verb object whose \b full\b0  
+attribute is something like 'shoot...with'.\par 5.\tab The verb 
+message is sent to the subject of the sentence.  If that object has a 
+method defined for that message, nothing more is done.\par 6.\tab If 
+the verb message is the full name of a Verb object, and it has its \b 
+normal\b0  attribute defined, then 'NORMAL' is sent to that Verb 
+object.\par 7.\tab If the verb alone has a \b normal\b0  attribute 
+defined, then 'NORMAL' is sent to that Verb object.\par \li0\fi0 \i 
+Learning More\i0 \par The sample game BARE.ACH is a bare-bones 
+adventure that manages to show off many of the features described 
+here, plus a few more.  It is heavily commented to help walk you 
+through the flow of the code.  If the comments get in the way, look at 
+BARER.ACH, which is the same adventure, without comments.\par Once you 
+become familiar with the Archetype Reference Manual, which describes 
+all of the aspects of the Archetype language proper, you will be able 
+to read the .ACH files that make up the interpreter and perhaps write 
+your own interpreter with a different flavor.  The program ANIMAL.ACH 
+demonstrates how an entirely different kind of game can be written 
+with Archetype, in this case, the old Animal game, where the computer 
+tries to guess what animal you are thinking of, and has you teach it 
+when it gets one wrong.  Try it, and look at the code.\par Enjoy!\par 
+\par }
