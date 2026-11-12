@@ -41,24 +41,38 @@ namespace archetype {
         bool negative = (byte & SignBit);
         byte >>= 1;
         int bits = 6;
-        int result = byte;
+        // The magnitude is gathered unsigned, for the reason writeInteger
+        // gives:  the most negative int has one that no int can hold.
+        unsigned result = byte;
         while (more) {
+            // Thirty-two bits is all an int has.  A sixth byte could only
+            // shift its payload clean off the end, which no writer does and
+            // which is not a shift the language defines.
+            if (bits >= 32) {
+                throw invalid_argument("Integer runs on past thirty-two bits");
+            }
             if (not read(span{&byte, 1})) {
                 throw invalid_argument("End of storage in the middle of a continued integer");
             }
-            int next_part = (byte & PayloadBits);
+            unsigned next_part = (byte & PayloadBits);
             next_part <<= bits;
             result |= next_part;
             more = static_cast<bool>(byte & MoreBit);
             bits += 7;
         }
-        return negative ? -result : result;
+        return static_cast<int>(negative ? 0u - result : result);
     }
 
-    void Storage::writeInteger(int value) {
-        bool negative = value < 0;
+    void Storage::writeInteger(int signed_value) {
+        // Sign and magnitude, and the magnitude has to be unsigned.  Negating
+        // the most negative int does not give its magnitude -- there is no int
+        // that large -- it gives the same negative number back, and shifting
+        // that right never reaches the zero the loop below is waiting for.
+        // Unsigned negation wraps to exactly the right answer instead.
+        bool negative = signed_value < 0;
+        unsigned value = static_cast<unsigned>(signed_value);
         if (negative) {
-            value = -value;
+            value = 0u - value;
         }
         int bits = 6;
         Byte byte = (value & FirstBytePayloadBits);
