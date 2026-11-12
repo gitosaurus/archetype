@@ -9,6 +9,8 @@
 #include <set>
 #include <deque>
 #include <format>
+#include <limits>
+#include <stdexcept>
 #include <sstream>
 #include <cctype>
 
@@ -284,9 +286,15 @@ namespace archetype {
                     }
                     if (not (TypeCheck.isDigit(next_ch)))
                         source_->unreadChar(next_ch);
+                    // Said out loud rather than clamped:  a number the
+                    // language cannot hold is a mistake in the source.
                     int tnum;
                     istringstream in(s);
-                    in >> tnum;
+                    if (not (in >> tnum)) {
+                        errorMessage(format("Number {} is too large; the largest is {}",
+                                            s, numeric_limits<int>::max()));
+                        throw std::runtime_error("Number out of range");
+                    }
                     token_ = Token(Token::NUMERIC, tnum);
                     state = STOP;
                 }

@@ -11,7 +11,8 @@
 #include <cassert>
 #include <algorithm>
 #include <sstream>
-#include <cmath>
+#include <cstdint>
+#include <limits>
 #include <optional>
 #include <stack>
 
@@ -22,6 +23,9 @@
 using namespace std;
 
 namespace archetype {
+
+    // Defined below with the other operator arithmetic; negation needs it early.
+    Value eval_nn(Keywords::Operators_e op, int lv_n, int rv_n);
     using enum Keywords::Reserved_e;
 
     using enum Keywords::Operators_e;
@@ -276,7 +280,10 @@ namespace archetype {
                 case OP_CHS: {
                     Value rv_n = rv->numericConversion();
                     if (rv_n->isDefined()) {
-                        result = make_unique<NumericValue>(-rv_n->getNumber());
+                        // As a subtraction from zero, so that the one number
+                        // with no negative comes out UNDEFINED like any other
+                        // result that does not fit.
+                        result = eval_nn(OP_MINUS, 0, rv_n->getNumber());
                     } else {
                         result = std::move(rv_n);
                     }
@@ -401,18 +408,55 @@ namespace archetype {
         }
     }
 
+    // Whole-number exponentiation.  No answer when there is none to give (zero
+    // to a negative power) or when it has outgrown what an Archetype number
+    // can hold; the caller checks the range, so this only has to stop before
+    // sixty-four bits run out.
+    static optional<int64_t> integer_power(int64_t base, int64_t exponent) {
+        // The three bases whose powers never grow, whatever the exponent.
+        if (base == 1) {
+            return 1;
+        } else if (base == -1) {
+            return exponent % 2 == 0 ? 1 : -1;
+        } else if (base == 0) {
+            if (exponent < 0) return nullopt;
+            return exponent == 0 ? 1 : 0;
+        }
+        // Anything else to a negative power is a fraction short of one.
+        if (exponent < 0) {
+            return 0;
+        }
+        int64_t result = 1;
+        for (int64_t i = 0; i < exponent; ++i) {
+            result *= base;
+            if (result > numeric_limits<int>::max() or result < numeric_limits<int>::min()) {
+                return nullopt;
+            }
+        }
+        return result;
+    }
+
+    // Arithmetic is worked out in sixty-four bits, where none of it can
+    // overflow, and then asked whether it still fits.  A result that does not,
+    // like a division by zero, has no answer, and Archetype's name for no
+    // answer is UNDEFINED.
     Value eval_nn(Keywords::Operators_e op, int lv_n, int rv_n) {
-        int result;
+        const int64_t l = lv_n;
+        const int64_t r = rv_n;
+        optional<int64_t> result;
         switch (op) {
-            case OP_PLUS:     result = lv_n + rv_n;     break;
-            case OP_MINUS:    result = lv_n - rv_n;     break;
-            case OP_MULTIPLY: result = lv_n * rv_n;     break;
-            case OP_DIVIDE:   result = lv_n / rv_n;     break;
-            case OP_POWER:    result = static_cast<int>(pow(lv_n, rv_n)); break;
+            case OP_PLUS:     result = l + r;     break;
+            case OP_MINUS:    result = l - r;     break;
+            case OP_MULTIPLY: result = l * r;     break;
+            case OP_DIVIDE:   if (r != 0) result = l / r;     break;
+            case OP_POWER:    result = integer_power(l, r); break;
             default:
                 throw logic_error("number-op-number attempted on this operator");
         }
-        return make_unique<NumericValue>(result);
+        if (not result or *result > numeric_limits<int>::max() or *result < numeric_limits<int>::min()) {
+            return make_unique<UndefinedValue>();
+        }
+        return make_unique<NumericValue>(static_cast<int>(*result));
     }
 
     // A list compares by what it is made of, or it does not compare.  Two lists

@@ -12,6 +12,8 @@
 #include <optional>
 #include <memory>
 #include <cctype>
+#include <cstdint>
+#include <limits>
 #include <cassert>
 
 #include "Value.hh"
@@ -83,15 +85,22 @@ namespace archetype {
         if (str.empty()) {
             return make_unique<UndefinedValue>();
         }
-        int number = 0;
+        // One more than the largest number is allowed while accumulating,
+        // since that is the magnitude of the smallest.  Anything that will
+        // not fit is not an Archetype number.
+        const int64_t limit = int64_t{numeric_limits<int>::max()} + (negative ? 1 : 0);
+        int64_t number = 0;
         for (char ch : str) {
             if (not isdigit(static_cast<unsigned char>(ch))) {
                 return make_unique<UndefinedValue>();
             }
             number *= 10;
             number += (ch - '0');
+            if (number > limit) {
+                return make_unique<UndefinedValue>();
+            }
         }
-        return make_unique<NumericValue>(negative ? -number : number);
+        return make_unique<NumericValue>(static_cast<int>(negative ? -number : number));
     }
 
     Value IValue::messageConversion() const {
