@@ -7,7 +7,6 @@
 //
 
 #include <format>
-#include <ranges>
 #include <memory>
 #include <stdexcept>
 #include <sstream>
@@ -589,10 +588,14 @@ namespace archetype {
     Value ForStatement::execute() const {
         Value break_v = make_unique<BreakValue>();
         Value result = make_unique<UndefinedValue>();
-        int object_count = Universe::instance().objectCount();
-        for (int object_id : views::iota(Universe::UserObjectsBeginAt, object_count)) {
+        // The ids as they stood when the loop began:  an object created along
+        // the way is not visited, and one destroyed along the way is skipped.
+        for (int object_id : Universe::instance().objectIds()) {
+            if (object_id < Universe::UserObjectsBeginAt) {
+                continue;
+            }
             ObjectPtr each_object = Universe::instance().getObject(object_id);
-            if (not each_object or each_object->id() == Object::INVALID or each_object->isPrototype()) {
+            if (not each_object or each_object->isPrototype()) {
                 continue;
             }
             ContextScope c;

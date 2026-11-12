@@ -17,6 +17,7 @@
 #include <memory>
 #include <stack>
 #include <stdexcept>
+#include <vector>
 
 #include "Formatting.hh"
 #include "IdIndex.hh"
@@ -91,13 +92,18 @@ namespace archetype {
         void classify(TokenStream& t, int identifier, IdentifierKind_e kind);
         void reportUndefinedIdentifiers() const;
 
-        int objectCount() const;
+        // The ids of every object there is right now, null and system
+        // included, in ascending order.  A copy, so that whatever walks it may
+        // create and destroy as it goes.
+        std::vector<int> objectIds() const;
         ObjectPtr getObject(int object_id) const;
         ObjectPtr getObject(std::string_view identifier) const;
         ObjectPtr defineNewObject(int parent_id = 0);
 
         // The post-condition is that the referenced object is gone, and all existing
-        // references to it will be UNDEFINED.
+        // references to it will be UNDEFINED -- for good, since its id is never
+        // given to another object.  Destroying what is not there does nothing,
+        // and neither does an attempt on null or system.
         void destroyObject(int object_id);
 
         void assignObjectIdentifier(const ObjectPtr& object, std::string_view identifier);

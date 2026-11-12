@@ -8,6 +8,7 @@
 
 #include <iostream>
 #include <string>
+#include <vector>
 
 #include "TestIdIndex.hh"
 #include "TestRegistry.hh"
@@ -30,20 +31,29 @@ namespace archetype {
 
         ARCHETYPE_TEST_EQUAL(strindex.get(1), string("Second"));
 
-        // Removing anything but the last entry leaves a hole, which the next
-        // index() fills rather than growing the registry.
+        // An id is retired with its entry.  Removing leaves the count where
+        // it was, because the count is how far the ids have got and not how
+        // many entries are left.
         IdIndex<string> holey;
         for (string s : {"zero", "one", "two", "three"}) {
             holey.index(s);
         }
-        holey.remove(1);
-        holey.remove(2);
+        ARCHETYPE_TEST(holey.remove(1));
+        ARCHETYPE_TEST(holey.remove(2));
         ARCHETYPE_TEST_EQUAL(holey.count(), 4);
         ARCHETYPE_TEST_EQUAL(holey.find("one"), IdIndex<string>::npos);
+        ARCHETYPE_TEST(not holey.hasIndex(1));
+        ARCHETYPE_TEST(holey.hasIndex(3));
+        ARCHETYPE_TEST(holey.indices() == (vector<int>{0, 3}));
+
+        // Removing what is already gone, or was never there, is not an error.
+        ARCHETYPE_TEST(not holey.remove(1));
+        ARCHETYPE_TEST(not holey.remove(99));
+        ARCHETYPE_TEST(not holey.remove(-1));
 
         // read() ignores the order records arrive in, so nothing about a round
         // trip can detect this:  the file has to be inspected directly.
-        // Records must come out in registry order, occupied slots only.
+        // Records must come out in id order, live entries only.
         MemoryStorage ordered;
         ordered << holey;
         int total_entries, indexed_entries;
@@ -62,9 +72,9 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(ordered.remaining(), 0);
 
         // A round trip has to arrive at an index that behaves the same, not
-        // merely one that answers the same questions:  the holes are implied
-        // by the counts rather than written out, and an index that forgot them
-        // would append where the original would have reused.
+        // merely one that answers the same questions:  the retired ids are
+        // implied by the counts rather than written out, and an index that
+        // forgot them would hand one out a second time.
         MemoryStorage store;
         store << holey;
         IdIndex<string> resumed;
@@ -74,44 +84,52 @@ namespace archetype {
         ARCHETYPE_TEST_EQUAL(resumed.get(0), string("zero"));
         ARCHETYPE_TEST_EQUAL(resumed.get(3), string("three"));
         ARCHETYPE_TEST_EQUAL(resumed.find("one"), IdIndex<string>::npos);
+        ARCHETYPE_TEST(not resumed.hasIndex(2));
 
-        // Free slots are filled lowest first, so both indexes must hand out 1
-        // and then 2, and neither may reach a fifth slot until both are taken.
-        ARCHETYPE_TEST_EQUAL(holey.index("four"), 1);
-        ARCHETYPE_TEST_EQUAL(resumed.index("four"), 1);
-        ARCHETYPE_TEST_EQUAL(resumed.index("five"), 2);
-        ARCHETYPE_TEST_EQUAL(resumed.count(), 4);
-        ARCHETYPE_TEST_EQUAL(resumed.index("six"), 4);
+        // Neither index may give 1 or 2 to anything else, ever -- not even to
+        // the very value that used to hold it.
+        ARCHETYPE_TEST_EQUAL(holey.index("four"), 4);
+        ARCHETYPE_TEST_EQUAL(resumed.index("four"), 4);
+        ARCHETYPE_TEST_EQUAL(resumed.index("one"), 5);
+        ARCHETYPE_TEST_EQUAL(resumed.count(), 6);
 
-        // Removing the last entry is not a hole at all:  the registry simply
-        // gets shorter.  And it keeps getting shorter for as long as the slot
-        // newly exposed at the end is free too, so a run of holes reachable
-        // from the end collapses in one call.
-        IdIndex<string> trimmed;
-        for (string s : {"zero", "one", "two", "three"}) {
-            trimmed.index(s);
+        // The last entry is no exception.  Its id is the easiest of all to
+        // hand back out, and the one a reference is likeliest still to hold.
+        IdIndex<string> tail;
+        for (string s : {"zero", "one", "two"}) {
+            tail.index(s);
         }
-        trimmed.remove(2);
-        ARCHETYPE_TEST_EQUAL(trimmed.count(), 4);   // slot 3 still holds "three"
-        trimmed.remove(3);
-        // Freeing 3 pops it, which exposes the already-free 2, which pops too.
-        ARCHETYPE_TEST_EQUAL(trimmed.count(), 2);
-        ARCHETYPE_TEST_EQUAL(trimmed.get(1), string("one"));
-        ARCHETYPE_TEST(not trimmed.hasIndex(2));
+        tail.remove(2);
+        ARCHETYPE_TEST_EQUAL(tail.count(), 3);
+        ARCHETYPE_TEST_EQUAL(tail.index("three"), 3);
 
-        // Nothing is free any more -- the trim gave those slots back by making
-        // them not exist -- so the next entry appends rather than reusing.
-        ARCHETYPE_TEST_EQUAL(trimmed.index("four"), 2);
-
-        // A trimmed registry has to come back at its shorter length, and
-        // total_entries is the only record of where it now ends.
+        // And that survives a save, where the total is the only record of an
+        // id retired off the end:  no record names it.
+        tail.remove(3);
         MemoryStorage shortened;
-        shortened << trimmed;
+        shortened << tail;
         IdIndex<string> reloaded;
         shortened >> reloaded;
-        ARCHETYPE_TEST_EQUAL(reloaded.count(), 3);
-        ARCHETYPE_TEST_EQUAL(reloaded.get(2), string("four"));
-        ARCHETYPE_TEST_EQUAL(reloaded.index("five"), 3);
+        ARCHETYPE_TEST_EQUAL(reloaded.count(), 4);
+        ARCHETYPE_TEST_EQUAL(reloaded.get(1), string("one"));
+        ARCHETYPE_TEST_EQUAL(reloaded.index("four"), 4);
+
+        // An index that has retired far more ids than its file has bytes is
+        // still a file that loads.  Holes cost nothing to write, so nothing
+        // about them may be held against the size of what was written.
+        IdIndex<string> churned;
+        churned.index("keeper");
+        for (int ii = 0; ii < 5000; ++ii) {
+            churned.remove(churned.index("passing through"));
+        }
+        MemoryStorage small;
+        small << churned;
+        ARCHETYPE_TEST(small.remaining() < 100);
+        IdIndex<string> survivor;
+        small >> survivor;
+        ARCHETYPE_TEST_EQUAL(survivor.count(), 5001);
+        ARCHETYPE_TEST_EQUAL(survivor.get(0), string("keeper"));
+        ARCHETYPE_TEST_EQUAL(survivor.index("newcomer"), 5001);
     }
 
 }

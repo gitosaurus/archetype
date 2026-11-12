@@ -143,8 +143,8 @@ namespace archetype {
         }
     }
 
-    int Universe::objectCount() const {
-        return objects_.count();
+    std::vector<int> Universe::objectIds() const {
+        return objects_.indices();
     }
 
     ObjectPtr Universe::getObject(int object_id) const {
@@ -184,6 +184,12 @@ namespace archetype {
     }
 
     void Universe::destroyObject(int object_id) {
+        // A reference outlives the object it names, so "destroy" can be handed
+        // an id whose object is already gone.  That is a no-op rather than an
+        // error:  the post-condition already holds.
+        if (object_id < UserObjectsBeginAt or not objects_.hasIndex(object_id)) {
+            return;
+        }
         ObjectPtr existing = objects_.get(object_id);
         // Debugging sentinel, noting that the object is now invalid.
         existing->setId(Object::INVALID);
