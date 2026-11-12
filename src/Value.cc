@@ -74,15 +74,24 @@ namespace archetype {
     }
 
     inline Value numeric_value_from_string(string_view str) {
+        // An optional minus sign and then at least one digit.  The empty
+        // string is not a number, and neither is a sign with nothing after it.
+        bool negative = str.starts_with('-');
+        if (negative) {
+            str.remove_prefix(1);
+        }
+        if (str.empty()) {
+            return make_unique<UndefinedValue>();
+        }
         int number = 0;
         for (char ch : str) {
-            if (not isdigit(ch)) {
+            if (not isdigit(static_cast<unsigned char>(ch))) {
                 return make_unique<UndefinedValue>();
             }
             number *= 10;
             number += (ch - '0');
         }
-        return make_unique<NumericValue>(number);
+        return make_unique<NumericValue>(negative ? -number : number);
     }
 
     Value IValue::messageConversion() const {

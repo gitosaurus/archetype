@@ -35,6 +35,12 @@ namespace archetype {
         int remaining_;
     };
 
+    // What the command line means by a game's name:  the name as given if it
+    // has an extension, and otherwise the name with ".acx" on the end.  Only
+    // the last component is asked, so a dot in a directory along the way
+    // ("./games/gorreven") does not count as one.
+    std::string withAcxExtension(std::string filename);
+
     class OutFileStorage : public Storage {
     public:
         OutFileStorage(const std::filesystem::path& filename);

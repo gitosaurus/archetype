@@ -306,6 +306,13 @@ namespace archetype {
                 return nullptr;
             }
             ObjectPtr parent = Universe::instance().getObject(parent_id_p->second);
+            // The new type's own name is already bound by now, so it has to be
+            // turned away here: a type that is its own parent has no end to
+            // its ancestry.
+            if (not parent or parent == obj) {
+                t.expectGeneral("name of a previously defined type");
+                return nullptr;
+            }
             if (not parent->isPrototype()) {
                 t.expectGeneral("name of a previously defined type, not the name of an instance");
                 return nullptr;

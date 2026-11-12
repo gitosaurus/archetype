@@ -93,8 +93,8 @@ static void arm_autosave(const AutosaveOptions& options, const string& game_path
     string target = options.target;
     if (target.empty()) {
         target = Autosave::deriveTarget(game_path);
-    } else if (target.rfind('.') == string::npos) {
-        target += ".acx";
+    } else {
+        target = withAcxExtension(std::move(target));
     }
     Autosave::instance().arm(target, options.cadence, /* keep_backup = */ true);
 }
@@ -335,9 +335,7 @@ int main(int argc, const char* argv[]) {
     if (auto it_perform = opts.find("perform"); it_perform != opts.end()) {
         string filename = it_perform->second;
         opts.erase(it_perform);
-        if (filename.rfind('.') == string::npos) {
-            filename += ".acx";
-        }
+        filename = withAcxExtension(std::move(filename));
         try {
           InFileStorage in(filename);
           if (!in.ok()) {
@@ -359,9 +357,7 @@ int main(int argc, const char* argv[]) {
     } else if (auto it_update = opts.find("update"); it_update != opts.end()) {
         string filename = it_update->second;
         opts.erase(it_update);
-        if (filename.rfind('.') == string::npos) {
-            filename += ".acx";
-        }
+        filename = withAcxExtension(std::move(filename));
         int width = 80;
         try {
           // Parsed inside the try: stoi throws on a non-numeric value, and
@@ -421,9 +417,7 @@ int main(int argc, const char* argv[]) {
     } else if (auto it_inspect = opts.find("inspect"); it_inspect != opts.end()) {
         string filename = it_inspect->second;
         opts.erase(it_inspect);
-        if (filename.rfind('.') == string::npos) {
-            filename += ".acx";
-        }
+        filename = withAcxExtension(std::move(filename));
         try {
             InFileStorage in(filename);
             if (!in.ok()) {

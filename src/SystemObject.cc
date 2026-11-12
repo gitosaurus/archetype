@@ -12,6 +12,7 @@
 #include <iostream>
 #include <format>
 #include <sstream>
+#include <stdexcept>
 
 #include "SystemObject.hh"
 #include "Universe.hh"
@@ -275,7 +276,17 @@ namespace archetype {
                     string filename = filename_str->getString();
                     InFileStorage load_file(filename);
                     if (load_file.ok()) {
-                        load_file >> Universe::instance();
+                        // Loading replaces the universe piece by piece, so a
+                        // file that turns out not to be a save part way in
+                        // would leave half of each.  Keep the way back.
+                        MemoryStorage before;
+                        before << Universe::instance();
+                        try {
+                            load_file >> Universe::instance();
+                        } catch (const std::exception&) {
+                            before >> Universe::instance();
+                            return make_unique<BooleanValue>(false);
+                        }
                         resetSystem_();
                         // The whole object graph has just been replaced, so the
                         // ids autosave watches for are no longer the right ones.

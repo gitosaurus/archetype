@@ -387,9 +387,13 @@ namespace archetype {
     Value eval_sn(Keywords::Operators_e op, string lv_s, int rv_n) {
         switch (op) {
             case OP_LEFTFROM:
-                return make_unique<StringValue>(lv_s.substr(0, rv_n));
+                // A count below one takes nothing; substr would read a negative
+                // count as "all the rest".
+                return make_unique<StringValue>(lv_s.substr(0, max(0, rv_n)));
             case OP_RIGHTFROM: {
-                int n = min(int(lv_s.size() + 1), max(0, rv_n));
+                // Positions count from one, so anything below one starts at
+                // the beginning and anything past the end takes nothing.
+                int n = min(int(lv_s.size() + 1), max(1, rv_n));
                 return make_unique<StringValue>(lv_s.substr(n - 1));
             }
             default:
@@ -557,6 +561,7 @@ namespace archetype {
                             result = false;
                         }
                     } else {
+                        t.errorMessage("Left-hand side of assignment must be an attribute");
                         result = false;
                     }
                     break;
@@ -840,7 +845,12 @@ namespace archetype {
                 result = Universe::instance().currentContext().messageValue->clone();
                 break;
             case RW_EACH:
-                result = make_unique<ObjectValue>(Universe::instance().currentContext().eachObject->id());
+                // Outside of any 'for' loop there is no each to speak of.
+                if (const ObjectPtr& each = Universe::instance().currentContext().eachObject) {
+                    result = make_unique<ObjectValue>(each->id());
+                } else {
+                    result = make_unique<UndefinedValue>();
+                }
                 break;
             case RW_READ: {
                 string line = Universe::instance().input()->getLine();

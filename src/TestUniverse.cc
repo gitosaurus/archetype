@@ -6,7 +6,9 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <format>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <memory>
 #include <vector>
@@ -297,6 +299,83 @@ namespace archetype {
         }
     }
 
+    // 'LOAD STATE' answers FALSE to a file it cannot load, and the game that
+    // asked is still the game it was -- including when the file is a real save
+    // cut short, which is not found out until the universe is half replaced.
+    void TestUniverse::testFailedLoadLeavesUniverseAlone_() {
+        Universe::destroy();
+        TokenStream t(make_source_from_str("load_state",
+            "null shelf x : 7 methods 'look' : write \"x is \", x end\n"));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+
+        filesystem::path dir = filesystem::temp_directory_path() / "archetype_failed_load";
+        error_code ec;
+        filesystem::remove_all(dir, ec);
+        filesystem::create_directories(dir, ec);
+        auto send = [](string_view what, const filesystem::path& file) {
+            Statement stmt = make_stmt_from_str(format("['{}' \"{}\"] -> system", what, file.string()));
+            return stmt->execute()->stringConversion()->getString();
+        };
+
+        filesystem::path good = dir / "good.acx";
+        ARCHETYPE_TEST_EQUAL(send("SAVE STATE", good), string{"TRUE"});
+        auto size = filesystem::file_size(good);
+
+        filesystem::path text = dir / "notes.txt";
+        { ofstream out{text}; out << "This is not a saved game.\n"; }
+        filesystem::path cut_short = dir / "cut_short.acx";
+        filesystem::copy_file(good, cut_short);
+        filesystem::resize_file(cut_short, size - 4);
+        filesystem::path cut_in_half = dir / "cut_in_half.acx";
+        filesystem::copy_file(good, cut_in_half);
+        filesystem::resize_file(cut_in_half, size / 2);
+
+        // Move on from what was saved, so that "left alone" and "reloaded"
+        // are different answers.
+        make_stmt_from_str("shelf.x := 8")->execute();
+
+        for (auto const& bad : {text, cut_short, cut_in_half, dir / "no_such_file.acx"}) {
+            ARCHETYPE_TEST_EQUAL(send("LOAD STATE", bad), string{"FALSE"});
+            Capture capture;
+            make_stmt_from_str("'look' -> shelf")->execute();
+            ARCHETYPE_TEST_EQUAL(capture.getCapture(), string{"x is 8\n"});
+        }
+
+        // And a real save still loads.
+        ARCHETYPE_TEST_EQUAL(send("LOAD STATE", good), string{"TRUE"});
+        {
+            Capture capture;
+            make_stmt_from_str("'look' -> shelf")->execute();
+            ARCHETYPE_TEST_EQUAL(capture.getCapture(), string{"x is 7\n"});
+        }
+        filesystem::remove_all(dir, ec);
+    }
+
+    void TestUniverse::testSelfBasedType_() {
+        // A type cannot be its own parent, directly or by way of an instance.
+        for (string program : {
+            "type ouroboros based on ouroboros end\n",
+            "type ouroboros based on nowhere end\n",
+            "type sound based on null end\nsound thing end\ntype odd based on thing end\n",
+        }) {
+            Universe::destroy();
+            TokenStream t(make_source_from_str("self_based", program));
+            ARCHETYPE_TEST(not Universe::instance().make(t));
+        }
+        // What is still allowed still works, and its ancestry comes to an end.
+        Universe::destroy();
+        TokenStream t(make_source_from_str("well_based",
+            "type sound based on null x : 1 end\n"
+            "type sounder based on sound end\n"
+            "sounder thing end\n"));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+        Value x = make_stmt_from_str("thing.x")->execute()->numericConversion();
+        ARCHETYPE_TEST(x->isDefined());
+        ARCHETYPE_TEST_EQUAL(x->getNumber(), 1);
+        Value y = make_stmt_from_str("thing.y")->execute()->valueConversion();
+        ARCHETYPE_TEST(not y->isDefined());
+    }
+
     static char program_messaging[] =
     "type echo_type based on null\n"
     "  desc: \"Echo Type!\"\n"
@@ -500,6 +579,8 @@ namespace archetype {
         testInclusion_();
         testInclusionHappensOnce_();
         testDefaultMethods_();
+        testSelfBasedType_();
+        testFailedLoadLeavesUniverseAlone_();
         testMessagingKeywords_();
         testSerialization_();
     }

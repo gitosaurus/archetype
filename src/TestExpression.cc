@@ -8,6 +8,8 @@
 
 #include <string>
 #include <format>
+#include <iostream>
+#include <stdexcept>
 #include <sstream>
 #include <list>
 #include <utility>
@@ -211,6 +213,27 @@ namespace archetype {
             testing_pairs.emplace_back(std::move(src), std::move(expected));
         };
             expect("numeric \"35\"", make_unique<NumericValue>(35));
+            // A leading minus is part of the number; nothing at all is not one.
+            expect("numeric \"-5\"", make_unique<NumericValue>(-5));
+            expect("\"-5\" + 7", make_unique<NumericValue>(2));
+            expect("\"-12\" < \"3\"", make_unique<BooleanValue>(true));
+            expect("numeric \"\"", make_unique<UndefinedValue>());
+            expect("numeric \"-\"", make_unique<UndefinedValue>());
+            expect("numeric \"--5\"", make_unique<UndefinedValue>());
+            expect("numeric \"5-\"", make_unique<UndefinedValue>());
+            expect("\"\" = 0", make_unique<BooleanValue>(false));
+            expect("\"\" = \"\"", make_unique<BooleanValue>(true));
+            // Substring positions that fall off either end are clamped, not fatal.
+            expect("\"abc\" rightfrom 0", make_unique<StringValue>("abc"));
+            expect("\"abc\" rightfrom (0 - 7)", make_unique<StringValue>("abc"));
+            expect("\"abc\" rightfrom 4", make_unique<StringValue>(""));
+            expect("\"abc\" rightfrom 99", make_unique<StringValue>(""));
+            expect("\"abc\" leftfrom 0", make_unique<StringValue>(""));
+            expect("\"abc\" leftfrom (0 - 1)", make_unique<StringValue>(""));
+            expect("\"abc\" leftfrom 99", make_unique<StringValue>("abc"));
+            // There is no 'each' outside of a 'for' loop.
+            expect("each", make_unique<UndefinedValue>());
+            expect("each.x", make_unique<UndefinedValue>());
             expect("+ \"hello\"", make_unique<UndefinedValue>());
             expect("+ (\"1\" & 9)", make_unique<NumericValue>(19));
             expect("& (13 + 7)", make_unique<StringValue>("20"));
@@ -351,6 +374,15 @@ namespace archetype {
         ARCHETYPE_TEST(expr5 != nullptr);
         Expression expr6 = make_expr_from_str("5 := 6");
         ARCHETYPE_TEST(expr6 == nullptr);
+        // And it says why, rather than failing without a word.
+        for (string bad : {"5 := 6", "\"text\" +:= 1", "(1 + 2) := 3"}) {
+            ostringstream said;
+            streambuf* previous = cout.rdbuf(said.rdbuf());
+            Expression refused = make_expr_from_str(bad);
+            cout.rdbuf(previous);
+            ARCHETYPE_TEST(refused == nullptr);
+            ARCHETYPE_TEST(said.str().find("Left-hand side of assignment must be an attribute") != string::npos);
+        }
         Expression expr7 = make_expr_from_str("('hello' -> world).tricky := 5");
         ARCHETYPE_TEST(expr7 != nullptr);
 
