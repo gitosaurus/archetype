@@ -241,6 +241,19 @@ namespace archetype {
             expect("FALSE and TRUE", make_unique<BooleanValue>(false));
             expect("FALSE or TRUE", make_unique<BooleanValue>(true));
             expect("not FALSE", make_unique<BooleanValue>(true));
+            // "and" and "or" stop once the left side has settled the answer,
+            // so the right side's assignment never happens...
+            expect("FALSE and (scratch.sc := 5)", make_unique<BooleanValue>(false));
+            expect("TRUE or (scratch.sc := 5)", make_unique<BooleanValue>(true));
+            expect("UNDEFINED and (scratch.sc := 5)", make_unique<BooleanValue>(false));
+            expect("scratch.sc", make_unique<UndefinedValue>());
+            // ...and does happen when the left side leaves it open.
+            expect("TRUE and (scratch.sc := 5)", make_unique<BooleanValue>(true));
+            expect("scratch.sc", make_unique<NumericValue>(5));
+            expect("FALSE or (scratch.sc := 6)", make_unique<BooleanValue>(true));
+            expect("scratch.sc", make_unique<NumericValue>(6));
+            expect("FALSE or (scratch.sc := UNDEFINED)", make_unique<BooleanValue>(false));
+            expect("scratch.sc", make_unique<UndefinedValue>());
             // Try reacting to UNDEFINED as a truth value, also
             expect("not ('nothing' -> nowhere)", make_unique<BooleanValue>(true));
             expect("13 - - 14", make_unique<NumericValue>(27));

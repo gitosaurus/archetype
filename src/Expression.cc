@@ -630,18 +630,17 @@ namespace archetype {
                     }
                     break;
                 }
-                case OP_AND: {
-                    Value lv = left_->evaluate();
-                    Value rv = right_->evaluate();
-                    result = make_unique<BooleanValue>(lv->isTrueEnough() and rv->isTrueEnough());
+                // Both of these stop as soon as the answer is known:  the right
+                // side is not evaluated, and so has no effect, when the left
+                // side has already settled the matter.
+                case OP_AND:
+                    result = make_unique<BooleanValue>(left_->evaluate()->isTrueEnough() and
+                                                       right_->evaluate()->isTrueEnough());
                     break;
-                }
-                case OP_OR: {
-                    Value lv = left_->evaluate();
-                    Value rv = right_->evaluate();
-                    result = make_unique<BooleanValue>(lv->isTrueEnough() or rv->isTrueEnough());
+                case OP_OR:
+                    result = make_unique<BooleanValue>(left_->evaluate()->isTrueEnough() or
+                                                       right_->evaluate()->isTrueEnough());
                     break;
-                }
                 case OP_PLUS:
                 case OP_MINUS:
                 case OP_MULTIPLY:
