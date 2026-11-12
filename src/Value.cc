@@ -12,6 +12,8 @@
 #include <optional>
 #include <memory>
 #include <cctype>
+#include <cstdint>
+#include <limits>
 #include <cassert>
 
 #include "Value.hh"
@@ -74,15 +76,31 @@ namespace archetype {
     }
 
     inline Value numeric_value_from_string(string_view str) {
-        int number = 0;
+        // An optional minus sign and then at least one digit.  The empty
+        // string is not a number, and neither is a sign with nothing after it.
+        bool negative = str.starts_with('-');
+        if (negative) {
+            str.remove_prefix(1);
+        }
+        if (str.empty()) {
+            return make_unique<UndefinedValue>();
+        }
+        // One more than the largest number is allowed while accumulating,
+        // since that is the magnitude of the smallest.  Anything that will
+        // not fit is not an Archetype number.
+        const int64_t limit = int64_t{numeric_limits<int>::max()} + (negative ? 1 : 0);
+        int64_t number = 0;
         for (char ch : str) {
-            if (not isdigit(ch)) {
+            if (not isdigit(static_cast<unsigned char>(ch))) {
                 return make_unique<UndefinedValue>();
             }
             number *= 10;
             number += (ch - '0');
+            if (number > limit) {
+                return make_unique<UndefinedValue>();
+            }
         }
-        return make_unique<NumericValue>(number);
+        return make_unique<NumericValue>(static_cast<int>(negative ? -number : number));
     }
 
     Value IValue::messageConversion() const {

@@ -21,6 +21,8 @@ namespace archetype {
         void testInclusion_();
         void testInclusionHappensOnce_();
         void testDefaultMethods_();
+        void testSelfBasedType_();
+        void testFailedLoadLeavesUniverseAlone_();
         void testMessagingKeywords_();
         void testSerialization_();
     protected:

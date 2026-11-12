@@ -6,7 +6,9 @@
 //  Copyright (c) 2014 Derek Jones. All rights reserved.
 //
 
+#include <format>
 #include <string>
+#include <string_view>
 #include <sstream>
 #include <memory>
 #include <vector>
@@ -115,8 +117,22 @@ namespace archetype {
         ObjectPtr obj3 = Universe::instance().defineNewObject();
         ARCHETYPE_TEST_EQUAL(obj1->id(), Object::INVALID);
 
-        // Verify that the "hole" from the destroyed object is reused
-        ARCHETYPE_TEST_EQUAL(obj3->id(), 2);
+        // The destroyed object's id is retired, not handed on:  whatever still
+        // refers to 2 must go on finding nothing there.
+        ARCHETYPE_TEST_EQUAL(obj3->id(), 4);
+        ARCHETYPE_TEST(not Universe::instance().getObject(2));
+
+        // Destroying it again is harmless, and so is destroying what never
+        // existed.  The reserved objects are not to be had at all.
+        Universe::instance().destroyObject(2);
+        Universe::instance().destroyObject(4000);
+        Universe::instance().destroyObject(-1);
+        Universe::instance().destroyObject(Universe::NullObjectId);
+        Universe::instance().destroyObject(Universe::SystemObjectId);
+        ARCHETYPE_TEST(Universe::instance().getObject(Universe::NullObjectId) != nullptr);
+        ARCHETYPE_TEST_EQUAL(Universe::instance().getObject(Universe::SystemObjectId)->id(),
+                             Universe::SystemObjectId);
+        ARCHETYPE_TEST_EQUAL(obj3->id(), 4);
 
         TokenStream t(make_source_from_str("dynamic.arch", program_dynamic));
         ARCHETYPE_TEST(Universe::instance().make(t));
@@ -143,10 +159,31 @@ namespace archetype {
         ARCHETYPE_TEST(val2->isDefined());
         ARCHETYPE_TEST(val1->getString() == val2->getString());
         Statement destroy_stmt = make_stmt_from_str("destroy customer.right");
-        val1 = ref1->execute()->objectConversion();
-        val2 = ref1->execute()->objectConversion();
+        destroy_stmt->execute();
+        val1 = ref1->execute()->stringConversion();
+        val2 = ref2->execute()->stringConversion();
         ARCHETYPE_TEST(not val1->isDefined());
         ARCHETYPE_TEST(not val2->isDefined());
+
+        // The same again, with the same stale reference:  customer.right still
+        // names the object that is gone.  This used to take the interpreter
+        // down, one way or another depending on where the id had sat.
+        destroy_stmt->execute();
+        destroy_stmt->execute();
+
+        // And now the point of retiring ids.  A new object must not appear
+        // behind either of the references that outlived the old one, which is
+        // what happened when it was given the old one's id.
+        Statement buy_again = make_stmt_from_str("create blinds named customer.left");
+        int newcomer_id = buy_again->execute()->objectConversion()->getObject();
+        Statement stale = make_stmt_from_str("customer.right");
+        int stale_id = stale->execute()->objectConversion()->getObject();
+        ARCHETYPE_TEST(newcomer_id != stale_id);
+        ARCHETYPE_TEST(not Universe::instance().getObject(stale_id));
+        ARCHETYPE_TEST(not ref1->execute()->stringConversion()->isDefined());
+        ARCHETYPE_TEST(not ref2->execute()->stringConversion()->isDefined());
+        Value same = make_stmt_from_str("customer.right = customer.left")->execute();
+        ARCHETYPE_TEST(not same->isTrueEnough());
     }
 
     static char program_inclusion[] =
@@ -260,6 +297,83 @@ namespace archetype {
             ARCHETYPE_TEST(actual->isDefined());
             ARCHETYPE_TEST_EQUAL(actual->getString(), t.second);
         }
+    }
+
+    // 'LOAD STATE' answers FALSE to a file it cannot load, and the game that
+    // asked is still the game it was -- including when the file is a real save
+    // cut short, which is not found out until the universe is half replaced.
+    void TestUniverse::testFailedLoadLeavesUniverseAlone_() {
+        Universe::destroy();
+        TokenStream t(make_source_from_str("load_state",
+            "null shelf x : 7 methods 'look' : write \"x is \", x end\n"));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+
+        filesystem::path dir = filesystem::temp_directory_path() / "archetype_failed_load";
+        error_code ec;
+        filesystem::remove_all(dir, ec);
+        filesystem::create_directories(dir, ec);
+        auto send = [](string_view what, const filesystem::path& file) {
+            Statement stmt = make_stmt_from_str(format("['{}' \"{}\"] -> system", what, file.string()));
+            return stmt->execute()->stringConversion()->getString();
+        };
+
+        filesystem::path good = dir / "good.acx";
+        ARCHETYPE_TEST_EQUAL(send("SAVE STATE", good), string{"TRUE"});
+        auto size = filesystem::file_size(good);
+
+        filesystem::path text = dir / "notes.txt";
+        { ofstream out{text}; out << "This is not a saved game.\n"; }
+        filesystem::path cut_short = dir / "cut_short.acx";
+        filesystem::copy_file(good, cut_short);
+        filesystem::resize_file(cut_short, size - 4);
+        filesystem::path cut_in_half = dir / "cut_in_half.acx";
+        filesystem::copy_file(good, cut_in_half);
+        filesystem::resize_file(cut_in_half, size / 2);
+
+        // Move on from what was saved, so that "left alone" and "reloaded"
+        // are different answers.
+        make_stmt_from_str("shelf.x := 8")->execute();
+
+        for (auto const& bad : {text, cut_short, cut_in_half, dir / "no_such_file.acx"}) {
+            ARCHETYPE_TEST_EQUAL(send("LOAD STATE", bad), string{"FALSE"});
+            Capture capture;
+            make_stmt_from_str("'look' -> shelf")->execute();
+            ARCHETYPE_TEST_EQUAL(capture.getCapture(), string{"x is 8\n"});
+        }
+
+        // And a real save still loads.
+        ARCHETYPE_TEST_EQUAL(send("LOAD STATE", good), string{"TRUE"});
+        {
+            Capture capture;
+            make_stmt_from_str("'look' -> shelf")->execute();
+            ARCHETYPE_TEST_EQUAL(capture.getCapture(), string{"x is 7\n"});
+        }
+        filesystem::remove_all(dir, ec);
+    }
+
+    void TestUniverse::testSelfBasedType_() {
+        // A type cannot be its own parent, directly or by way of an instance.
+        for (string program : {
+            "type ouroboros based on ouroboros end\n",
+            "type ouroboros based on nowhere end\n",
+            "type sound based on null end\nsound thing end\ntype odd based on thing end\n",
+        }) {
+            Universe::destroy();
+            TokenStream t(make_source_from_str("self_based", program));
+            ARCHETYPE_TEST(not Universe::instance().make(t));
+        }
+        // What is still allowed still works, and its ancestry comes to an end.
+        Universe::destroy();
+        TokenStream t(make_source_from_str("well_based",
+            "type sound based on null x : 1 end\n"
+            "type sounder based on sound end\n"
+            "sounder thing end\n"));
+        ARCHETYPE_TEST(Universe::instance().make(t));
+        Value x = make_stmt_from_str("thing.x")->execute()->numericConversion();
+        ARCHETYPE_TEST(x->isDefined());
+        ARCHETYPE_TEST_EQUAL(x->getNumber(), 1);
+        Value y = make_stmt_from_str("thing.y")->execute()->valueConversion();
+        ARCHETYPE_TEST(not y->isDefined());
     }
 
     static char program_messaging[] =
@@ -399,11 +513,12 @@ namespace archetype {
         look_stmt->execute();
         ARCHETYPE_TEST_EQUAL(look5.getCapture(), string("You have looked 5 times.\n"));
 
-        // Add a new dynamic object. It should take the place of the magazine,
-        // the lower of the two freed slots.
+        // Add a new dynamic object.  It must not take the place of the
+        // magazine or the remote:  their ids are retired, so it goes after
+        // the saltshaker.
         Statement create_another = make_stmt_from_str("create stuff named coffee_table.napkin");
         int napkin_id = create_another->execute()->objectConversion()->getObject();
-        ARCHETYPE_TEST_EQUAL(napkin_id, objects.at(1));
+        ARCHETYPE_TEST_EQUAL(napkin_id, objects.at(3) + 1);
 
         // Restore old state!
         mem >> Universe::instance();
@@ -434,16 +549,27 @@ namespace archetype {
         ARCHETYPE_TEST(not remote);
 
         // A restored universe must hand out ids the way the saved one did.  The
-        // napkin above took the magazine's slot; a coaster created after the
-        // undo has to take it as well, because the registry it was restored
-        // into has the same two slots free.  Nothing in the file says so -- the
-        // free slots are the ones its records never mention -- so this is the
-        // point where a load that failed to work them back out would show up,
-        // by appending past the end of the registry instead.
+        // napkin above went in after the saltshaker; a coaster created after
+        // the undo has to land on that same id, and above all must not land on
+        // the magazine's or the remote's, which the restored attributes still
+        // hold.
         Statement create_after_undo =
             make_stmt_from_str("create stuff named coffee_table.coaster");
         int coaster_id = create_after_undo->execute()->objectConversion()->getObject();
-        ARCHETYPE_TEST_EQUAL(coaster_id, objects.at(1));
+        ARCHETYPE_TEST_EQUAL(coaster_id, napkin_id);
+        ARCHETYPE_TEST(not Universe::instance().getObject(magazine_id));
+        ARCHETYPE_TEST(not Universe::instance().getObject(remote_id));
+
+        // Destroy the last object there is, and save.  Its id has been retired
+        // off the end, where no record in the file will mention it, and a load
+        // that lost track would hand it straight back out.
+        make_stmt_from_str("destroy coffee_table.coaster")->execute();
+        MemoryStorage after_last;
+        after_last << Universe::instance();
+        after_last >> Universe::instance();
+        Statement create_doily = make_stmt_from_str("create stuff named coffee_table.doily");
+        int doily_id = create_doily->execute()->objectConversion()->getObject();
+        ARCHETYPE_TEST_EQUAL(doily_id, coaster_id + 1);
     }
 
     void TestUniverse::runTests_() {
@@ -453,6 +579,8 @@ namespace archetype {
         testInclusion_();
         testInclusionHappensOnce_();
         testDefaultMethods_();
+        testSelfBasedType_();
+        testFailedLoadLeavesUniverseAlone_();
         testMessagingKeywords_();
         testSerialization_();
     }

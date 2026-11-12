@@ -13,9 +13,9 @@
 #include <concepts>
 #include <format>
 #include <functional>
+#include <algorithm>
+#include <limits>
 #include <map>
-#include <deque>
-#include <set>
 #include <stdexcept>
 #include <vector>
 #include <cassert>
@@ -34,21 +34,26 @@ namespace archetype {
     template <class T>
     class IdIndex {
         std::map<T, int, std::less<>> index_;
-        std::deque<T> registry_;
-        // Slots that remove() gave back.  A free slot still holds a T, because
-        // a deque slot must hold something, and T{} is the natural nothing --
-        // nullptr for the object registry, "" for the string ones.  But which
-        // slots are free is recorded here rather than inferred from what they
-        // hold:  an empty string is a legitimate entry (author.arch:276), so a
-        // value can never be trusted to mean "unoccupied".
-        std::set<int> free_;
+        // Sparse, and keyed by the id itself:  an id that remove() has taken
+        // back is simply not here.  Nothing stands in for it, so no stored
+        // value ever has to mean "unoccupied" -- an empty string is a
+        // legitimate entry (author.arch:276) -- and a registry that has lost
+        // a million entries costs nothing to hold, to write, or to read back.
+        std::map<int, T> registry_;
+        // One past the highest id ever handed out.  It only goes up:  an id
+        // names one entry for the life of the index, and is never given to
+        // another.  For the object registry that is the whole point.  A
+        // reference to a destroyed object is an id held in some attribute the
+        // index knows nothing about, and if the id were handed out again that
+        // reference would quietly start meaning whatever was created next.
+        int next_ = 0;
     public:
         static constexpr int npos = -1;
 
         void clear() {
             index_.clear();
             registry_.clear();
-            free_.clear();
+            next_ = 0;
         }
 
         // Takes any key std::less<> can weigh against a T, so that indexing a
@@ -61,43 +66,45 @@ namespace archetype {
         int index(const K& key) {
             auto where = index_.find(key);
             if (where == index_.end()) {
-                int new_index;
-                if (free_.empty()) {
-                    new_index = static_cast<int>(registry_.size());
-                    registry_.emplace_back(key);
-                } else {
-                    // The lowest free slot, which keeps ids small and leaves
-                    // the free ones bunched near the end of the registry --
-                    // which is where remove()'s trim can give them back.
-                    new_index = *free_.begin();
-                    free_.erase(free_.begin());
-                    registry_[new_index] = T(key);
+                if (next_ == std::numeric_limits<int>::max()) {
+                    throw std::length_error("Registry has run out of ids");
                 }
-                where = index_.insert(std::make_pair(T(key), new_index)).first;
+                int new_index = next_++;
+                registry_.emplace(new_index, T(key));
+                where = index_.emplace(T(key), new_index).first;
             }
             return where->second;
         }
 
-        void remove(int obj_index) {
-            assert(not free_.contains(obj_index));
-            const T& obj = registry_.at(obj_index);
-            auto where = index_.find(obj);
-            assert(where != index_.end());
-            index_.erase(where);
-            // Let go of the value:  for the object registry this is the last
-            // reference to the object being destroyed.
-            registry_[obj_index] = T{};
-            free_.insert(obj_index);
-            // A hole at the end is not a hole, it is a shorter registry.
-            while (not registry_.empty() and
-                   free_.contains(static_cast<int>(registry_.size()) - 1)) {
-                free_.erase(static_cast<int>(registry_.size()) - 1);
-                registry_.pop_back();
+        // False if there was nothing at that id to remove, which is not an
+        // error:  removing what is already gone leaves it gone.
+        bool remove(int obj_index) {
+            auto slot = registry_.find(obj_index);
+            if (slot == registry_.end()) {
+                return false;
             }
+            index_.erase(slot->second);
+            // For the object registry this lets go of the last reference to
+            // the object being destroyed.
+            registry_.erase(slot);
+            return true;
         }
 
+        // How many ids have ever been handed out, which is also the id the
+        // next new entry will get.  Not how many entries there are now.
         int count() const {
-            return static_cast<int>(registry_.size());
+            return next_;
+        }
+
+        // The ids in use at this moment, in ascending order.  A copy, so that
+        // a caller may add and remove entries while walking it.
+        std::vector<int> indices() const {
+            std::vector<int> result;
+            result.reserve(registry_.size());
+            for (auto const& entry : registry_) {
+                result.push_back(entry.first);
+            }
+            return result;
         }
 
         template <IndexKey<T> K>
@@ -120,95 +127,75 @@ namespace archetype {
         }
 
         bool hasIndex(int i) const {
-            return i >= 0 and size_t(i) < registry_.size();
+            return registry_.contains(i);
         }
 
         void display(std::ostream& out) const {
-            for (const T& obj : registry_) {
-                out << obj << std::endl;
+            for (auto const& entry : registry_) {
+                out << entry.second << std::endl;
             }
         }
 
         void write(Storage& out) const {
-            int total_entries = static_cast<int>(registry_.size());
-            int indexed_entries = static_cast<int>(index_.size());
+            int total_entries = next_;
+            int indexed_entries = static_cast<int>(registry_.size());
             out << total_entries << indexed_entries;
-            // Every record carries its own index, so read() does not care what
+            // Every record carries its own id, so read() does not care what
             // order they arrive in -- but the file does.  index_ is keyed by
             // the stored value, and for the object registry that value is a
-            // shared_ptr, so writing in map order wrote the file in heap
+            // shared_ptr, so writing in that order wrote the file in heap
             // address order:  two universes with identical contents produced
-            // different bytes.  Registry order is a property of the universe
-            // rather than of the allocator, so write in registry order.
-            //
-            // Which slots are occupied is what index_ claims, not what the
-            // stored value happens to look like -- see free_.
-            std::vector<const T*> occupant(total_entries, nullptr);
-            for (auto const& [obj, obj_index] : index_) {
-                occupant[obj_index] = &obj;
-            }
-            for (int ii = 0; ii < total_entries; ++ii) {
-                if (occupant[ii]) {
-                    out << ii << *occupant[ii];
-                }
+            // different bytes.  Id order is a property of the universe rather
+            // than of the allocator, and it is the order registry_ keeps.
+            for (auto const& [obj_index, obj] : registry_) {
+                out << obj_index << obj;
             }
         }
 
         void read(Storage& in) {
             // Both of these arrive from the file, and both used to be believed
-            // on sight.  A registry cannot hold more records than the stream
-            // has bytes to encode them in, and cannot hold more records than it
-            // has slots.
-            //
-            // Bounding the slot count by the bytes remaining is the one place
-            // this is stricter than the format strictly requires: a free slot
-            // costs nothing to write, so a registry whose holes outnumbered the
-            // whole file would now be refused.  Free slots are reused rather
-            // than accumulated, so that registry would have to come from a game
-            // that had once held more objects than its save has bytes -- and if
-            // one ever does, the answer is to write the holes down rather than
-            // to stop checking.
-            int total_entries = readCount(in, "registry size");
+            // on sight.  The record count is a promise about bytes that follow
+            // and is held to it.  The total is not:  it is only where the ids
+            // had got to, nothing is allocated on its say-so, and a game that
+            // has destroyed more objects than its save has bytes is entitled
+            // to say so.
+            int total_entries = in.readInteger();
+            if (total_entries < 0) {
+                throw std::invalid_argument(
+                    std::format("A registry size cannot be negative: {}", total_entries));
+            }
             int indexed_entries = readCount(in, "registry record count");
             if (indexed_entries > total_entries) {
                 throw std::invalid_argument(
                     std::format("Registry of {} slots cannot hold {} records",
                                 total_entries, indexed_entries));
             }
-            registry_.resize(total_entries, T{});
-            // Nothing about the holes is written down, and nothing needs to be.
-            // Each record names the slot it belongs in, so the occupied slots
-            // are exactly the ones the file mentions and the free ones are the
-            // rest; total_entries is what makes a run of free slots at the end
-            // recoverable, since no record would mention them.
-            //
-            // Reading this back matters:  an index that came back believing it
-            // was full would append where it should have reused, and a resumed
-            // game would hand out different ids than a continuous one that took
-            // the same turns.
-            std::vector<bool> occupied(total_entries, false);
             for (int ii = 0; ii < indexed_entries; ++ii) {
                 int value_index;
                 in >> value_index;
                 // A record naming a slot the registry does not have was an
-                // out-of-bounds write straight into the deque, reachable from
-                // any file at all: thirteen crafted bytes segfaulted the
+                // out-of-bounds write straight into the registry, reachable
+                // from any file at all: thirteen crafted bytes segfaulted the
                 // interpreter here.
                 if (value_index < 0 or value_index >= total_entries) {
                     throw std::invalid_argument(
                         std::format("Record names slot {} in a registry of {}",
                                     value_index, total_entries));
                 }
-                in >> registry_[value_index];
-                index_[registry_[value_index]] = value_index;
-                occupied[value_index] = true;
+                // Read in place:  the universe sets up its reserved objects
+                // before reading, and the system object in particular has to
+                // be the one that reads itself back.
+                T& value = registry_[value_index];
+                in >> value;
+                index_[value] = value_index;
             }
-            free_.clear();
-            for (int ii = 0; ii < total_entries; ++ii) {
-                if (not occupied[ii]) {
-                    free_.insert(ii);
-                }
-            }
+            // Nothing about the retired ids is written down, and nothing needs
+            // to be:  they are the ones below the total that no record names.
+            // The total is what has to come back, because an index that forgot
+            // how far it had counted would hand a retired id out again -- and
+            // a resumed game would differ from a continuous one that took the
+            // same turns.
+            next_ = std::max(next_, total_entries);
         }
 
     };

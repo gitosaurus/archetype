@@ -8,6 +8,7 @@
 
 #include <array>
 #include <iostream>
+#include <limits>
 #include <span>
 
 #include "TestSerialization.hh"
@@ -47,6 +48,7 @@ namespace archetype {
         }
         ARCHETYPE_TEST(threw);
 
+        testExtremeIntegers_();
         testPeek_();
         testFormatHeader_();
         testCountsAreBounded_();
@@ -121,6 +123,40 @@ namespace archetype {
         threw = false;
         try {
             index.read(overfull);
+        } catch (const invalid_argument&) {
+            threw = true;
+        }
+        ARCHETYPE_TEST(threw);
+    }
+
+    // The most negative int is the one whose magnitude no int can hold.
+    // Writing it used to negate it, get the same number back, and then shift
+    // it right forever waiting for a zero:  a universe holding one attribute
+    // of -2147483648 could not be saved, and with autosave on could not finish
+    // its turn.
+    void TestSerialization::testExtremeIntegers_() {
+        const int lowest = numeric_limits<int>::min();
+        const int highest = numeric_limits<int>::max();
+        auto extremes = {lowest, lowest + 1, highest, highest - 1, -highest};
+        MemoryStorage mem;
+        for (int extreme : extremes) {
+            mem.writeInteger(extreme);
+        }
+        // Thirty-two bits of magnitude and one of sign, seven to a byte after
+        // the first six:  none of these can need more than five.
+        ARCHETYPE_TEST(mem.remaining() <= 5 * static_cast<int>(extremes.size()));
+        for (int extreme : extremes) {
+            ARCHETYPE_TEST_EQUAL(mem.readInteger(), extreme);
+        }
+        ARCHETYPE_TEST_EQUAL(mem.remaining(), 0);
+
+        // Six bytes that all say "more" describe no integer, and reading them
+        // must be refused rather than shifted off the end.
+        MemoryStorage endless;
+        endless.write(array<Storage::Byte, 6>{0x80, 0x80, 0x80, 0x80, 0x80, 0x80});
+        bool threw = false;
+        try {
+            endless.readInteger();
         } catch (const invalid_argument&) {
             threw = true;
         }

@@ -84,6 +84,16 @@ namespace archetype {
         string actual4 = Autosave::deriveTarget("my.games/gorreven");
         string expected4 = "my.games/gorreven.save.acx";
         ARCHETYPE_TEST_EQUAL(actual4, expected4);
+
+        // The command line's own rule: ".acx" unless an extension was given,
+        // and a dot in a directory on the way there is not an extension.
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("gorreven"), string{"gorreven.acx"});
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("./games/gorreven"), string{"./games/gorreven.acx"});
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("../gorreven"), string{"../gorreven.acx"});
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("my.games/gorreven"), string{"my.games/gorreven.acx"});
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("games/gorreven.acx"), string{"games/gorreven.acx"});
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("./games/gorreven.save.acx"), string{"./games/gorreven.save.acx"});
+        ARCHETYPE_TEST_EQUAL(withAcxExtension("games/gorreven.sav"), string{"games/gorreven.sav"});
     }
 
     void TestAutosave::testAtomicWriteRoundTrips_() {

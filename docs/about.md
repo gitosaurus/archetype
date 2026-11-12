@@ -16,7 +16,7 @@ expects a file that has been syntactically and semantically verified by the
 translator and turned into a binary format. This half-a-compiler/interpreter
 pair design is found in other languages, such as Icon and certain versions of
 LISP. It is not a full interpreter, such as BASIC, nor a full compiler, such as
-Pascal.
+C++.
 
 ```shell
 archetype --source=mygame.arch --include=games --create   # translate

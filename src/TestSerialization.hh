@@ -17,6 +17,7 @@ namespace archetype {
     class TestSerialization : public ITestSuite {
     protected:
         virtual void runTests_() override;
+        void testExtremeIntegers_();
         void testPeek_();
         void testFormatHeader_();
         void testCountsAreBounded_();

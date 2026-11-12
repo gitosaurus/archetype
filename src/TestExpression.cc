@@ -8,6 +8,8 @@
 
 #include <string>
 #include <format>
+#include <iostream>
+#include <stdexcept>
 #include <sstream>
 #include <list>
 #include <utility>
@@ -211,6 +213,66 @@ namespace archetype {
             testing_pairs.emplace_back(std::move(src), std::move(expected));
         };
             expect("numeric \"35\"", make_unique<NumericValue>(35));
+            // A leading minus is part of the number; nothing at all is not one.
+            expect("numeric \"-5\"", make_unique<NumericValue>(-5));
+            expect("\"-5\" + 7", make_unique<NumericValue>(2));
+            expect("\"-12\" < \"3\"", make_unique<BooleanValue>(true));
+            expect("numeric \"\"", make_unique<UndefinedValue>());
+            expect("numeric \"-\"", make_unique<UndefinedValue>());
+            expect("numeric \"--5\"", make_unique<UndefinedValue>());
+            expect("numeric \"5-\"", make_unique<UndefinedValue>());
+            expect("\"\" = 0", make_unique<BooleanValue>(false));
+            expect("\"\" = \"\"", make_unique<BooleanValue>(true));
+            // Arithmetic with no answer, or with one too large to hold, is
+            // UNDEFINED rather than whatever the hardware does.
+            expect("1 / 0", make_unique<UndefinedValue>());
+            expect("0 / 0", make_unique<UndefinedValue>());
+            expect("7 / 2", make_unique<NumericValue>(3));
+            expect("(0 - 7) / 2", make_unique<NumericValue>(-3));
+            expect("2147483647 + 1", make_unique<UndefinedValue>());
+            expect("2147483647 + 0", make_unique<NumericValue>(2147483647));
+            expect("(0 - 2147483647) - 1", make_unique<NumericValue>(-2147483647 - 1));
+            expect("(0 - 2147483647) - 2", make_unique<UndefinedValue>());
+            expect("65536 * 65536", make_unique<UndefinedValue>());
+            expect("46340 * 46340", make_unique<NumericValue>(2147395600));
+            expect("((0 - 2147483647) - 1) / (0 - 1)", make_unique<UndefinedValue>());
+            expect("-((0 - 2147483647) - 1)", make_unique<UndefinedValue>());
+            expect("-2147483647", make_unique<NumericValue>(-2147483647));
+            expect("2 ^ 10", make_unique<NumericValue>(1024));
+            expect("2 ^ 30", make_unique<NumericValue>(1073741824));
+            expect("2 ^ 31", make_unique<UndefinedValue>());
+            expect("2 ^ 40", make_unique<UndefinedValue>());
+            expect("(0 - 2) ^ 31", make_unique<NumericValue>(-2147483647 - 1));
+            expect("(0 - 2) ^ 3", make_unique<NumericValue>(-8));
+            expect("7 ^ 0", make_unique<NumericValue>(1));
+            expect("0 ^ 0", make_unique<NumericValue>(1));
+            expect("0 ^ 5", make_unique<NumericValue>(0));
+            expect("0 ^ (0 - 1)", make_unique<UndefinedValue>());
+            expect("2 ^ (0 - 1)", make_unique<NumericValue>(0));
+            expect("1 ^ 2000000000", make_unique<NumericValue>(1));
+            expect("(0 - 1) ^ 2000000001", make_unique<NumericValue>(-1));
+            // The cumulative assignments are the same arithmetic.
+            expect("scratch.big := 2147483647", make_unique<NumericValue>(2147483647));
+            expect("scratch.big +:= 1", make_unique<UndefinedValue>());
+            expect("scratch.big", make_unique<UndefinedValue>());
+            // A string holding a number that does not fit is not a number.
+            expect("numeric \"2147483647\"", make_unique<NumericValue>(2147483647));
+            expect("numeric \"2147483648\"", make_unique<UndefinedValue>());
+            expect("numeric \"-2147483648\"", make_unique<NumericValue>(-2147483647 - 1));
+            expect("numeric \"-2147483649\"", make_unique<UndefinedValue>());
+            expect("numeric \"99999999999\"", make_unique<UndefinedValue>());
+            expect("numeric \"99999999999999999999999999\"", make_unique<UndefinedValue>());
+            // Substring positions that fall off either end are clamped, not fatal.
+            expect("\"abc\" rightfrom 0", make_unique<StringValue>("abc"));
+            expect("\"abc\" rightfrom (0 - 7)", make_unique<StringValue>("abc"));
+            expect("\"abc\" rightfrom 4", make_unique<StringValue>(""));
+            expect("\"abc\" rightfrom 99", make_unique<StringValue>(""));
+            expect("\"abc\" leftfrom 0", make_unique<StringValue>(""));
+            expect("\"abc\" leftfrom (0 - 1)", make_unique<StringValue>(""));
+            expect("\"abc\" leftfrom 99", make_unique<StringValue>("abc"));
+            // There is no 'each' outside of a 'for' loop.
+            expect("each", make_unique<UndefinedValue>());
+            expect("each.x", make_unique<UndefinedValue>());
             expect("+ \"hello\"", make_unique<UndefinedValue>());
             expect("+ (\"1\" & 9)", make_unique<NumericValue>(19));
             expect("& (13 + 7)", make_unique<StringValue>("20"));
@@ -218,6 +280,19 @@ namespace archetype {
             expect("FALSE and TRUE", make_unique<BooleanValue>(false));
             expect("FALSE or TRUE", make_unique<BooleanValue>(true));
             expect("not FALSE", make_unique<BooleanValue>(true));
+            // "and" and "or" stop once the left side has settled the answer,
+            // so the right side's assignment never happens...
+            expect("FALSE and (scratch.sc := 5)", make_unique<BooleanValue>(false));
+            expect("TRUE or (scratch.sc := 5)", make_unique<BooleanValue>(true));
+            expect("UNDEFINED and (scratch.sc := 5)", make_unique<BooleanValue>(false));
+            expect("scratch.sc", make_unique<UndefinedValue>());
+            // ...and does happen when the left side leaves it open.
+            expect("TRUE and (scratch.sc := 5)", make_unique<BooleanValue>(true));
+            expect("scratch.sc", make_unique<NumericValue>(5));
+            expect("FALSE or (scratch.sc := 6)", make_unique<BooleanValue>(true));
+            expect("scratch.sc", make_unique<NumericValue>(6));
+            expect("FALSE or (scratch.sc := UNDEFINED)", make_unique<BooleanValue>(false));
+            expect("scratch.sc", make_unique<UndefinedValue>());
             // Try reacting to UNDEFINED as a truth value, also
             expect("not ('nothing' -> nowhere)", make_unique<BooleanValue>(true));
             expect("13 - - 14", make_unique<NumericValue>(27));
@@ -351,6 +426,32 @@ namespace archetype {
         ARCHETYPE_TEST(expr5 != nullptr);
         Expression expr6 = make_expr_from_str("5 := 6");
         ARCHETYPE_TEST(expr6 == nullptr);
+        // And it says why, rather than failing without a word.
+        for (string bad : {"5 := 6", "\"text\" +:= 1", "(1 + 2) := 3"}) {
+            ostringstream said;
+            streambuf* previous = cout.rdbuf(said.rdbuf());
+            Expression refused = make_expr_from_str(bad);
+            cout.rdbuf(previous);
+            ARCHETYPE_TEST(refused == nullptr);
+            ARCHETYPE_TEST(said.str().find("Left-hand side of assignment must be an attribute") != string::npos);
+        }
+        // A number too large for the language is a mistake in the source, and
+        // the largest one that fits is not.
+        Expression largest = make_expr_from_str("2147483647");
+        ARCHETYPE_TEST(largest != nullptr);
+        for (string too_large : {"2147483648", "99999999999"}) {
+            ostringstream said;
+            streambuf* previous = cout.rdbuf(said.rdbuf());
+            bool refused = false;
+            try {
+                (void)make_expr_from_str(too_large);
+            } catch (const std::runtime_error&) {
+                refused = true;
+            }
+            cout.rdbuf(previous);
+            ARCHETYPE_TEST(refused);
+            ARCHETYPE_TEST(said.str().find("too large") != string::npos);
+        }
         Expression expr7 = make_expr_from_str("('hello' -> world).tricky := 5");
         ARCHETYPE_TEST(expr7 != nullptr);
 

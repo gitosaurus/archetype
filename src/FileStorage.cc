@@ -20,6 +20,14 @@
 using namespace std;
 
 namespace archetype {
+
+    std::string withAcxExtension(std::string filename) {
+        if (not std::filesystem::path{filename}.has_extension()) {
+            filename += ".acx";
+        }
+        return filename;
+    }
+
     InFileStorage::InFileStorage(const filesystem::path& filename)
     {
         stream_.open(filename, ios::in | ios::binary);

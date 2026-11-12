@@ -632,6 +632,11 @@ following method:
 
 This method shrinks the list by one element by removing the top element.
 
+Any other attribute still referring to the destroyed object now refers to
+nothing: a message sent through it, or an attribute asked of it, is UNDEFINED,
+and it will never come to mean some object created later. Destroying the same
+object a second time does nothing.
+
 ### keyword
 
 ```
@@ -854,6 +859,12 @@ other contexts as well) to take action based on a number of conditions:
 - `or` is TRUE so long as at least one operand is neither FALSE, ABSENT, nor UNDEFINED.
 - `not` is unary; it returns TRUE if its operand is FALSE, ABSENT, or UNDEFINED, and FALSE if not.
 
+`and` and `or` evaluate their left operand first and stop as soon as the answer
+is known. The right operand of `and` is not evaluated when the left is FALSE,
+ABSENT, or UNDEFINED, and the right operand of `or` is not evaluated when the
+left is anything else; a message send or an assignment on the right-hand side
+does not happen in those cases.
+
 Because the precedences of these operators are all beneath those of the
 comparison operators, you can form natural expressions without parentheses such
 as:
@@ -875,7 +886,7 @@ numbers, returning the result.
 | | |
 |---|---|
 | `^` | Exponentiation. Raises its left operand to the power of its right. Performed right to left. |
-| `*` `/` | Multiplication and division. Performed left to right. |
+| `*` `/` | Multiplication and division. Performed left to right. Division discards any remainder; division by zero is UNDEFINED. |
 | `+` `-` | Addition and subtraction. Performed left to right. |
 
 This is the normal algebraic precedence of operators. Thus:
@@ -897,8 +908,8 @@ If you intend another precedence, simply use parentheses:
 | `&` | Concatenation. Both operands are converted to strings; the value is UNDEFINED if this is not possible. `"the " & "cupboard"` becomes `"the cupboard"`. |
 | `within` | Search. Returns an integer giving the position in the second string where the first string can be found. `"boar" within "cupboard"` = 4. If the first string cannot be found in the second, the value is 0. UNDEFINED if either operand is a list. |
 | `length` | A unary operator. On a string, returns the number of characters: `length "snake"` = 5, `length ""` = 0. On a list, returns the number of elements. UNDEFINED otherwise. |
-| `leftfrom` | Its left operand is a string; its right operand is the position in the string to take characters to the left from. `"cupboard" leftfrom 4` = `"cupb"`, `"cupboard" leftfrom 10` = `"cupboard"`. |
-| `rightfrom` | Its left operand is a string; its right operand is the position to take characters to the right from. `"cupboard" rightfrom 4` = `"board"`, `"cupboard" rightfrom 1` = `"cupboard"`. |
+| `leftfrom` | Its left operand is a string; its right operand is the position in the string to take characters to the left from. `"cupboard" leftfrom 4` = `"cupb"`, `"cupboard" leftfrom 10` = `"cupboard"`. A position below 1 gives the empty string. |
+| `rightfrom` | Its left operand is a string; its right operand is the position to take characters to the right from. `"cupboard" rightfrom 4` = `"board"`, `"cupboard" rightfrom 1` = `"cupboard"`. A position below 1 is treated as 1; one past the end gives the empty string. |
 
 The `leftfrom` and `rightfrom` operators are a little clumsy; character range
 specification would certainly be clearer. However, substring operations are not
@@ -971,7 +982,7 @@ are UNDEFINED if their operand cannot be thus converted.
 | | |
 |---|---|
 | `chs` | CHange Sign. For numbers only; inverts the sign. Its alias is a minus sign in front of a number, so `(5 * -3)` and `(5 * chs 3)` are equivalent internally. |
-| `numeric` | Converts a string explicitly to a number. Its alias is a plus sign in front of the string, so `(numeric "453")` and `(+"453")` are equivalent internally. |
+| `numeric` | Converts a string explicitly to a number. Its alias is a plus sign in front of the string, so `(numeric "453")` and `(+"453")` are equivalent internally. The string may begin with a minus sign: `numeric "-5"` is −5. A string that is not entirely a number, including the empty string, or one that names a number too large to hold, is UNDEFINED. |
 | `string` | Converts its operand to a string if possible. TRUE becomes `"TRUE"`, 364 becomes `"364"`, `[1 2 3]` becomes `"[1 2 3]"`. Its alias is an ampersand in front of the value, so `(string 453)` and `(&453)` are equivalent internally. |
 
 Because all Archetype operators attempt to convert their operands to the
@@ -1080,7 +1091,9 @@ implementation was inherited from Turbo Pascal, and went away with it.)
 
 Archetype supports 32-bit signed integers only. No real numbers, no
 floating-point arithmetic. Numbers therefore have the range −2,147,483,648 to
-2,147,483,647, and arithmetic that leaves that range wraps around silently.
+2,147,483,647. Arithmetic that has no answer in that range is UNDEFINED: a
+result too large or too small to hold, or a division by zero. A number written
+in your source that is too large to hold is a compile error.
 
 ### Lists
 
@@ -1208,7 +1221,7 @@ the state file, and return UNDEFINED if the file cannot be opened.
 | Message | Meaning |
 |---|---|
 | `'SAVE STATE'` | Saves the state of the interpreter to the given file name. This includes the values of all attributes, any dynamically created objects, and the assembled vocabulary. Returns TRUE when done. |
-| `'LOAD STATE'` | Loads all of the information in the state file with the given file name, replacing the current universe entirely. Returns TRUE when done. |
+| `'LOAD STATE'` | Loads all of the information in the state file with the given file name, replacing the current universe entirely. Returns TRUE when done, or FALSE if the file is missing or is not a state file, in which case the current universe is left as it was. |
 
 A save file is a mutated copy of the whole compiled program, not a patch
 against it, which is what makes an `.acx` fully resumable. The original
