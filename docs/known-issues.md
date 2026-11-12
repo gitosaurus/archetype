@@ -26,7 +26,8 @@ its speed and its tolerance by not knowing where a noun phrase begins, and this
 is the bill for it.
 
 **Integers only.** No real numbers, no floating-point arithmetic. Numbers are
-32-bit signed and wrap silently on overflow.
+32-bit signed; a result that does not fit, like a division by zero, is
+UNDEFINED.
 
 **No separate compilation.** There is no equivalent of a `.o` file: no way to
 compile `intrptr.arch` once and link it with an adventure later. It is
