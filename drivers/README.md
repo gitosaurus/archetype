@@ -118,6 +118,30 @@ The endpoint expects:
 - Path parameter: The name of the ACX file in your `archetype_web_cards` GCS bucket
 - Form parameter `command`: The game command to execute
 
+The reply is the narrative for that turn, with one of these statuses:
+
+| Status | Meaning |
+|---|---|
+| 200 | The turn was taken and the adventure stored. |
+| 404 | There is no file of that name in the bucket. |
+| 409 | Other turns kept getting to the adventure first; nothing was stored, and the command can be sent again. |
+| 410 | The adventure has ended. |
+| 500 | The interpreter could not take the turn (the file is not an ACX, for instance). Nothing was stored; the reason is in the service's log. |
+
+Two commands sent to the same adventure at once are applied one after the
+other, never both to the same starting state: the adventure is stored only if
+it has not changed since the turn began, and the turn is taken again if it has.
+
+### Testing the Driver
+
+The driver's own tests need neither a bucket nor the interpreter:
+
+```shell
+cd drivers/cloud_run
+pip install -r requirements.txt
+python -m unittest
+```
+
 ### Building Locally (Optional)
 
 To build and test the Docker image locally before deploying:
